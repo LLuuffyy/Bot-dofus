@@ -25,7 +25,7 @@ public sealed class UI_Debug : UserControl
     private readonly Label _compteur;
 
     private readonly ConcurrentQueue<ElementDebug> _file = new();
-    private readonly Timer _timerRafraichissement;
+    private readonly System.Windows.Forms.Timer _timerRafraichissement;
     private int _nbRecus;
 
     private ContexteCompte? _contexte;
@@ -103,7 +103,7 @@ public sealed class UI_Debug : UserControl
         Controls.Add(_liste);
         Controls.Add(panneauHaut);
 
-        _timerRafraichissement = new Timer { Interval = 200 };
+        _timerRafraichissement = new System.Windows.Forms.Timer { Interval = 200 };
         _timerRafraichissement.Tick += (_, _) => PurgerFile();
         _timerRafraichissement.Start();
 

@@ -17,7 +17,13 @@ public sealed class UI_Carte : UserControl
 
     private ContexteCompte? _contexte;
     private readonly Label _labelEntete;
-    private readonly Panel _panneauCarte;
+    private readonly DoubleBufferedPanel _panneauCarte;
+
+    /// <summary>Panel avec double buffer activé (protected accessible en héritant).</summary>
+    private sealed class DoubleBufferedPanel : Panel
+    {
+        public DoubleBufferedPanel() { DoubleBuffered = true; }
+    }
 
     public UI_Carte()
     {
@@ -34,11 +40,10 @@ public sealed class UI_Carte : UserControl
             Text = "Carte : (aucune)"
         };
 
-        _panneauCarte = new Panel
+        _panneauCarte = new DoubleBufferedPanel
         {
             Dock = DockStyle.Fill,
-            BackColor = Color.FromArgb(60, 80, 60),
-            DoubleBuffered = false
+            BackColor = Color.FromArgb(60, 80, 60)
         };
         _panneauCarte.Paint += OnPaintCarte;
 
