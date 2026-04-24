@@ -39,9 +39,21 @@ public sealed class ProxyReseau : IDisposable
         if (EnEcoute) return Task.CompletedTask;
 
         _annulation = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        _ecouteur.Start();
-        EnEcoute = true;
 
+        try
+        {
+            _ecouteur.Start();
+        }
+        catch (Exception ex)
+        {
+            Journaliseur.Erreur(
+                $"Impossible de démarrer le proxy sur {_config.AdresseEcouteLocale}:{_config.PortEcouteLocal} " +
+                $"(port déjà utilisé ? droits insuffisants ?)",
+                ex);
+            throw;
+        }
+
+        EnEcoute = true;
         Journaliseur.Info($"Proxy MITM en écoute sur {_config.AdresseEcouteLocale}:{_config.PortEcouteLocal} → {_config.HoteDistant}:{_config.PortDistant}");
 
         return Task.Run(() => BoucleAcceptationAsync(_annulation.Token), _annulation.Token);

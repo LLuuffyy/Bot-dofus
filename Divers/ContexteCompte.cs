@@ -27,6 +27,7 @@ public sealed class ContexteCompte : IDisposable
     public GestionnaireScripts Scripts { get; }
 
     public SessionProxy? SessionActive { get; private set; }
+    public EnregistreurPaquets? EnregistreurActif { get; private set; }
 
     public event EventHandler<SessionProxy>? SessionAttachee;
 
@@ -59,8 +60,25 @@ public sealed class ContexteCompte : IDisposable
     public void DemarrerProxy() => Proxy.DemarrerAsync();
     public void ArreterProxy() => Proxy.Arreter();
 
+    /// <summary>Active l'enregistrement des paquets vers un fichier plat (un par ligne).</summary>
+    public void ActiverEnregistrement(string dossier = "logs")
+    {
+        if (EnregistreurActif != null) return;
+        EnregistreurActif = new EnregistreurPaquets(dossier);
+        EnregistreurActif.AttacherA(Proxy);
+    }
+
+    public void DesactiverEnregistrement()
+    {
+        if (EnregistreurActif == null) return;
+        EnregistreurActif.Detacher(Proxy);
+        EnregistreurActif.Dispose();
+        EnregistreurActif = null;
+    }
+
     public void Dispose()
     {
+        try { DesactiverEnregistrement(); } catch { }
         try { Scripts.Dispose(); } catch { }
         try { Trames.Vider(); } catch { }
         try { Proxy.Dispose(); } catch { }

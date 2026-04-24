@@ -25,6 +25,7 @@ public sealed class UI_Principal : UserControl
     private readonly Button _btnArreterScript;
     private readonly Label _etiquetteEtapeCourante;
     private readonly Label _etiquetteCombats;
+    private readonly CheckBox _caseEnregistrement;
 
     private ContexteCompte? _contexte;
     private readonly ChargeurLua _chargeur = new();
@@ -59,13 +60,22 @@ public sealed class UI_Principal : UserControl
         _etiquetteEtapeCourante = new Label { Left = 12, Top = 210, Width = 500, Height = 20 };
         _etiquetteCombats       = new Label { Left = 12, Top = 232, Width = 500, Height = 20 };
 
+        _caseEnregistrement = new CheckBox
+        {
+            Left = 12, Top = 260, Width = 300, Height = 22,
+            Text = "Enregistrer les paquets dans un fichier",
+            Checked = false
+        };
+        _caseEnregistrement.CheckedChanged += (_, _) => BasculerEnregistrement();
+
         Controls.AddRange(new Control[]
         {
             _etiquetteCompte, _etiquetteEtat,
             _btnDemarrerProxy, _btnArreterProxy,
             lblScript, _choixScript, btnActualiser,
             _btnDemarrerScript, _btnPauseScript, _btnArreterScript,
-            _etiquetteEtapeCourante, _etiquetteCombats
+            _etiquetteEtapeCourante, _etiquetteCombats,
+            _caseEnregistrement
         });
     }
 
@@ -106,10 +116,21 @@ public sealed class UI_Principal : UserControl
     private void DemarrerProxy()
     {
         if (_contexte == null) return;
-        _contexte.DemarrerProxy();
-        _btnDemarrerProxy.Enabled = false;
-        _btnArreterProxy.Enabled = true;
-        _btnDemarrerScript.Enabled = true;
+        try
+        {
+            _contexte.DemarrerProxy();
+            _btnDemarrerProxy.Enabled = false;
+            _btnArreterProxy.Enabled = true;
+            _btnDemarrerScript.Enabled = true;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this,
+                "Démarrage du proxy impossible :\n\n" + ex.Message,
+                "Erreur proxy",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
     }
 
     private void ArreterProxy()
@@ -162,5 +183,12 @@ public sealed class UI_Principal : UserControl
                                   ? string.Empty
                                   : $"  —  {_contexte.Compte.PseudoAffiche}");
         _etiquetteCombats.Text = $"Combats réalisés : {_contexte.Scripts.CompteurCombats}";
+    }
+
+    private void BasculerEnregistrement()
+    {
+        if (_contexte == null) return;
+        if (_caseEnregistrement.Checked) _contexte.ActiverEnregistrement();
+        else _contexte.DesactiverEnregistrement();
     }
 }
