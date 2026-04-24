@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>BotDofus</RootNamespace>
+    <AssemblyName>BotDofus</AssemblyName>
+    <Version>0.1.0</Version>
+    <Company>BotDofus</Company>
+    <Product>Bot Dofus Retro 1.29</Product>
+    <ApplicationIcon />
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <NeutralLanguage>fr-FR</NeutralLanguage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Les ressources de jeu (maps, items, monsters, sorts) sont copiées à la sortie -->
+    <None Update="Resources\data\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="trajectories\**\*.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="config\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="peleas\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="banque\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="interactions\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="accounts.bot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Librairies tierces (ajoutées plus tard lors de l'implémentation des étapes suivantes) -->
+    <!-- SharpPcap pour le sniffing: <PackageReference Include="SharpPcap" Version="6.3.1" /> -->
+    <!-- Lua scripting: <PackageReference Include="NLua" Version="1.7.3" /> -->
+    <!-- JSON: System.Text.Json inclus dans .NET 8 -->
+  </ItemGroup>
+
+</Project>

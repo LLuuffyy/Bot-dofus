@@ -1,20 +1,63 @@
-*.dll  
-*.exe  
-*.pdb  
-*.mp3  
-*.ico  
-*.png  
-*.jpg  
-cs/  
-de/  
-es/  
-fr/  
-it/  
-ja/  
-ko/  
-pl/  
-pt-BR/  
-ru/  
-tr/  
-zh-Hans/  
-zh-Hant/ 
+# Build artifacts
+bin/
+obj/
+out/
+publish/
+*.pdb
+*.exe
+*.dll
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.DotSettings.user
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+project.lock.json
+project.assets.json
+*.nuget.props
+*.nuget.targets
+
+# ReSharper / Rider
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings
+
+# Certs / keys
+*.pfx
+*.snk
+*.aps
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Ressources binaires non versionnées
+*.mp3
+*.ico.bak
+
+# Localisations Dofus (non gérées ici)
+cs/
+de/
+es/
+fr/
+it/
+ja/
+ko/
+pl/
+pt-BR/
+ru/
+tr/
+zh-Hans/
+zh-Hant/
