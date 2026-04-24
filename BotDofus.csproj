@@ -46,6 +46,8 @@
   <ItemGroup>
     <!-- Moteur Lua pur C# (pas de dépendance native, contrairement à NLua) -->
     <PackageReference Include="MoonSharp" Version="2.0.0" />
+    <!-- Lecture/écriture de App.config depuis .NET 8 (absent par défaut hors .NET Framework) -->
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
     <!-- System.Text.Json inclus dans .NET 8 -->
   </ItemGroup>
 
