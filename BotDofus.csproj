@@ -44,10 +44,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Librairies tierces (ajoutées plus tard lors de l'implémentation des étapes suivantes) -->
-    <!-- SharpPcap pour le sniffing: <PackageReference Include="SharpPcap" Version="6.3.1" /> -->
-    <!-- Lua scripting: <PackageReference Include="NLua" Version="1.7.3" /> -->
-    <!-- JSON: System.Text.Json inclus dans .NET 8 -->
+    <!-- Moteur Lua pur C# (pas de dépendance native, contrairement à NLua) -->
+    <PackageReference Include="MoonSharp" Version="2.0.0" />
+    <!-- System.Text.Json inclus dans .NET 8 -->
   </ItemGroup>
 
 </Project>

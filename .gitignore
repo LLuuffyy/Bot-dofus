@@ -47,6 +47,11 @@ desktop.ini
 *.mp3
 *.ico.bak
 
+# Le fichier accounts.bot contient des identifiants en clair : éviter
+# de commiter des copies supplémentaires (backup auto, test, etc.)
+accounts.bot.*
+accounts.bak
+
 # Localisations Dofus (non gérées ici)
 cs/
 de/
