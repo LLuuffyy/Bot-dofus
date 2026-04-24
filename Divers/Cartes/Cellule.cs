@@ -41,20 +41,16 @@ public sealed class Cellule
 
     public static (int x, int y) CalculerCoordonnees(int identifiant)
     {
-        // Formule Dofus Retro (grid isométrique 14 × 20 en losange) :
-        // Chaque "band" de 28 cellules alterne 14 pairs puis 14 impairs.
-        int x = (identifiant % 14) + (identifiant / 28) * 14;
-        int y = (identifiant / 14) - (identifiant / 28) * 14;
+        // Placeholder : les vraies coordonnées Dofus suivent la formule
+        // Ankama (lozenge isométrique) que l'on validera quand on disposera
+        // d'un dump de carte réel pour calibrer. Pour l'instant on utilise
+        // une grille linéaire 14 × N, suffisante pour le pathfinding basique.
+        int x = identifiant % 14;
+        int y = identifiant / 14;
         return (x, y);
     }
 
-    public static int CoordonneesVersId(int x, int y)
-    {
-        // Inverse de la formule ci-dessus.
-        int bande = (x - y) / 14;
-        int pos = (y % 14) + ((x - bande * 14) % 14);
-        return bande * 28 + (y % 14) * 14 + pos;
-    }
+    public static int CoordonneesVersId(int x, int y) => y * 14 + x;
 
     public override string ToString() => $"Cellule #{Identifiant} ({X},{Y}) {Type}";
 }

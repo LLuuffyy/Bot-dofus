@@ -43,10 +43,34 @@ public partial class FormulairePrincipal : Form
         var niveau = ConfigurationManager.AppSettings["Journalisation.Niveau"] ?? "Info";
         if (Enum.TryParse<NiveauJournal>(niveau, out var n)) Journaliseur.NiveauMinimum = n;
 
+        // Active l'écriture sur fichier dans le dossier configuré
+        var dossierLog = ConfigurationManager.AppSettings["Journalisation.DossierSortie"] ?? "logs";
+        Journaliseur.ActiverFichier(dossierLog);
+
         Journaliseur.Info("Bot Dofus démarré");
 
+        var comptes = FichierComptes.Charger();
+
+        // Si pas de comptes.json mais accounts.bot présent : proposer l'import
+        if (comptes.Count == 0 && System.IO.File.Exists("accounts.bot"))
+        {
+            var reponse = MessageBox.Show(
+                this,
+                "Un fichier accounts.bot a été trouvé (format hérité Hystoria).\n" +
+                "Importer ces comptes dans comptes.json ?",
+                "Import des comptes",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (reponse == DialogResult.Yes)
+            {
+                comptes = ImportateurAccountsBot.Importer("accounts.bot");
+                if (comptes.Count > 0) FichierComptes.Sauvegarder(comptes);
+            }
+        }
+
         // Crée un onglet par compte connu.
-        foreach (var entree in FichierComptes.Charger())
+        foreach (var entree in comptes)
         {
             CreerOngletPourCompte(entree);
         }

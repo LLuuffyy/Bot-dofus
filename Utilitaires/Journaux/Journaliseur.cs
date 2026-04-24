@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace BotDofus.Utilitaires.Journaux;
 
@@ -23,9 +24,35 @@ public enum NiveauJournal
 /// </summary>
 public static class Journaliseur
 {
+    private static readonly object _verrouFichier = new();
+    private static StreamWriter? _ecrivainFichier;
+
     public static NiveauJournal NiveauMinimum { get; set; } = NiveauJournal.Info;
 
     public static event EventHandler<EvenementEntreeJournal>? EntreeAjoutee;
+
+    /// <summary>
+    /// Active l'écriture sur fichier dans le dossier indiqué (créé si absent).
+    /// Un fichier par lancement, nommé <c>botdofus-YYYYMMDD-HHmmss.log</c>.
+    /// </summary>
+    public static void ActiverFichier(string dossier)
+    {
+        lock (_verrouFichier)
+        {
+            try
+            {
+                Directory.CreateDirectory(dossier);
+                var chemin = Path.Combine(dossier, $"botdofus-{DateTime.Now:yyyyMMdd-HHmmss}.log");
+                _ecrivainFichier = new StreamWriter(chemin, append: true) { AutoFlush = true };
+                Info($"Journal fichier : {chemin}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Impossible d'ouvrir le fichier journal : {ex.Message}");
+                _ecrivainFichier = null;
+            }
+        }
+    }
 
     public static void Trace(string message) => Ecrire(NiveauJournal.Trace, message);
     public static void Debogue(string message) => Ecrire(NiveauJournal.Debug, message);
@@ -45,6 +72,15 @@ public static class Journaliseur
 
         Debug.WriteLine(ligne);
         Console.WriteLine(ligne);
+
+        if (_ecrivainFichier != null)
+        {
+            lock (_verrouFichier)
+            {
+                try { _ecrivainFichier?.WriteLine(ligne); } catch { /* lecture seule possible */ }
+            }
+        }
+
         EntreeAjoutee?.Invoke(null, new EvenementEntreeJournal(entree));
     }
 }

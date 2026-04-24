@@ -38,14 +38,20 @@ public sealed class Carte
             ? Cellules[identifiantCellule]
             : null;
 
-    /// <summary>Retourne les voisins à 1 case (4-connexité Dofus : haut/bas/gauche/droite).</summary>
+    /// <summary>
+    /// Retourne les voisins directs d'une cellule. En Dofus Retro les 4 directions
+    /// visuelles (haut, bas, gauche, droite) correspondent aux décalages d'id
+    /// ±1 et ±14 sur une grille linéaire simplifiée. Les 4 diagonales sont ±13
+    /// et ±15. Pour le pathfinding principal on se limite aux 4 orthogonaux.
+    /// </summary>
     public IEnumerable<Cellule> Voisins(Cellule centre)
     {
-        foreach (var (dx, dy) in new[] { (1, 0), (-1, 0), (0, 1), (0, -1) })
+        foreach (var decalage in new[] { 1, -1, Largeur, -Largeur })
         {
-            var nx = centre.X + dx;
-            var ny = centre.Y + dy;
-            var id = Cellule.CoordonneesVersId(nx, ny);
+            var id = centre.Identifiant + decalage;
+            // Évite que id+1 déborde sur la ligne suivante.
+            if (Math.Abs(decalage) == 1
+                && (centre.Identifiant / Largeur) != (id / Largeur)) continue;
             var c = Obtenir(id);
             if (c != null) yield return c;
         }
