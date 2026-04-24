@@ -1,0 +1,18 @@
+{
+  "AutoDepotActif": true,
+  "SeuilPodsDepot": 80,
+  "DeposerTout": true,
+  "DeposerRessources": true,
+  "DeposerDivers": false,
+  "DeposerEquipements": false,
+  "DeposerQuete": false,
+  "DeposerKamas": false,
+  "KamasAGarder": 10000,
+  "GarderPierresAmeVides": true,
+  "GarderPierresAmePleines": true,
+  "GarderConsommablesSoin": true,
+  "ItemsExclus": [],
+  "ItemsForces": [],
+  "DelaiEntreActionsMin": 150,
+  "DelaiEntreActionsMax": 350
+}

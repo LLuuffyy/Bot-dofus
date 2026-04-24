@@ -1,0 +1,8516 @@
+{
+  "31": {
+    "n": "Larve Bleue",
+    "nn": "LARVE BLEUE",
+    "l": 2,
+    "g": 1563
+  },
+  "34": {
+    "n": "Larve Verte",
+    "nn": "LARVE VERTE",
+    "l": 6,
+    "g": 1568
+  },
+  "36": {
+    "n": "Bouftou",
+    "nn": "BOUFTOU",
+    "l": 1,
+    "g": 1566
+  },
+  "37": {
+    "n": "Craqueleur",
+    "nn": "CRAQUELEUR",
+    "l": 1,
+    "g": 1156
+  },
+  "39": {
+    "n": "Lapino",
+    "nn": "LAPINO",
+    "l": 1,
+    "g": 1557
+  },
+  "40": {
+    "n": "Sanglier",
+    "nn": "SANGLIER",
+    "l": 1,
+    "g": 1562
+  },
+  "41": {
+    "n": "Prespic",
+    "nn": "PRESPIC",
+    "l": 1,
+    "g": 1020
+  },
+  "42": {
+    "n": "La Surpuissante",
+    "nn": "LA SURPUISSANTE",
+    "l": 1,
+    "g": 1180
+  },
+  "43": {
+    "n": "Tofu",
+    "nn": "TOFU",
+    "l": 1,
+    "g": 1558
+  },
+  "44": {
+    "n": "Bwork Mage",
+    "nn": "BWORK MAGE",
+    "l": 1,
+    "g": 1012
+  },
+  "45": {
+    "n": "Chaton",
+    "nn": "CHATON",
+    "l": 1,
+    "g": 1018
+  },
+  "46": {
+    "n": "Larve Orange",
+    "nn": "LARVE ORANGE",
+    "l": 8,
+    "g": 1567
+  },
+  "47": {
+    "n": "Abraknyde",
+    "nn": "ABRAKNYDE",
+    "l": 23,
+    "g": 1001
+  },
+  "48": {
+    "n": "Tournesol Sauvage",
+    "nn": "TOURNESOL SAUVAGE",
+    "l": 8,
+    "g": 1569
+  },
+  "52": {
+    "n": "Arakne",
+    "nn": "ARAKNE",
+    "l": 1,
+    "g": 1564
+  },
+  "53": {
+    "n": "Bwork Mage",
+    "nn": "BWORK MAGE",
+    "l": 15,
+    "g": 1012
+  },
+  "54": {
+    "n": "Chafer",
+    "nn": "CHAFER",
+    "l": 32,
+    "g": 1014
+  },
+  "55": {
+    "n": "Gelée Bleue",
+    "nn": "GELEE BLEUE",
+    "l": 5,
+    "g": 1062
+  },
+  "56": {
+    "n": "Gelée Menthe",
+    "nn": "GELEE MENTHE",
+    "l": 6,
+    "g": 1064
+  },
+  "57": {
+    "n": "Gelée Fraise",
+    "nn": "GELEE FRAISE",
+    "l": 24,
+    "g": 1066
+  },
+  "58": {
+    "n": "Gelée Royale Bleue",
+    "nn": "GELEE ROYALE BLEUE",
+    "l": 50,
+    "g": 1061
+  },
+  "59": {
+    "n": "Champ Champ",
+    "nn": "CHAMP CHAMP",
+    "l": 3,
+    "g": 1565
+  },
+  "61": {
+    "n": "Moskito",
+    "nn": "MOSKITO",
+    "l": 1,
+    "g": 1572
+  },
+  "62": {
+    "n": "Chevaucheur de Karne",
+    "nn": "CHEVAUCHEUR DE KARNE",
+    "l": 12,
+    "g": 1007
+  },
+  "63": {
+    "n": "Crabe",
+    "nn": "CRABE",
+    "l": 2,
+    "g": 1009
+  },
+  "64": {
+    "n": "Wabbit",
+    "nn": "WABBIT",
+    "l": 16,
+    "g": 1050
+  },
+  "65": {
+    "n": "Black Wabbit",
+    "nn": "BLACK WABBIT",
+    "l": 21,
+    "g": 1051
+  },
+  "68": {
+    "n": "Black Tiwabbit",
+    "nn": "BLACK TIWABBIT",
+    "l": 9,
+    "g": 1054
+  },
+  "70": {
+    "n": "Glutin boxeur",
+    "nn": "GLUTIN BOXEUR",
+    "l": 22,
+    "g": 1509
+  },
+  "72": {
+    "n": "Tiwabbit Kiafin",
+    "nn": "TIWABBIT KIAFIN",
+    "l": 9,
+    "g": 1055
+  },
+  "74": {
+    "n": "Bwork Archer",
+    "nn": "BWORK ARCHER",
+    "l": 18,
+    "g": 1004
+  },
+  "75": {
+    "n": "DragOeuf Doré immature",
+    "nn": "DRAGOEUF DORE IMMATURE",
+    "l": 50,
+    "g": 1025
+  },
+  "76": {
+    "n": "DragOeuf Blanc",
+    "nn": "DRAGOEUF BLANC",
+    "l": 60,
+    "g": 1032
+  },
+  "78": {
+    "n": "Rose Démoniaque",
+    "nn": "ROSE DEMONIAQUE",
+    "l": 4,
+    "g": 1561
+  },
+  "79": {
+    "n": "Pissenlit Diabolique",
+    "nn": "PISSENLIT DIABOLIQUE",
+    "l": 2,
+    "g": 1560
+  },
+  "81": {
+    "n": "Kwak du Vent",
+    "nn": "KWAK DU VENT",
+    "l": 18,
+    "g": 1041
+  },
+  "82": {
+    "n": "DragOeuf Noir immature",
+    "nn": "DRAGOEUF NOIR IMMATURE",
+    "l": 50,
+    "g": 1026
+  },
+  "83": {
+    "n": "Kwak de Flamme",
+    "nn": "KWAK DE FLAMME",
+    "l": 18,
+    "g": 1042
+  },
+  "84": {
+    "n": "Kwak de Glace",
+    "nn": "KWAK DE GLACE",
+    "l": 18,
+    "g": 1043
+  },
+  "85": {
+    "n": "Gelée Royale Menthe",
+    "nn": "GELEE ROYALE MENTHE",
+    "l": 100,
+    "g": 1063
+  },
+  "86": {
+    "n": "Gelée Royale Fraise",
+    "nn": "GELEE ROYALE FRAISE",
+    "l": 150,
+    "g": 1065
+  },
+  "87": {
+    "n": "DragOeuf Doré",
+    "nn": "DRAGOEUF DORE",
+    "l": 60,
+    "g": 1029
+  },
+  "88": {
+    "n": "DragOeuf de Saphir",
+    "nn": "DRAGOEUF DE SAPHIR",
+    "l": 60,
+    "g": 1031
+  },
+  "89": {
+    "n": "DragOeuf Noir",
+    "nn": "DRAGOEUF NOIR",
+    "l": 60,
+    "g": 1030
+  },
+  "90": {
+    "n": "DragOeuf Blanc immature",
+    "nn": "DRAGOEUF BLANC IMMATURE",
+    "l": 50,
+    "g": 1028
+  },
+  "91": {
+    "n": "DragOeuf Noir Eveillé",
+    "nn": "DRAGOEUF NOIR EVEILLE",
+    "l": 70,
+    "g": 1034
+  },
+  "93": {
+    "n": "DragOeuf Blanc Eveillé",
+    "nn": "DRAGOEUF BLANC EVEILLE",
+    "l": 70,
+    "g": 1036
+  },
+  "94": {
+    "n": "DragOeuf Doré Eveillé",
+    "nn": "DRAGOEUF DORE EVEILLE",
+    "l": 70,
+    "g": 1033
+  },
+  "95": {
+    "n": "DragOeuf de Saphir Eveillé",
+    "nn": "DRAGOEUF DE SAPHIR EVEILLE",
+    "l": 70,
+    "g": 1035
+  },
+  "96": {
+    "n": "Tiwabbit",
+    "nn": "TIWABBIT",
+    "l": 9,
+    "g": 1053
+  },
+  "97": {
+    "n": "Wo Wabbit",
+    "nn": "WO WABBIT",
+    "l": 35,
+    "g": 1052
+  },
+  "98": {
+    "n": "Tofu",
+    "nn": "TOFU",
+    "l": 2,
+    "g": 1558
+  },
+  "99": {
+    "n": "Grand Pa Wabbit",
+    "nn": "GRAND PA WABBIT",
+    "l": 35,
+    "g": 1056
+  },
+  "100": {
+    "n": "Fire Beule",
+    "nn": "FIRE BEULE",
+    "l": 20,
+    "g": 1139
+  },
+  "101": {
+    "n": "Bouftou",
+    "nn": "BOUFTOU",
+    "l": 3,
+    "g": 1566
+  },
+  "102": {
+    "n": "Mulou",
+    "nn": "MULOU",
+    "l": 60,
+    "g": 1069
+  },
+  "103": {
+    "n": "Prespic",
+    "nn": "PRESPIC",
+    "l": 12,
+    "g": 1020
+  },
+  "104": {
+    "n": "Sanglier",
+    "nn": "SANGLIER",
+    "l": 10,
+    "g": 1562
+  },
+  "106": {
+    "n": "Craqueleur",
+    "nn": "CRAQUELEUR",
+    "l": 25,
+    "g": 1008
+  },
+  "107": {
+    "n": "Dark Vlad",
+    "nn": "DARK VLAD",
+    "l": 120,
+    "g": 1071
+  },
+  "108": {
+    "n": "Rib",
+    "nn": "RIB",
+    "l": 21,
+    "g": 1068
+  },
+  "110": {
+    "n": "Chafer Invisible",
+    "nn": "CHAFER INVISIBLE",
+    "l": 25,
+    "g": 1047
+  },
+  "111": {
+    "n": "Tofu Maléfique",
+    "nn": "TOFU MALEFIQUE",
+    "l": 2,
+    "g": 1072
+  },
+  "112": {
+    "n": "Boo",
+    "nn": "BOO",
+    "l": 15,
+    "g": 1067
+  },
+  "113": {
+    "n": "Dragon Cochon",
+    "nn": "DRAGON COCHON",
+    "l": 100,
+    "g": 1037
+  },
+  "114": {
+    "n": "La Folle",
+    "nn": "LA FOLLE",
+    "l": 1,
+    "g": 1021
+  },
+  "115": {
+    "n": "La Bloqueuse",
+    "nn": "LA BLOQUEUSE",
+    "l": 1,
+    "g": 1184
+  },
+  "116": {
+    "n": "La Sacrifiée",
+    "nn": "LA SACRIFIEE",
+    "l": 1,
+    "g": 1181
+  },
+  "117": {
+    "n": "La Gonflable",
+    "nn": "LA GONFLABLE",
+    "l": 1,
+    "g": 1182
+  },
+  "118": {
+    "n": "Mineur Sombre",
+    "nn": "MINEUR SOMBRE",
+    "l": 16,
+    "g": 1073
+  },
+  "119": {
+    "n": "Forgeron Sombre",
+    "nn": "FORGERON SOMBRE",
+    "l": 28,
+    "g": 1074
+  },
+  "120": {
+    "n": "Tofu lancé",
+    "nn": "TOFU LANCE",
+    "l": 5,
+    "g": 1558
+  },
+  "121": {
+    "n": "Minotoror",
+    "nn": "MINOTOROR",
+    "l": 125,
+    "g": 1088
+  },
+  "123": {
+    "n": "Cochon de Lait",
+    "nn": "COCHON DE LAIT",
+    "l": 16,
+    "g": 1060
+  },
+  "124": {
+    "n": "Maître Vampire",
+    "nn": "MAITRE VAMPIRE",
+    "l": 17,
+    "g": 1078
+  },
+  "125": {
+    "n": "Paysan en Détresse",
+    "nn": "PAYSAN EN DETRESSE",
+    "l": 0,
+    "g": 1089
+  },
+  "126": {
+    "n": "Souris Grise",
+    "nn": "SOURIS GRISE",
+    "l": 1,
+    "g": 1084
+  },
+  "127": {
+    "n": "Vampire",
+    "nn": "VAMPIRE",
+    "l": 9,
+    "g": 1077
+  },
+  "134": {
+    "n": "Boufton Blanc",
+    "nn": "BOUFTON BLANC",
+    "l": 1,
+    "g": 1570
+  },
+  "147": {
+    "n": "Bouftou Royal",
+    "nn": "BOUFTOU ROYAL",
+    "l": 35,
+    "g": 1574
+  },
+  "148": {
+    "n": "Chef de Guerre Bouftou",
+    "nn": "CHEF DE GUERRE BOUFTOU",
+    "l": 15,
+    "g": 1573
+  },
+  "149": {
+    "n": "Boufton Noir",
+    "nn": "BOUFTON NOIR",
+    "l": 1,
+    "g": 1571
+  },
+  "150": {
+    "n": "Noeul",
+    "nn": "NOEUL",
+    "l": 20,
+    "g": 1080
+  },
+  "151": {
+    "n": "Bitolder",
+    "nn": "BITOLDER",
+    "l": 100,
+    "g": 0
+  },
+  "152": {
+    "n": "La Fourbe",
+    "nn": "LA FOURBE",
+    "l": 1,
+    "g": 1185
+  },
+  "153": {
+    "n": "Boulanger Sombre",
+    "nn": "BOULANGER SOMBRE",
+    "l": 5,
+    "g": 1075
+  },
+  "154": {
+    "n": "Kwoan",
+    "nn": "KWOAN",
+    "l": 5,
+    "g": 1081
+  },
+  "155": {
+    "n": "Bandit du clan des Roublards",
+    "nn": "BANDIT DU CLAN DES ROUBLARDS",
+    "l": 8,
+    "g": 1095
+  },
+  "156": {
+    "n": "Vampire Captif",
+    "nn": "VAMPIRE CAPTIF",
+    "l": 18,
+    "g": 1078
+  },
+  "157": {
+    "n": "Araknelle",
+    "nn": "ARAKNELLE",
+    "l": 2,
+    "g": 1002
+  },
+  "158": {
+    "n": "Coquille Explosive",
+    "nn": "COQUILLE EXPLOSIVE",
+    "l": 1,
+    "g": 1096
+  },
+  "159": {
+    "n": "Milimulou",
+    "nn": "MILIMULOU",
+    "l": 18,
+    "g": 1107
+  },
+  "160": {
+    "n": "Dopeul Feca",
+    "nn": "DOPEUL FECA",
+    "l": 20,
+    "g": 1097
+  },
+  "161": {
+    "n": "Dopeul Osamodas",
+    "nn": "DOPEUL OSAMODAS",
+    "l": 20,
+    "g": 1098
+  },
+  "162": {
+    "n": "Dopeul Enutrof",
+    "nn": "DOPEUL ENUTROF",
+    "l": 20,
+    "g": 1099
+  },
+  "163": {
+    "n": "Dopeul Sram",
+    "nn": "DOPEUL SRAM",
+    "l": 20,
+    "g": 1100
+  },
+  "164": {
+    "n": "Dopeul Xelor",
+    "nn": "DOPEUL XELOR",
+    "l": 20,
+    "g": 1101
+  },
+  "165": {
+    "n": "Dopeul Ecaflip",
+    "nn": "DOPEUL ECAFLIP",
+    "l": 20,
+    "g": 1102
+  },
+  "166": {
+    "n": "Dopeul Eniripsa",
+    "nn": "DOPEUL ENIRIPSA",
+    "l": 20,
+    "g": 1103
+  },
+  "167": {
+    "n": "Dopeul Iop",
+    "nn": "DOPEUL IOP",
+    "l": 20,
+    "g": 1104
+  },
+  "168": {
+    "n": "Dopeul Crâ",
+    "nn": "DOPEUL CRA",
+    "l": 20,
+    "g": 1105
+  },
+  "169": {
+    "n": "Dopeul Sadida",
+    "nn": "DOPEUL SADIDA",
+    "l": 20,
+    "g": 1106
+  },
+  "170": {
+    "n": "DragOeuf de Saphir immature",
+    "nn": "DRAGOEUF DE SAPHIR IMMATURE",
+    "l": 50,
+    "g": 1027
+  },
+  "171": {
+    "n": "Dragodinde Amande Sauvage",
+    "nn": "DRAGODINDE AMANDE SAUVAGE",
+    "l": 25,
+    "g": 1108
+  },
+  "173": {
+    "n": "Abraknyde Ancestral",
+    "nn": "ABRAKNYDE ANCESTRAL",
+    "l": 200,
+    "g": 1458
+  },
+  "177": {
+    "n": "Coffre Malveillant",
+    "nn": "COFFRE MALVEILLANT",
+    "l": 1,
+    "g": 1083
+  },
+  "178": {
+    "n": "Gobelin",
+    "nn": "GOBELIN",
+    "l": 10,
+    "g": 1076
+  },
+  "179": {
+    "n": "Wabbit Squelette",
+    "nn": "WABBIT SQUELETTE",
+    "l": 28,
+    "g": 1057
+  },
+  "180": {
+    "n": "Wa Wabbit",
+    "nn": "WA WABBIT",
+    "l": 160,
+    "g": 1109
+  },
+  "181": {
+    "n": "Wobot",
+    "nn": "WOBOT",
+    "l": 45,
+    "g": 1058
+  },
+  "182": {
+    "n": "Wabbit Gm",
+    "nn": "WABBIT GM",
+    "l": 60,
+    "g": 1059
+  },
+  "194": {
+    "n": "Scarafeuille Rouge",
+    "nn": "SCARAFEUILLE ROUGE",
+    "l": 28,
+    "g": 1136
+  },
+  "198": {
+    "n": "Scarafeuille Bleu",
+    "nn": "SCARAFEUILLE BLEU",
+    "l": 28,
+    "g": 1135
+  },
+  "200": {
+    "n": "Dragodinde Rousse Sauvage",
+    "nn": "DRAGODINDE ROUSSE SAUVAGE",
+    "l": 35,
+    "g": 1108
+  },
+  "207": {
+    "n": "Citwouille",
+    "nn": "CITWOUILLE",
+    "l": 5,
+    "g": 1079
+  },
+  "208": {
+    "n": "Tikokoko",
+    "nn": "TIKOKOKO",
+    "l": 10,
+    "g": 1118
+  },
+  "209": {
+    "n": "Kokoko",
+    "nn": "KOKOKO",
+    "l": 40,
+    "g": 1116
+  },
+  "211": {
+    "n": "Kanniboul Archer",
+    "nn": "KANNIBOUL ARCHER",
+    "l": 43,
+    "g": 1115
+  },
+  "212": {
+    "n": "Kanniboul Thierry",
+    "nn": "KANNIBOUL THIERRY",
+    "l": 43,
+    "g": 1113
+  },
+  "213": {
+    "n": "Kanniboul Jav",
+    "nn": "KANNIBOUL JAV",
+    "l": 43,
+    "g": 1114
+  },
+  "214": {
+    "n": "Kanniboul Sarbak",
+    "nn": "KANNIBOUL SARBAK",
+    "l": 43,
+    "g": 1112
+  },
+  "215": {
+    "n": "Trukikol",
+    "nn": "TRUKIKOL",
+    "l": 10,
+    "g": 1121
+  },
+  "216": {
+    "n": "Gloutovore",
+    "nn": "GLOUTOVORE",
+    "l": 80,
+    "g": 1122
+  },
+  "217": {
+    "n": "Fourbasse",
+    "nn": "FOURBASSE",
+    "l": 20,
+    "g": 1119
+  },
+  "218": {
+    "n": "NodKoko",
+    "nn": "NODKOKO",
+    "l": 10,
+    "g": 1120
+  },
+  "220": {
+    "n": "Tortue Rouge",
+    "nn": "TORTUE ROUGE",
+    "l": 18,
+    "g": 1125
+  },
+  "221": {
+    "n": "Tortue Bleue",
+    "nn": "TORTUE BLEUE",
+    "l": 17,
+    "g": 1126
+  },
+  "222": {
+    "n": "Tortue Verte",
+    "nn": "TORTUE VERTE",
+    "l": 20,
+    "g": 1127
+  },
+  "223": {
+    "n": "Tortue Jaune",
+    "nn": "TORTUE JAUNE",
+    "l": 16,
+    "g": 1128
+  },
+  "225": {
+    "n": "Darkli Moon",
+    "nn": "DARKLI MOON",
+    "l": 200,
+    "g": 1130
+  },
+  "226": {
+    "n": "Moon",
+    "nn": "MOON",
+    "l": 200,
+    "g": 1129
+  },
+  "228": {
+    "n": "Boomba",
+    "nn": "BOOMBA",
+    "l": 30,
+    "g": 1133
+  },
+  "229": {
+    "n": "Nakunbra",
+    "nn": "NAKUNBRA",
+    "l": 51,
+    "g": 1132
+  },
+  "230": {
+    "n": "Le Chouque",
+    "nn": "LE CHOUQUE",
+    "l": 70,
+    "g": 1124
+  },
+  "231": {
+    "n": "Canon Dorf",
+    "nn": "CANON DORF",
+    "l": 51,
+    "g": 1123
+  },
+  "232": {
+    "n": "Meulou",
+    "nn": "MEULOU",
+    "l": 158,
+    "g": 1134
+  },
+  "233": {
+    "n": "Trooll",
+    "nn": "TROOLL",
+    "l": 105,
+    "g": 1131
+  },
+  "235": {
+    "n": "Kwak de Terre",
+    "nn": "KWAK DE TERRE",
+    "l": 18,
+    "g": 1149
+  },
+  "236": {
+    "n": "Piou Violet",
+    "nn": "PIOU VIOLET",
+    "l": 1,
+    "g": 9206
+  },
+  "237": {
+    "n": "Sac Animé",
+    "nn": "SAC ANIME",
+    "l": 1,
+    "g": 1144
+  },
+  "238": {
+    "n": "Pelle animée",
+    "nn": "PELLE ANIMEE",
+    "l": 1,
+    "g": 1143
+  },
+  "239": {
+    "n": "Dragonnet Rouge",
+    "nn": "DRAGONNET ROUGE",
+    "l": 1,
+    "g": 1165
+  },
+  "240": {
+    "n": "Scarafeuille Vert",
+    "nn": "SCARAFEUILLE VERT",
+    "l": 28,
+    "g": 1137
+  },
+  "241": {
+    "n": "Scarafeuille Blanc",
+    "nn": "SCARAFEUILLE BLANC",
+    "l": 28,
+    "g": 1138
+  },
+  "242": {
+    "n": "Flammèche Feu",
+    "nn": "FLAMMECHE FEU",
+    "l": 1,
+    "g": 1145
+  },
+  "243": {
+    "n": "Flammèche Eau",
+    "nn": "FLAMMECHE EAU",
+    "l": 1,
+    "g": 1146
+  },
+  "244": {
+    "n": "Flammèche Terre",
+    "nn": "FLAMMECHE TERRE",
+    "l": 1,
+    "g": 1147
+  },
+  "245": {
+    "n": "Flammèche Air",
+    "nn": "FLAMMECHE AIR",
+    "l": 1,
+    "g": 1148
+  },
+  "246": {
+    "n": "Arakne",
+    "nn": "ARAKNE",
+    "l": 1,
+    "g": 1564
+  },
+  "248": {
+    "n": "Brigandine",
+    "nn": "BRIGANDINE",
+    "l": 40,
+    "g": 1150
+  },
+  "249": {
+    "n": "Oni",
+    "nn": "ONI",
+    "l": 75,
+    "g": 1153
+  },
+  "250": {
+    "n": "Aiguille",
+    "nn": "AIGUILLE",
+    "l": 1,
+    "g": 1154
+  },
+  "251": {
+    "n": "Crocoburio",
+    "nn": "CROCOBURIO",
+    "l": 200,
+    "g": 8003
+  },
+  "252": {
+    "n": "Coffre au trésor",
+    "nn": "COFFRE AU TRESOR",
+    "l": 1,
+    "g": 1083
+  },
+  "253": {
+    "n": "Abraknyde Sombre",
+    "nn": "ABRAKNYDE SOMBRE",
+    "l": 72,
+    "g": 1158
+  },
+  "254": {
+    "n": "Abraknyde Vénérable",
+    "nn": "ABRAKNYDE VENERABLE",
+    "l": 41,
+    "g": 1001
+  },
+  "255": {
+    "n": "Arakne Agressive",
+    "nn": "ARAKNE AGRESSIVE",
+    "l": 4,
+    "g": 1564
+  },
+  "256": {
+    "n": "Tronknyde",
+    "nn": "TRONKNYDE",
+    "l": 25,
+    "g": 1160
+  },
+  "257": {
+    "n": "Chêne Mou",
+    "nn": "CHENE MOU",
+    "l": 800,
+    "g": 1157
+  },
+  "258": {
+    "n": "Branche Invocatrice",
+    "nn": "BRANCHE INVOCATRICE",
+    "l": 100,
+    "g": 1164
+  },
+  "259": {
+    "n": "Arakne Majeure",
+    "nn": "ARAKNE MAJEURE",
+    "l": 35,
+    "g": 1161
+  },
+  "260": {
+    "n": "Branche Soignante",
+    "nn": "BRANCHE SOIGNANTE",
+    "l": 100,
+    "g": 1163
+  },
+  "261": {
+    "n": "Crocodaille",
+    "nn": "CROCODAILLE",
+    "l": 32,
+    "g": 1159
+  },
+  "262": {
+    "n": "Chaferfu",
+    "nn": "CHAFERFU",
+    "l": 1,
+    "g": 1014
+  },
+  "263": {
+    "n": "Chef Crocodaille",
+    "nn": "CHEF CROCODAILLE",
+    "l": 61,
+    "g": 1162
+  },
+  "264": {
+    "n": "Cadran de Xélor",
+    "nn": "CADRAN DE XELOR",
+    "l": 1,
+    "g": 1170
+  },
+  "265": {
+    "n": "Bwak de feu",
+    "nn": "BWAK DE FEU",
+    "l": 16,
+    "g": 1166
+  },
+  "266": {
+    "n": "Bwak de terre",
+    "nn": "BWAK DE TERRE",
+    "l": 16,
+    "g": 1168
+  },
+  "267": {
+    "n": "Bwak d'air",
+    "nn": "BWAK D'AIR",
+    "l": 16,
+    "g": 1169
+  },
+  "268": {
+    "n": "Bwak d'eau",
+    "nn": "BWAK D'EAU",
+    "l": 16,
+    "g": 1167
+  },
+  "269": {
+    "n": "Kwakere de Flamme",
+    "nn": "KWAKERE DE FLAMME",
+    "l": 40,
+    "g": 1042
+  },
+  "270": {
+    "n": "Kwakere de Terre",
+    "nn": "KWAKERE DE TERRE",
+    "l": 40,
+    "g": 1149
+  },
+  "271": {
+    "n": "Kwakere de Glace",
+    "nn": "KWAKERE DE GLACE",
+    "l": 40,
+    "g": 1043
+  },
+  "272": {
+    "n": "Kwakere de Vent",
+    "nn": "KWAKERE DE VENT",
+    "l": 40,
+    "g": 1041
+  },
+  "273": {
+    "n": "Blop Coco",
+    "nn": "BLOP COCO",
+    "l": 30,
+    "g": 1174
+  },
+  "274": {
+    "n": "Blop Indigo",
+    "nn": "BLOP INDIGO",
+    "l": 30,
+    "g": 1171
+  },
+  "275": {
+    "n": "Blop Griotte",
+    "nn": "BLOP GRIOTTE",
+    "l": 30,
+    "g": 1172
+  },
+  "276": {
+    "n": "Blop Reinette",
+    "nn": "BLOP REINETTE",
+    "l": 30,
+    "g": 1173
+  },
+  "277": {
+    "n": "Biblop Indigo",
+    "nn": "BIBLOP INDIGO",
+    "l": 14,
+    "g": 1175
+  },
+  "278": {
+    "n": "Biblop Coco",
+    "nn": "BIBLOP COCO",
+    "l": 14,
+    "g": 1178
+  },
+  "279": {
+    "n": "Biblop Griotte",
+    "nn": "BIBLOP GRIOTTE",
+    "l": 14,
+    "g": 1176
+  },
+  "280": {
+    "n": "Biblop Reinette",
+    "nn": "BIBLOP REINETTE",
+    "l": 14,
+    "g": 1177
+  },
+  "281": {
+    "n": "Corbac",
+    "nn": "CORBAC",
+    "l": 14,
+    "g": 1179
+  },
+  "282": {
+    "n": "Arbre",
+    "nn": "ARBRE",
+    "l": 1,
+    "g": 1183
+  },
+  "283": {
+    "n": "Coeur du village Brigandin",
+    "nn": "COEUR DU VILLAGE BRIGANDIN",
+    "l": 1,
+    "g": 1200
+  },
+  "284": {
+    "n": "Coeur du village Brigandin",
+    "nn": "COEUR DU VILLAGE BRIGANDIN",
+    "l": 1,
+    "g": 1200
+  },
+  "285": {
+    "n": "Coffre Animé",
+    "nn": "COFFRE ANIME",
+    "l": 1,
+    "g": 1083
+  },
+  "286": {
+    "n": "Tarche",
+    "nn": "TARCHE",
+    "l": 10,
+    "g": 1191
+  },
+  "287": {
+    "n": "Kanigrou",
+    "nn": "KANIGROU",
+    "l": 60,
+    "g": 1039
+  },
+  "288": {
+    "n": "Serpentin",
+    "nn": "SERPENTIN",
+    "l": 6,
+    "g": 1013
+  },
+  "289": {
+    "n": "Maître Corbac",
+    "nn": "MAITRE CORBAC",
+    "l": 120,
+    "g": 1186
+  },
+  "290": {
+    "n": "Chafer Lancier",
+    "nn": "CHAFER LANCIER",
+    "l": 40,
+    "g": 1189
+  },
+  "291": {
+    "n": "Chafer Archer",
+    "nn": "CHAFER ARCHER",
+    "l": 40,
+    "g": 1190
+  },
+  "292": {
+    "n": "Chafer d'élite",
+    "nn": "CHAFER D'ELITE",
+    "l": 40,
+    "g": 1048
+  },
+  "293": {
+    "n": "Craqueleur des plaines",
+    "nn": "CRAQUELEUR DES PLAINES",
+    "l": 39,
+    "g": 1049
+  },
+  "294": {
+    "n": "Souris verte",
+    "nn": "SOURIS VERTE",
+    "l": 1,
+    "g": 1086
+  },
+  "295": {
+    "n": "Méga Craqueleur",
+    "nn": "MEGA CRAQUELEUR",
+    "l": 100,
+    "g": 1152
+  },
+  "296": {
+    "n": "Milicien",
+    "nn": "MILICIEN",
+    "l": 20,
+    "g": 1192
+  },
+  "297": {
+    "n": "Sanglier Des Plaines",
+    "nn": "SANGLIER DES PLAINES",
+    "l": 40,
+    "g": 1070
+  },
+  "298": {
+    "n": "Scorbute",
+    "nn": "SCORBUTE",
+    "l": 30,
+    "g": 1198
+  },
+  "299": {
+    "n": "Croc Gland",
+    "nn": "CROC GLAND",
+    "l": 15,
+    "g": 1201
+  },
+  "300": {
+    "n": "Kolérat",
+    "nn": "KOLERAT",
+    "l": 5,
+    "g": 1085
+  },
+  "301": {
+    "n": "Ouginak",
+    "nn": "OUGINAK",
+    "l": 45,
+    "g": 1196
+  },
+  "303": {
+    "n": "Let Emoliug Le Ténébreux",
+    "nn": "LET EMOLIUG LE TENEBREUX",
+    "l": 35,
+    "g": 1105
+  },
+  "304": {
+    "n": "Let Emoliug Le Blanc",
+    "nn": "LET EMOLIUG LE BLANC",
+    "l": 35,
+    "g": 1105
+  },
+  "305": {
+    "n": "Susej Le Pur",
+    "nn": "SUSEJ LE PUR",
+    "l": 35,
+    "g": 1104
+  },
+  "306": {
+    "n": "Susej L'Impur",
+    "nn": "SUSEJ L'IMPUR",
+    "l": 35,
+    "g": 1104
+  },
+  "308": {
+    "n": "Osurc L'Infâme",
+    "nn": "OSURC L'INFAME",
+    "l": 35,
+    "g": 1099
+  },
+  "310": {
+    "n": "Osurc Le Bienveillant",
+    "nn": "OSURC LE BIENVEILLANT",
+    "l": 35,
+    "g": 1099
+  },
+  "314": {
+    "n": "Torche",
+    "nn": "TORCHE",
+    "l": 20,
+    "g": 1191
+  },
+  "337": {
+    "n": "Nipul Le Sauveur",
+    "nn": "NIPUL LE SAUVEUR",
+    "l": 35,
+    "g": 1100
+  },
+  "343": {
+    "n": "Cavalier Porkass",
+    "nn": "CAVALIER PORKASS",
+    "l": 30,
+    "g": 1038
+  },
+  "344": {
+    "n": "Berger Porkass",
+    "nn": "BERGER PORKASS",
+    "l": 13,
+    "g": 1040
+  },
+  "345": {
+    "n": "Kirevam Le Déterminé",
+    "nn": "KIREVAM LE DETERMINE",
+    "l": 35,
+    "g": 1102
+  },
+  "346": {
+    "n": "Kirevam Le Terrifiant",
+    "nn": "KIREVAM LE TERRIFIANT",
+    "l": 35,
+    "g": 1102
+  },
+  "347": {
+    "n": "Amlub Le Protecteur",
+    "nn": "AMLUB LE PROTECTEUR",
+    "l": 35,
+    "g": 1097
+  },
+  "348": {
+    "n": "Amlub Le Fossoyeur",
+    "nn": "AMLUB LE FOSSOYEUR",
+    "l": 35,
+    "g": 1097
+  },
+  "349": {
+    "n": "Nebgib Le Stabilisateur",
+    "nn": "NEBGIB LE STABILISATEUR",
+    "l": 35,
+    "g": 1101
+  },
+  "350": {
+    "n": "Nebgib Le Tourmenteur",
+    "nn": "NEBGIB LE TOURMENTEUR",
+    "l": 35,
+    "g": 1101
+  },
+  "351": {
+    "n": "Nipul Le Destructeur",
+    "nn": "NIPUL LE DESTRUCTEUR",
+    "l": 35,
+    "g": 1100
+  },
+  "353": {
+    "n": "Aboub Le Social",
+    "nn": "ABOUB LE SOCIAL",
+    "l": 35,
+    "g": 1098
+  },
+  "355": {
+    "n": "Aboub L'Antisocial",
+    "nn": "ABOUB L'ANTISOCIAL",
+    "l": 35,
+    "g": 1098
+  },
+  "356": {
+    "n": "Gink Le Fourbe",
+    "nn": "GINK LE FOURBE",
+    "l": 35,
+    "g": 1106
+  },
+  "357": {
+    "n": "Gink Le Sincère",
+    "nn": "GINK LE SINCERE",
+    "l": 35,
+    "g": 1106
+  },
+  "359": {
+    "n": "Codem L'Altruiste",
+    "nn": "CODEM L'ALTRUISTE",
+    "l": 35,
+    "g": 1103
+  },
+  "360": {
+    "n": "Codem La Bannie",
+    "nn": "CODEM LA BANNIE",
+    "l": 35,
+    "g": 1103
+  },
+  "363": {
+    "n": "Coeur Du Territoire Des Dopeuls",
+    "nn": "COEUR DU TERRITOIRE DES DOPEULS",
+    "l": 1,
+    "g": 1200
+  },
+  "364": {
+    "n": "Coeur Du Territoire Des Dopeuls",
+    "nn": "COEUR DU TERRITOIRE DES DOPEULS",
+    "l": 1,
+    "g": 1200
+  },
+  "365": {
+    "n": "Corbac égaré",
+    "nn": "CORBAC EGARE",
+    "l": 26,
+    "g": 1179
+  },
+  "366": {
+    "n": "Sanglier agressif",
+    "nn": "SANGLIER AGRESSIF",
+    "l": 48,
+    "g": 1070
+  },
+  "368": {
+    "n": "Bouftou Chassé",
+    "nn": "BOUFTOU CHASSE",
+    "l": 3,
+    "g": 1566
+  },
+  "369": {
+    "n": "Mak Gahan",
+    "nn": "MAK GAHAN",
+    "l": 12,
+    "g": 1014
+  },
+  "370": {
+    "n": "Mak Gahan équipé",
+    "nn": "MAK GAHAN EQUIPE",
+    "l": 12,
+    "g": 1188
+  },
+  "371": {
+    "n": "Maître Bolet",
+    "nn": "MAITRE BOLET",
+    "l": 38,
+    "g": 1209
+  },
+  "372": {
+    "n": "Guerrier",
+    "nn": "GUERRIER",
+    "l": 20,
+    "g": 1205
+  },
+  "373": {
+    "n": "Ecureuil Terrifiant",
+    "nn": "ECUREUIL TERRIFIANT",
+    "l": 160,
+    "g": 1046
+  },
+  "374": {
+    "n": "Eratz le Revendicateur",
+    "nn": "ERATZ LE REVENDICATEUR",
+    "l": 100,
+    "g": 1202
+  },
+  "375": {
+    "n": "Nomekop Le Crapoteur",
+    "nn": "NOMEKOP LE CRAPOTEUR",
+    "l": 100,
+    "g": 1204
+  },
+  "376": {
+    "n": "Tavernier Tabasse",
+    "nn": "TAVERNIER TABASSE",
+    "l": 5,
+    "g": 1207
+  },
+  "377": {
+    "n": "Edasse Le Trouble Fête",
+    "nn": "EDASSE LE TROUBLE FETE",
+    "l": 100,
+    "g": 1203
+  },
+  "378": {
+    "n": "Fantôme Ardent",
+    "nn": "FANTOME ARDENT",
+    "l": 57,
+    "g": 1193
+  },
+  "379": {
+    "n": "Fantôme Brave",
+    "nn": "FANTOME BRAVE",
+    "l": 57,
+    "g": 1195
+  },
+  "380": {
+    "n": "Fantôme Arepo",
+    "nn": "FANTOME AREPO",
+    "l": 57,
+    "g": 1194
+  },
+  "382": {
+    "n": "Tofu Royal",
+    "nn": "TOFU ROYAL",
+    "l": 100,
+    "g": 1151
+  },
+  "384": {
+    "n": "Aboub",
+    "nn": "ABOUB",
+    "l": 35,
+    "g": 1098
+  },
+  "385": {
+    "n": "Amlub",
+    "nn": "AMLUB",
+    "l": 35,
+    "g": 1097
+  },
+  "386": {
+    "n": "Codem",
+    "nn": "CODEM",
+    "l": 35,
+    "g": 1103
+  },
+  "387": {
+    "n": "Gink",
+    "nn": "GINK",
+    "l": 35,
+    "g": 1106
+  },
+  "388": {
+    "n": "Kirevam",
+    "nn": "KIREVAM",
+    "l": 35,
+    "g": 1102
+  },
+  "389": {
+    "n": "Let Emoliug",
+    "nn": "LET EMOLIUG",
+    "l": 35,
+    "g": 1105
+  },
+  "390": {
+    "n": "Nebgib",
+    "nn": "NEBGIB",
+    "l": 35,
+    "g": 1101
+  },
+  "391": {
+    "n": "Nipul",
+    "nn": "NIPUL",
+    "l": 35,
+    "g": 1100
+  },
+  "392": {
+    "n": "Osurc",
+    "nn": "OSURC",
+    "l": 35,
+    "g": 1099
+  },
+  "393": {
+    "n": "Susej",
+    "nn": "SUSEJ",
+    "l": 35,
+    "g": 1104
+  },
+  "394": {
+    "n": "Chevalier",
+    "nn": "CHEVALIER",
+    "l": 50,
+    "g": 9019
+  },
+  "395": {
+    "n": "Ecureuil Chenapan",
+    "nn": "ECUREUIL CHENAPAN",
+    "l": 1,
+    "g": 1046
+  },
+  "396": {
+    "n": "Chafer Fantassin",
+    "nn": "CHAFER FANTASSIN",
+    "l": 31,
+    "g": 1188
+  },
+  "397": {
+    "n": "Croc Gland enragé",
+    "nn": "CROC GLAND ENRAGE",
+    "l": 23,
+    "g": 1201
+  },
+  "398": {
+    "n": "Dike Tarak",
+    "nn": "DIKE TARAK",
+    "l": 5,
+    "g": 9041
+  },
+  "399": {
+    "n": "Krachan Porterr",
+    "nn": "KRACHAN PORTERR",
+    "l": 16,
+    "g": 1012
+  },
+  "400": {
+    "n": "Jiaye Djaul",
+    "nn": "JIAYE DJAUL",
+    "l": 5,
+    "g": 1207
+  },
+  "401": {
+    "n": "Chevalier Norgard",
+    "nn": "CHEVALIER NORGARD",
+    "l": 100,
+    "g": 1211
+  },
+  "402": {
+    "n": "Azra Lazarus",
+    "nn": "AZRA LAZARUS",
+    "l": 10,
+    "g": 9033
+  },
+  "403": {
+    "n": "Colonel Lyeno",
+    "nn": "COLONEL LYENO",
+    "l": 23,
+    "g": 1001
+  },
+  "404": {
+    "n": "Momie Nova",
+    "nn": "MOMIE NOVA",
+    "l": 125,
+    "g": 1199
+  },
+  "405": {
+    "n": "Puja Mustam",
+    "nn": "PUJA MUSTAM",
+    "l": 5,
+    "g": 9041
+  },
+  "406": {
+    "n": "William Lenglad",
+    "nn": "WILLIAM LENGLAD",
+    "l": 50,
+    "g": 90
+  },
+  "407": {
+    "n": "Oto Mustam",
+    "nn": "OTO MUSTAM",
+    "l": 200,
+    "g": 1206
+  },
+  "408": {
+    "n": "Coquille Soignante",
+    "nn": "COQUILLE SOIGNANTE",
+    "l": 2,
+    "g": 1096
+  },
+  "410": {
+    "n": "Vil Smisse",
+    "nn": "VIL SMISSE",
+    "l": 100,
+    "g": 8000
+  },
+  "411": {
+    "n": "Larve Dorée",
+    "nn": "LARVE DOREE",
+    "l": 15,
+    "g": 1218
+  },
+  "412": {
+    "n": "Larve Saphir",
+    "nn": "LARVE SAPHIR",
+    "l": 15,
+    "g": 1580
+  },
+  "413": {
+    "n": "Larve Rubis",
+    "nn": "LARVE RUBIS",
+    "l": 35,
+    "g": 1579
+  },
+  "414": {
+    "n": "Larve Emeraude",
+    "nn": "LARVE EMERAUDE",
+    "l": 15,
+    "g": 1578
+  },
+  "415": {
+    "n": "Chafer Archer de Brâkmar",
+    "nn": "CHAFER ARCHER DE BRAKMAR",
+    "l": 50,
+    "g": 1190
+  },
+  "416": {
+    "n": "Enora",
+    "nn": "ENORA",
+    "l": 20,
+    "g": 61
+  },
+  "417": {
+    "n": "Tomoya",
+    "nn": "TOMOYA",
+    "l": 20,
+    "g": 10
+  },
+  "418": {
+    "n": "Roturo",
+    "nn": "ROTURO",
+    "l": 20,
+    "g": 20
+  },
+  "419": {
+    "n": "WonnoLirsin",
+    "nn": "WONNOLIRSIN",
+    "l": 20,
+    "g": 20
+  },
+  "420": {
+    "n": "SicraKira",
+    "nn": "SICRAKIRA",
+    "l": 20,
+    "g": 110
+  },
+  "421": {
+    "n": "Momu",
+    "nn": "MOMU",
+    "l": 20,
+    "g": 100
+  },
+  "422": {
+    "n": "Dopeul Dark Vlad",
+    "nn": "DOPEUL DARK VLAD",
+    "l": 120,
+    "g": 9210
+  },
+  "423": {
+    "n": "Kralamoure Géant",
+    "nn": "KRALAMOURE GEANT",
+    "l": 1600,
+    "g": 1635
+  },
+  "424": {
+    "n": "Tentacule Primaire",
+    "nn": "TENTACULE PRIMAIRE",
+    "l": 121,
+    "g": 1632
+  },
+  "425": {
+    "n": "Tentacule Kralamoure",
+    "nn": "TENTACULE KRALAMOURE",
+    "l": 10,
+    "g": 1217
+  },
+  "426": {
+    "n": "Petit Jan",
+    "nn": "PETIT JAN",
+    "l": 40,
+    "g": 10
+  },
+  "427": {
+    "n": "Lady Meriane",
+    "nn": "LADY MERIANE",
+    "l": 30,
+    "g": 81
+  },
+  "428": {
+    "n": "Encre Kralamoure",
+    "nn": "ENCRE KRALAMOURE",
+    "l": 5,
+    "g": 1214
+  },
+  "429": {
+    "n": "Gelée Citron",
+    "nn": "GELEE CITRON",
+    "l": 41,
+    "g": 1221
+  },
+  "430": {
+    "n": "Gelée Royale Citron",
+    "nn": "GELEE ROYALE CITRON",
+    "l": 200,
+    "g": 1222
+  },
+  "432": {
+    "n": "Arakne faible",
+    "nn": "ARAKNE FAIBLE",
+    "l": 1,
+    "g": 1002
+  },
+  "433": {
+    "n": "Epée Dansante",
+    "nn": "EPEE DANSANTE",
+    "l": 1,
+    "g": 1229
+  },
+  "434": {
+    "n": "Epée Volante",
+    "nn": "EPEE VOLANTE",
+    "l": 1,
+    "g": 1230
+  },
+  "435": {
+    "n": "Petit Boufton Blanc",
+    "nn": "PETIT BOUFTON BLANC",
+    "l": 1,
+    "g": 1092
+  },
+  "436": {
+    "n": "Lapin",
+    "nn": "LAPIN",
+    "l": 1,
+    "g": 1053
+  },
+  "437": {
+    "n": "Mili-Milimulou",
+    "nn": "MILI-MILIMULOU",
+    "l": 6,
+    "g": 1107
+  },
+  "438": {
+    "n": "Brigandin",
+    "nn": "BRIGANDIN",
+    "l": 40,
+    "g": 1155
+  },
+  "439": {
+    "n": "Robot Masse d'arme",
+    "nn": "ROBOT MASSE D'ARME",
+    "l": 20,
+    "g": 1223
+  },
+  "440": {
+    "n": "Robot Pousse-pousse",
+    "nn": "ROBOT POUSSE-POUSSE",
+    "l": 30,
+    "g": 1220
+  },
+  "441": {
+    "n": "Bricoleur",
+    "nn": "BRICOLEUR",
+    "l": 20,
+    "g": 1155
+  },
+  "442": {
+    "n": "Rat d'Egoutant",
+    "nn": "RAT D'EGOUTANT",
+    "l": 42,
+    "g": 1226
+  },
+  "443": {
+    "n": "Bricoleur",
+    "nn": "BRICOLEUR",
+    "l": 20,
+    "g": 1155
+  },
+  "444": {
+    "n": "Robot Masse d'arme",
+    "nn": "ROBOT MASSE D'ARME",
+    "l": 20,
+    "g": 1223
+  },
+  "445": {
+    "n": "Robot Pousse-pousse",
+    "nn": "ROBOT POUSSE-POUSSE",
+    "l": 30,
+    "g": 1220
+  },
+  "446": {
+    "n": "Aermyne 'Braco' Scalptaras",
+    "nn": "AERMYNE 'BRACO' SCALPTARAS",
+    "l": 50,
+    "g": 1228
+  },
+  "447": {
+    "n": "Chaman d'Egoutant",
+    "nn": "CHAMAN D'EGOUTANT",
+    "l": 40,
+    "g": 1227
+  },
+  "448": {
+    "n": "Bondu",
+    "nn": "BONDU",
+    "l": 1,
+    "g": 80
+  },
+  "449": {
+    "n": "Rat d'Hyoactif",
+    "nn": "RAT D'HYOACTIF",
+    "l": 60,
+    "g": 1226
+  },
+  "450": {
+    "n": "Gardienne des Egouts",
+    "nn": "GARDIENNE DES EGOUTS",
+    "l": 145,
+    "g": 1232
+  },
+  "453": {
+    "n": "L'homme Ours",
+    "nn": "L'HOMME OURS",
+    "l": 25,
+    "g": 9003
+  },
+  "454": {
+    "n": "Le Ours",
+    "nn": "LE OURS",
+    "l": 15,
+    "g": 1239
+  },
+  "455": {
+    "n": "Dopeul Sacrieur",
+    "nn": "DOPEUL SACRIEUR",
+    "l": 20,
+    "g": 1240
+  },
+  "456": {
+    "n": "Larve Dorée",
+    "nn": "LARVE DOREE",
+    "l": 20,
+    "g": 1577
+  },
+  "457": {
+    "n": "Shin Larve",
+    "nn": "SHIN LARVE",
+    "l": 60,
+    "g": 1231
+  },
+  "458": {
+    "n": "Radlu Minite le Mineur Sombre",
+    "nn": "RADLU MINITE LE MINEUR SOMBRE",
+    "l": 3,
+    "g": 1073
+  },
+  "459": {
+    "n": "Padgref Demoël",
+    "nn": "PADGREF DEMOEL",
+    "l": 126,
+    "g": 1246
+  },
+  "460": {
+    "n": "Frakacia Leukocytine",
+    "nn": "FRAKACIA LEUKOCYTINE",
+    "l": 20,
+    "g": 1247
+  },
+  "461": {
+    "n": "Nervoes Brakdoun",
+    "nn": "NERVOES BRAKDOUN",
+    "l": 50,
+    "g": 50
+  },
+  "462": {
+    "n": "Ogivol Scalarcin",
+    "nn": "OGIVOL SCALARCIN",
+    "l": 50,
+    "g": 1245
+  },
+  "463": {
+    "n": "Fouduglen L'écureuil",
+    "nn": "FOUDUGLEN L'ECUREUIL",
+    "l": 5,
+    "g": 1249
+  },
+  "464": {
+    "n": "Brumen Tinctorias",
+    "nn": "BRUMEN TINCTORIAS",
+    "l": 58,
+    "g": 70
+  },
+  "465": {
+    "n": "Rat d'Egoutant malade",
+    "nn": "RAT D'EGOUTANT MALADE",
+    "l": 30,
+    "g": 1226
+  },
+  "466": {
+    "n": "Bandit Manchot",
+    "nn": "BANDIT MANCHOT",
+    "l": 3,
+    "g": 1095
+  },
+  "467": {
+    "n": "Rose Obscure",
+    "nn": "ROSE OBSCURE",
+    "l": 19,
+    "g": 1044
+  },
+  "468": {
+    "n": "Louse Degraine",
+    "nn": "LOUSE DEGRAINE",
+    "l": 5,
+    "g": 101
+  },
+  "469": {
+    "n": "Ecureuil mesquin",
+    "nn": "ECUREUIL MESQUIN",
+    "l": 5,
+    "g": 1046
+  },
+  "470": {
+    "n": "Fuu Yie",
+    "nn": "FUU YIE",
+    "l": 20,
+    "g": 41
+  },
+  "471": {
+    "n": "Allisteria",
+    "nn": "ALLISTERIA",
+    "l": 10,
+    "g": 11
+  },
+  "472": {
+    "n": "Arakne perverse",
+    "nn": "ARAKNE PERVERSE",
+    "l": 2,
+    "g": 1002
+  },
+  "473": {
+    "n": "Tofu Malade",
+    "nn": "TOFU MALADE",
+    "l": 2,
+    "g": 1019
+  },
+  "474": {
+    "n": "Arakne Malade",
+    "nn": "ARAKNE MALADE",
+    "l": 1,
+    "g": 1564
+  },
+  "475": {
+    "n": "Milirat d'Egoutant malade",
+    "nn": "MILIRAT D'EGOUTANT MALADE",
+    "l": 10,
+    "g": 1226
+  },
+  "476": {
+    "n": "???",
+    "nn": "???",
+    "l": 15,
+    "g": 8008
+  },
+  "477": {
+    "n": "Diver Birel",
+    "nn": "DIVER BIREL",
+    "l": 20,
+    "g": 30
+  },
+  "478": {
+    "n": "Bworker",
+    "nn": "BWORKER",
+    "l": 400,
+    "g": 1242
+  },
+  "479": {
+    "n": "Mama Bwork",
+    "nn": "MAMA BWORK",
+    "l": 90,
+    "g": 1241
+  },
+  "480": {
+    "n": "Sousouris",
+    "nn": "SOUSOURIS",
+    "l": 1,
+    "g": 1085
+  },
+  "481": {
+    "n": "Qil Bil",
+    "nn": "QIL BIL",
+    "l": 62,
+    "g": 1243
+  },
+  "482": {
+    "n": "Rose Artempeth",
+    "nn": "ROSE ARTEMPETH",
+    "l": 35,
+    "g": 1044
+  },
+  "483": {
+    "n": "Craqueboule",
+    "nn": "CRAQUEBOULE",
+    "l": 20,
+    "g": 1248
+  },
+  "484": {
+    "n": "Bwork Elémental de Feu",
+    "nn": "BWORK ELEMENTAL DE FEU",
+    "l": 125,
+    "g": 1244
+  },
+  "485": {
+    "n": "Bwork Elémental d'Eau",
+    "nn": "BWORK ELEMENTAL D'EAU",
+    "l": 125,
+    "g": 1244
+  },
+  "486": {
+    "n": "Bwork Elémental d'Air",
+    "nn": "BWORK ELEMENTAL D'AIR",
+    "l": 125,
+    "g": 1244
+  },
+  "487": {
+    "n": "Bwork Elémental de Terre",
+    "nn": "BWORK ELEMENTAL DE TERRE",
+    "l": 125,
+    "g": 1244
+  },
+  "488": {
+    "n": "Cybwork",
+    "nn": "CYBWORK",
+    "l": 165,
+    "g": 1243
+  },
+  "489": {
+    "n": "Piou Rouge",
+    "nn": "PIOU ROUGE",
+    "l": 1,
+    "g": 9204
+  },
+  "490": {
+    "n": "Piou Vert",
+    "nn": "PIOU VERT",
+    "l": 1,
+    "g": 9205
+  },
+  "491": {
+    "n": "Piou Bleu",
+    "nn": "PIOU BLEU",
+    "l": 1,
+    "g": 1212
+  },
+  "492": {
+    "n": "Piou Rose",
+    "nn": "PIOU ROSE",
+    "l": 2,
+    "g": 9203
+  },
+  "493": {
+    "n": "Piou Jaune",
+    "nn": "PIOU JAUNE",
+    "l": 1,
+    "g": 9202
+  },
+  "494": {
+    "n": "Poutch Ingball",
+    "nn": "POUTCH INGBALL",
+    "l": 1,
+    "g": 1219
+  },
+  "495": {
+    "n": "La Ouassingue",
+    "nn": "LA OUASSINGUE",
+    "l": 40,
+    "g": 1251
+  },
+  "496": {
+    "n": "Le Ouassingue",
+    "nn": "LE OUASSINGUE",
+    "l": 40,
+    "g": 1252
+  },
+  "498": {
+    "n": "Gargrouille",
+    "nn": "GARGROUILLE",
+    "l": 20,
+    "g": 1253
+  },
+  "499": {
+    "n": "Minotoboule de Nowel",
+    "nn": "MINOTOBOULE DE NOWEL",
+    "l": 45,
+    "g": 1254
+  },
+  "500": {
+    "n": "Cadeau animé",
+    "nn": "CADEAU ANIME",
+    "l": 10,
+    "g": 1255
+  },
+  "501": {
+    "n": "Goriya",
+    "nn": "GORIYA",
+    "l": 20,
+    "g": 1208
+  },
+  "502": {
+    "n": "Timouss",
+    "nn": "TIMOUSS",
+    "l": 30,
+    "g": 1169
+  },
+  "503": {
+    "n": "Tofawu",
+    "nn": "TOFAWU",
+    "l": 15,
+    "g": 121
+  },
+  "504": {
+    "n": "Garde d'Akwadala",
+    "nn": "GARDE D'AKWADALA",
+    "l": 25,
+    "g": 120
+  },
+  "505": {
+    "n": "Dopeul Maléfique",
+    "nn": "DOPEUL MALEFIQUE",
+    "l": 25,
+    "g": 1100
+  },
+  "506": {
+    "n": "Disciple Ikwa",
+    "nn": "DISCIPLE IKWA",
+    "l": 25,
+    "g": 120
+  },
+  "507": {
+    "n": "Garde d'Akwadala",
+    "nn": "GARDE D'AKWADALA",
+    "l": 25,
+    "g": 120
+  },
+  "508": {
+    "n": "Garde d'Aerdala",
+    "nn": "GARDE D'AERDALA",
+    "l": 50,
+    "g": 120
+  },
+  "509": {
+    "n": "Garde d'Aerdala",
+    "nn": "GARDE D'AERDALA",
+    "l": 50,
+    "g": 120
+  },
+  "510": {
+    "n": "Garde de Terrdala",
+    "nn": "GARDE DE TERRDALA",
+    "l": 75,
+    "g": 120
+  },
+  "511": {
+    "n": "Garde de Terrdala",
+    "nn": "GARDE DE TERRDALA",
+    "l": 75,
+    "g": 120
+  },
+  "512": {
+    "n": "Garde de Feudala",
+    "nn": "GARDE DE FEUDALA",
+    "l": 100,
+    "g": 120
+  },
+  "513": {
+    "n": "Garde de Feudala",
+    "nn": "GARDE DE FEUDALA",
+    "l": 100,
+    "g": 120
+  },
+  "514": {
+    "n": "Maitre Pandawushu",
+    "nn": "MAITRE PANDAWUSHU",
+    "l": 200,
+    "g": 1264
+  },
+  "515": {
+    "n": "Bulbiflore",
+    "nn": "BULBIFLORE",
+    "l": 18,
+    "g": 1265
+  },
+  "516": {
+    "n": "Pandawasta",
+    "nn": "PANDAWASTA",
+    "l": 1,
+    "g": 1261
+  },
+  "517": {
+    "n": "Pandit",
+    "nn": "PANDIT",
+    "l": 39,
+    "g": 1260
+  },
+  "518": {
+    "n": "Bulbuisson",
+    "nn": "BULBUISSON",
+    "l": 34,
+    "g": 1266
+  },
+  "519": {
+    "n": "Bulbig",
+    "nn": "BULBIG",
+    "l": 75,
+    "g": 1273
+  },
+  "520": {
+    "n": "Araknawa",
+    "nn": "ARAKNAWA",
+    "l": 35,
+    "g": 1002
+  },
+  "521": {
+    "n": "Micromata",
+    "nn": "MICROMATA",
+    "l": 87,
+    "g": 1232
+  },
+  "522": {
+    "n": "Cooleuvre",
+    "nn": "COOLEUVRE",
+    "l": 59,
+    "g": 1013
+  },
+  "523": {
+    "n": "Kitsou Nakwa",
+    "nn": "KITSOU NAKWA",
+    "l": 21,
+    "g": 1271
+  },
+  "524": {
+    "n": "Bambouto",
+    "nn": "BAMBOUTO",
+    "l": 16,
+    "g": 1285
+  },
+  "525": {
+    "n": "Braconnier",
+    "nn": "BRACONNIER",
+    "l": 65,
+    "g": 1095
+  },
+  "527": {
+    "n": "Yokai Firefoux",
+    "nn": "YOKAI FIREFOUX",
+    "l": 130,
+    "g": 1276
+  },
+  "528": {
+    "n": "Soryo Firefoux",
+    "nn": "SORYO FIREFOUX",
+    "l": 107,
+    "g": 1275
+  },
+  "529": {
+    "n": "Maho Firefoux",
+    "nn": "MAHO FIREFOUX",
+    "l": 110,
+    "g": 1275
+  },
+  "530": {
+    "n": "Kitsou Nere",
+    "nn": "KITSOU NERE",
+    "l": 73,
+    "g": 1270
+  },
+  "531": {
+    "n": "Kitsou Nae",
+    "nn": "KITSOU NAE",
+    "l": 53,
+    "g": 1268
+  },
+  "532": {
+    "n": "Kitsou Nufeu",
+    "nn": "KITSOU NUFEU",
+    "l": 103,
+    "g": 1269
+  },
+  "534": {
+    "n": "Pandawa Ivre",
+    "nn": "PANDAWA IVRE",
+    "l": 40,
+    "g": 8010
+  },
+  "535": {
+    "n": "Léopardo",
+    "nn": "LEOPARDO",
+    "l": 50,
+    "g": 1278
+  },
+  "536": {
+    "n": "Gempa",
+    "nn": "GEMPA",
+    "l": 25,
+    "g": 1260
+  },
+  "537": {
+    "n": "Pandore",
+    "nn": "PANDORE",
+    "l": 200,
+    "g": 1295
+  },
+  "538": {
+    "n": "Coeur De Feudala",
+    "nn": "COEUR DE FEUDALA",
+    "l": 1,
+    "g": 1200
+  },
+  "539": {
+    "n": "Coeur De Terrdala",
+    "nn": "COEUR DE TERRDALA",
+    "l": 1,
+    "g": 1200
+  },
+  "540": {
+    "n": "Coeur d'Aerdala",
+    "nn": "COEUR D'AERDALA",
+    "l": 1,
+    "g": 1200
+  },
+  "541": {
+    "n": "Coeur D'Akwadala",
+    "nn": "COEUR D'AKWADALA",
+    "l": 1,
+    "g": 1200
+  },
+  "542": {
+    "n": "Coeur d'Aerdala",
+    "nn": "COEUR D'AERDALA",
+    "l": 1,
+    "g": 1200
+  },
+  "543": {
+    "n": "Coeur De Terrdala",
+    "nn": "COEUR DE TERRDALA",
+    "l": 1,
+    "g": 1200
+  },
+  "544": {
+    "n": "Coeur D'Akwadala",
+    "nn": "COEUR D'AKWADALA",
+    "l": 1,
+    "g": 1200
+  },
+  "545": {
+    "n": "Coeur De Feudala",
+    "nn": "COEUR DE FEUDALA",
+    "l": 1,
+    "g": 1200
+  },
+  "546": {
+    "n": "Bambouto Sacré",
+    "nn": "BAMBOUTO SACRE",
+    "l": 77,
+    "g": 1286
+  },
+  "547": {
+    "n": "Pandalette Ivre",
+    "nn": "PANDALETTE IVRE",
+    "l": 30,
+    "g": 8011
+  },
+  "548": {
+    "n": "Bulbambou",
+    "nn": "BULBAMBOU",
+    "l": 15,
+    "g": 1267
+  },
+  "549": {
+    "n": "Pandule",
+    "nn": "PANDULE",
+    "l": 50,
+    "g": 1274
+  },
+  "550": {
+    "n": "Rok Gnorok",
+    "nn": "ROK GNOROK",
+    "l": 24,
+    "g": 1248
+  },
+  "551": {
+    "n": "Garde",
+    "nn": "GARDE",
+    "l": 15,
+    "g": 120
+  },
+  "552": {
+    "n": "Musha L'Oni",
+    "nn": "MUSHA L'ONI",
+    "l": 80,
+    "g": 1153
+  },
+  "553": {
+    "n": "Garde",
+    "nn": "GARDE",
+    "l": 12,
+    "g": 121
+  },
+  "554": {
+    "n": "Marzwel le Gobelin",
+    "nn": "MARZWEL LE GOBELIN",
+    "l": 50,
+    "g": 1076
+  },
+  "555": {
+    "n": "Zatoïshwan",
+    "nn": "ZATOISHWAN",
+    "l": 150,
+    "g": 1264
+  },
+  "556": {
+    "n": "Cawotte",
+    "nn": "CAWOTTE",
+    "l": 1,
+    "g": 1277
+  },
+  "557": {
+    "n": "Disciple Pandawushu Air",
+    "nn": "DISCIPLE PANDAWUSHU AIR",
+    "l": 46,
+    "g": 120
+  },
+  "558": {
+    "n": "Disciple Pandawushu Eau",
+    "nn": "DISCIPLE PANDAWUSHU EAU",
+    "l": 25,
+    "g": 120
+  },
+  "559": {
+    "n": "Disciple Pandawushu Feu",
+    "nn": "DISCIPLE PANDAWUSHU FEU",
+    "l": 102,
+    "g": 120
+  },
+  "560": {
+    "n": "Disciple Pandawushu Terre",
+    "nn": "DISCIPLE PANDAWUSHU TERRE",
+    "l": 74,
+    "g": 120
+  },
+  "561": {
+    "n": "Disciple Pandawushu",
+    "nn": "DISCIPLE PANDAWUSHU",
+    "l": 50,
+    "g": 120
+  },
+  "562": {
+    "n": "Kitsou Nae",
+    "nn": "KITSOU NAE",
+    "l": 53,
+    "g": 1268
+  },
+  "563": {
+    "n": "Kitsou Nakwa",
+    "nn": "KITSOU NAKWA",
+    "l": 21,
+    "g": 1271
+  },
+  "564": {
+    "n": "Kitsou Nere",
+    "nn": "KITSOU NERE",
+    "l": 73,
+    "g": 1270
+  },
+  "565": {
+    "n": "Kitsou Nufeu",
+    "nn": "KITSOU NUFEU",
+    "l": 103,
+    "g": 1269
+  },
+  "566": {
+    "n": "Pandikaze",
+    "nn": "PANDIKAZE",
+    "l": 40,
+    "g": 1260
+  },
+  "567": {
+    "n": "Disciple Sankwa",
+    "nn": "DISCIPLE SANKWA",
+    "l": 50,
+    "g": 120
+  },
+  "568": {
+    "n": "Tanukouï San",
+    "nn": "TANUKOUI SAN",
+    "l": 120,
+    "g": 1283
+  },
+  "569": {
+    "n": "Tanuki Chan",
+    "nn": "TANUKI CHAN",
+    "l": 30,
+    "g": 1284
+  },
+  "570": {
+    "n": "Idemas",
+    "nn": "IDEMAS",
+    "l": 35,
+    "g": 1240
+  },
+  "571": {
+    "n": "Tanuki Chan",
+    "nn": "TANUKI CHAN",
+    "l": 30,
+    "g": 1284
+  },
+  "572": {
+    "n": "Tanuki Chan",
+    "nn": "TANUKI CHAN",
+    "l": 30,
+    "g": 1284
+  },
+  "574": {
+    "n": "Tanuki Chan",
+    "nn": "TANUKI CHAN",
+    "l": 30,
+    "g": 1284
+  },
+  "575": {
+    "n": "Idemas le Sanglant",
+    "nn": "IDEMAS LE SANGLANT",
+    "l": 35,
+    "g": 1240
+  },
+  "576": {
+    "n": "Idemas le Blanchisseur",
+    "nn": "IDEMAS LE BLANCHISSEUR",
+    "l": 35,
+    "g": 1240
+  },
+  "577": {
+    "n": "Tanuki Chan",
+    "nn": "TANUKI CHAN",
+    "l": 30,
+    "g": 1284
+  },
+  "578": {
+    "n": "Pandikaze aérien",
+    "nn": "PANDIKAZE AERIEN",
+    "l": 45,
+    "g": 1260
+  },
+  "579": {
+    "n": "Pandikaze vertige",
+    "nn": "PANDIKAZE VERTIGE",
+    "l": 55,
+    "g": 1260
+  },
+  "580": {
+    "n": "Pandikwakaze",
+    "nn": "PANDIKWAKAZE",
+    "l": 85,
+    "g": 1264
+  },
+  "581": {
+    "n": "Pandulkaze",
+    "nn": "PANDULKAZE",
+    "l": 70,
+    "g": 1274
+  },
+  "582": {
+    "n": "Touchparak",
+    "nn": "TOUCHPARAK",
+    "l": 330,
+    "g": 1232
+  },
+  "583": {
+    "n": "Fantôme Pandikaze",
+    "nn": "FANTOME PANDIKAZE",
+    "l": 164,
+    "g": 1287
+  },
+  "584": {
+    "n": "Fantôme Maho Firefoux",
+    "nn": "FANTOME MAHO FIREFOUX",
+    "l": 230,
+    "g": 1288
+  },
+  "585": {
+    "n": "Fantôme Soryo Firefoux",
+    "nn": "FANTOME SORYO FIREFOUX",
+    "l": 220,
+    "g": 1288
+  },
+  "586": {
+    "n": "Fantôme Léopardo",
+    "nn": "FANTOME LEOPARDO",
+    "l": 160,
+    "g": 1290
+  },
+  "587": {
+    "n": "Fantôme Yokai Firefoux",
+    "nn": "FANTOME YOKAI FIREFOUX",
+    "l": 230,
+    "g": 1289
+  },
+  "588": {
+    "n": "Fantôme Tanukouï San",
+    "nn": "FANTOME TANUKOUI SAN",
+    "l": 400,
+    "g": 1292
+  },
+  "589": {
+    "n": "Fantôme Pandule",
+    "nn": "FANTOME PANDULE",
+    "l": 170,
+    "g": 1294
+  },
+  "590": {
+    "n": "Fantôme Tanuki Chan",
+    "nn": "FANTOME TANUKI CHAN",
+    "l": 60,
+    "g": 1293
+  },
+  "594": {
+    "n": "Fantôme Tanuki Chan",
+    "nn": "FANTOME TANUKI CHAN",
+    "l": 60,
+    "g": 1293
+  },
+  "595": {
+    "n": "Fantôme Tanuki Chan",
+    "nn": "FANTOME TANUKI CHAN",
+    "l": 60,
+    "g": 1293
+  },
+  "596": {
+    "n": "Fantôme Tanuki Chan",
+    "nn": "FANTOME TANUKI CHAN",
+    "l": 60,
+    "g": 1293
+  },
+  "597": {
+    "n": "Fantôme Pandore",
+    "nn": "FANTOME PANDORE",
+    "l": 380,
+    "g": 1296
+  },
+  "598": {
+    "n": "Fantôme Tanuki Chan",
+    "nn": "FANTOME TANUKI CHAN",
+    "l": 60,
+    "g": 1293
+  },
+  "599": {
+    "n": "Zilla",
+    "nn": "ZILLA",
+    "l": 100,
+    "g": 1145
+  },
+  "600": {
+    "n": "Don Duss Ang",
+    "nn": "DON DUSS ANG",
+    "l": 60,
+    "g": 1256
+  },
+  "601": {
+    "n": "Don Dorgan",
+    "nn": "DON DORGAN",
+    "l": 60,
+    "g": 1259
+  },
+  "603": {
+    "n": "Cochon de Farle",
+    "nn": "COCHON DE FARLE",
+    "l": 30,
+    "g": 1257
+  },
+  "604": {
+    "n": "Iop Mass Test",
+    "nn": "IOP MASS TEST",
+    "l": 20,
+    "g": 1117
+  },
+  "605": {
+    "n": "Péki Péki",
+    "nn": "PEKI PEKI",
+    "l": 800,
+    "g": 1297
+  },
+  "606": {
+    "n": "Bouate de Pandore",
+    "nn": "BOUATE DE PANDORE",
+    "l": 1,
+    "g": 1083
+  },
+  "607": {
+    "n": "Guerrier Pandikaze",
+    "nn": "GUERRIER PANDIKAZE",
+    "l": 100,
+    "g": 1264
+  },
+  "608": {
+    "n": "Boîte Pandikaze",
+    "nn": "BOITE PANDIKAZE",
+    "l": 1,
+    "g": 1296
+  },
+  "609": {
+    "n": "Pandamani",
+    "nn": "PANDAMANI",
+    "l": 90,
+    "g": 1280
+  },
+  "611": {
+    "n": "Bouate de Fantôme Pandore",
+    "nn": "BOUATE DE FANTOME PANDORE",
+    "l": 1,
+    "g": 1298
+  },
+  "612": {
+    "n": "Maître Pandore",
+    "nn": "MAITRE PANDORE",
+    "l": 200,
+    "g": 1295
+  },
+  "613": {
+    "n": "Test recul",
+    "nn": "TEST RECUL",
+    "l": 1,
+    "g": 80
+  },
+  "614": {
+    "n": "Uk'Not'Allag",
+    "nn": "UK'NOT'ALLAG",
+    "l": 1,
+    "g": 1282
+  },
+  "615": {
+    "n": "Eleveur des Kwaks de Terre",
+    "nn": "ELEVEUR DES KWAKS DE TERRE",
+    "l": 60,
+    "g": 9041
+  },
+  "616": {
+    "n": "Fantôme Chacha",
+    "nn": "FANTOME CHACHA",
+    "l": 1,
+    "g": 1300
+  },
+  "617": {
+    "n": "Fantôme Petit Chienchien Noir",
+    "nn": "FANTOME PETIT CHIENCHIEN NOIR",
+    "l": 1,
+    "g": 1301
+  },
+  "618": {
+    "n": "Fantôme Wabbit",
+    "nn": "FANTOME WABBIT",
+    "l": 1,
+    "g": 1309
+  },
+  "619": {
+    "n": "Fantôme Bwak de Feu",
+    "nn": "FANTOME BWAK DE FEU",
+    "l": 1,
+    "g": 1310
+  },
+  "620": {
+    "n": "Fantôme Bwak d'Air",
+    "nn": "FANTOME BWAK D'AIR",
+    "l": 1,
+    "g": 1310
+  },
+  "621": {
+    "n": "Fantôme Bwak d'Eau",
+    "nn": "FANTOME BWAK D'EAU",
+    "l": 1,
+    "g": 1310
+  },
+  "622": {
+    "n": "Fantôme Bwak de Terre",
+    "nn": "FANTOME BWAK DE TERRE",
+    "l": 1,
+    "g": 1310
+  },
+  "623": {
+    "n": "Fantôme Ecureuil Chenapan",
+    "nn": "FANTOME ECUREUIL CHENAPAN",
+    "l": 1,
+    "g": 1303
+  },
+  "624": {
+    "n": "Fantôme Tortue",
+    "nn": "FANTOME TORTUE",
+    "l": 1,
+    "g": 1305
+  },
+  "625": {
+    "n": "Fantôme Pioute Jaune",
+    "nn": "FANTOME PIOUTE JAUNE",
+    "l": 1,
+    "g": 1311
+  },
+  "626": {
+    "n": "Fantôme Pioute Bleu",
+    "nn": "FANTOME PIOUTE BLEU",
+    "l": 1,
+    "g": 1311
+  },
+  "627": {
+    "n": "Fantôme Piou Vert",
+    "nn": "FANTOME PIOU VERT",
+    "l": 1,
+    "g": 1311
+  },
+  "628": {
+    "n": "Fantôme Pioute Rouge",
+    "nn": "FANTOME PIOUTE ROUGE",
+    "l": 1,
+    "g": 1712
+  },
+  "629": {
+    "n": "Fantôme Pioute Violet",
+    "nn": "FANTOME PIOUTE VIOLET",
+    "l": 1,
+    "g": 1712
+  },
+  "630": {
+    "n": "Fantôme Pioute Rose",
+    "nn": "FANTOME PIOUTE ROSE",
+    "l": 1,
+    "g": 1712
+  },
+  "631": {
+    "n": "Fantôme Corbac",
+    "nn": "FANTOME CORBAC",
+    "l": 1,
+    "g": 1306
+  },
+  "632": {
+    "n": "Fantôme Marcassin",
+    "nn": "FANTOME MARCASSIN",
+    "l": 1,
+    "g": 1304
+  },
+  "634": {
+    "n": "Fantôme Nomoon",
+    "nn": "FANTOME NOMOON",
+    "l": 1,
+    "g": 1308
+  },
+  "635": {
+    "n": "Fantôme Péki",
+    "nn": "FANTOME PEKI",
+    "l": 1,
+    "g": 1302
+  },
+  "636": {
+    "n": "Fantôme Petit Chacha Blanc",
+    "nn": "FANTOME PETIT CHACHA BLANC",
+    "l": 1,
+    "g": 1300
+  },
+  "637": {
+    "n": "Gardien des Kwaks de Terre",
+    "nn": "GARDIEN DES KWAKS DE TERRE",
+    "l": 1,
+    "g": 9041
+  },
+  "638": {
+    "n": "Protecteur des Kwaks de Terre",
+    "nn": "PROTECTEUR DES KWAKS DE TERRE",
+    "l": 1,
+    "g": 9041
+  },
+  "639": {
+    "n": "Eleveur des Kwaks de Flammes",
+    "nn": "ELEVEUR DES KWAKS DE FLAMMES",
+    "l": 1,
+    "g": 9041
+  },
+  "640": {
+    "n": "Gardien des Kwaks de Flammes",
+    "nn": "GARDIEN DES KWAKS DE FLAMMES",
+    "l": 1,
+    "g": 9041
+  },
+  "641": {
+    "n": "Protecteur des Kwaks de Flammes",
+    "nn": "PROTECTEUR DES KWAKS DE FLAMMES",
+    "l": 1,
+    "g": 9041
+  },
+  "642": {
+    "n": "Eleveur des Kwaks de Vent",
+    "nn": "ELEVEUR DES KWAKS DE VENT",
+    "l": 1,
+    "g": 9041
+  },
+  "643": {
+    "n": "Gardien des Kwaks de Vent",
+    "nn": "GARDIEN DES KWAKS DE VENT",
+    "l": 1,
+    "g": 9041
+  },
+  "644": {
+    "n": "Protecteur des Kwaks de Vent",
+    "nn": "PROTECTEUR DES KWAKS DE VENT",
+    "l": 1,
+    "g": 9041
+  },
+  "645": {
+    "n": "Eleveur des Kwaks de Glace",
+    "nn": "ELEVEUR DES KWAKS DE GLACE",
+    "l": 1,
+    "g": 9041
+  },
+  "646": {
+    "n": "Gardien des Kwaks de Glace",
+    "nn": "GARDIEN DES KWAKS DE GLACE",
+    "l": 1,
+    "g": 9041
+  },
+  "647": {
+    "n": "Protecteur des Kwaks de Glace",
+    "nn": "PROTECTEUR DES KWAKS DE GLACE",
+    "l": 1,
+    "g": 9041
+  },
+  "649": {
+    "n": "Coffre Sombre",
+    "nn": "COFFRE SOMBRE",
+    "l": 1,
+    "g": 1083
+  },
+  "650": {
+    "n": "Abrakne",
+    "nn": "ABRAKNE",
+    "l": 30,
+    "g": 1333
+  },
+  "651": {
+    "n": "Abrakne Sombre",
+    "nn": "ABRAKNE SOMBRE",
+    "l": 80,
+    "g": 1334
+  },
+  "652": {
+    "n": "Champa Vert",
+    "nn": "CHAMPA VERT",
+    "l": 10,
+    "g": 1335
+  },
+  "653": {
+    "n": "Champa Rouge",
+    "nn": "CHAMPA ROUGE",
+    "l": 20,
+    "g": 1335
+  },
+  "654": {
+    "n": "Champa Bleu",
+    "nn": "CHAMPA BLEU",
+    "l": 20,
+    "g": 1335
+  },
+  "655": {
+    "n": "Champa Marron",
+    "nn": "CHAMPA MARRON",
+    "l": 20,
+    "g": 1335
+  },
+  "657": {
+    "n": "Monture du Petit Mino",
+    "nn": "MONTURE DU PETIT MINO",
+    "l": 1,
+    "g": 1386
+  },
+  "658": {
+    "n": "Ecureuil chenapan (copie)",
+    "nn": "ECUREUIL CHENAPAN (COPIE)",
+    "l": 1,
+    "g": 1046
+  },
+  "659": {
+    "n": "Fantôme Dragoune",
+    "nn": "FANTOME DRAGOUNE",
+    "l": 1,
+    "g": 1313
+  },
+  "660": {
+    "n": "Fantôme Minimino",
+    "nn": "FANTOME MINIMINO",
+    "l": 1,
+    "g": 1316
+  },
+  "661": {
+    "n": "Fantôme Croum",
+    "nn": "FANTOME CROUM",
+    "l": 1,
+    "g": 1314
+  },
+  "662": {
+    "n": "Fantôme Fotome",
+    "nn": "FANTOME FOTOME",
+    "l": 1,
+    "g": 1315
+  },
+  "663": {
+    "n": "Fantôme Léopardo",
+    "nn": "FANTOME LEOPARDO",
+    "l": 1,
+    "g": 1290
+  },
+  "664": {
+    "n": "Fantôme Bilby",
+    "nn": "FANTOME BILBY",
+    "l": 1,
+    "g": 1
+  },
+  "665": {
+    "n": "Fantôme Koin-Koin",
+    "nn": "FANTOME KOIN-KOIN",
+    "l": 1,
+    "g": 1312
+  },
+  "666": {
+    "n": "Dragodinde Dorée Sauvage",
+    "nn": "DRAGODINDE DOREE SAUVAGE",
+    "l": 80,
+    "g": 1108
+  },
+  "667": {
+    "n": "Tueur d'invocations",
+    "nn": "TUEUR D'INVOCATIONS",
+    "l": 98,
+    "g": 1016
+  },
+  "668": {
+    "n": "Gamino",
+    "nn": "GAMINO",
+    "l": 40,
+    "g": 1384
+  },
+  "669": {
+    "n": "Craqueleur Légendaire",
+    "nn": "CRAQUELEUR LEGENDAIRE",
+    "l": 120,
+    "g": 1358
+  },
+  "670": {
+    "n": "Koulosse",
+    "nn": "KOULOSSE",
+    "l": 200,
+    "g": 1356
+  },
+  "671": {
+    "n": "Bouftou des Cavernes",
+    "nn": "BOUFTOU DES CAVERNES",
+    "l": 40,
+    "g": 1354
+  },
+  "672": {
+    "n": "Boufcoul",
+    "nn": "BOUFCOUL",
+    "l": 50,
+    "g": 1355
+  },
+  "673": {
+    "n": "Emeraude",
+    "nn": "EMERAUDE",
+    "l": 100,
+    "g": 1357
+  },
+  "674": {
+    "n": "Poupée Emeraude",
+    "nn": "POUPEE EMERAUDE",
+    "l": 40,
+    "g": 1369
+  },
+  "675": {
+    "n": "Saphira",
+    "nn": "SAPHIRA",
+    "l": 100,
+    "g": 1357
+  },
+  "676": {
+    "n": "Poupée Affamée",
+    "nn": "POUPEE AFFAMEE",
+    "l": 1,
+    "g": 1369
+  },
+  "677": {
+    "n": "Rubise",
+    "nn": "RUBISE",
+    "l": 100,
+    "g": 1357
+  },
+  "678": {
+    "n": "Totem Motivant",
+    "nn": "TOTEM MOTIVANT",
+    "l": 1,
+    "g": 1370
+  },
+  "679": {
+    "n": "Totem Explosif",
+    "nn": "TOTEM EXPLOSIF",
+    "l": 1,
+    "g": 1370
+  },
+  "680": {
+    "n": "Totem Soignant",
+    "nn": "TOTEM SOIGNANT",
+    "l": 1,
+    "g": 1370
+  },
+  "681": {
+    "n": "Diamantine",
+    "nn": "DIAMANTINE",
+    "l": 100,
+    "g": 1357
+  },
+  "682": {
+    "n": "Poupée Mortelle",
+    "nn": "POUPEE MORTELLE",
+    "l": 1,
+    "g": 1369
+  },
+  "684": {
+    "n": "Epouvantail de Blé",
+    "nn": "EPOUVANTAIL DE BLE",
+    "l": 10,
+    "g": 1411
+  },
+  "685": {
+    "n": "Epouvantail d'Orge",
+    "nn": "EPOUVANTAIL D'ORGE",
+    "l": 10,
+    "g": 1412
+  },
+  "686": {
+    "n": "Epouvantail d'Avoine",
+    "nn": "EPOUVANTAIL D'AVOINE",
+    "l": 10,
+    "g": 1414
+  },
+  "687": {
+    "n": "Epouvantail du Houblon",
+    "nn": "EPOUVANTAIL DU HOUBLON",
+    "l": 10,
+    "g": 1413
+  },
+  "688": {
+    "n": "Epouvantail du Lin",
+    "nn": "EPOUVANTAIL DU LIN",
+    "l": 10,
+    "g": 1415
+  },
+  "689": {
+    "n": "Epouvantail du Seigle",
+    "nn": "EPOUVANTAIL DU SEIGLE",
+    "l": 10,
+    "g": 1418
+  },
+  "690": {
+    "n": "Epouvantail du Riz",
+    "nn": "EPOUVANTAIL DU RIZ",
+    "l": 10,
+    "g": 1417
+  },
+  "691": {
+    "n": "Epouvantail du Malt",
+    "nn": "EPOUVANTAIL DU MALT",
+    "l": 10,
+    "g": 1410
+  },
+  "692": {
+    "n": "Epouvantail de Chanvre",
+    "nn": "EPOUVANTAIL DE CHANVRE",
+    "l": 10,
+    "g": 1416
+  },
+  "693": {
+    "n": "Craqueboule de Fer",
+    "nn": "CRAQUEBOULE DE FER",
+    "l": 10,
+    "g": 1389
+  },
+  "694": {
+    "n": "Craqueboule de Cuivre",
+    "nn": "CRAQUEBOULE DE CUIVRE",
+    "l": 10,
+    "g": 1389
+  },
+  "695": {
+    "n": "Craqueboule de Bronze",
+    "nn": "CRAQUEBOULE DE BRONZE",
+    "l": 10,
+    "g": 1389
+  },
+  "696": {
+    "n": "Craqueboule de Kobalte",
+    "nn": "CRAQUEBOULE DE KOBALTE",
+    "l": 10,
+    "g": 1389
+  },
+  "697": {
+    "n": "Craqueboule de Manganèse",
+    "nn": "CRAQUEBOULE DE MANGANESE",
+    "l": 10,
+    "g": 1389
+  },
+  "698": {
+    "n": "Craqueboule d'Etain",
+    "nn": "CRAQUEBOULE D'ETAIN",
+    "l": 10,
+    "g": 1389
+  },
+  "699": {
+    "n": "Craqueboule de Silicate",
+    "nn": "CRAQUEBOULE DE SILICATE",
+    "l": 10,
+    "g": 1389
+  },
+  "700": {
+    "n": "Craqueboule d'Argent",
+    "nn": "CRAQUEBOULE D'ARGENT",
+    "l": 10,
+    "g": 1389
+  },
+  "701": {
+    "n": "Craqueboule de Bauxite",
+    "nn": "CRAQUEBOULE DE BAUXITE",
+    "l": 10,
+    "g": 1389
+  },
+  "702": {
+    "n": "Craqueboule d'Or",
+    "nn": "CRAQUEBOULE D'OR",
+    "l": 10,
+    "g": 1389
+  },
+  "703": {
+    "n": "Craqueboule de Dolomite",
+    "nn": "CRAQUEBOULE DE DOLOMITE",
+    "l": 10,
+    "g": 1389
+  },
+  "704": {
+    "n": "Bulbilin",
+    "nn": "BULBILIN",
+    "l": 10,
+    "g": 1429
+  },
+  "705": {
+    "n": "Bulbichanvre",
+    "nn": "BULBICHANVRE",
+    "l": 10,
+    "g": 1431
+  },
+  "706": {
+    "n": "Bulbitrèfle",
+    "nn": "BULBITREFLE",
+    "l": 10,
+    "g": 1433
+  },
+  "707": {
+    "n": "Bulbimenthe",
+    "nn": "BULBIMENTHE",
+    "l": 10,
+    "g": 1432
+  },
+  "708": {
+    "n": "Bulborchidée",
+    "nn": "BULBORCHIDEE",
+    "l": 10,
+    "g": 1419
+  },
+  "709": {
+    "n": "Bulbedelweiss",
+    "nn": "BULBEDELWEISS",
+    "l": 10,
+    "g": 1430
+  },
+  "710": {
+    "n": "Bulpandouille",
+    "nn": "BULPANDOUILLE",
+    "l": 10,
+    "g": 1434
+  },
+  "711": {
+    "n": "Frêne Ensorcelé",
+    "nn": "FRENE ENSORCELE",
+    "l": 10,
+    "g": 1404
+  },
+  "712": {
+    "n": "Châtaignier Ensorcelé",
+    "nn": "CHATAIGNIER ENSORCELE",
+    "l": 10,
+    "g": 1402
+  },
+  "713": {
+    "n": "Noyer Ensorcelé",
+    "nn": "NOYER ENSORCELE",
+    "l": 10,
+    "g": 1401
+  },
+  "714": {
+    "n": "Chêne Ensorcelé",
+    "nn": "CHENE ENSORCELE",
+    "l": 10,
+    "g": 1403
+  },
+  "715": {
+    "n": "Bombu Ensorcelé",
+    "nn": "BOMBU ENSORCELE",
+    "l": 10,
+    "g": 1394
+  },
+  "716": {
+    "n": "Oliviolet Ensorcelé",
+    "nn": "OLIVIOLET ENSORCELE",
+    "l": 10,
+    "g": 1391
+  },
+  "717": {
+    "n": "Erable Ensorcelé",
+    "nn": "ERABLE ENSORCELE",
+    "l": 10,
+    "g": 1396
+  },
+  "718": {
+    "n": "If Ensorcelé",
+    "nn": "IF ENSORCELE",
+    "l": 10,
+    "g": 1397
+  },
+  "719": {
+    "n": "Bambou Ensorcelé",
+    "nn": "BAMBOU ENSORCELE",
+    "l": 10,
+    "g": 1392
+  },
+  "720": {
+    "n": "Kaliptus Ensorcelé",
+    "nn": "KALIPTUS ENSORCELE",
+    "l": 10,
+    "g": 1395
+  },
+  "721": {
+    "n": "Merisier Ensorcelé",
+    "nn": "MERISIER ENSORCELE",
+    "l": 10,
+    "g": 1398
+  },
+  "722": {
+    "n": "Ebène Ensorcelé",
+    "nn": "EBENE ENSORCELE",
+    "l": 10,
+    "g": 1399
+  },
+  "723": {
+    "n": "Bambou Sombre Ensorcelé",
+    "nn": "BAMBOU SOMBRE ENSORCELE",
+    "l": 10,
+    "g": 1393
+  },
+  "724": {
+    "n": "Orme Ensorcelé",
+    "nn": "ORME ENSORCELE",
+    "l": 10,
+    "g": 1400
+  },
+  "725": {
+    "n": "Bambou Sacré Ensorcelé",
+    "nn": "BAMBOU SACRE ENSORCELE",
+    "l": 10,
+    "g": 1405
+  },
+  "726": {
+    "n": "Dévoreur de Goujons",
+    "nn": "DEVOREUR DE GOUJONS",
+    "l": 10,
+    "g": 1349
+  },
+  "727": {
+    "n": "Dévoreur de Truite",
+    "nn": "DEVOREUR DE TRUITE",
+    "l": 10,
+    "g": 1349
+  },
+  "728": {
+    "n": "Dévoreur de Poisson Chaton",
+    "nn": "DEVOREUR DE POISSON CHATON",
+    "l": 10,
+    "g": 1349
+  },
+  "729": {
+    "n": "Dévoreur de Greu-Vette",
+    "nn": "DEVOREUR DE GREU-VETTE",
+    "l": 10,
+    "g": 1349
+  },
+  "730": {
+    "n": "Dévoreur de Crabe",
+    "nn": "DEVOREUR DE CRABE",
+    "l": 10,
+    "g": 1349
+  },
+  "731": {
+    "n": "Dévoreur de Poisson Pané",
+    "nn": "DEVOREUR DE POISSON PANE",
+    "l": 10,
+    "g": 1349
+  },
+  "732": {
+    "n": "Dévoreur de Brochet",
+    "nn": "DEVOREUR DE BROCHET",
+    "l": 10,
+    "g": 1349
+  },
+  "733": {
+    "n": "Dévoreur de Carpe",
+    "nn": "DEVOREUR DE CARPE",
+    "l": 10,
+    "g": 1349
+  },
+  "734": {
+    "n": "Dévoreur de Sardine",
+    "nn": "DEVOREUR DE SARDINE",
+    "l": 10,
+    "g": 1349
+  },
+  "735": {
+    "n": "Dévoreur de Kralamoure",
+    "nn": "DEVOREUR DE KRALAMOURE",
+    "l": 10,
+    "g": 1349
+  },
+  "736": {
+    "n": "Dévoreur de Bar",
+    "nn": "DEVOREUR DE BAR",
+    "l": 10,
+    "g": 1349
+  },
+  "737": {
+    "n": "Dévoreur de Raie",
+    "nn": "DEVOREUR DE RAIE",
+    "l": 10,
+    "g": 1349
+  },
+  "738": {
+    "n": "Dévoreur de Perche",
+    "nn": "DEVOREUR DE PERCHE",
+    "l": 10,
+    "g": 1349
+  },
+  "739": {
+    "n": "Dévoreur de Requin",
+    "nn": "DEVOREUR DE REQUIN",
+    "l": 10,
+    "g": 1349
+  },
+  "744": {
+    "n": "Koalak Sanguin",
+    "nn": "KOALAK SANGUIN",
+    "l": 85,
+    "g": 1361
+  },
+  "745": {
+    "n": "Warko Violet",
+    "nn": "WARKO VIOLET",
+    "l": 90,
+    "g": 1362
+  },
+  "746": {
+    "n": "Warko Marron",
+    "nn": "WARKO MARRON",
+    "l": 70,
+    "g": 1363
+  },
+  "747": {
+    "n": "DoK Alako",
+    "nn": "DOK ALAKO",
+    "l": 40,
+    "g": 1364
+  },
+  "748": {
+    "n": "Koalak Immature",
+    "nn": "KOALAK IMMATURE",
+    "l": 40,
+    "g": 1365
+  },
+  "749": {
+    "n": "Guerrier Koalak",
+    "nn": "GUERRIER KOALAK",
+    "l": 70,
+    "g": 1368
+  },
+  "751": {
+    "n": "Koalak Indigo",
+    "nn": "KOALAK INDIGO",
+    "l": 60,
+    "g": 1359
+  },
+  "752": {
+    "n": "Koalak Coco",
+    "nn": "KOALAK COCO",
+    "l": 60,
+    "g": 1359
+  },
+  "753": {
+    "n": "Koalak Griotte",
+    "nn": "KOALAK GRIOTTE",
+    "l": 60,
+    "g": 1359
+  },
+  "754": {
+    "n": "Koalak Reinette",
+    "nn": "KOALAK REINETTE",
+    "l": 60,
+    "g": 1359
+  },
+  "755": {
+    "n": "Mama Koalak",
+    "nn": "MAMA KOALAK",
+    "l": 90,
+    "g": 1366
+  },
+  "756": {
+    "n": "Koalak Farouche",
+    "nn": "KOALAK FAROUCHE",
+    "l": 90,
+    "g": 1367
+  },
+  "758": {
+    "n": "Maître Koalak",
+    "nn": "MAITRE KOALAK",
+    "l": 100,
+    "g": 1439
+  },
+  "759": {
+    "n": "Chevaucheur Koalak",
+    "nn": "CHEVAUCHEUR KOALAK",
+    "l": 80,
+    "g": 1381
+  },
+  "760": {
+    "n": "Momie Koalak",
+    "nn": "MOMIE KOALAK",
+    "l": 90,
+    "g": 1382
+  },
+  "761": {
+    "n": "Fossoyeur Koalak",
+    "nn": "FOSSOYEUR KOALAK",
+    "l": 70,
+    "g": 1383
+  },
+  "762": {
+    "n": "Workette",
+    "nn": "WORKETTE",
+    "l": 20,
+    "g": 1369
+  },
+  "763": {
+    "n": "Drakoalak",
+    "nn": "DRAKOALAK",
+    "l": 100,
+    "g": 1440
+  },
+  "765": {
+    "n": "Fantôme Willy le Relou",
+    "nn": "FANTOME WILLY LE RELOU",
+    "l": 1,
+    "g": 1317
+  },
+  "766": {
+    "n": "Fantôme Koalak Sanguin",
+    "nn": "FANTOME KOALAK SANGUIN",
+    "l": 1,
+    "g": 1320
+  },
+  "767": {
+    "n": "Fantôme Bworky",
+    "nn": "FANTOME BWORKY",
+    "l": 1,
+    "g": 1322
+  },
+  "768": {
+    "n": "Fantôme Fossoyeur Koalak",
+    "nn": "FANTOME FOSSOYEUR KOALAK",
+    "l": 1,
+    "g": 1
+  },
+  "769": {
+    "n": "Fantôme Koalak Immature",
+    "nn": "FANTOME KOALAK IMMATURE",
+    "l": 1,
+    "g": 1
+  },
+  "770": {
+    "n": "Fantôme Mini Wa",
+    "nn": "FANTOME MINI WA",
+    "l": 1,
+    "g": 1318
+  },
+  "771": {
+    "n": "Dike Tarak (copie)",
+    "nn": "DIKE TARAK (COPIE)",
+    "l": 5,
+    "g": 9041
+  },
+  "772": {
+    "n": "Dike Tarak (copie)",
+    "nn": "DIKE TARAK (COPIE)",
+    "l": 5,
+    "g": 9041
+  },
+  "776": {
+    "n": "Alka Traz",
+    "nn": "ALKA TRAZ",
+    "l": 10,
+    "g": 1076
+  },
+  "777": {
+    "n": "Guan Tanamault",
+    "nn": "GUAN TANAMAULT",
+    "l": 10,
+    "g": 1076
+  },
+  "778": {
+    "n": "Luki Loushiano",
+    "nn": "LUKI LOUSHIANO",
+    "l": 10,
+    "g": 1076
+  },
+  "779": {
+    "n": "Edgg Komb",
+    "nn": "EDGG KOMB",
+    "l": 20,
+    "g": 110
+  },
+  "780": {
+    "n": "Skeunk",
+    "nn": "SKEUNK",
+    "l": 200,
+    "g": 1450
+  },
+  "782": {
+    "n": "Charme Ensorcelé",
+    "nn": "CHARME ENSORCELE",
+    "l": 10,
+    "g": 1396
+  },
+  "783": {
+    "n": "Fauchalak",
+    "nn": "FAUCHALAK",
+    "l": 100,
+    "g": 1447
+  },
+  "784": {
+    "n": "Piralak",
+    "nn": "PIRALAK",
+    "l": 80,
+    "g": 1445
+  },
+  "785": {
+    "n": "Koalak Forestier",
+    "nn": "KOALAK FORESTIER",
+    "l": 80,
+    "g": 1446
+  },
+  "786": {
+    "n": "Pékeualak",
+    "nn": "PEKEUALAK",
+    "l": 80,
+    "g": 1449
+  },
+  "788": {
+    "n": "Fantôme d'Aventurier Ardent",
+    "nn": "FANTOME D'AVENTURIER ARDENT",
+    "l": 100,
+    "g": 1193
+  },
+  "789": {
+    "n": "Fantôme d'Aventurier Arepo",
+    "nn": "FANTOME D'AVENTURIER AREPO",
+    "l": 100,
+    "g": 1194
+  },
+  "790": {
+    "n": "Fantôme d'Aventurier Brave",
+    "nn": "FANTOME D'AVENTURIER BRAVE",
+    "l": 100,
+    "g": 1195
+  },
+  "791": {
+    "n": "Trooll Apprivoisé",
+    "nn": "TROOLL APPRIVOISE",
+    "l": 80,
+    "g": 1131
+  },
+  "792": {
+    "n": "Bworkette",
+    "nn": "BWORKETTE",
+    "l": 90,
+    "g": 1241
+  },
+  "793": {
+    "n": "Bouftou d'Halouine",
+    "nn": "BOUFTOU D'HALOUINE",
+    "l": 3,
+    "g": 1117
+  },
+  "794": {
+    "n": "Tofu d'Halouine",
+    "nn": "TOFU D'HALOUINE",
+    "l": 2,
+    "g": 1111
+  },
+  "795": {
+    "n": "Scarafeuille Noir",
+    "nn": "SCARAFEUILLE NOIR",
+    "l": 40,
+    "g": 1453
+  },
+  "796": {
+    "n": "Tofu Noir",
+    "nn": "TOFU NOIR",
+    "l": 10,
+    "g": 1462
+  },
+  "797": {
+    "n": "Scarabosse Doré",
+    "nn": "SCARABOSSE DORE",
+    "l": 70,
+    "g": 1455
+  },
+  "798": {
+    "n": "Scarafeuille Immature",
+    "nn": "SCARAFEUILLE IMMATURE",
+    "l": 20,
+    "g": 1454
+  },
+  "799": {
+    "n": "Tournesol Affamé",
+    "nn": "TOURNESOL AFFAME",
+    "l": 40,
+    "g": 1459
+  },
+  "800": {
+    "n": "Batofu",
+    "nn": "BATOFU",
+    "l": 60,
+    "g": 1380
+  },
+  "801": {
+    "n": "Tofu Dégénéré",
+    "nn": "TOFU DEGENERE",
+    "l": 20,
+    "g": 1443
+  },
+  "802": {
+    "n": "Bomberfu",
+    "nn": "BOMBERFU",
+    "l": 10,
+    "g": 1379
+  },
+  "803": {
+    "n": "Tofu en cage",
+    "nn": "TOFU EN CAGE",
+    "l": 20,
+    "g": 1377
+  },
+  "804": {
+    "n": "Tofoune",
+    "nn": "TOFOUNE",
+    "l": 40,
+    "g": 1376
+  },
+  "805": {
+    "n": "Tofu Mutant",
+    "nn": "TOFU MUTANT",
+    "l": 20,
+    "g": 1375
+  },
+  "806": {
+    "n": "Tofukaz",
+    "nn": "TOFUKAZ",
+    "l": 30,
+    "g": 1374
+  },
+  "807": {
+    "n": "Tofuzmo",
+    "nn": "TOFUZMO",
+    "l": 40,
+    "g": 1373
+  },
+  "808": {
+    "n": "Tofu Ventripotent",
+    "nn": "TOFU VENTRIPOTENT",
+    "l": 50,
+    "g": 1372
+  },
+  "809": {
+    "n": "Kalcite le Synclinal",
+    "nn": "KALCITE LE SYNCLINAL",
+    "l": 39,
+    "g": 1049
+  },
+  "810": {
+    "n": "Kerpote le Sédimentaire",
+    "nn": "KERPOTE LE SEDIMENTAIRE",
+    "l": 39,
+    "g": 1452
+  },
+  "811": {
+    "n": "Kolkoze l'Anticlinal",
+    "nn": "KOLKOZE L'ANTICLINAL",
+    "l": 25,
+    "g": 1008
+  },
+  "812": {
+    "n": "Orkalite le Géodésique",
+    "nn": "ORKALITE LE GEODESIQUE",
+    "l": 20,
+    "g": 1248
+  },
+  "813": {
+    "n": "Fantôme Bworky",
+    "nn": "FANTOME BWORKY",
+    "l": 1,
+    "g": 1322
+  },
+  "814": {
+    "n": "Fantôme Tifoux",
+    "nn": "FANTOME TIFOUX",
+    "l": 1,
+    "g": 1325
+  },
+  "815": {
+    "n": "Fantôme El Scarador",
+    "nn": "FANTOME EL SCARADOR",
+    "l": 1,
+    "g": 1324
+  },
+  "816": {
+    "n": "Fantôme Bouloute",
+    "nn": "FANTOME BOULOUTE",
+    "l": 1,
+    "g": 1326
+  },
+  "817": {
+    "n": "Fantôme Abra Kadabra",
+    "nn": "FANTOME ABRA KADABRA",
+    "l": 1,
+    "g": 1327
+  },
+  "818": {
+    "n": "Corbac Apprivoisé",
+    "nn": "CORBAC APPRIVOISE",
+    "l": 40,
+    "g": 1408
+  },
+  "819": {
+    "n": "Buveur",
+    "nn": "BUVEUR",
+    "l": 60,
+    "g": 1407
+  },
+  "820": {
+    "n": "Renarbo",
+    "nn": "RENARBO",
+    "l": 60,
+    "g": 1406
+  },
+  "822": {
+    "n": "Ballon",
+    "nn": "BALLON",
+    "l": 1,
+    "g": 1096
+  },
+  "823": {
+    "n": "Rono le Renarbo",
+    "nn": "RONO LE RENARBO",
+    "l": 90,
+    "g": 1406
+  },
+  "824": {
+    "n": "Horace le Corbac Apprivoisé",
+    "nn": "HORACE LE CORBAC APPRIVOISE",
+    "l": 80,
+    "g": 1408
+  },
+  "825": {
+    "n": "Kapotie le Buveur",
+    "nn": "KAPOTIE LE BUVEUR",
+    "l": 90,
+    "g": 1407
+  },
+  "826": {
+    "n": "Kirboule l'Erodé",
+    "nn": "KIRBOULE L'ERODE",
+    "l": 39,
+    "g": 1049
+  },
+  "827": {
+    "n": "Minotot",
+    "nn": "MINOTOT",
+    "l": 400,
+    "g": 1444
+  },
+  "828": {
+    "n": "Dégelée",
+    "nn": "DEGELEE",
+    "l": 30,
+    "g": 1442
+  },
+  "829": {
+    "n": "Serpiplume",
+    "nn": "SERPIPLUME",
+    "l": 50,
+    "g": 1409
+  },
+  "830": {
+    "n": "Scaratos",
+    "nn": "SCARATOS",
+    "l": 30,
+    "g": 1388
+  },
+  "831": {
+    "n": "Mominotor",
+    "nn": "MOMINOTOR",
+    "l": 100,
+    "g": 1387
+  },
+  "832": {
+    "n": "Déminoboule",
+    "nn": "DEMINOBOULE",
+    "l": 100,
+    "g": 1338
+  },
+  "834": {
+    "n": "Minoskito",
+    "nn": "MINOSKITO",
+    "l": 20,
+    "g": 1347
+  },
+  "835": {
+    "n": "Mandrine",
+    "nn": "MANDRINE",
+    "l": 20,
+    "g": 1341
+  },
+  "836": {
+    "n": "Kraméléhon",
+    "nn": "KRAMELEHON",
+    "l": 30,
+    "g": 1348
+  },
+  "837": {
+    "n": "Lorkos",
+    "nn": "LORKOS",
+    "l": 400,
+    "g": 30
+  },
+  "839": {
+    "n": "Abominable Yiti des neiges",
+    "nn": "ABOMINABLE YITI DES NEIGES",
+    "l": 60,
+    "g": 1472
+  },
+  "840": {
+    "n": "Kanigrou hivernal",
+    "nn": "KANIGROU HIVERNAL",
+    "l": 60,
+    "g": 1497
+  },
+  "841": {
+    "n": "Tofu givré",
+    "nn": "TOFU GIVRE",
+    "l": 10,
+    "g": 1518
+  },
+  "842": {
+    "n": "Glutin de Nowel",
+    "nn": "GLUTIN DE NOWEL",
+    "l": 20,
+    "g": 1495
+  },
+  "843": {
+    "n": "Glutin chevaucheur",
+    "nn": "GLUTIN CHEVAUCHEUR",
+    "l": 30,
+    "g": 1499
+  },
+  "844": {
+    "n": "Boufmouth",
+    "nn": "BOUFMOUTH",
+    "l": 16,
+    "g": 1091
+  },
+  "845": {
+    "n": "Bonhomme de neige",
+    "nn": "BONHOMME DE NEIGE",
+    "l": 38,
+    "g": 1513
+  },
+  "846": {
+    "n": "Glagla",
+    "nn": "GLAGLA",
+    "l": 1,
+    "g": 1062
+  },
+  "847": {
+    "n": "Tofu hiberné",
+    "nn": "TOFU HIBERNE",
+    "l": 50,
+    "g": 1518
+  },
+  "848": {
+    "n": "Dragoss Noir",
+    "nn": "DRAGOSS NOIR",
+    "l": 50,
+    "g": 1339
+  },
+  "849": {
+    "n": "Kipik",
+    "nn": "KIPIK",
+    "l": 18,
+    "g": 1514
+  },
+  "851": {
+    "n": "Glutin farceur",
+    "nn": "GLUTIN FARCEUR",
+    "l": 22,
+    "g": 1515
+  },
+  "853": {
+    "n": "Dragoeuf Guerrier",
+    "nn": "DRAGOEUF GUERRIER",
+    "l": 80,
+    "g": 1480
+  },
+  "854": {
+    "n": "Crocabulia",
+    "nn": "CROCABULIA",
+    "l": 400,
+    "g": 1451
+  },
+  "855": {
+    "n": "Dragueuse",
+    "nn": "DRAGUEUSE",
+    "l": 70,
+    "g": 1501
+  },
+  "858": {
+    "n": "Dragoss Noir Eveillé",
+    "nn": "DRAGOSS NOIR EVEILLE",
+    "l": 100,
+    "g": 1340
+  },
+  "862": {
+    "n": "Dragoeuf Volant",
+    "nn": "DRAGOEUF VOLANT",
+    "l": 80,
+    "g": 1502
+  },
+  "864": {
+    "n": "Sakai Firefoux",
+    "nn": "SAKAI FIREFOUX",
+    "l": 87,
+    "g": 1504
+  },
+  "865": {
+    "n": "Grozilla",
+    "nn": "GROZILLA",
+    "l": 800,
+    "g": 1503
+  },
+  "866": {
+    "n": "Grasmera",
+    "nn": "GRASMERA",
+    "l": 800,
+    "g": 1508
+  },
+  "867": {
+    "n": "Bouboule de neige",
+    "nn": "BOUBOULE DE NEIGE",
+    "l": 31,
+    "g": 1510
+  },
+  "868": {
+    "n": "Tofu enneigé",
+    "nn": "TOFU ENNEIGE",
+    "l": 35,
+    "g": 1518
+  },
+  "869": {
+    "n": "Craqueleur des glaces",
+    "nn": "CRAQUELEUR DES GLACES",
+    "l": 39,
+    "g": 1506
+  },
+  "870": {
+    "n": "Ver glacé",
+    "nn": "VER GLACE",
+    "l": 2,
+    "g": 1505
+  },
+  "871": {
+    "n": "Ver getur",
+    "nn": "VER GETUR",
+    "l": 12,
+    "g": 1505
+  },
+  "872": {
+    "n": "Papa Nowel",
+    "nn": "PAPA NOWEL",
+    "l": 160,
+    "g": 1511
+  },
+  "874": {
+    "n": "Demi papa Nowel",
+    "nn": "DEMI PAPA NOWEL",
+    "l": 160,
+    "g": 1517
+  },
+  "876": {
+    "n": "Bwork",
+    "nn": "BWORK",
+    "l": 22,
+    "g": 1003
+  },
+  "877": {
+    "n": "Aqualikros l'Impitoyable",
+    "nn": "AQUALIKROS L'IMPITOYABLE",
+    "l": 110,
+    "g": 1340
+  },
+  "878": {
+    "n": "Dragoss Blanc Eveillé",
+    "nn": "DRAGOSS BLANC EVEILLE",
+    "l": 100,
+    "g": 1340
+  },
+  "879": {
+    "n": "Dragoss Doré Eveillé",
+    "nn": "DRAGOSS DORE EVEILLE",
+    "l": 100,
+    "g": 1340
+  },
+  "880": {
+    "n": "Kol'nenfan",
+    "nn": "KOL'NENFAN",
+    "l": 1,
+    "g": 1522
+  },
+  "881": {
+    "n": "Koup'nenfan",
+    "nn": "KOUP'NENFAN",
+    "l": 1,
+    "g": 1522
+  },
+  "882": {
+    "n": "Pet'nenfan",
+    "nn": "PET'NENFAN",
+    "l": 1,
+    "g": 1522
+  },
+  "884": {
+    "n": "Dragoss de Saphir",
+    "nn": "DRAGOSS DE SAPHIR",
+    "l": 50,
+    "g": 1339
+  },
+  "885": {
+    "n": "Dragoss Blanc",
+    "nn": "DRAGOSS BLANC",
+    "l": 50,
+    "g": 1339
+  },
+  "886": {
+    "n": "Dragoss Doré",
+    "nn": "DRAGOSS DORE",
+    "l": 50,
+    "g": 1339
+  },
+  "887": {
+    "n": "Cadob'Onux",
+    "nn": "CADOB'ONUX",
+    "l": 1,
+    "g": 1522
+  },
+  "888": {
+    "n": "Cadob'Omb",
+    "nn": "CADOB'OMB",
+    "l": 50,
+    "g": 1522
+  },
+  "889": {
+    "n": "Cadob'Imbo",
+    "nn": "CADOB'IMBO",
+    "l": 20,
+    "g": 1522
+  },
+  "890": {
+    "n": "Bébé Cadob",
+    "nn": "BEBE CADOB",
+    "l": 20,
+    "g": 1522
+  },
+  "891": {
+    "n": "Mini Nuit'",
+    "nn": "MINI NUIT'",
+    "l": 92,
+    "g": 1523
+  },
+  "892": {
+    "n": "Terrakoubiak le Guerrier",
+    "nn": "TERRAKOUBIAK LE GUERRIER",
+    "l": 80,
+    "g": 1480
+  },
+  "893": {
+    "n": "Ignelicrobur le Guerrier",
+    "nn": "IGNELICROBUR LE GUERRIER",
+    "l": 80,
+    "g": 1480
+  },
+  "894": {
+    "n": "Aerohouctor le Guerrier",
+    "nn": "AEROHOUCTOR LE GUERRIER",
+    "l": 80,
+    "g": 1480
+  },
+  "895": {
+    "n": "Aquabralak le Guerrier",
+    "nn": "AQUABRALAK LE GUERRIER",
+    "l": 80,
+    "g": 1480
+  },
+  "896": {
+    "n": "Kitsou Nakwatus",
+    "nn": "KITSOU NAKWATUS",
+    "l": 81,
+    "g": 1519
+  },
+  "899": {
+    "n": "Black Tiwabbitus",
+    "nn": "BLACK TIWABBITUS",
+    "l": 89,
+    "g": 1520
+  },
+  "901": {
+    "n": "Kwakus",
+    "nn": "KWAKUS",
+    "l": 78,
+    "g": 1521
+  },
+  "902": {
+    "n": "Ignerkocropos l'Affamé",
+    "nn": "IGNERKOCROPOS L'AFFAME",
+    "l": 110,
+    "g": 1340
+  },
+  "903": {
+    "n": "Terraburkal le Perfide",
+    "nn": "TERRABURKAL LE PERFIDE",
+    "l": 110,
+    "g": 1340
+  },
+  "904": {
+    "n": "Aerotrugobur le Malveillant",
+    "nn": "AEROTRUGOBUR LE MALVEILLANT",
+    "l": 110,
+    "g": 1340
+  },
+  "905": {
+    "n": "Dragoss de Saphir Eveillé",
+    "nn": "DRAGOSS DE SAPHIR EVEILLE",
+    "l": 100,
+    "g": 1340
+  },
+  "906": {
+    "n": "Cadob'",
+    "nn": "CADOB'",
+    "l": 5,
+    "g": 1522
+  },
+  "907": {
+    "n": "Minimini Nuit'",
+    "nn": "MINIMINI NUIT'",
+    "l": 40,
+    "g": 1523
+  },
+  "917": {
+    "n": "Araknotron",
+    "nn": "ARAKNOTRON",
+    "l": 40,
+    "g": 1337
+  },
+  "919": {
+    "n": "Abraknyde Malade",
+    "nn": "ABRAKNYDE MALADE",
+    "l": 39,
+    "g": 1001
+  },
+  "920": {
+    "n": "Pichon Orange",
+    "nn": "PICHON ORANGE",
+    "l": 10,
+    "g": 1488
+  },
+  "921": {
+    "n": "Pichon Bleu",
+    "nn": "PICHON BLEU",
+    "l": 10,
+    "g": 1487
+  },
+  "922": {
+    "n": "Pichon Blanc",
+    "nn": "PICHON BLANC",
+    "l": 10,
+    "g": 1485
+  },
+  "923": {
+    "n": "Pichon Vert",
+    "nn": "PICHON VERT",
+    "l": 10,
+    "g": 1484
+  },
+  "924": {
+    "n": "Pichon Kloune",
+    "nn": "PICHON KLOUNE",
+    "l": 25,
+    "g": 1483
+  },
+  "926": {
+    "n": "Raul Mops",
+    "nn": "RAUL MOPS",
+    "l": 40,
+    "g": 1481
+  },
+  "927": {
+    "n": "Etoile de la Mer d'Asse",
+    "nn": "ETOILE DE LA MER D'ASSE",
+    "l": 10,
+    "g": 1474
+  },
+  "928": {
+    "n": "Mob l'Eponge",
+    "nn": "MOB L'EPONGE",
+    "l": 30,
+    "g": 1546
+  },
+  "929": {
+    "n": "Péki Garou",
+    "nn": "PEKI GAROU",
+    "l": 158,
+    "g": 1478
+  },
+  "930": {
+    "n": "Quivive",
+    "nn": "QUIVIVE",
+    "l": 1,
+    "g": 1
+  },
+  "931": {
+    "n": "Quivive (copie)",
+    "nn": "QUIVIVE (COPIE)",
+    "l": 1,
+    "g": 1
+  },
+  "932": {
+    "n": "Fantôme Apero",
+    "nn": "FANTOME APERO",
+    "l": 57,
+    "g": 1194
+  },
+  "934": {
+    "n": "La Bloqueuse",
+    "nn": "LA BLOQUEUSE",
+    "l": 6,
+    "g": 1184
+  },
+  "935": {
+    "n": "Rat de Marais",
+    "nn": "RAT DE MARAIS",
+    "l": 70,
+    "g": 1535
+  },
+  "936": {
+    "n": "Rat Batteur",
+    "nn": "RAT BATTEUR",
+    "l": 80,
+    "g": 1534
+  },
+  "937": {
+    "n": "Rat Klure",
+    "nn": "RAT KLURE",
+    "l": 60,
+    "g": 1536
+  },
+  "938": {
+    "n": "Rat Basher",
+    "nn": "RAT BASHER",
+    "l": 60,
+    "g": 1537
+  },
+  "939": {
+    "n": "Rat Noir",
+    "nn": "RAT NOIR",
+    "l": 100,
+    "g": 1538
+  },
+  "940": {
+    "n": "Rat Blanc",
+    "nn": "RAT BLANC",
+    "l": 100,
+    "g": 1544
+  },
+  "941": {
+    "n": "Rat Bajoie",
+    "nn": "RAT BAJOIE",
+    "l": 80,
+    "g": 1539
+  },
+  "942": {
+    "n": "Rat Croc",
+    "nn": "RAT CROC",
+    "l": 70,
+    "g": 1436
+  },
+  "943": {
+    "n": "Sphincter Cell",
+    "nn": "SPHINCTER CELL",
+    "l": 400,
+    "g": 1541
+  },
+  "944": {
+    "n": "Raphaela",
+    "nn": "RAPHAELA",
+    "l": 17,
+    "g": 1126
+  },
+  "945": {
+    "n": "Donatella",
+    "nn": "DONATELLA",
+    "l": 16,
+    "g": 1128
+  },
+  "946": {
+    "n": "Michelangela",
+    "nn": "MICHELANGELA",
+    "l": 20,
+    "g": 1127
+  },
+  "947": {
+    "n": "Leonardawa",
+    "nn": "LEONARDAWA",
+    "l": 18,
+    "g": 1125
+  },
+  "948": {
+    "n": "Paindep",
+    "nn": "PAINDEP",
+    "l": 90,
+    "g": 1101
+  },
+  "949": {
+    "n": "Gobatchef",
+    "nn": "GOBATCHEF",
+    "l": 20,
+    "g": 1076
+  },
+  "950": {
+    "n": "Krazybwork",
+    "nn": "KRAZYBWORK",
+    "l": 30,
+    "g": 1004
+  },
+  "951": {
+    "n": "Bworkidais",
+    "nn": "BWORKIDAIS",
+    "l": 22,
+    "g": 1003
+  },
+  "952": {
+    "n": "Boufball",
+    "nn": "BOUFBALL",
+    "l": 1,
+    "g": 1016
+  },
+  "953": {
+    "n": "Bworkcelhaine",
+    "nn": "BWORKCELHAINE",
+    "l": 90,
+    "g": 1241
+  },
+  "954": {
+    "n": "Moumoule",
+    "nn": "MOUMOULE",
+    "l": 20,
+    "g": 1490
+  },
+  "955": {
+    "n": "Dopeul Feca",
+    "nn": "DOPEUL FECA",
+    "l": 1,
+    "g": 1097
+  },
+  "957": {
+    "n": "Dopeul Enutrof",
+    "nn": "DOPEUL ENUTROF",
+    "l": 1,
+    "g": 1099
+  },
+  "958": {
+    "n": "Dopeul Sram",
+    "nn": "DOPEUL SRAM",
+    "l": 1,
+    "g": 1100
+  },
+  "959": {
+    "n": "Dopeul Xélor",
+    "nn": "DOPEUL XELOR",
+    "l": 1,
+    "g": 1101
+  },
+  "960": {
+    "n": "Dopeul Ecaflip",
+    "nn": "DOPEUL ECAFLIP",
+    "l": 1,
+    "g": 1102
+  },
+  "961": {
+    "n": "Dopeul Eniripsa",
+    "nn": "DOPEUL ENIRIPSA",
+    "l": 1,
+    "g": 1103
+  },
+  "962": {
+    "n": "Dopeul Iop",
+    "nn": "DOPEUL IOP",
+    "l": 1,
+    "g": 1104
+  },
+  "963": {
+    "n": "Dopeul Crâ",
+    "nn": "DOPEUL CRA",
+    "l": 1,
+    "g": 1105
+  },
+  "964": {
+    "n": "Dopeul Sadida",
+    "nn": "DOPEUL SADIDA",
+    "l": 1,
+    "g": 1106
+  },
+  "969": {
+    "n": "Dopeul Pandawa",
+    "nn": "DOPEUL PANDAWA",
+    "l": 1,
+    "g": 1456
+  },
+  "970": {
+    "n": "Petit Tofu",
+    "nn": "PETIT TOFU",
+    "l": 2,
+    "g": 1558
+  },
+  "971": {
+    "n": "Petit Bouftou",
+    "nn": "PETIT BOUFTOU",
+    "l": 3,
+    "g": 1566
+  },
+  "972": {
+    "n": "Jeune Boufton Blanc",
+    "nn": "JEUNE BOUFTON BLANC",
+    "l": 1,
+    "g": 1570
+  },
+  "973": {
+    "n": "Jeune Boufton Noir",
+    "nn": "JEUNE BOUFTON NOIR",
+    "l": 1,
+    "g": 1571
+  },
+  "974": {
+    "n": "Moskito Peureux",
+    "nn": "MOSKITO PEUREUX",
+    "l": 1,
+    "g": 1572
+  },
+  "975": {
+    "n": "Larve Bleue Immature",
+    "nn": "LARVE BLEUE IMMATURE",
+    "l": 2,
+    "g": 1563
+  },
+  "976": {
+    "n": "Larve Orange Immature",
+    "nn": "LARVE ORANGE IMMATURE",
+    "l": 5,
+    "g": 1567
+  },
+  "977": {
+    "n": "Larve Verte Immature",
+    "nn": "LARVE VERTE IMMATURE",
+    "l": 4,
+    "g": 1568
+  },
+  "978": {
+    "n": "Champ Champ Vulnérable",
+    "nn": "CHAMP CHAMP VULNERABLE",
+    "l": 3,
+    "g": 1565
+  },
+  "979": {
+    "n": "Pissenlit Diabolique Apeuré",
+    "nn": "PISSENLIT DIABOLIQUE APEURE",
+    "l": 2,
+    "g": 1560
+  },
+  "980": {
+    "n": "Rose Démoniaque Fragile",
+    "nn": "ROSE DEMONIAQUE FRAGILE",
+    "l": 4,
+    "g": 1561
+  },
+  "981": {
+    "n": "Petit Tournesol Sauvage",
+    "nn": "PETIT TOURNESOL SAUVAGE",
+    "l": 8,
+    "g": 1569
+  },
+  "982": {
+    "n": "Arakne Immature",
+    "nn": "ARAKNE IMMATURE",
+    "l": 1,
+    "g": 1564
+  },
+  "983": {
+    "n": "Jeune Sanglier",
+    "nn": "JEUNE SANGLIER",
+    "l": 10,
+    "g": 1562
+  },
+  "984": {
+    "n": "Petit Chef de Guerre Bouftou",
+    "nn": "PETIT CHEF DE GUERRE BOUFTOU",
+    "l": 10,
+    "g": 1573
+  },
+  "985": {
+    "n": "Titi Gobelait",
+    "nn": "TITI GOBELAIT",
+    "l": 20,
+    "g": 1076
+  },
+  "986": {
+    "n": "Bworkepik",
+    "nn": "BWORKEPIK",
+    "l": 22,
+    "g": 1003
+  },
+  "988": {
+    "n": "Gobriel",
+    "nn": "GOBRIEL",
+    "l": 20,
+    "g": 1076
+  },
+  "989": {
+    "n": "Abraknyde Irascible",
+    "nn": "ABRAKNYDE IRASCIBLE",
+    "l": 41,
+    "g": 1001
+  },
+  "990": {
+    "n": "Araknotron Irascible",
+    "nn": "ARAKNOTRON IRASCIBLE",
+    "l": 40,
+    "g": 1337
+  },
+  "991": {
+    "n": "Abraknyde Sombre Irascible",
+    "nn": "ABRAKNYDE SOMBRE IRASCIBLE",
+    "l": 72,
+    "g": 1158
+  },
+  "992": {
+    "n": "Abrakne Sombre Irascible",
+    "nn": "ABRAKNE SOMBRE IRASCIBLE",
+    "l": 80,
+    "g": 1334
+  },
+  "993": {
+    "n": "Piou de Gobrose",
+    "nn": "PIOU DE GOBROSE",
+    "l": 10,
+    "g": 1212
+  },
+  "996": {
+    "n": "Chafer Prépubère",
+    "nn": "CHAFER PREPUBERE",
+    "l": 10,
+    "g": 1014
+  },
+  "998": {
+    "n": "Crabe Imprudent",
+    "nn": "CRABE IMPRUDENT",
+    "l": 3,
+    "g": 1475
+  },
+  "999": {
+    "n": "Epouvantail d'Incarnam",
+    "nn": "EPOUVANTAIL D'INCARNAM",
+    "l": 1,
+    "g": 1219
+  },
+  "1001": {
+    "n": "Milimilou",
+    "nn": "MILIMILOU",
+    "l": 18,
+    "g": 1581
+  },
+  "1002": {
+    "n": "Ecraz Néhofite",
+    "nn": "ECRAZ NEHOFITE",
+    "l": 10,
+    "g": 20
+  },
+  "1003": {
+    "n": "Epouvantail d'entraînement",
+    "nn": "EPOUVANTAIL D'ENTRAINEMENT",
+    "l": 1,
+    "g": 1219
+  },
+  "1004": {
+    "n": "Fantôme Walk",
+    "nn": "FANTOME WALK",
+    "l": 1,
+    "g": 1321
+  },
+  "1005": {
+    "n": "Fantôme Bébé Pandawa",
+    "nn": "FANTOME BEBE PANDAWA",
+    "l": 1,
+    "g": 1330
+  },
+  "1006": {
+    "n": "Mulou Grankrok",
+    "nn": "MULOU GRANKROK",
+    "l": 60,
+    "g": 1069
+  },
+  "1010": {
+    "n": "RoBotCop",
+    "nn": "ROBOTCOP",
+    "l": 999,
+    "g": 1987
+  },
+  "1011": {
+    "n": "Maman Tofu obèse",
+    "nn": "MAMAN TOFU OBESE",
+    "l": 40,
+    "g": 1376
+  },
+  "1012": {
+    "n": "Tofu obèse Gavé",
+    "nn": "TOFU OBESE GAVE",
+    "l": 30,
+    "g": 1372
+  },
+  "1013": {
+    "n": "Papa Tofu obèse",
+    "nn": "PAPA TOFU OBESE",
+    "l": 30,
+    "g": 1372
+  },
+  "1014": {
+    "n": "Assassin Sram",
+    "nn": "ASSASSIN SRAM",
+    "l": 20,
+    "g": 41
+  },
+  "1015": {
+    "n": "Wa Wabbit",
+    "nn": "WA WABBIT",
+    "l": 30,
+    "g": 1109
+  },
+  "1016": {
+    "n": "Disciple Pandawushu",
+    "nn": "DISCIPLE PANDAWUSHU",
+    "l": 50,
+    "g": 120
+  },
+  "1017": {
+    "n": "Bob Lenald",
+    "nn": "BOB LENALD",
+    "l": 60,
+    "g": 1275
+  },
+  "1018": {
+    "n": "Bob Lenald",
+    "nn": "BOB LENALD",
+    "l": 60,
+    "g": 1275
+  },
+  "1019": {
+    "n": "Bitouf des Plaines",
+    "nn": "BITOUF DES PLAINES",
+    "l": 50,
+    "g": 1586
+  },
+  "1020": {
+    "n": "Bitouf Aérien",
+    "nn": "BITOUF AERIEN",
+    "l": 103,
+    "g": 1631
+  },
+  "1022": {
+    "n": "Corailleur",
+    "nn": "CORAILLEUR",
+    "l": 48,
+    "g": 1587
+  },
+  "1025": {
+    "n": "Craqueleur Poli",
+    "nn": "CRAQUELEUR POLI",
+    "l": 50,
+    "g": 1528
+  },
+  "1026": {
+    "n": "Craqueboule Poli",
+    "nn": "CRAQUEBOULE POLI",
+    "l": 40,
+    "g": 1551
+  },
+  "1027": {
+    "n": "Corailleur Magistral",
+    "nn": "CORAILLEUR MAGISTRAL",
+    "l": 150,
+    "g": 1617
+  },
+  "1029": {
+    "n": "Floribonde",
+    "nn": "FLORIBONDE",
+    "l": 73,
+    "g": 1615
+  },
+  "1037": {
+    "n": "Fantôme Ross",
+    "nn": "FANTOME ROSS",
+    "l": 1,
+    "g": 1332
+  },
+  "1038": {
+    "n": "Fantôme Bilby",
+    "nn": "FANTOME BILBY",
+    "l": 1,
+    "g": 1307
+  },
+  "1039": {
+    "n": "Prince d'Wa",
+    "nn": "PRINCE D'WA",
+    "l": 45,
+    "g": 1109
+  },
+  "1041": {
+    "n": "Bitouf Sombre",
+    "nn": "BITOUF SOMBRE",
+    "l": 69,
+    "g": 1638
+  },
+  "1042": {
+    "n": "Chef Bworkestre",
+    "nn": "CHEF BWORKESTRE",
+    "l": 22,
+    "g": 1003
+  },
+  "1043": {
+    "n": "Poolay",
+    "nn": "POOLAY",
+    "l": 100,
+    "g": 1600
+  },
+  "1044": {
+    "n": "Kaskargo",
+    "nn": "KASKARGO",
+    "l": 104,
+    "g": 1622
+  },
+  "1045": {
+    "n": "Kimbo",
+    "nn": "KIMBO",
+    "l": 950,
+    "g": 1623
+  },
+  "1046": {
+    "n": "Meupette",
+    "nn": "MEUPETTE",
+    "l": 80,
+    "g": 1531
+  },
+  "1047": {
+    "n": "Abrakleur Clair",
+    "nn": "ABRAKLEUR CLAIR",
+    "l": 100,
+    "g": 1598
+  },
+  "1048": {
+    "n": "Sparo",
+    "nn": "SPARO",
+    "l": 48,
+    "g": 1619
+  },
+  "1049": {
+    "n": "Barbroussa",
+    "nn": "BARBROUSSA",
+    "l": 52,
+    "g": 1618
+  },
+  "1050": {
+    "n": "Le Flib",
+    "nn": "LE FLIB",
+    "l": 60,
+    "g": 1620
+  },
+  "1051": {
+    "n": "Gourlo le Terrible",
+    "nn": "GOURLO LE TERRIBLE",
+    "l": 150,
+    "g": 1621
+  },
+  "1052": {
+    "n": "Maître Zoth",
+    "nn": "MAITRE ZOTH",
+    "l": 112,
+    "g": 1610
+  },
+  "1053": {
+    "n": "Gamine Zoth",
+    "nn": "GAMINE ZOTH",
+    "l": 91,
+    "g": 1609
+  },
+  "1054": {
+    "n": "Guerrier Zoth",
+    "nn": "GUERRIER ZOTH",
+    "l": 83,
+    "g": 1608
+  },
+  "1055": {
+    "n": "Disciple Zoth",
+    "nn": "DISCIPLE ZOTH",
+    "l": 79,
+    "g": 1606
+  },
+  "1056": {
+    "n": "Sergent Zoth",
+    "nn": "SERGENT ZOTH",
+    "l": 102,
+    "g": 1607
+  },
+  "1057": {
+    "n": "Roissingue",
+    "nn": "ROISSINGUE",
+    "l": 203,
+    "g": 1624
+  },
+  "1058": {
+    "n": "Tourbassingue",
+    "nn": "TOURBASSINGUE",
+    "l": 81,
+    "g": 1626
+  },
+  "1059": {
+    "n": "Bourbassingue",
+    "nn": "BOURBASSINGUE",
+    "l": 87,
+    "g": 1625
+  },
+  "1060": {
+    "n": "Crustorail Kouraçao",
+    "nn": "CRUSTORAIL KOURACAO",
+    "l": 30,
+    "g": 1592
+  },
+  "1061": {
+    "n": "Crustorail Malibout",
+    "nn": "CRUSTORAIL MALIBOUT",
+    "l": 30,
+    "g": 1594
+  },
+  "1062": {
+    "n": "Crustorail Passaoh",
+    "nn": "CRUSTORAIL PASSAOH",
+    "l": 30,
+    "g": 1593
+  },
+  "1063": {
+    "n": "Crustorail Morito",
+    "nn": "CRUSTORAIL MORITO",
+    "l": 30,
+    "g": 1595
+  },
+  "1064": {
+    "n": "Palmifleur Kouraçao",
+    "nn": "PALMIFLEUR KOURACAO",
+    "l": 28,
+    "g": 1604
+  },
+  "1065": {
+    "n": "Palmifleur Malibout",
+    "nn": "PALMIFLEUR MALIBOUT",
+    "l": 28,
+    "g": 1603
+  },
+  "1066": {
+    "n": "Palmifleur Passaoh",
+    "nn": "PALMIFLEUR PASSAOH",
+    "l": 28,
+    "g": 1605
+  },
+  "1067": {
+    "n": "Palmifleur Morito",
+    "nn": "PALMIFLEUR MORITO",
+    "l": 28,
+    "g": 1602
+  },
+  "1068": {
+    "n": "Mufafah",
+    "nn": "MUFAFAH",
+    "l": 62,
+    "g": 1601
+  },
+  "1069": {
+    "n": "Kido",
+    "nn": "KIDO",
+    "l": 53,
+    "g": 1628
+  },
+  "1070": {
+    "n": "Kilibriss",
+    "nn": "KILIBRISS",
+    "l": 54,
+    "g": 1629
+  },
+  "1071": {
+    "n": "Silf le Rasboul Majeur",
+    "nn": "SILF LE RASBOUL MAJEUR",
+    "l": 400,
+    "g": 1585
+  },
+  "1072": {
+    "n": "Tynril Consterné",
+    "nn": "TYNRIL CONSTERNE",
+    "l": 200,
+    "g": 1616
+  },
+  "1073": {
+    "n": "Brouture",
+    "nn": "BROUTURE",
+    "l": 82,
+    "g": 1614
+  },
+  "1074": {
+    "n": "Nerbe",
+    "nn": "NERBE",
+    "l": 58,
+    "g": 1613
+  },
+  "1075": {
+    "n": "Fécorce",
+    "nn": "FECORCE",
+    "l": 81,
+    "g": 1611
+  },
+  "1076": {
+    "n": "Chiendent",
+    "nn": "CHIENDENT",
+    "l": 54,
+    "g": 1612
+  },
+  "1077": {
+    "n": "Abrakleur Sombre",
+    "nn": "ABRAKLEUR SOMBRE",
+    "l": 81,
+    "g": 1599
+  },
+  "1078": {
+    "n": "Coffre Maudit du Flib",
+    "nn": "COFFRE MAUDIT DU FLIB",
+    "l": 20,
+    "g": 1083
+  },
+  "1079": {
+    "n": "Fantôme Fëanor",
+    "nn": "FANTOME FEANOR",
+    "l": 1,
+    "g": 1331
+  },
+  "1080": {
+    "n": "Tonneau",
+    "nn": "TONNEAU",
+    "l": 20,
+    "g": 1619
+  },
+  "1081": {
+    "n": "Pumbaa",
+    "nn": "PUMBAA",
+    "l": 62,
+    "g": 1597
+  },
+  "1082": {
+    "n": "Boomba Shika",
+    "nn": "BOOMBA SHIKA",
+    "l": 30,
+    "g": 1133
+  },
+  "1084": {
+    "n": "Rasboul Mineur",
+    "nn": "RASBOUL MINEUR",
+    "l": 10,
+    "g": 1630
+  },
+  "1085": {
+    "n": "Tynril Déconcerté",
+    "nn": "TYNRIL DECONCERTE",
+    "l": 200,
+    "g": 9215
+  },
+  "1086": {
+    "n": "Tynril Perfide",
+    "nn": "TYNRIL PERFIDE",
+    "l": 200,
+    "g": 9213
+  },
+  "1087": {
+    "n": "Tynril Ahuri",
+    "nn": "TYNRIL AHURI",
+    "l": 200,
+    "g": 9214
+  },
+  "1088": {
+    "n": "Disciple du Kimbo",
+    "nn": "DISCIPLE DU KIMBO",
+    "l": 20,
+    "g": 1636
+  },
+  "1090": {
+    "n": "Tentacule Quaternaire",
+    "nn": "TENTACULE QUATERNAIRE",
+    "l": 121,
+    "g": 1632
+  },
+  "1091": {
+    "n": "Tentacule Tertiaire",
+    "nn": "TENTACULE TERTIAIRE",
+    "l": 121,
+    "g": 1632
+  },
+  "1092": {
+    "n": "Tentacule Secondaire",
+    "nn": "TENTACULE SECONDAIRE",
+    "l": 121,
+    "g": 1632
+  },
+  "1093": {
+    "n": "Chevalier Noir et Rose",
+    "nn": "CHEVALIER NOIR ET ROSE",
+    "l": 150,
+    "g": 120
+  },
+  "1094": {
+    "n": "Gardien du Pont de la Mort",
+    "nn": "GARDIEN DU PONT DE LA MORT",
+    "l": 150,
+    "g": 30
+  },
+  "1095": {
+    "n": "Fantôme Chacha Tigré",
+    "nn": "FANTOME CHACHA TIGRE",
+    "l": 1,
+    "g": 1303
+  },
+  "1096": {
+    "n": "Le Ouassingue Entourbé",
+    "nn": "LE OUASSINGUE ENTOURBE",
+    "l": 40,
+    "g": 1633
+  },
+  "1097": {
+    "n": "Prisme",
+    "nn": "PRISME",
+    "l": 1,
+    "g": 8102
+  },
+  "1098": {
+    "n": "Disciple Zoth",
+    "nn": "DISCIPLE ZOTH",
+    "l": 79,
+    "g": 1606
+  },
+  "1099": {
+    "n": "Disciple Zoth",
+    "nn": "DISCIPLE ZOTH",
+    "l": 79,
+    "g": 1606
+  },
+  "1100": {
+    "n": "Gamine Zoth",
+    "nn": "GAMINE ZOTH",
+    "l": 91,
+    "g": 1609
+  },
+  "1101": {
+    "n": "Gamine Zoth",
+    "nn": "GAMINE ZOTH",
+    "l": 91,
+    "g": 1609
+  },
+  "1102": {
+    "n": "Guerrier Zoth",
+    "nn": "GUERRIER ZOTH",
+    "l": 83,
+    "g": 1608
+  },
+  "1103": {
+    "n": "Guerrier Zoth",
+    "nn": "GUERRIER ZOTH",
+    "l": 83,
+    "g": 1608
+  },
+  "1104": {
+    "n": "Maître Zoth",
+    "nn": "MAITRE ZOTH",
+    "l": 112,
+    "g": 1610
+  },
+  "1105": {
+    "n": "Maître Zoth",
+    "nn": "MAITRE ZOTH",
+    "l": 112,
+    "g": 1610
+  },
+  "1106": {
+    "n": "Sergent Zoth",
+    "nn": "SERGENT ZOTH",
+    "l": 102,
+    "g": 1607
+  },
+  "1107": {
+    "n": "Sergent Zoth",
+    "nn": "SERGENT ZOTH",
+    "l": 102,
+    "g": 1607
+  },
+  "1108": {
+    "n": "Chaferfu Lancier",
+    "nn": "CHAFERFU LANCIER",
+    "l": 1,
+    "g": 1189
+  },
+  "1109": {
+    "n": "Coeur du village des Zoths",
+    "nn": "COEUR DU VILLAGE DES ZOTHS",
+    "l": 1,
+    "g": 1200
+  },
+  "1110": {
+    "n": "Coeur du village des Zoths",
+    "nn": "COEUR DU VILLAGE DES ZOTHS",
+    "l": 1,
+    "g": 1200
+  },
+  "1111": {
+    "n": "Prisme bontarien",
+    "nn": "PRISME BONTARIEN",
+    "l": 1,
+    "g": 8101
+  },
+  "1112": {
+    "n": "Prisme brâkmarien",
+    "nn": "PRISME BRAKMARIEN",
+    "l": 1,
+    "g": 8100
+  },
+  "1113": {
+    "n": "Disciple Pandawushu",
+    "nn": "DISCIPLE PANDAWUSHU",
+    "l": 50,
+    "g": 120
+  },
+  "1117": {
+    "n": "Voleur de Brâkmar",
+    "nn": "VOLEUR DE BRAKMAR",
+    "l": 35,
+    "g": 1095
+  },
+  "1119": {
+    "n": "Bandit des plaines",
+    "nn": "BANDIT DES PLAINES",
+    "l": 28,
+    "g": 60
+  },
+  "1120": {
+    "n": "Garde des marchands",
+    "nn": "GARDE DES MARCHANDS",
+    "l": 25,
+    "g": 1192
+  },
+  "1121": {
+    "n": "Lieutenant des bandits",
+    "nn": "LIEUTENANT DES BANDITS",
+    "l": 50,
+    "g": 60
+  },
+  "1122": {
+    "n": "Xephirès",
+    "nn": "XEPHIRES",
+    "l": 80,
+    "g": 90
+  },
+  "1123": {
+    "n": "Espionne d'élite",
+    "nn": "ESPIONNE D'ELITE",
+    "l": 45,
+    "g": 41
+  },
+  "1124": {
+    "n": "Guerrier Bontarien",
+    "nn": "GUERRIER BONTARIEN",
+    "l": 50,
+    "g": 1192
+  },
+  "1125": {
+    "n": "Guerrier Brâkmarien",
+    "nn": "GUERRIER BRAKMARIEN",
+    "l": 50,
+    "g": 1205
+  },
+  "1127": {
+    "n": "Croc Gland repu",
+    "nn": "CROC GLAND REPU",
+    "l": 30,
+    "g": 1201
+  },
+  "1128": {
+    "n": "Puissant milicien bontarien",
+    "nn": "PUISSANT MILICIEN BONTARIEN",
+    "l": 70,
+    "g": 1192
+  },
+  "1129": {
+    "n": "Nara",
+    "nn": "NARA",
+    "l": 80,
+    "g": 1074
+  },
+  "1132": {
+    "n": "Baweurk",
+    "nn": "BAWEURK",
+    "l": 40,
+    "g": 1004
+  },
+  "1133": {
+    "n": "Milicien équipé",
+    "nn": "MILICIEN EQUIPE",
+    "l": 40,
+    "g": 1192
+  },
+  "1134": {
+    "n": "Commandant bontarien Kad",
+    "nn": "COMMANDANT BONTARIEN KAD",
+    "l": 50,
+    "g": 1192
+  },
+  "1135": {
+    "n": "Archère équipée",
+    "nn": "ARCHERE EQUIPEE",
+    "l": 40,
+    "g": 91
+  },
+  "1136": {
+    "n": "Guerrier du cimetière",
+    "nn": "GUERRIER DU CIMETIERE",
+    "l": 40,
+    "g": 1205
+  },
+  "1137": {
+    "n": "Assassin du cimetière",
+    "nn": "ASSASSIN DU CIMETIERE",
+    "l": 40,
+    "g": 40
+  },
+  "1138": {
+    "n": "Turorte",
+    "nn": "TURORTE",
+    "l": 250,
+    "g": 1125
+  },
+  "1139": {
+    "n": "Espion blessé",
+    "nn": "ESPION BLESSE",
+    "l": 60,
+    "g": 40
+  },
+  "1140": {
+    "n": "Agent de Brâkmar",
+    "nn": "AGENT DE BRAKMAR",
+    "l": 60,
+    "g": 20
+  },
+  "1141": {
+    "n": "Poursuivant brâkmarien",
+    "nn": "POURSUIVANT BRAKMARIEN",
+    "l": 50,
+    "g": 80
+  },
+  "1142": {
+    "n": "Iop en cape brâkmarienne",
+    "nn": "IOP EN CAPE BRAKMARIENNE",
+    "l": 70,
+    "g": 80
+  },
+  "1143": {
+    "n": "Poursuivant bontarien",
+    "nn": "POURSUIVANT BONTARIEN",
+    "l": 40,
+    "g": 30
+  },
+  "1144": {
+    "n": "Sadida en cape bontarienne",
+    "nn": "SADIDA EN CAPE BONTARIENNE",
+    "l": 60,
+    "g": 100
+  },
+  "1145": {
+    "n": "Oto Mustam",
+    "nn": "OTO MUSTAM",
+    "l": 200,
+    "g": 1206
+  },
+  "1153": {
+    "n": "Tromperelle",
+    "nn": "TROMPERELLE",
+    "l": 125,
+    "g": 1643
+  },
+  "1154": {
+    "n": "Champaknyde",
+    "nn": "CHAMPAKNYDE",
+    "l": 113,
+    "g": 1644
+  },
+  "1155": {
+    "n": "Champodonte",
+    "nn": "CHAMPODONTE",
+    "l": 134,
+    "g": 1640
+  },
+  "1156": {
+    "n": "Champmane",
+    "nn": "CHAMPMANE",
+    "l": 152,
+    "g": 1642
+  },
+  "1157": {
+    "n": "Champbis",
+    "nn": "CHAMPBIS",
+    "l": 144,
+    "g": 1641
+  },
+  "1158": {
+    "n": "Champ à Gnons",
+    "nn": "CHAMP A GNONS",
+    "l": 149,
+    "g": 1639
+  },
+  "1159": {
+    "n": "Ougah",
+    "nn": "OUGAH",
+    "l": 900,
+    "g": 1258
+  },
+  "1160": {
+    "n": "Commandant d'élite bontarien",
+    "nn": "COMMANDANT D'ELITE BONTARIEN",
+    "l": 80,
+    "g": 1192
+  },
+  "1169": {
+    "n": "Oto Mustam",
+    "nn": "OTO MUSTAM",
+    "l": 500,
+    "g": 1206
+  },
+  "1170": {
+    "n": "Ilyzaelle",
+    "nn": "ILYZAELLE",
+    "l": 520,
+    "g": 8036
+  },
+  "1178": {
+    "n": "Champa Explosif",
+    "nn": "CHAMPA EXPLOSIF",
+    "l": 100,
+    "g": 1335
+  },
+  "1179": {
+    "n": "Sapik",
+    "nn": "SAPIK",
+    "l": 35,
+    "g": 1514
+  },
+  "1180": {
+    "n": "Pokipik",
+    "nn": "POKIPIK",
+    "l": 5,
+    "g": 1514
+  },
+  "1181": {
+    "n": "Gloutoblop",
+    "nn": "GLOUTOBLOP",
+    "l": 50,
+    "g": 1652
+  },
+  "1182": {
+    "n": "Blopignon",
+    "nn": "BLOPIGNON",
+    "l": 40,
+    "g": 1645
+  },
+  "1183": {
+    "n": "Tronkoblop",
+    "nn": "TRONKOBLOP",
+    "l": 40,
+    "g": 1653
+  },
+  "1184": {
+    "n": "Blop Coco Royal",
+    "nn": "BLOP COCO ROYAL",
+    "l": 100,
+    "g": 1654
+  },
+  "1185": {
+    "n": "Blop Griotte Royal",
+    "nn": "BLOP GRIOTTE ROYAL",
+    "l": 100,
+    "g": 1657
+  },
+  "1186": {
+    "n": "Blop Indigo Royal",
+    "nn": "BLOP INDIGO ROYAL",
+    "l": 100,
+    "g": 1656
+  },
+  "1187": {
+    "n": "Blop Reinette Royal",
+    "nn": "BLOP REINETTE ROYAL",
+    "l": 100,
+    "g": 1655
+  },
+  "1188": {
+    "n": "Blop Multicolore Royal",
+    "nn": "BLOP MULTICOLORE ROYAL",
+    "l": 150,
+    "g": 1647
+  },
+  "1189": {
+    "n": "Marionnette du Dark Vlad",
+    "nn": "MARIONNETTE DU DARK VLAD",
+    "l": 120,
+    "g": 1071
+  },
+  "1190": {
+    "n": "Marionnette du Bouftou Royal",
+    "nn": "MARIONNETTE DU BOUFTOU ROYAL",
+    "l": 35,
+    "g": 1574
+  },
+  "1191": {
+    "n": "Marionnette du Dragon Cochon",
+    "nn": "MARIONNETTE DU DRAGON COCHON",
+    "l": 100,
+    "g": 1037
+  },
+  "1192": {
+    "n": "Marionnette du Minotoror",
+    "nn": "MARIONNETTE DU MINOTOROR",
+    "l": 125,
+    "g": 1088
+  },
+  "1193": {
+    "n": "Marionnette du Mulou meulé",
+    "nn": "MARIONNETTE DU MULOU MEULE",
+    "l": 158,
+    "g": 1069
+  },
+  "1194": {
+    "n": "Père Fwetar",
+    "nn": "PERE FWETAR",
+    "l": 200,
+    "g": 1660
+  },
+  "1195": {
+    "n": "Qu'Tan",
+    "nn": "QU'TAN",
+    "l": 555,
+    "g": 1665
+  },
+  "1196": {
+    "n": "Demi père Fwetar",
+    "nn": "DEMI PERE FWETAR",
+    "l": 200,
+    "g": 1662
+  },
+  "1197": {
+    "n": "Sbire de Qu'Tan",
+    "nn": "SBIRE DE QU'TAN",
+    "l": 227,
+    "g": 1664
+  },
+  "1198": {
+    "n": "Diablotin rouge",
+    "nn": "DIABLOTIN ROUGE",
+    "l": 1,
+    "g": 1664
+  },
+  "1199": {
+    "n": "Diablotin jaune",
+    "nn": "DIABLOTIN JAUNE",
+    "l": 1,
+    "g": 1664
+  },
+  "1200": {
+    "n": "Diablotin bleu",
+    "nn": "DIABLOTIN BLEU",
+    "l": 1,
+    "g": 1664
+  },
+  "1203": {
+    "n": "Diablotin vert",
+    "nn": "DIABLOTIN VERT",
+    "l": 1,
+    "g": 1664
+  },
+  "1204": {
+    "n": "Cramody",
+    "nn": "CRAMODY",
+    "l": 100,
+    "g": 1726
+  },
+  "1205": {
+    "n": "Mihssih",
+    "nn": "MIHSSIH",
+    "l": 100,
+    "g": 1727
+  },
+  "1206": {
+    "n": "Haras",
+    "nn": "HARAS",
+    "l": 100,
+    "g": 1725
+  },
+  "1207": {
+    "n": "Yllib",
+    "nn": "YLLIB",
+    "l": 100,
+    "g": 1724
+  },
+  "1209": {
+    "n": "Chafer Maudit",
+    "nn": "CHAFER MAUDIT",
+    "l": 135,
+    "g": 1728
+  },
+  "1210": {
+    "n": "Chafer Archer Maudit",
+    "nn": "CHAFER ARCHER MAUDIT",
+    "l": 125,
+    "g": 1729
+  },
+  "1211": {
+    "n": "Garde Havou",
+    "nn": "GARDE HAVOU",
+    "l": 135,
+    "g": 1718
+  },
+  "1212": {
+    "n": "Tireur d'Élite",
+    "nn": "TIREUR D'ELITE",
+    "l": 125,
+    "g": 1719
+  },
+  "1213": {
+    "n": "Mage Céleste",
+    "nn": "MAGE CELESTE",
+    "l": 140,
+    "g": 1723
+  },
+  "1214": {
+    "n": "Palidane le Platiné",
+    "nn": "PALIDANE LE PLATINE",
+    "l": 345,
+    "g": 1720
+  },
+  "1215": {
+    "n": "Craqueleur Céleste",
+    "nn": "CRAQUELEUR CELESTE",
+    "l": 225,
+    "g": 1721
+  },
+  "1216": {
+    "n": "Disciple de Turorte",
+    "nn": "DISCIPLE DE TURORTE",
+    "l": 100,
+    "g": 1722
+  },
+  "1217": {
+    "n": "Chafer Lamicel",
+    "nn": "CHAFER LAMICEL",
+    "l": 345,
+    "g": 1730
+  },
+  "1218": {
+    "n": "Petit Démon rapide",
+    "nn": "PETIT DEMON RAPIDE",
+    "l": 120,
+    "g": 1664
+  },
+  "1219": {
+    "n": "Envoyé des Abysses",
+    "nn": "ENVOYE DES ABYSSES",
+    "l": 225,
+    "g": 1664
+  },
+  "1220": {
+    "n": "Sorcier Démon",
+    "nn": "SORCIER DEMON",
+    "l": 140,
+    "g": 1664
+  },
+  "1229": {
+    "n": "Boomba saoulé",
+    "nn": "BOOMBA SAOULE",
+    "l": 20,
+    "g": 1133
+  },
+  "1230": {
+    "n": "Canon Dorf débutant",
+    "nn": "CANON DORF DEBUTANT",
+    "l": 31,
+    "g": 1123
+  },
+  "1231": {
+    "n": "Nakunbra esseulé",
+    "nn": "NAKUNBRA ESSEULE",
+    "l": 21,
+    "g": 1132
+  },
+  "1232": {
+    "n": "Ballotin le Bouftou",
+    "nn": "BALLOTIN LE BOUFTOU",
+    "l": 3,
+    "g": 1663
+  },
+  "1233": {
+    "n": "Renégat bontarien",
+    "nn": "RENEGAT BONTARIEN",
+    "l": 40,
+    "g": 1192
+  },
+  "1234": {
+    "n": "Lamineur Sombre",
+    "nn": "LAMINEUR SOMBRE",
+    "l": 75,
+    "g": 1073
+  },
+  "1245": {
+    "n": "La jeune fille de l'eau",
+    "nn": "LA JEUNE FILLE DE L'EAU",
+    "l": 1,
+    "g": 1706
+  },
+  "1247": {
+    "n": "Leprechaun",
+    "nn": "LEPRECHAUN",
+    "l": 10,
+    "g": 9090
+  },
+  "1270": {
+    "n": "Fantôme Bouloute du Parrain",
+    "nn": "FANTOME BOULOUTE DU PARRAIN",
+    "l": 1,
+    "g": 1326
+  },
+  "2270": {
+    "n": "Piradain le Pingre",
+    "nn": "PIRADAIN LE PINGRE",
+    "l": 80,
+    "g": 1445
+  },
+  "2271": {
+    "n": "Pékeutar le Tireur",
+    "nn": "PEKEUTAR LE TIREUR",
+    "l": 80,
+    "g": 1449
+  },
+  "2272": {
+    "n": "Pichakoté le Dégoutant",
+    "nn": "PICHAKOTE LE DEGOUTANT",
+    "l": 10,
+    "g": 1484
+  },
+  "2273": {
+    "n": "Ratlbol l'Aigri",
+    "nn": "RATLBOL L'AIGRI",
+    "l": 42,
+    "g": 1226
+  },
+  "2275": {
+    "n": "Ratéhaifaim le Professeur",
+    "nn": "RATEHAIFAIM LE PROFESSEUR",
+    "l": 60,
+    "g": 1226
+  },
+  "2276": {
+    "n": "Ribibi le Cher",
+    "nn": "RIBIBI LE CHER",
+    "l": 21,
+    "g": 1068
+  },
+  "2277": {
+    "n": "Rostensyl la Cuisinière",
+    "nn": "ROSTENSYL LA CUISINIERE",
+    "l": 19,
+    "g": 1044
+  },
+  "2278": {
+    "n": "Soryonara le Poli",
+    "nn": "SORYONARA LE POLI",
+    "l": 107,
+    "g": 1275
+  },
+  "2279": {
+    "n": "Sampi l'Eternel",
+    "nn": "SAMPI L'ETERNEL",
+    "l": 40,
+    "g": 1070
+  },
+  "2280": {
+    "n": "Scapé l'Epée",
+    "nn": "SCAPE L'EPEE",
+    "l": 28,
+    "g": 1138
+  },
+  "2281": {
+    "n": "Scarfayss le Balafré",
+    "nn": "SCARFAYSS LE BALAFRE",
+    "l": 28,
+    "g": 1135
+  },
+  "2282": {
+    "n": "Scarouarze l'Epopée",
+    "nn": "SCAROUARZE L'EPOPEE",
+    "l": 28,
+    "g": 1136
+  },
+  "2283": {
+    "n": "Scaramel le Fondant",
+    "nn": "SCARAMEL LE FONDANT",
+    "l": 28,
+    "g": 1137
+  },
+  "2285": {
+    "n": "Scorpitène l'Enflammé",
+    "nn": "SCORPITENE L'ENFLAMME",
+    "l": 30,
+    "g": 1198
+  },
+  "2286": {
+    "n": "Serpistol l'Illustre",
+    "nn": "SERPISTOL L'ILLUSTRE",
+    "l": 6,
+    "g": 1013
+  },
+  "2287": {
+    "n": "Serpistule le Purulent",
+    "nn": "SERPISTULE LE PURULENT",
+    "l": 50,
+    "g": 1409
+  },
+  "2289": {
+    "n": "Susbewl l'Hypocrite",
+    "nn": "SUSBEWL L'HYPOCRITE",
+    "l": 35,
+    "g": 1104
+  },
+  "2292": {
+    "n": "Tikosto le Mousse",
+    "nn": "TIKOSTO LE MOUSSE",
+    "l": 10,
+    "g": 1118
+  },
+  "2293": {
+    "n": "Tiwalpé le Dévêtu",
+    "nn": "TIWALPE LE DEVETU",
+    "l": 9,
+    "g": 1053
+  },
+  "2294": {
+    "n": "Tiwoflan le Lâche",
+    "nn": "TIWOFLAN LE LACHE",
+    "l": 9,
+    "g": 1055
+  },
+  "2295": {
+    "n": "Tortenssia la Fleurie",
+    "nn": "TORTENSSIA LA FLEURIE",
+    "l": 17,
+    "g": 1126
+  },
+  "2296": {
+    "n": "Tortilleur le Coulé",
+    "nn": "TORTILLEUR LE COULE",
+    "l": 20,
+    "g": 1127
+  },
+  "2297": {
+    "n": "Tortorak le Cornu",
+    "nn": "TORTORAK LE CORNU",
+    "l": 18,
+    "g": 1125
+  },
+  "2298": {
+    "n": "Torthur la Lutte",
+    "nn": "TORTHUR LA LUTTE",
+    "l": 16,
+    "g": 1128
+  },
+  "2299": {
+    "n": "Tronkoneuz la Tranchante",
+    "nn": "TRONKONEUZ LA TRANCHANTE",
+    "l": 25,
+    "g": 1160
+  },
+  "2300": {
+    "n": "Trooyé l'Oxydé",
+    "nn": "TROOYE L'OXYDE",
+    "l": 105,
+    "g": 1131
+  },
+  "2301": {
+    "n": "Trukul le Lent",
+    "nn": "TRUKUL LE LENT",
+    "l": 10,
+    "g": 1121
+  },
+  "2302": {
+    "n": "Vampunor le Glacial",
+    "nn": "VAMPUNOR LE GLACIAL",
+    "l": 9,
+    "g": 1077
+  },
+  "2303": {
+    "n": "YokaiKoral le Duel",
+    "nn": "YOKAIKORAL LE DUEL",
+    "l": 130,
+    "g": 1276
+  },
+  "2304": {
+    "n": "Wabbitud le Constant",
+    "nn": "WABBITUD LE CONSTANT",
+    "l": 16,
+    "g": 1050
+  },
+  "2305": {
+    "n": "Watdogue le Bien Nommé",
+    "nn": "WATDOGUE LE BIEN NOMME",
+    "l": 28,
+    "g": 1057
+  },
+  "2306": {
+    "n": "Warkolad l'Etreinte",
+    "nn": "WARKOLAD L'ETREINTE",
+    "l": 70,
+    "g": 1363
+  },
+  "2307": {
+    "n": "Wara l'Amer",
+    "nn": "WARA L'AMER",
+    "l": 90,
+    "g": 1362
+  },
+  "2308": {
+    "n": "Wokènrôl le Danseur",
+    "nn": "WOKENROL LE DANSEUR",
+    "l": 35,
+    "g": 1052
+  },
+  "2309": {
+    "n": "Abrakroc l'édenté",
+    "nn": "ABRAKROC L'EDENTE",
+    "l": 23,
+    "g": 1001
+  },
+  "2310": {
+    "n": "Arakule la Revancharde",
+    "nn": "ARAKULE LA REVANCHARDE",
+    "l": 1,
+    "g": 1564
+  },
+  "2311": {
+    "n": "Arabord la Cruche",
+    "nn": "ARABORD LA CRUCHE",
+    "l": 35,
+    "g": 1161
+  },
+  "2312": {
+    "n": "Arachitik la Souffreteuse",
+    "nn": "ARACHITIK LA SOUFFRETEUSE",
+    "l": 1,
+    "g": 1564
+  },
+  "2313": {
+    "n": "Bandapar l'Exclu",
+    "nn": "BANDAPAR L'EXCLU",
+    "l": 3,
+    "g": 1095
+  },
+  "2314": {
+    "n": "Bandson le Tonitruant",
+    "nn": "BANDSON LE TONITRUANT",
+    "l": 8,
+    "g": 1095
+  },
+  "2315": {
+    "n": "Boudalf le Blanc",
+    "nn": "BOUDALF LE BLANC",
+    "l": 1,
+    "g": 1570
+  },
+  "2316": {
+    "n": "Boulgourvil le Lointain",
+    "nn": "BOULGOURVIL LE LOINTAIN",
+    "l": 1,
+    "g": 1571
+  },
+  "2317": {
+    "n": "Boufdégou le Refoulant",
+    "nn": "BOUFDEGOU LE REFOULANT",
+    "l": 3,
+    "g": 1566
+  },
+  "2318": {
+    "n": "Boudur le Raide",
+    "nn": "BOUDUR LE RAIDE",
+    "l": 5,
+    "g": 1075
+  },
+  "2319": {
+    "n": "Chafemal le Bagarreur",
+    "nn": "CHAFEMAL LE BAGARREUR",
+    "l": 32,
+    "g": 1014
+  },
+  "2320": {
+    "n": "Chafmarcel le Fêtard",
+    "nn": "CHAFMARCEL LE FETARD",
+    "l": 40,
+    "g": 1190
+  },
+  "2321": {
+    "n": "Chafalfer l'Optimiste",
+    "nn": "CHAFALFER L'OPTIMISTE",
+    "l": 25,
+    "g": 1047
+  },
+  "2322": {
+    "n": "Chalan le Commerçant",
+    "nn": "CHALAN LE COMMERCANT",
+    "l": 40,
+    "g": 1189
+  },
+  "2323": {
+    "n": "Chamchie le Difficile",
+    "nn": "CHAMCHIE LE DIFFICILE",
+    "l": 3,
+    "g": 1565
+  },
+  "2324": {
+    "n": "Bouflet le Puéril",
+    "nn": "BOUFLET LE PUERIL",
+    "l": 15,
+    "g": 1573
+  },
+  "2325": {
+    "n": "Chonstip la Passagère",
+    "nn": "CHONSTIP LA PASSAGERE",
+    "l": 16,
+    "g": 1060
+  },
+  "2326": {
+    "n": "Craquetuss le Piquant",
+    "nn": "CRAQUETUSS LE PIQUANT",
+    "l": 20,
+    "g": 1248
+  },
+  "2327": {
+    "n": "Craraboss le Féérique",
+    "nn": "CRARABOSS LE FEERIQUE",
+    "l": 2,
+    "g": 1009
+  },
+  "2328": {
+    "n": "Forboyar l'Enigmatique",
+    "nn": "FORBOYAR L'ENIGMATIQUE",
+    "l": 28,
+    "g": 1074
+  },
+  "2329": {
+    "n": "Kitsoupierre le Récipient",
+    "nn": "KITSOUPIERRE LE RECIPIENT",
+    "l": 21,
+    "g": 1271
+  },
+  "2331": {
+    "n": "Larvapstrè le Subjectif",
+    "nn": "LARVAPSTRE LE SUBJECTIF",
+    "l": 8,
+    "g": 1567
+  },
+  "2332": {
+    "n": "Larchimaide la Poussée",
+    "nn": "LARCHIMAIDE LA POUSSEE",
+    "l": 6,
+    "g": 1568
+  },
+  "2333": {
+    "n": "Milipatte la Griffe",
+    "nn": "MILIPATTE LA GRIFFE",
+    "l": 18,
+    "g": 1107
+  },
+  "2334": {
+    "n": "Milipussien le Géant",
+    "nn": "MILIPUSSIEN LE GEANT",
+    "l": 10,
+    "g": 1226
+  },
+  "2335": {
+    "n": "Minsinistre l'Elu",
+    "nn": "MINSINISTRE L'ELU",
+    "l": 16,
+    "g": 1073
+  },
+  "2336": {
+    "n": "Mosketère le Dévoué",
+    "nn": "MOSKETERE LE DEVOUE",
+    "l": 1,
+    "g": 1572
+  },
+  "2337": {
+    "n": "Muloufok l'Hilarant",
+    "nn": "MULOUFOK L'HILARANT",
+    "l": 60,
+    "g": 1069
+  },
+  "2338": {
+    "n": "Pichdourse le Puissant",
+    "nn": "PICHDOURSE LE PUISSANT",
+    "l": 10,
+    "g": 1487
+  },
+  "2339": {
+    "n": "Picht le Brioché",
+    "nn": "PICHT LE BRIOCHE",
+    "l": 25,
+    "g": 1483
+  },
+  "2340": {
+    "n": "Pichtoire l'Erudit",
+    "nn": "PICHTOIRE L'ERUDIT",
+    "l": 10,
+    "g": 1488
+  },
+  "2341": {
+    "n": "Pioustone le Problème",
+    "nn": "PIOUSTONE LE PROBLEME",
+    "l": 1,
+    "g": 1212
+  },
+  "2342": {
+    "n": "Pioulbrineur le Mercenaire",
+    "nn": "PIOULBRINEUR LE MERCENAIRE",
+    "l": 1,
+    "g": 1212
+  },
+  "2343": {
+    "n": "Pioufe la Maquillée",
+    "nn": "PIOUFE LA MAQUILLEE",
+    "l": 2,
+    "g": 1212
+  },
+  "2344": {
+    "n": "Pioulette la Coquine",
+    "nn": "PIOULETTE LA COQUINE",
+    "l": 1,
+    "g": 1212
+  },
+  "2345": {
+    "n": "Pioukas la Plante",
+    "nn": "PIOUKAS LA PLANTE",
+    "l": 1,
+    "g": 1212
+  },
+  "2346": {
+    "n": "Pichduitre le Totem",
+    "nn": "PICHDUITRE LE TOTEM",
+    "l": 10,
+    "g": 1485
+  },
+  "2347": {
+    "n": "Pioussokrim le Délétère",
+    "nn": "PIOUSSOKRIM LE DELETERE",
+    "l": 1,
+    "g": 1212
+  },
+  "2348": {
+    "n": "Pissdane l'Insipide",
+    "nn": "PISSDANE L'INSIPIDE",
+    "l": 2,
+    "g": 1560
+  },
+  "2349": {
+    "n": "Preskapwal le Tendancieux",
+    "nn": "PRESKAPWAL LE TENDANCIEUX",
+    "l": 12,
+    "g": 1020
+  },
+  "2350": {
+    "n": "Radoutable le Craint",
+    "nn": "RADOUTABLE LE CRAINT",
+    "l": 30,
+    "g": 1226
+  },
+  "2351": {
+    "n": "Rauligo le Sale",
+    "nn": "RAULIGO LE SALE",
+    "l": 40,
+    "g": 1481
+  },
+  "2352": {
+    "n": "Roz la Magicienne",
+    "nn": "ROZ LA MAGICIENNE",
+    "l": 4,
+    "g": 1561
+  },
+  "2353": {
+    "n": "Sangria le Fruité",
+    "nn": "SANGRIA LE FRUITE",
+    "l": 10,
+    "g": 1562
+  },
+  "2354": {
+    "n": "Sourizoto le Collant",
+    "nn": "SOURIZOTO LE COLLANT",
+    "l": 1,
+    "g": 1084
+  },
+  "2355": {
+    "n": "Tofuldebeu l'Explosif",
+    "nn": "TOFULDEBEU L'EXPLOSIF",
+    "l": 2,
+    "g": 1558
+  },
+  "2356": {
+    "n": "Tofurapin le Pétri",
+    "nn": "TOFURAPIN LE PETRI",
+    "l": 2,
+    "g": 1019
+  },
+  "2357": {
+    "n": "Tofumanchou l'Empereur",
+    "nn": "TOFUMANCHOU L'EMPEREUR",
+    "l": 2,
+    "g": 1072
+  },
+  "2358": {
+    "n": "Tour le Vice",
+    "nn": "TOUR LE VICE",
+    "l": 8,
+    "g": 1569
+  },
+  "2359": {
+    "n": "Maître Onom le Régulier",
+    "nn": "MAITRE ONOM LE REGULIER",
+    "l": 38,
+    "g": 1209
+  },
+  "2360": {
+    "n": "Ecorfé la Vive",
+    "nn": "ECORFE LA VIVE",
+    "l": 81,
+    "g": 1611
+  },
+  "2361": {
+    "n": "Tourbiket le Virevoletant",
+    "nn": "TOURBIKET LE VIREVOLETANT",
+    "l": 81,
+    "g": 1626
+  },
+  "2363": {
+    "n": "Bouliver le Géant",
+    "nn": "BOULIVER LE GEANT",
+    "l": 87,
+    "g": 1625
+  },
+  "2367": {
+    "n": "Dragstore le Généraliste",
+    "nn": "DRAGSTORE LE GENERALISTE",
+    "l": 50,
+    "g": 1025
+  },
+  "2368": {
+    "n": "Dragtula l'Ancien",
+    "nn": "DRAGTULA L'ANCIEN",
+    "l": 50,
+    "g": 1027
+  },
+  "2369": {
+    "n": "Dragstik le Frustre",
+    "nn": "DRAGSTIK LE FRUSTRE",
+    "l": 50,
+    "g": 1028
+  },
+  "2370": {
+    "n": "Fansissla l'Âne",
+    "nn": "FANSISSLA L'ANE",
+    "l": 160,
+    "g": 1290
+  },
+  "2371": {
+    "n": "Geloliaine l'Aérien",
+    "nn": "GELOLIAINE L'AERIEN",
+    "l": 6,
+    "g": 1064
+  },
+  "2372": {
+    "n": "Dragmoclaiss le Fataliste",
+    "nn": "DRAGMOCLAISS LE FATALISTE",
+    "l": 60,
+    "g": 1031
+  },
+  "2373": {
+    "n": "Champoul l'Illuminé",
+    "nn": "CHAMPOUL L'ILLUMINE",
+    "l": 144,
+    "g": 1641
+  },
+  "2374": {
+    "n": "Fanhopruno le Gourmet",
+    "nn": "FANHOPRUNO LE GOURMET",
+    "l": 220,
+    "g": 1288
+  },
+  "2376": {
+    "n": "Gelaviv le Glaçon",
+    "nn": "GELAVIV LE GLACON",
+    "l": 24,
+    "g": 1066
+  },
+  "2377": {
+    "n": "Dragstayr le Fonceur",
+    "nn": "DRAGSTAYR LE FONCEUR",
+    "l": 60,
+    "g": 1032
+  },
+  "2378": {
+    "n": "Cromikay le Néophyte",
+    "nn": "CROMIKAY LE NEOPHYTE",
+    "l": 15,
+    "g": 1201
+  },
+  "2379": {
+    "n": "Draglida la Disparue",
+    "nn": "DRAGLIDA LA DISPARUE",
+    "l": 25,
+    "g": 1108
+  },
+  "2381": {
+    "n": "Abrinos le Clair",
+    "nn": "ABRINOS LE CLAIR",
+    "l": 100,
+    "g": 1598
+  },
+  "2382": {
+    "n": "Toutouf le Velu",
+    "nn": "TOUTOUF LE VELU",
+    "l": 103,
+    "g": 1631
+  },
+  "2383": {
+    "n": "Poolopo la Traditionnelle",
+    "nn": "POOLOPO LA TRADITIONNELLE",
+    "l": 100,
+    "g": 1600
+  },
+  "2384": {
+    "n": "Aboudbra le Porteur",
+    "nn": "ABOUDBRA LE PORTEUR",
+    "l": 35,
+    "g": 1098
+  },
+  "2385": {
+    "n": "Abrakadnuzar",
+    "nn": "ABRAKADNUZAR",
+    "l": 30,
+    "g": 1333
+  },
+  "2386": {
+    "n": "Abraklette le Fondant",
+    "nn": "ABRAKLETTE LE FONDANT",
+    "l": 80,
+    "g": 1334
+  },
+  "2388": {
+    "n": "Abrakanette l'Encapsulé",
+    "nn": "ABRAKANETTE L'ENCAPSULE",
+    "l": 72,
+    "g": 1158
+  },
+  "2389": {
+    "n": "Abrakildas le Vénérable",
+    "nn": "ABRAKILDAS LE VENERABLE",
+    "l": 41,
+    "g": 1001
+  },
+  "2391": {
+    "n": "Ameur la Laide",
+    "nn": "AMEUR LA LAIDE",
+    "l": 35,
+    "g": 1097
+  },
+  "2392": {
+    "n": "Arakozette l'Intrépide",
+    "nn": "ARAKOZETTE L'INTREPIDE",
+    "l": 35,
+    "g": 1002
+  },
+  "2393": {
+    "n": "Araknay la Galopante",
+    "nn": "ARAKNAY LA GALOPANTE",
+    "l": 4,
+    "g": 1564
+  },
+  "2396": {
+    "n": "Bistou le Quêteur",
+    "nn": "BISTOU LE QUETEUR",
+    "l": 14,
+    "g": 1175
+  },
+  "2397": {
+    "n": "Porfavor le Quémandeur",
+    "nn": "PORFAVOR LE QUEMANDEUR",
+    "l": 13,
+    "g": 1040
+  },
+  "2398": {
+    "n": "Bambono le Divin",
+    "nn": "BAMBONO LE DIVIN",
+    "l": 77,
+    "g": 1286
+  },
+  "2399": {
+    "n": "Bilvoezé le Bonimenteur",
+    "nn": "BILVOEZE LE BONIMENTEUR",
+    "l": 14,
+    "g": 1178
+  },
+  "2400": {
+    "n": "Bi le Partageur",
+    "nn": "BI LE PARTAGEUR",
+    "l": 14,
+    "g": 1176
+  },
+  "2401": {
+    "n": "Bistou le Rieur",
+    "nn": "BISTOU LE RIEUR",
+    "l": 14,
+    "g": 1177
+  },
+  "2402": {
+    "n": "Tiwa'Missou le Gateux",
+    "nn": "TIWA'MISSOU LE GATEUX",
+    "l": 9,
+    "g": 1054
+  },
+  "2403": {
+    "n": "Wagnagnah le Sanglant",
+    "nn": "WAGNAGNAH LE SANGLANT",
+    "l": 21,
+    "g": 1051
+  },
+  "2404": {
+    "n": "Blorie L'assourdissante",
+    "nn": "BLORIE L'ASSOURDISSANTE",
+    "l": 30,
+    "g": 1174
+  },
+  "2405": {
+    "n": "Blordur l'Infect",
+    "nn": "BLORDUR L'INFECT",
+    "l": 30,
+    "g": 1172
+  },
+  "2406": {
+    "n": "Bloporte le Veule",
+    "nn": "BLOPORTE LE VEULE",
+    "l": 30,
+    "g": 1171
+  },
+  "2407": {
+    "n": "Blof l'Apathique",
+    "nn": "BLOF L'APATHIQUE",
+    "l": 30,
+    "g": 1173
+  },
+  "2408": {
+    "n": "Boombata le Garde",
+    "nn": "BOOMBATA LE GARDE",
+    "l": 30,
+    "g": 1133
+  },
+  "2411": {
+    "n": "Bulleur le Dormeur",
+    "nn": "BULLEUR LE DORMEUR",
+    "l": 15,
+    "g": 1267
+  },
+  "2412": {
+    "n": "Bramin le Bicéphale",
+    "nn": "BRAMIN LE BICEPHALE",
+    "l": 65,
+    "g": 1095
+  },
+  "2413": {
+    "n": "Buldeflore le Pénétrant",
+    "nn": "BULDEFLORE LE PENETRANT",
+    "l": 18,
+    "g": 1265
+  },
+  "2414": {
+    "n": "Bulgig le Danseur",
+    "nn": "BULGIG LE DANSEUR",
+    "l": 75,
+    "g": 1273
+  },
+  "2415": {
+    "n": "Bulsavon le Gonflé",
+    "nn": "BULSAVON LE GONFLE",
+    "l": 34,
+    "g": 1266
+  },
+  "2416": {
+    "n": "Bworkasse le Dégoutant",
+    "nn": "BWORKASSE LE DEGOUTANT",
+    "l": 22,
+    "g": 1003
+  },
+  "2417": {
+    "n": "Barchwork le Multicolore",
+    "nn": "BARCHWORK LE MULTICOLORE",
+    "l": 18,
+    "g": 1004
+  },
+  "2418": {
+    "n": "Bwormage le Respectueux",
+    "nn": "BWORMAGE LE RESPECTUEUX",
+    "l": 15,
+    "g": 1012
+  },
+  "2419": {
+    "n": "Caboume l'Artilleur",
+    "nn": "CABOUME L'ARTILLEUR",
+    "l": 51,
+    "g": 1123
+  },
+  "2420": {
+    "n": "Cavordemal le Sorcier",
+    "nn": "CAVORDEMAL LE SORCIER",
+    "l": 30,
+    "g": 1038
+  },
+  "2421": {
+    "n": "Chaffoin le Sournois",
+    "nn": "CHAFFOIN LE SOURNOIS",
+    "l": 31,
+    "g": 1188
+  },
+  "2422": {
+    "n": "Chafrit le Barbare",
+    "nn": "CHAFRIT LE BARBARE",
+    "l": 40,
+    "g": 1048
+  },
+  "2423": {
+    "n": "Chamitant le Dillettante",
+    "nn": "CHAMITANT LE DILLETTANTE",
+    "l": 40,
+    "g": 1227
+  },
+  "2424": {
+    "n": "Champayt l'Odorant",
+    "nn": "CHAMPAYT L'ODORANT",
+    "l": 20,
+    "g": 1335
+  },
+  "2425": {
+    "n": "Chamflay le Ballonné",
+    "nn": "CHAMFLAY LE BALLONNE",
+    "l": 20,
+    "g": 1335
+  },
+  "2426": {
+    "n": "Chamdblé le Cultivé",
+    "nn": "CHAMDBLE LE CULTIVE",
+    "l": 20,
+    "g": 1335
+  },
+  "2427": {
+    "n": "Champayr le Disjoncté",
+    "nn": "CHAMPAYR LE DISJONCTE",
+    "l": 10,
+    "g": 1335
+  },
+  "2428": {
+    "n": "Crok le Beau",
+    "nn": "CROK LE BEAU",
+    "l": 61,
+    "g": 1162
+  },
+  "2429": {
+    "n": "Koamag'oel le Défiguré",
+    "nn": "KOAMAG'OEL LE DEFIGURE",
+    "l": 80,
+    "g": 1381
+  },
+  "2430": {
+    "n": "Chevaustine le Reconstruit",
+    "nn": "CHEVAUSTINE LE RECONSTRUIT",
+    "l": 12,
+    "g": 1007
+  },
+  "2431": {
+    "n": "Citassaté le Service",
+    "nn": "CITASSATE LE SERVICE",
+    "l": 5,
+    "g": 1079
+  },
+  "2432": {
+    "n": "Farlon l'Enfant",
+    "nn": "FARLON L'ENFANT",
+    "l": 30,
+    "g": 1257
+  },
+  "2433": {
+    "n": "Codenlgaz le Problème",
+    "nn": "CODENLGAZ LE PROBLEME",
+    "l": 35,
+    "g": 1103
+  },
+  "2434": {
+    "n": "Cooligane le Névrosé",
+    "nn": "COOLIGANE LE NEVROSE",
+    "l": 59,
+    "g": 1013
+  },
+  "2436": {
+    "n": "Crakmitaine le Faucheur",
+    "nn": "CRAKMITAINE LE FAUCHEUR",
+    "l": 25,
+    "g": 1008
+  },
+  "2437": {
+    "n": "Corpat le Vampire",
+    "nn": "CORPAT LE VAMPIRE",
+    "l": 14,
+    "g": 1179
+  },
+  "2438": {
+    "n": "Cramikaz le Suicidaire",
+    "nn": "CRAMIKAZ LE SUICIDAIRE",
+    "l": 39,
+    "g": 1049
+  },
+  "2439": {
+    "n": "Crolnareff l'Exilé",
+    "nn": "CROLNAREFF L'EXILE",
+    "l": 32,
+    "g": 1159
+  },
+  "2440": {
+    "n": "Crognan le Barbare",
+    "nn": "CROGNAN LE BARBARE",
+    "l": 23,
+    "g": 1201
+  },
+  "2442": {
+    "n": "Doktopuss le Maléfique",
+    "nn": "DOKTOPUSS LE MALEFIQUE",
+    "l": 40,
+    "g": 1364
+  },
+  "2445": {
+    "n": "Dragoeth le Penseur",
+    "nn": "DRAGOETH LE PENSEUR",
+    "l": 70,
+    "g": 1034
+  },
+  "2446": {
+    "n": "Dragma le Bouillant",
+    "nn": "DRAGMA LE BOUILLANT",
+    "l": 70,
+    "g": 1033
+  },
+  "2447": {
+    "n": "Dragtonien le Malvoyant",
+    "nn": "DRAGTONIEN LE MALVOYANT",
+    "l": 70,
+    "g": 1035
+  },
+  "2448": {
+    "n": "Dragoo le Cramoisi",
+    "nn": "DRAGOO LE CRAMOISI",
+    "l": 70,
+    "g": 1036
+  },
+  "2449": {
+    "n": "Dragnostik le Sceptique",
+    "nn": "DRAGNOSTIK LE SCEPTIQUE",
+    "l": 60,
+    "g": 1030
+  },
+  "2450": {
+    "n": "Dragkouine la Déguisée",
+    "nn": "DRAGKOUINE LA DEGUISEE",
+    "l": 60,
+    "g": 1029
+  },
+  "2451": {
+    "n": "Dragsta le Détendu",
+    "nn": "DRAGSTA LE DETENDU",
+    "l": 50,
+    "g": 1026
+  },
+  "2452": {
+    "n": "Dragobert le Monarque",
+    "nn": "DRAGOBERT LE MONARQUE",
+    "l": 80,
+    "g": 1502
+  },
+  "2453": {
+    "n": "Dragtopaile l'Excavateur",
+    "nn": "DRAGTOPAILE L'EXCAVATEUR",
+    "l": 50,
+    "g": 1339
+  },
+  "2454": {
+    "n": "Dragminster le Magicien",
+    "nn": "DRAGMINSTER LE MAGICIEN",
+    "l": 100,
+    "g": 1340
+  },
+  "2455": {
+    "n": "Dragalgan l'Effervescent",
+    "nn": "DRAGALGAN L'EFFERVESCENT",
+    "l": 50,
+    "g": 1339
+  },
+  "2456": {
+    "n": "Dragtarus le Bellâtre",
+    "nn": "DRAGTARUS LE BELLATRE",
+    "l": 100,
+    "g": 1340
+  },
+  "2457": {
+    "n": "Dragybuss le Sucré",
+    "nn": "DRAGYBUSS LE SUCRE",
+    "l": 50,
+    "g": 1339
+  },
+  "2458": {
+    "n": "Draquetteur le Voleur",
+    "nn": "DRAQUETTEUR LE VOLEUR",
+    "l": 100,
+    "g": 1340
+  },
+  "2459": {
+    "n": "Dragioli le Succulent",
+    "nn": "DRAGIOLI LE SUCCULENT",
+    "l": 50,
+    "g": 1339
+  },
+  "2460": {
+    "n": "Drageaufol la Joyeuse",
+    "nn": "DRAGEAUFOL LA JOYEUSE",
+    "l": 100,
+    "g": 1340
+  },
+  "2461": {
+    "n": "Dragonienne l'Econome",
+    "nn": "DRAGONIENNE L'ECONOME",
+    "l": 70,
+    "g": 1501
+  },
+  "2462": {
+    "n": "Drakolage le Tentateur",
+    "nn": "DRAKOLAGE LE TENTATEUR",
+    "l": 100,
+    "g": 1440
+  },
+  "2464": {
+    "n": "Dragdikal le Décisif",
+    "nn": "DRAGDIKAL LE DECISIF",
+    "l": 80,
+    "g": 1480
+  },
+  "2465": {
+    "n": "Dragnoute l'Irascible",
+    "nn": "DRAGNOUTE L'IRASCIBLE",
+    "l": 35,
+    "g": 1108
+  },
+  "2466": {
+    "n": "Fanlabiz le Véloce",
+    "nn": "FANLABIZ LE VELOCE",
+    "l": 57,
+    "g": 1194
+  },
+  "2467": {
+    "n": "Fandanleuil le Précis",
+    "nn": "FANDANLEUIL LE PRECIS",
+    "l": 57,
+    "g": 1193
+  },
+  "2468": {
+    "n": "Fantrask le Rêveur",
+    "nn": "FANTRASK LE REVEUR",
+    "l": 57,
+    "g": 1195
+  },
+  "2469": {
+    "n": "Fanstatik l'Etonnant",
+    "nn": "FANSTATIK L'ETONNANT",
+    "l": 164,
+    "g": 1287
+  },
+  "2470": {
+    "n": "Fansiss la Brêle",
+    "nn": "FANSISS LA BRELE",
+    "l": 380,
+    "g": 1296
+  },
+  "2471": {
+    "n": "Fandouich l'Hautain",
+    "nn": "FANDOUICH L'HAUTAIN",
+    "l": 170,
+    "g": 1294
+  },
+  "2472": {
+    "n": "Fanlmyl l'Acuité",
+    "nn": "FANLMYL L'ACUITE",
+    "l": 60,
+    "g": 1293
+  },
+  "2473": {
+    "n": "Fanhnatur le Simple",
+    "nn": "FANHNATUR LE SIMPLE",
+    "l": 60,
+    "g": 1293
+  },
+  "2474": {
+    "n": "Fanfancisco le Cosmopolite",
+    "nn": "FANFANCISCO LE COSMOPOLITE",
+    "l": 60,
+    "g": 1293
+  },
+  "2475": {
+    "n": "Fanjo le Pilote",
+    "nn": "FANJO LE PILOTE",
+    "l": 60,
+    "g": 1293
+  },
+  "2476": {
+    "n": "Fanjipann le Sucré",
+    "nn": "FANJIPANN LE SUCRE",
+    "l": 60,
+    "g": 1293
+  },
+  "2477": {
+    "n": "Fanburn le Viril",
+    "nn": "FANBURN LE VIRIL",
+    "l": 400,
+    "g": 1292
+  },
+  "2482": {
+    "n": "Fossamoel le Juteux",
+    "nn": "FOSSAMOEL LE JUTEUX",
+    "l": 70,
+    "g": 1383
+  },
+  "2483": {
+    "n": "Fantassein le Soldat",
+    "nn": "FANTASSEIN LE SOLDAT",
+    "l": 230,
+    "g": 1289
+  },
+  "2484": {
+    "n": "Fourapin le Chaud",
+    "nn": "FOURAPIN LE CHAUD",
+    "l": 20,
+    "g": 1119
+  },
+  "2486": {
+    "n": "Garsim le Mort",
+    "nn": "GARSIM LE MORT",
+    "l": 20,
+    "g": 1253
+  },
+  "2487": {
+    "n": "Gelanal le Huileux",
+    "nn": "GELANAL LE HUILEUX",
+    "l": 5,
+    "g": 1062
+  },
+  "2493": {
+    "n": "Ginsenk le Stimulant",
+    "nn": "GINSENK LE STIMULANT",
+    "l": 35,
+    "g": 1106
+  },
+  "2494": {
+    "n": "Gobstiniais le Têtu",
+    "nn": "GOBSTINIAIS LE TETU",
+    "l": 10,
+    "g": 1076
+  },
+  "2495": {
+    "n": "Gloubibou le Gars",
+    "nn": "GLOUBIBOU LE GARS",
+    "l": 80,
+    "g": 1122
+  },
+  "2497": {
+    "n": "Guerrite le Veilleur",
+    "nn": "GUERRITE LE VEILLEUR",
+    "l": 70,
+    "g": 1368
+  },
+  "2498": {
+    "n": "Grandilok le Clameur",
+    "nn": "GRANDILOK LE CLAMEUR",
+    "l": 35,
+    "g": 1056
+  },
+  "2502": {
+    "n": "Kannibal le Lecteur",
+    "nn": "KANNIBAL LE LECTEUR",
+    "l": 43,
+    "g": 1115
+  },
+  "2503": {
+    "n": "Kanasukr le Mielleux",
+    "nn": "KANASUKR LE MIELLEUX",
+    "l": 60,
+    "g": 1039
+  },
+  "2505": {
+    "n": "Kannémik le Maigre",
+    "nn": "KANNEMIK LE MAIGRE",
+    "l": 43,
+    "g": 1112
+  },
+  "2506": {
+    "n": "Kannisterik le Forcené",
+    "nn": "KANNISTERIK LE FORCENE",
+    "l": 43,
+    "g": 1113
+  },
+  "2507": {
+    "n": "Kapota la Fraise",
+    "nn": "KAPOTA LA FRAISE",
+    "l": 43,
+    "g": 1114
+  },
+  "2508": {
+    "n": "Kiroyal le Sirupeux",
+    "nn": "KIROYAL LE SIRUPEUX",
+    "l": 35,
+    "g": 1102
+  },
+  "2509": {
+    "n": "Koaskette la Chapelière",
+    "nn": "KOASKETTE LA CHAPELIERE",
+    "l": 60,
+    "g": 1359
+  },
+  "2510": {
+    "n": "Kitsoudbra le Malodorant",
+    "nn": "KITSOUDBRA LE MALODORANT",
+    "l": 53,
+    "g": 1268
+  },
+  "2511": {
+    "n": "Kitsoupopulère le Généreux",
+    "nn": "KITSOUPOPULERE LE GENEREUX",
+    "l": 73,
+    "g": 1270
+  },
+  "2512": {
+    "n": "Kitsoufre l'Explosif",
+    "nn": "KITSOUFRE L'EXPLOSIF",
+    "l": 103,
+    "g": 1269
+  },
+  "2513": {
+    "n": "Koamaembair le Coulant",
+    "nn": "KOAMAEMBAIR LE COULANT",
+    "l": 60,
+    "g": 1359
+  },
+  "2514": {
+    "n": "Koalaboi le Calorifère",
+    "nn": "KOALABOI LE CALORIFERE",
+    "l": 90,
+    "g": 1367
+  },
+  "2515": {
+    "n": "Koasossyal le Psychopathe",
+    "nn": "KOASOSSYAL LE PSYCHOPATHE",
+    "l": 80,
+    "g": 1446
+  },
+  "2516": {
+    "n": "Koakofrui le Confit",
+    "nn": "KOAKOFRUI LE CONFIT",
+    "l": 60,
+    "g": 1359
+  },
+  "2517": {
+    "n": "Koalastrof la Naturelle",
+    "nn": "KOALASTROF LA NATURELLE",
+    "l": 40,
+    "g": 1365
+  },
+  "2518": {
+    "n": "Koarmit la Batracienne",
+    "nn": "KOARMIT LA BATRACIENNE",
+    "l": 60,
+    "g": 1359
+  },
+  "2519": {
+    "n": "Koalvissie le Chauve",
+    "nn": "KOALVISSIE LE CHAUVE",
+    "l": 85,
+    "g": 1361
+  },
+  "2520": {
+    "n": "Kolforthe l'Indécollable",
+    "nn": "KOLFORTHE L'INDECOLLABLE",
+    "l": 5,
+    "g": 1085
+  },
+  "2521": {
+    "n": "Krapahut le Randonneur",
+    "nn": "KRAPAHUT LE RANDONNEUR",
+    "l": 30,
+    "g": 1348
+  },
+  "2522": {
+    "n": "Kwoanneur le Frimeur",
+    "nn": "KWOANNEUR LE FRIMEUR",
+    "l": 5,
+    "g": 1081
+  },
+  "2524": {
+    "n": "Ouassébo l'Esthète",
+    "nn": "OUASSEBO L'ESTHETE",
+    "l": 40,
+    "g": 1252
+  },
+  "2525": {
+    "n": "Let le Rond",
+    "nn": "LET LE ROND",
+    "l": 35,
+    "g": 1105
+  },
+  "2526": {
+    "n": "Mahoku le Botté",
+    "nn": "MAHOKU LE BOTTE",
+    "l": 110,
+    "g": 1275
+  },
+  "2527": {
+    "n": "Léopolnor le Barde",
+    "nn": "LEOPOLNOR LE BARDE",
+    "l": 50,
+    "g": 1278
+  },
+  "2528": {
+    "n": "Mamakomou l'Âge",
+    "nn": "MAMAKOMOU L'AGE",
+    "l": 90,
+    "g": 1366
+  },
+  "2529": {
+    "n": "Mandalo l'Aqueuse",
+    "nn": "MANDALO L'AQUEUSE",
+    "l": 20,
+    "g": 1341
+  },
+  "2531": {
+    "n": "Maître Koantik le Théoricien",
+    "nn": "MAITRE KOANTIK LE THEORICIEN",
+    "l": 100,
+    "g": 1439
+  },
+  "2532": {
+    "n": "Maître Amboat le Moqueur",
+    "nn": "MAITRE AMBOAT LE MOQUEUR",
+    "l": 17,
+    "g": 1078
+  },
+  "2533": {
+    "n": "Minoskour le Sauveur",
+    "nn": "MINOSKOUR LE SAUVEUR",
+    "l": 20,
+    "g": 1347
+  },
+  "2534": {
+    "n": "Momikonos la Bandelette",
+    "nn": "MOMIKONOS LA BANDELETTE",
+    "l": 90,
+    "g": 1382
+  },
+  "2538": {
+    "n": "Nakuneuye le Borgne",
+    "nn": "NAKUNEUYE LE BORGNE",
+    "l": 51,
+    "g": 1132
+  },
+  "2539": {
+    "n": "Nelvin le Boulet",
+    "nn": "NELVIN LE BOULET",
+    "l": 35,
+    "g": 1101
+  },
+  "2540": {
+    "n": "Nipulnislip l'Exhibitionniste",
+    "nn": "NIPULNISLIP L'EXHIBITIONNISTE",
+    "l": 35,
+    "g": 1100
+  },
+  "2541": {
+    "n": "NodKoku le Trahi",
+    "nn": "NODKOKU LE TRAHI",
+    "l": 10,
+    "g": 1120
+  },
+  "2542": {
+    "n": "Neufedur le Flottant",
+    "nn": "NEUFEDUR LE FLOTTANT",
+    "l": 20,
+    "g": 1080
+  },
+  "2543": {
+    "n": "Onihylis le Destructeur",
+    "nn": "ONIHYLIS LE DESTRUCTEUR",
+    "l": 75,
+    "g": 1153
+  },
+  "2544": {
+    "n": "Abrakine le Sombre",
+    "nn": "ABRAKINE LE SOMBRE",
+    "l": 81,
+    "g": 1599
+  },
+  "2545": {
+    "n": "Barebourd le Comte",
+    "nn": "BAREBOURD LE COMTE",
+    "l": 52,
+    "g": 1618
+  },
+  "2546": {
+    "n": "Bitoven le Musicien",
+    "nn": "BITOVEN LE MUSICIEN",
+    "l": 69,
+    "g": 1638
+  },
+  "2547": {
+    "n": "Toufou le Benêt",
+    "nn": "TOUFOU LE BENET",
+    "l": 50,
+    "g": 1586
+  },
+  "2548": {
+    "n": "Bambouské le Camouflé",
+    "nn": "BAMBOUSKE LE CAMOUFLE",
+    "l": 16,
+    "g": 1285
+  },
+  "2549": {
+    "n": "Boostif l'Affamé",
+    "nn": "BOOSTIF L'AFFAME",
+    "l": 15,
+    "g": 1067
+  },
+  "2550": {
+    "n": "Brouste l'Humiliant",
+    "nn": "BROUSTE L'HUMILIANT",
+    "l": 82,
+    "g": 1614
+  },
+  "2551": {
+    "n": "Champolyon le Polyglotte",
+    "nn": "CHAMPOLYON LE POLYGLOTTE",
+    "l": 149,
+    "g": 1639
+  },
+  "2552": {
+    "n": "Chamoute le Duveteux",
+    "nn": "CHAMOUTE LE DUVETEUX",
+    "l": 134,
+    "g": 1640
+  },
+  "2553": {
+    "n": "Chamilero le Malchanceux",
+    "nn": "CHAMILERO LE MALCHANCEUX",
+    "l": 113,
+    "g": 1644
+  },
+  "2554": {
+    "n": "Chiendanlémin l'Illusionniste",
+    "nn": "CHIENDANLEMIN L'ILLUSIONNISTE",
+    "l": 54,
+    "g": 1612
+  },
+  "2555": {
+    "n": "Corboyard l'Enigmatique",
+    "nn": "CORBOYARD L'ENIGMATIQUE",
+    "l": 48,
+    "g": 1587
+  },
+  "2556": {
+    "n": "Craquetou le Fissuré",
+    "nn": "CRAQUETOU LE FISSURE",
+    "l": 40,
+    "g": 1551
+  },
+  "2557": {
+    "n": "Crustterus l'Organique",
+    "nn": "CRUSTTERUS L'ORGANIQUE",
+    "l": 30,
+    "g": 1592
+  },
+  "2558": {
+    "n": "Crustensyl le Pragmatique",
+    "nn": "CRUSTENSYL LE PRAGMATIQUE",
+    "l": 30,
+    "g": 1594
+  },
+  "2559": {
+    "n": "Cruskof le Rustre",
+    "nn": "CRUSKOF LE RUSTRE",
+    "l": 30,
+    "g": 1595
+  },
+  "2560": {
+    "n": "Crusmeyer le Pervers",
+    "nn": "CRUSMEYER LE PERVERS",
+    "l": 30,
+    "g": 1593
+  },
+  "2561": {
+    "n": "Crathdogue le Cruel",
+    "nn": "CRATHDOGUE LE CRUEL",
+    "l": 50,
+    "g": 1528
+  },
+  "2562": {
+    "n": "Diskord le Belliqueux",
+    "nn": "DISKORD LE BELLIQUEUX",
+    "l": 79,
+    "g": 1606
+  },
+  "2563": {
+    "n": "Fantoch le Pantin",
+    "nn": "FANTOCH LE PANTIN",
+    "l": 57,
+    "g": 1194
+  },
+  "2564": {
+    "n": "Fanlagoel le Comique",
+    "nn": "FANLAGOEL LE COMIQUE",
+    "l": 230,
+    "g": 1288
+  },
+  "2565": {
+    "n": "Floanna la Blonde",
+    "nn": "FLOANNA LA BLONDE",
+    "l": 73,
+    "g": 1615
+  },
+  "2566": {
+    "n": "Gastroth la Contagieuse",
+    "nn": "GASTROTH LA CONTAGIEUSE",
+    "l": 91,
+    "g": 1609
+  },
+  "2567": {
+    "n": "Faufoll la Joyeuse",
+    "nn": "FAUFOLL LA JOYEUSE",
+    "l": 100,
+    "g": 1447
+  },
+  "2568": {
+    "n": "Germinol l'Indigent",
+    "nn": "GERMINOL L'INDIGENT",
+    "l": 40,
+    "g": 1384
+  },
+  "2569": {
+    "n": "Guerumoth le Collant",
+    "nn": "GUERUMOTH LE COLLANT",
+    "l": 83,
+    "g": 1608
+  },
+  "2570": {
+    "n": "Kaskapointhe la Couverte",
+    "nn": "KASKAPOINTHE LA COUVERTE",
+    "l": 104,
+    "g": 1622
+  },
+  "2571": {
+    "n": "Kido l'Âtre",
+    "nn": "KIDO L'ATRE",
+    "l": 53,
+    "g": 1628
+  },
+  "2572": {
+    "n": "Kilimanj'haro le Grimpeur",
+    "nn": "KILIMANJ'HARO LE GRIMPEUR",
+    "l": 54,
+    "g": 1629
+  },
+  "2573": {
+    "n": "Koktèle le Secoué",
+    "nn": "KOKTELE LE SECOUE",
+    "l": 40,
+    "g": 1116
+  },
+  "2574": {
+    "n": "Larvonika l'Instrument",
+    "nn": "LARVONIKA L'INSTRUMENT",
+    "l": 2,
+    "g": 1563
+  },
+  "2575": {
+    "n": "Ouashouash l'Exubérant",
+    "nn": "OUASHOUASH L'EXUBERANT",
+    "l": 40,
+    "g": 1633
+  },
+  "2577": {
+    "n": "Meuroup le Prêtre",
+    "nn": "MEUROUP LE PRETRE",
+    "l": 80,
+    "g": 1531
+  },
+  "2578": {
+    "n": "Don Kizoth l'Obstiné",
+    "nn": "DON KIZOTH L'OBSTINE",
+    "l": 112,
+    "g": 1610
+  },
+  "2579": {
+    "n": "Nerdeubeu le Flagellant",
+    "nn": "NERDEUBEU LE FLAGELLANT",
+    "l": 58,
+    "g": 1613
+  },
+  "2580": {
+    "n": "Mufguedin le Suprême",
+    "nn": "MUFGUEDIN LE SUPREME",
+    "l": 62,
+    "g": 1601
+  },
+  "2581": {
+    "n": "Palmbytch la Bronzée",
+    "nn": "PALMBYTCH LA BRONZEE",
+    "l": 30,
+    "g": 1604
+  },
+  "2582": {
+    "n": "Palmito le Menteur",
+    "nn": "PALMITO LE MENTEUR",
+    "l": 28,
+    "g": 1603
+  },
+  "2583": {
+    "n": "Palmiche le Serein",
+    "nn": "PALMICHE LE SEREIN",
+    "l": 28,
+    "g": 1602
+  },
+  "2584": {
+    "n": "Palmiflette le Convivial",
+    "nn": "PALMIFLETTE LE CONVIVIAL",
+    "l": 28,
+    "g": 1605
+  },
+  "2585": {
+    "n": "Osuxion le Vampirique",
+    "nn": "OSUXION LE VAMPIRIQUE",
+    "l": 35,
+    "g": 1099
+  },
+  "2587": {
+    "n": "Seripoth l'Ennemi",
+    "nn": "SERIPOTH L'ENNEMI",
+    "l": 102,
+    "g": 1607
+  },
+  "2588": {
+    "n": "Sparoket le Lanceur",
+    "nn": "SPAROKET LE LANCEUR",
+    "l": 48,
+    "g": 1619
+  },
+  "2589": {
+    "n": "Ougaould le Parasite",
+    "nn": "OUGAOULD LE PARASITE",
+    "l": 45,
+    "g": 1196
+  },
+  "2590": {
+    "n": "Pandanlagl la Saoule",
+    "nn": "PANDANLAGL LA SAOULE",
+    "l": 30,
+    "g": 8011
+  },
+  "2591": {
+    "n": "Pandouille le Titubant",
+    "nn": "PANDOUILLE LE TITUBANT",
+    "l": 40,
+    "g": 8010
+  },
+  "2592": {
+    "n": "Pandimaensh l'Animateur",
+    "nn": "PANDIMAENSH L'ANIMATEUR",
+    "l": 39,
+    "g": 1260
+  },
+  "2593": {
+    "n": "Pandimy le Contagieux",
+    "nn": "PANDIMY LE CONTAGIEUX",
+    "l": 40,
+    "g": 1260
+  },
+  "2597": {
+    "n": "Pandive le Végétarien",
+    "nn": "PANDIVE LE VEGETARIEN",
+    "l": 200,
+    "g": 1295
+  },
+  "2598": {
+    "n": "Pangraive le Militant",
+    "nn": "PANGRAIVE LE MILITANT",
+    "l": 50,
+    "g": 1274
+  },
+  "2600": {
+    "n": "Champmé le Méchant",
+    "nn": "CHAMPME LE MECHANT",
+    "l": 152,
+    "g": 1642
+  },
+  "2601": {
+    "n": "Tromplamor le Survivant",
+    "nn": "TROMPLAMOR LE SURVIVANT",
+    "l": 125,
+    "g": 1643
+  },
+  "2602": {
+    "n": "Chacha Angora",
+    "nn": "CHACHA ANGORA",
+    "l": 1,
+    "g": 5001
+  },
+  "2603": {
+    "n": "Fantôme Pioute Vert",
+    "nn": "FANTOME PIOUTE VERT",
+    "l": 1,
+    "g": 1712
+  },
+  "2604": {
+    "n": "Fantôme Tiwabbit Kiafin",
+    "nn": "FANTOME TIWABBIT KIAFIN",
+    "l": 1,
+    "g": 1711
+  },
+  "2605": {
+    "n": "Miniminotot",
+    "nn": "MINIMINOTOT",
+    "l": 1,
+    "g": 1316
+  },
+  "2606": {
+    "n": "Fantôme Crocodaille",
+    "nn": "FANTOME CROCODAILLE",
+    "l": 1,
+    "g": 1710
+  },
+  "2607": {
+    "n": "Dragoune Noire",
+    "nn": "DRAGOUNE NOIRE",
+    "l": 1,
+    "g": 1313
+  },
+  "2608": {
+    "n": "Dopeul Sacrieur",
+    "nn": "DOPEUL SACRIEUR",
+    "l": 1,
+    "g": 1240
+  },
+  "2609": {
+    "n": "Dopeul Osamodas",
+    "nn": "DOPEUL OSAMODAS",
+    "l": 1,
+    "g": 1098
+  },
+  "2611": {
+    "n": "Minotoror",
+    "nn": "MINOTOROR",
+    "l": 125,
+    "g": 1088
+  },
+  "2612": {
+    "n": "Glagla",
+    "nn": "GLAGLA",
+    "l": 5,
+    "g": 1062
+  },
+  "2614": {
+    "n": "Roy le Merlin",
+    "nn": "ROY LE MERLIN",
+    "l": 203,
+    "g": 1624
+  },
+  "2615": {
+    "n": "Scaratyn l'huitre",
+    "nn": "SCARATYN L'HUITRE",
+    "l": 30,
+    "g": 1388
+  },
+  "2616": {
+    "n": "Ouature la Mobile",
+    "nn": "OUATURE LA MOBILE",
+    "l": 40,
+    "g": 1251
+  },
+  "2617": {
+    "n": "Sac Animé",
+    "nn": "SAC ANIME",
+    "l": 10,
+    "g": 1144
+  },
+  "2618": {
+    "n": "Ondine",
+    "nn": "ONDINE",
+    "l": 5,
+    "g": 1706
+  },
+  "2619": {
+    "n": "La Fruitée",
+    "nn": "LA FRUITEE",
+    "l": 10,
+    "g": 1182
+  },
+  "2621": {
+    "n": "Fantôme Shushu de Rushu",
+    "nn": "FANTOME SHUSHU DE RUSHU",
+    "l": 1,
+    "g": 1713
+  },
+  "2622": {
+    "n": "Croc Gland",
+    "nn": "CROC GLAND",
+    "l": 15,
+    "g": 1201
+  },
+  "2627": {
+    "n": "Lutin d'anniversaire",
+    "nn": "LUTIN D'ANNIVERSAIRE",
+    "l": 10,
+    "g": 9090
+  },
+  "2630": {
+    "n": "Arakne Majeure",
+    "nn": "ARAKNE MAJEURE",
+    "l": 1,
+    "g": 1161
+  },
+  "2631": {
+    "n": "Tavernier Bagrutte",
+    "nn": "TAVERNIER BAGRUTTE",
+    "l": 5,
+    "g": 1207
+  },
+  "2632": {
+    "n": "Sabine",
+    "nn": "SABINE",
+    "l": 60,
+    "g": 71
+  },
+  "2633": {
+    "n": "Chef des voleurs de Brâkmar",
+    "nn": "CHEF DES VOLEURS DE BRAKMAR",
+    "l": 50,
+    "g": 40
+  },
+  "2634": {
+    "n": "Nana moche qui rit",
+    "nn": "NANA MOCHE QUI RIT",
+    "l": 50,
+    "g": 51
+  },
+  "2635": {
+    "n": "Sram moche",
+    "nn": "SRAM MOCHE",
+    "l": 35,
+    "g": 40
+  },
+  "2636": {
+    "n": "Gardien du puits",
+    "nn": "GARDIEN DU PUITS",
+    "l": 100,
+    "g": 20
+  },
+  "2637": {
+    "n": "Pousse-cailloux",
+    "nn": "POUSSE-CAILLOUX",
+    "l": 30,
+    "g": 1220
+  },
+  "2638": {
+    "n": "Lame Vorpale",
+    "nn": "LAME VORPALE",
+    "l": 1,
+    "g": 1229
+  },
+  "2639": {
+    "n": "Coffre Piégé",
+    "nn": "COFFRE PIEGE",
+    "l": 40,
+    "g": 1083
+  },
+  "2640": {
+    "n": "Siaom",
+    "nn": "SIAOM",
+    "l": 40,
+    "g": 1082
+  },
+  "2641": {
+    "n": "Robot Fléau",
+    "nn": "ROBOT FLEAU",
+    "l": 30,
+    "g": 1223
+  },
+  "2642": {
+    "n": "Croc Gland fraîchement dompté",
+    "nn": "CROC GLAND FRAICHEMENT DOMPTE",
+    "l": 30,
+    "g": 1201
+  },
+  "2643": {
+    "n": "Gardien du convoi",
+    "nn": "GARDIEN DU CONVOI",
+    "l": 60,
+    "g": 1192
+  },
+  "2644": {
+    "n": "Chef du convoi",
+    "nn": "CHEF DU CONVOI",
+    "l": 80,
+    "g": 1191
+  },
+  "2645": {
+    "n": "Néforun",
+    "nn": "NEFORUN",
+    "l": 50,
+    "g": 70
+  },
+  "2646": {
+    "n": "Arlette Ba",
+    "nn": "ARLETTE BA",
+    "l": 70,
+    "g": 91
+  },
+  "2647": {
+    "n": "Lelievwe Pâle Pitane",
+    "nn": "LELIEVWE PALE PITANE",
+    "l": 200,
+    "g": 1056
+  },
+  "2649": {
+    "n": "Grimpill",
+    "nn": "GRIMPILL",
+    "l": 50,
+    "g": 60
+  },
+  "2651": {
+    "n": "Eniripsa de Brâkmar",
+    "nn": "ENIRIPSA DE BRAKMAR",
+    "l": 60,
+    "g": 70
+  },
+  "2661": {
+    "n": "Espion en fuite",
+    "nn": "ESPION EN FUITE",
+    "l": 50,
+    "g": 10
+  },
+  "2662": {
+    "n": "Chasseuse d'âmes",
+    "nn": "CHASSEUSE D'AMES",
+    "l": 50,
+    "g": 11
+  },
+  "2663": {
+    "n": "Chasseur d'âmes",
+    "nn": "CHASSEUR D'AMES",
+    "l": 55,
+    "g": 60
+  },
+  "2664": {
+    "n": "Bwork en fuite",
+    "nn": "BWORK EN FUITE",
+    "l": 22,
+    "g": 1003
+  },
+  "2668": {
+    "n": "Espion Sombre",
+    "nn": "ESPION SOMBRE",
+    "l": 60,
+    "g": 60
+  },
+  "2669": {
+    "n": "Espionne Sombre",
+    "nn": "ESPIONNE SOMBRE",
+    "l": 70,
+    "g": 41
+  },
+  "2670": {
+    "n": "Chef des renégats bontariens",
+    "nn": "CHEF DES RENEGATS BONTARIENS",
+    "l": 70,
+    "g": 1191
+  },
+  "2672": {
+    "n": "Fantôme Bouloute",
+    "nn": "FANTOME BOULOUTE",
+    "l": 1,
+    "g": 1326
+  },
+  "2673": {
+    "n": "Jissey Pandamme",
+    "nn": "JISSEY PANDAMME",
+    "l": 50,
+    "g": 120
+  },
+  "2680": {
+    "n": "Kreuvète la Bwork ingénue",
+    "nn": "KREUVETE LA BWORK INGENUE",
+    "l": 200,
+    "g": 1244
+  },
+  "2681": {
+    "n": "Dikal",
+    "nn": "DIKAL",
+    "l": 1,
+    "g": 1226
+  },
+  "2682": {
+    "n": "Sac d'os",
+    "nn": "SAC D'OS",
+    "l": 1,
+    "g": 1014
+  },
+  "2683": {
+    "n": "Némik",
+    "nn": "NEMIK",
+    "l": 1,
+    "g": 1227
+  },
+  "2684": {
+    "n": "Nékros",
+    "nn": "NEKROS",
+    "l": 1,
+    "g": 1189
+  },
+  "2685": {
+    "n": "Kruorre le Chafer Haï",
+    "nn": "KRUORRE LE CHAFER HAI",
+    "l": 200,
+    "g": 1188
+  },
+  "2691": {
+    "n": "Dopeul Pandawa",
+    "nn": "DOPEUL PANDAWA",
+    "l": 20,
+    "g": 1456
+  },
+  "2701": {
+    "n": "Coffre ensorcelé du Magik Riktus",
+    "nn": "COFFRE ENSORCELE DU MAGIK RIKTUS",
+    "l": 1,
+    "g": 1083
+  },
+  "2727": {
+    "n": "Tonneau",
+    "nn": "TONNEAU",
+    "l": 1,
+    "g": 7029
+  },
+  "2749": {
+    "n": "Tacticien de Bonta",
+    "nn": "TACTICIEN DE BONTA",
+    "l": 1,
+    "g": 30
+  },
+  "2750": {
+    "n": "Arbre de vie",
+    "nn": "ARBRE DE VIE",
+    "l": 1,
+    "g": 1183
+  },
+  "2757": {
+    "n": "Chaton de Grimpill",
+    "nn": "CHATON DE GRIMPILL",
+    "l": 1,
+    "g": 1018
+  },
+  "2767": {
+    "n": "Prespic",
+    "nn": "PRESPIC",
+    "l": 5,
+    "g": 1020
+  },
+  "2768": {
+    "n": "La Gonflable",
+    "nn": "LA GONFLABLE",
+    "l": 5,
+    "g": 1182
+  },
+  "2769": {
+    "n": "Sanglier",
+    "nn": "SANGLIER",
+    "l": 5,
+    "g": 1562
+  },
+  "2770": {
+    "n": "Chafer Os",
+    "nn": "CHAFER OS",
+    "l": 1,
+    "g": 1014
+  },
+  "2771": {
+    "n": "Abraknyde invoqué",
+    "nn": "ABRAKNYDE INVOQUE",
+    "l": 23,
+    "g": 1001
+  },
+  "2772": {
+    "n": "Jorbak",
+    "nn": "JORBAK",
+    "l": 400,
+    "g": 8038
+  },
+  "2773": {
+    "n": "Essence Maléfique de Goultard",
+    "nn": "ESSENCE MALEFIQUE DE GOULTARD",
+    "l": 100,
+    "g": 1664
+  },
+  "2774": {
+    "n": "Essence Résiduelle de Goultard",
+    "nn": "ESSENCE RESIDUELLE DE GOULTARD",
+    "l": 50,
+    "g": 1664
+  },
+  "2781": {
+    "n": "Lupus Minimus",
+    "nn": "LUPUS MINIMUS",
+    "l": 1,
+    "g": 1107
+  },
+  "2782": {
+    "n": "Fantôme Dragoune Dorée",
+    "nn": "FANTOME DRAGOUNE DOREE",
+    "l": 1,
+    "g": 1313
+  },
+  "2783": {
+    "n": "Pandawa éméché",
+    "nn": "PANDAWA EMECHE",
+    "l": 10,
+    "g": 8010
+  },
+  "2784": {
+    "n": "Phil Arthur",
+    "nn": "PHIL ARTHUR",
+    "l": 10,
+    "g": 40
+  },
+  "2785": {
+    "n": "Epouvantail d'Incarnam",
+    "nn": "EPOUVANTAIL D'INCARNAM",
+    "l": 1,
+    "g": 1219
+  },
+  "2786": {
+    "n": "Vampire Dupyr",
+    "nn": "VAMPIRE DUPYR",
+    "l": 110,
+    "g": 1077
+  },
+  "2787": {
+    "n": "Monstre pain",
+    "nn": "MONSTRE PAIN",
+    "l": 40,
+    "g": 9201
+  },
+  "2788": {
+    "n": "Tofu Très Maléfique",
+    "nn": "TOFU TRES MALEFIQUE",
+    "l": 30,
+    "g": 1072
+  },
+  "2789": {
+    "n": "Craqueboule invoqué",
+    "nn": "CRAQUEBOULE INVOQUE",
+    "l": 20,
+    "g": 1248
+  },
+  "2790": {
+    "n": "Pioussère",
+    "nn": "PIOUSSERE",
+    "l": 40,
+    "g": 1212
+  },
+  "2791": {
+    "n": "Sousouris Agressive",
+    "nn": "SOUSOURIS AGRESSIVE",
+    "l": 40,
+    "g": 1085
+  },
+  "2793": {
+    "n": "Krtek",
+    "nn": "KRTEK",
+    "l": 400,
+    "g": 1073
+  },
+  "2794": {
+    "n": "Boumbombe",
+    "nn": "BOUMBOMBE",
+    "l": 1,
+    "g": 7032
+  },
+  "2795": {
+    "n": "Krokille",
+    "nn": "KROKILLE",
+    "l": 1,
+    "g": 1096
+  },
+  "2796": {
+    "n": "Mineur Sombre",
+    "nn": "MINEUR SOMBRE",
+    "l": 16,
+    "g": 1073
+  },
+  "2797": {
+    "n": "Kignon",
+    "nn": "KIGNON",
+    "l": 1,
+    "g": 9201
+  },
+  "2798": {
+    "n": "Feu Follet",
+    "nn": "FEU FOLLET",
+    "l": 1,
+    "g": 1145
+  },
+  "2799": {
+    "n": "Attila",
+    "nn": "ATTILA",
+    "l": 1,
+    "g": 1223
+  },
+  "2800": {
+    "n": "Grozilla",
+    "nn": "GROZILLA",
+    "l": 900,
+    "g": 1503
+  },
+  "2801": {
+    "n": "Grasmera",
+    "nn": "GRASMERA",
+    "l": 900,
+    "g": 1508
+  },
+  "2802": {
+    "n": "Manitou Zoth",
+    "nn": "MANITOU ZOTH",
+    "l": 800,
+    "g": 0
+  },
+  "2803": {
+    "n": "Esprit de l'Air Altruiste",
+    "nn": "ESPRIT DE L'AIR ALTRUISTE",
+    "l": 6,
+    "g": 1148
+  },
+  "2804": {
+    "n": "Esprit de l'Air Bagarreur",
+    "nn": "ESPRIT DE L'AIR BAGARREUR",
+    "l": 6,
+    "g": 1148
+  },
+  "2805": {
+    "n": "Esprit de l'Eau Altruiste",
+    "nn": "ESPRIT DE L'EAU ALTRUISTE",
+    "l": 6,
+    "g": 1146
+  },
+  "2806": {
+    "n": "Esprit de l'Eau Bagarreur",
+    "nn": "ESPRIT DE L'EAU BAGARREUR",
+    "l": 6,
+    "g": 1146
+  },
+  "2807": {
+    "n": "Esprit du Feu Altruiste",
+    "nn": "ESPRIT DU FEU ALTRUISTE",
+    "l": 6,
+    "g": 1145
+  },
+  "2808": {
+    "n": "Esprit du Feu Bagarreur",
+    "nn": "ESPRIT DU FEU BAGARREUR",
+    "l": 6,
+    "g": 1145
+  },
+  "2809": {
+    "n": "Esprit de la Terre Altruiste",
+    "nn": "ESPRIT DE LA TERRE ALTRUISTE",
+    "l": 6,
+    "g": 1147
+  },
+  "2810": {
+    "n": "Esprit de la Terre Bagarreur",
+    "nn": "ESPRIT DE LA TERRE BAGARREUR",
+    "l": 6,
+    "g": 1147
+  },
+  "2811": {
+    "n": "Esprit d'Air",
+    "nn": "ESPRIT D'AIR",
+    "l": 1,
+    "g": 1148
+  },
+  "2812": {
+    "n": "Esprit d'Eau",
+    "nn": "ESPRIT D'EAU",
+    "l": 1,
+    "g": 1146
+  },
+  "2813": {
+    "n": "Esprit de Feu",
+    "nn": "ESPRIT DE FEU",
+    "l": 1,
+    "g": 1145
+  },
+  "2814": {
+    "n": "Esprit de Terre",
+    "nn": "ESPRIT DE TERRE",
+    "l": 1,
+    "g": 1147
+  },
+  "2815": {
+    "n": "Totem rouge",
+    "nn": "TOTEM ROUGE",
+    "l": 1,
+    "g": 1715
+  },
+  "2816": {
+    "n": "Totem bleu",
+    "nn": "TOTEM BLEU",
+    "l": 1,
+    "g": 1716
+  },
+  "2817": {
+    "n": "Totem vert",
+    "nn": "TOTEM VERT",
+    "l": 1,
+    "g": 1714
+  },
+  "2818": {
+    "n": "Totem jaune",
+    "nn": "TOTEM JAUNE",
+    "l": 1,
+    "g": 1717
+  },
+  "2819": {
+    "n": "Minotoboule de Nowel",
+    "nn": "MINOTOBOULE DE NOWEL",
+    "l": 400,
+    "g": 1254
+  },
+  "2821": {
+    "n": "Coffre au trésor",
+    "nn": "COFFRE AU TRESOR",
+    "l": 1,
+    "g": 1083
+  },
+  "2828": {
+    "n": "Incarnation de Djaul - Test Event [wip]",
+    "nn": "INCARNATION DE DJAUL - TEST EVENT [WIP]",
+    "l": 9999,
+    "g": 8016
+  },
+  "2829": {
+    "n": "Incarnation de Silouate - Test Event [wip]",
+    "nn": "INCARNATION DE SILOUATE - TEST EVENT [WIP]",
+    "l": 9999,
+    "g": 8014
+  },
+  "2830": {
+    "n": "Incarnation de Sumens - Test Event [wip]",
+    "nn": "INCARNATION DE SUMENS - TEST EVENT [WIP]",
+    "l": 9999,
+    "g": 8012
+  },
+  "2831": {
+    "n": "Incarnation de Pouchecot - Test Event [wip]",
+    "nn": "INCARNATION DE POUCHECOT - TEST EVENT [WIP]",
+    "l": 9999,
+    "g": 8019
+  },
+  "2832": {
+    "n": "Incarnation de Hécate - Test Event [wip]",
+    "nn": "INCARNATION DE HECATE - TEST EVENT [WIP]",
+    "l": 9999,
+    "g": 8013
+  },
+  "2833": {
+    "n": "Incarnation du Bworker",
+    "nn": "INCARNATION DU BWORKER",
+    "l": 250,
+    "g": 1242
+  },
+  "2834": {
+    "n": "Incarnation du Skeunk",
+    "nn": "INCARNATION DU SKEUNK",
+    "l": 250,
+    "g": 1450
+  },
+  "2835": {
+    "n": "Incarnation du Maître Corbac",
+    "nn": "INCARNATION DU MAITRE CORBAC",
+    "l": 250,
+    "g": 1186
+  },
+  "2840": {
+    "n": "Teilemrak",
+    "nn": "TEILEMRAK",
+    "l": 35,
+    "g": 1456
+  },
+  "2841": {
+    "n": "Teilemrak le Fermenté",
+    "nn": "TEILEMRAK LE FERMENTE",
+    "l": 35,
+    "g": 1456
+  },
+  "2842": {
+    "n": "Teilemrak le Galopin",
+    "nn": "TEILEMRAK LE GALOPIN",
+    "l": 35,
+    "g": 1456
+  },
+  "2843": {
+    "n": "Dégelée",
+    "nn": "DEGELEE",
+    "l": 60,
+    "g": 1442
+  },
+  "2844": {
+    "n": "Rouge Blard",
+    "nn": "ROUGE BLARD",
+    "l": 150,
+    "g": 8000
+  },
+  "2963": {
+    "n": "Portail de Rushu",
+    "nn": "PORTAIL DE RUSHU",
+    "l": 200,
+    "g": 9346
+  },
+  "2964": {
+    "n": "Sanglier d'Halouine",
+    "nn": "SANGLIER D'HALOUINE",
+    "l": 10,
+    "g": 9350
+  },
+  "2965": {
+    "n": "Craqueleur d'Halouine",
+    "nn": "CRAQUELEUR D'HALOUINE",
+    "l": 25,
+    "g": 9351
+  },
+  "2966": {
+    "n": "Abraknyde d'Halouine",
+    "nn": "ABRAKNYDE D'HALOUINE",
+    "l": 23,
+    "g": 9348
+  },
+  "2967": {
+    "n": "Chafer Fantassin d'Halouine",
+    "nn": "CHAFER FANTASSIN D'HALOUINE",
+    "l": 31,
+    "g": 9352
+  },
+  "2968": {
+    "n": "Mulou d'Halouine",
+    "nn": "MULOU D'HALOUINE",
+    "l": 60,
+    "g": 9349
+  },
+  "2973": {
+    "n": "Fantôme Zilla Freux",
+    "nn": "FANTOME ZILLA FREUX",
+    "l": 420,
+    "g": 9356
+  },
+  "2974": {
+    "n": "Fantôme Pandawa Ivre",
+    "nn": "FANTOME PANDAWA IVRE",
+    "l": 210,
+    "g": 9354
+  },
+  "2975": {
+    "n": "Fantôme Pandikaze aérien",
+    "nn": "FANTOME PANDIKAZE AERIEN",
+    "l": 160,
+    "g": 9368
+  },
+  "2976": {
+    "n": "Fantôme Maître Pandore",
+    "nn": "FANTOME MAITRE PANDORE",
+    "l": 390,
+    "g": 1296
+  },
+  "2977": {
+    "n": "Bouate de Fantôme Pandore",
+    "nn": "BOUATE DE FANTOME PANDORE",
+    "l": 1,
+    "g": 1298
+  },
+  "2978": {
+    "n": "Fantôme Pandalette Ivre",
+    "nn": "FANTOME PANDALETTE IVRE",
+    "l": 210,
+    "g": 9355
+  },
+  "2979": {
+    "n": "Fantôme Pandit",
+    "nn": "FANTOME PANDIT",
+    "l": 160,
+    "g": 9367
+  },
+  "2980": {
+    "n": "Fantôme Kitsou Nufeu",
+    "nn": "FANTOME KITSOU NUFEU",
+    "l": 245,
+    "g": 9360
+  },
+  "2981": {
+    "n": "Fantôme Kitsou Nae",
+    "nn": "FANTOME KITSOU NAE",
+    "l": 215,
+    "g": 9359
+  },
+  "2982": {
+    "n": "Fantôme Kitsou Nere",
+    "nn": "FANTOME KITSOU NERE",
+    "l": 230,
+    "g": 9358
+  },
+  "2983": {
+    "n": "Fantôme Kitsou Nakwa",
+    "nn": "FANTOME KITSOU NAKWA",
+    "l": 200,
+    "g": 9357
+  },
+  "2984": {
+    "n": "Fantôme Maître Tanukouï San",
+    "nn": "FANTOME MAITRE TANUKOUI SAN",
+    "l": 420,
+    "g": 1292
+  },
+  "2985": {
+    "n": "Fantôme Maître Tanuki Chan",
+    "nn": "FANTOME MAITRE TANUKI CHAN",
+    "l": 60,
+    "g": 1293
+  },
+  "2986": {
+    "n": "Fantôme Maître Tanuki Chan",
+    "nn": "FANTOME MAITRE TANUKI CHAN",
+    "l": 60,
+    "g": 1293
+  },
+  "2987": {
+    "n": "Fantôme Maître Tanuki Chan",
+    "nn": "FANTOME MAITRE TANUKI CHAN",
+    "l": 60,
+    "g": 1293
+  },
+  "2988": {
+    "n": "Fantôme Maître Tanuki Chan",
+    "nn": "FANTOME MAITRE TANUKI CHAN",
+    "l": 60,
+    "g": 1293
+  },
+  "2989": {
+    "n": "Fantôme Maître Tanuki Chan",
+    "nn": "FANTOME MAITRE TANUKI CHAN",
+    "l": 60,
+    "g": 1293
+  },
+  "2990": {
+    "n": "Fantôme d'Araknawa",
+    "nn": "FANTOME D'ARAKNAWA",
+    "l": 240,
+    "g": 9361
+  },
+  "2991": {
+    "n": "Fantôme Bambouto",
+    "nn": "FANTOME BAMBOUTO",
+    "l": 220,
+    "g": 9362
+  },
+  "2992": {
+    "n": "Fantôme Bulbambou",
+    "nn": "FANTOME BULBAMBOU",
+    "l": 220,
+    "g": 9364
+  },
+  "2993": {
+    "n": "Fantôme d'Arbre",
+    "nn": "FANTOME D'ARBRE",
+    "l": 6,
+    "g": 9369
+  },
+  "2994": {
+    "n": "Fantôme Bulbuisson",
+    "nn": "FANTOME BULBUISSON",
+    "l": 164,
+    "g": 9365
+  },
+  "2995": {
+    "n": "Fantôme Bambouto Sacré",
+    "nn": "FANTOME BAMBOUTO SACRE",
+    "l": 300,
+    "g": 9363
+  },
+  "2996": {
+    "n": "Fantôme Bulbig",
+    "nn": "FANTOME BULBIG",
+    "l": 420,
+    "g": 9366
+  },
+  "2997": {
+    "n": "Fantôme de Péki Garou",
+    "nn": "FANTOME DE PEKI GAROU",
+    "l": 880,
+    "g": 10003
+  },
+  "2998": {
+    "n": "Fantôme de Péki Péki",
+    "nn": "FANTOME DE PEKI PEKI",
+    "l": 280,
+    "g": 1302
+  },
+  "2999": {
+    "n": "Fantôme de Gamelle",
+    "nn": "FANTOME DE GAMELLE",
+    "l": 1,
+    "g": 10002
+  },
+  "3000": {
+    "n": "Fantôme Pandule",
+    "nn": "FANTOME PANDULE",
+    "l": 170,
+    "g": 1294
+  },
+  "3001": {
+    "n": "Fantôme Pandikaze",
+    "nn": "FANTOME PANDIKAZE",
+    "l": 164,
+    "g": 1287
+  },
+  "3002": {
+    "n": "Fantôme Yokai Firefoux",
+    "nn": "FANTOME YOKAI FIREFOUX",
+    "l": 230,
+    "g": 1289
+  },
+  "3003": {
+    "n": "Fantôme Léopardo",
+    "nn": "FANTOME LEOPARDO",
+    "l": 160,
+    "g": 1290
+  },
+  "3004": {
+    "n": "Fantôme Soryo Firefoux",
+    "nn": "FANTOME SORYO FIREFOUX",
+    "l": 220,
+    "g": 1288
+  },
+  "3005": {
+    "n": "Fantôme Maho Firefoux",
+    "nn": "FANTOME MAHO FIREFOUX",
+    "l": 230,
+    "g": 1288
+  },
+  "100935": {
+    "n": "Rat de Marais corrompu",
+    "nn": "RAT DE MARAIS CORROMPU",
+    "l": 330,
+    "g": 1535
+  },
+  "100936": {
+    "n": "Rat Batteur corrompu",
+    "nn": "RAT BATTEUR CORROMPU",
+    "l": 300,
+    "g": 1534
+  },
+  "100937": {
+    "n": "Rat Klure corrompu",
+    "nn": "RAT KLURE CORROMPU",
+    "l": 300,
+    "g": 1536
+  },
+  "100939": {
+    "n": "Rat Noir corrompu",
+    "nn": "RAT NOIR CORROMPU",
+    "l": 420,
+    "g": 1538
+  }
+}

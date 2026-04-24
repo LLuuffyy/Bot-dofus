@@ -1,0 +1,20 @@
+{
+  "AutoDepotActif": true,
+  "SeuilPodsDepot": 80,
+  "DeposerTout": true,
+  "DeposerRessources": true,
+  "DeposerDivers": false,
+  "DeposerEquipements": true,
+  "DeposerQuete": false,
+  "DeposerKamas": false,
+  "KamasAGarder": 10000,
+  "GarderPierresAmeVides": true,
+  "GarderPierresAmePleines": true,
+  "GarderConsommablesSoin": true,
+  "ItemsExclus": [
+    "CLEF DU DONJON DES BOUFTOUS"
+  ],
+  "ItemsForces": [],
+  "DelaiEntreActionsMin": 150,
+  "DelaiEntreActionsMax": 350
+}

@@ -1,0 +1,465 @@
+{
+  "Exchange": {
+    "Enabled": false,
+    "Attempts": [
+      {
+        "Actions": [
+          {
+            "Type": "Delay",
+            "DelayMinMs": 1700,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "Decline",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          }
+        ]
+      },
+      {
+        "Actions": [
+          {
+            "Type": "Delay",
+            "DelayMinMs": 1700,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "SendPM",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [
+              "nn merci",
+              "no ty",
+              "pas dispo"
+            ],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "Decline",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          }
+        ]
+      },
+      {
+        "Actions": [
+          {
+            "Type": "Delay",
+            "DelayMinMs": 1700,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "Decline",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "MoveRandom",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "BlockPlayer",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          }
+        ]
+      }
+    ],
+    "AfterAllAttempts": "AfkAfterCombats",
+    "AfkPauseMinMinutes": 5,
+    "AfkPauseMaxMinutes": 15,
+    "AfkCombatsBeforePause": 3
+  },
+  "Challenge": {
+    "Enabled": false,
+    "Attempts": [
+      {
+        "Actions": [
+          {
+            "Type": "Delay",
+            "DelayMinMs": 1700,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "Decline",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          }
+        ]
+      },
+      {
+        "Actions": [
+          {
+            "Type": "Delay",
+            "DelayMinMs": 1700,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "SendPM",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [
+              "je farm la",
+              "pas le temps",
+              "nn dsl"
+            ],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "Decline",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          }
+        ]
+      },
+      {
+        "Actions": [
+          {
+            "Type": "Delay",
+            "DelayMinMs": 1700,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "Decline",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "BlockPlayer",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          }
+        ]
+      }
+    ],
+    "AfterAllAttempts": "AfkAfterCombats",
+    "AfkPauseMinMinutes": 5,
+    "AfkPauseMaxMinutes": 15,
+    "AfkCombatsBeforePause": 3
+  },
+  "Group": {
+    "Enabled": false,
+    "Attempts": [
+      {
+        "Actions": [
+          {
+            "Type": "Delay",
+            "DelayMinMs": 1700,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "Decline",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          }
+        ]
+      },
+      {
+        "Actions": [
+          {
+            "Type": "Delay",
+            "DelayMinMs": 1700,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "SendPM",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [
+              "jsuis occupe",
+              "solo merci",
+              "nn dsl"
+            ],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "Decline",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          }
+        ]
+      },
+      {
+        "Actions": [
+          {
+            "Type": "Delay",
+            "DelayMinMs": 1700,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "Decline",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "ChangeMap",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "BlockPlayer",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          }
+        ]
+      }
+    ],
+    "AfterAllAttempts": "Flee",
+    "AfkPauseMinMinutes": 5,
+    "AfkPauseMaxMinutes": 15,
+    "AfkCombatsBeforePause": 3
+  },
+  "PM": {
+    "Enabled": false,
+    "Attempts": [
+      {
+        "Actions": [
+          {
+            "Type": "Delay",
+            "DelayMinMs": 5000,
+            "DelayMaxMs": 12000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "SendAIResponse",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          }
+        ]
+      },
+      {
+        "Actions": [
+          {
+            "Type": "Delay",
+            "DelayMinMs": 5000,
+            "DelayMaxMs": 10000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "SendAIResponse",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          }
+        ]
+      },
+      {
+        "Actions": [
+          {
+            "Type": "Delay",
+            "DelayMinMs": 5000,
+            "DelayMaxMs": 8000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "SendPM",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [
+              "dsl occupe la",
+              "afk",
+              "je farm la"
+            ],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          },
+          {
+            "Type": "BlockPlayer",
+            "DelayMinMs": 1000,
+            "DelayMaxMs": 3000,
+            "Messages": [],
+            "EmoteId": 1,
+            "MinMinutes": 1,
+            "MaxMinutes": 5,
+            "CloseDelayMinMs": 500,
+            "CloseDelayMaxMs": 2000
+          }
+        ]
+      }
+    ],
+    "AfterAllAttempts": "Ignore",
+    "AfkPauseMinMinutes": 5,
+    "AfkPauseMaxMinutes": 15,
+    "AfkCombatsBeforePause": 3
+  }
+}
