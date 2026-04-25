@@ -29,6 +29,13 @@ public sealed class ContexteCompte : IDisposable
     public SessionProxy? SessionActive { get; private set; }
     public EnregistreurPaquets? EnregistreurActif { get; private set; }
 
+    /// <summary>
+    /// En mode passif, le proxy se contente de relayer/journaliser les octets
+    /// SANS activer la moindre trame d'automatisation. Idéal pour capturer
+    /// du trafic réel sans risquer d'envoyer des paquets invalides au serveur.
+    /// </summary>
+    public bool ModePassif { get; set; }
+
     public event EventHandler<SessionProxy>? SessionAttachee;
 
     public ContexteCompte(Compte compte, ConfigReseau configReseau)
@@ -50,11 +57,18 @@ public sealed class ContexteCompte : IDisposable
         SessionActive = session;
         Api.LierSession(session);
 
-        // Démarre sur l'état d'authentification
-        Trames.RemplacerTrame(new TrameAuthentification(Repartiteur, Compte, session));
+        if (ModePassif)
+        {
+            Journaliseur.Info($"Contexte {Compte.Identifiant} : session attachée en MODE PASSIF (relais pur, aucune trame active)");
+        }
+        else
+        {
+            // Démarre sur l'état d'authentification
+            Trames.RemplacerTrame(new TrameAuthentification(Repartiteur, Compte, session));
+            Journaliseur.Info($"Contexte {Compte.Identifiant} : session attachée, TrameAuthentification activée");
+        }
 
         SessionAttachee?.Invoke(this, session);
-        Journaliseur.Info($"Contexte {Compte.Identifiant} : session proxy attachée");
     }
 
     public void DemarrerProxy() => Proxy.DemarrerAsync();

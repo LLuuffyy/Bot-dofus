@@ -6,6 +6,7 @@ using BotDofus.Commun.Messages.VersServeur.Authentification;
 using BotDofus.Commun.Reseau;
 using BotDofus.Divers;
 using BotDofus.Divers.Enums;
+using BotDofus.Utilitaires.Crypto;
 using BotDofus.Utilitaires.Journaux;
 
 namespace BotDofus.Commun.Frames;
@@ -66,8 +67,29 @@ public sealed class TrameSelectionServeur : TrameBase
 
     private void OnHoteChiffre(MessageHoteChiffre msg)
     {
-        Journaliseur.Info($"Hôte de jeu chiffré reçu, ticket conservé (len={msg.Ticket.Length})");
-        // TODO : déchiffrer l'adresse du serveur de jeu (algorithme cryptedIp/cryptedPort),
-        //        puis reconnecter le proxy sur le serveur de jeu et relayer le ticket AT.
+        // cryptedIp = 8 caractères, suivi parfois de cryptedPort = 3 caractères.
+        // Format usuel : "<cryptedIp><cryptedPort>;<ticket>" — déjà splité dans MessageHoteChiffre.
+        var ipBrute = msg.IpPortChiffre;
+        string ip;
+        int port;
+
+        if (ipBrute.Length >= 11)
+        {
+            ip = ChiffrementDofus.DecoderIpChiffree(ipBrute[..8]);
+            port = ChiffrementDofus.DecoderPortChiffre(ipBrute.Substring(8, 3));
+        }
+        else if (ipBrute.Length >= 8)
+        {
+            ip = ChiffrementDofus.DecoderIpChiffree(ipBrute[..8]);
+            port = 0;
+        }
+        else
+        {
+            ip = "0.0.0.0";
+            port = 0;
+        }
+
+        Journaliseur.Info($"Hôte de jeu déchiffré : {ip}:{port}, ticket len={msg.Ticket.Length}");
+        // TODO : reconnecter le proxy sur ce serveur de jeu et relayer le ticket via MessageEnvoiTicket.
     }
 }

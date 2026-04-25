@@ -5,6 +5,7 @@ using BotDofus.Commun.Messages.VersServeur.Authentification;
 using BotDofus.Commun.Reseau;
 using BotDofus.Divers;
 using BotDofus.Divers.Enums;
+using BotDofus.Utilitaires.Crypto;
 using BotDofus.Utilitaires.Journaux;
 
 namespace BotDofus.Commun.Frames;
@@ -88,15 +89,9 @@ public sealed class TrameAuthentification : TrameBase
     }
 
     /// <summary>
-    /// Chiffrement du mot de passe avec la clé publique fournie par le serveur.
-    /// Implémentation Dofus Retro : XOR clé+mdp, hashé en hex avec salt.
-    /// TODO : implémenter l'algorithme exact quand on aura la spec précise (cf. Guinness-Bot ou déobfuscation Hystoria).
+    /// Chiffre le mot de passe avec la clé publique fournie via HC.
+    /// Délégué à <see cref="ChiffrementDofus.ChiffrerMotDePasse"/>.
     /// </summary>
     private static string ChiffrerMotDePasse(string motDePasse, string cle)
-    {
-        // Placeholder : pour l'instant on renvoie le mot de passe tel quel.
-        // L'algorithme réel est documenté dans Guinness-Bot (Kotlin) et le déobfuscateur Hystoria.
-        // Il faudra implémenter AccountPasswordEncoder.kt en C# dans Utilitaires/Crypto.
-        return motDePasse;
-    }
+        => ChiffrementDofus.ChiffrerMotDePasse(motDePasse, cle);
 }

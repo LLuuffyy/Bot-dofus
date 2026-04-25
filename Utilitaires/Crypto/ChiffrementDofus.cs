@@ -4,81 +4,96 @@ using System.Text;
 namespace BotDofus.Utilitaires.Crypto;
 
 /// <summary>
-/// Routines de chiffrement propres au protocole Dofus Retro 1.29 :
-///  - chiffrement du mot de passe avec la clé reçue via <c>HC</c>
-///    (XOR en alphabet imprimable puis mise en hexadécimal)
-///  - décryptage de l'IP et du port fournis via <c>AYK</c> (cryptedIp/cryptedPort)
+/// Routines de chiffrement et de codage du protocole Dofus Retro 1.29 :
+///  - chiffrement du mot de passe avec la clé reçue via <c>HC</c> (préfixe "#1")
+///  - décodage de l'IP (<c>cryptedIp</c>) et du port (<c>cryptedPort</c>) renvoyés par <c>AYK</c>
 ///
-/// Placeholder tant que les constantes exactes d'Hystoria ne sont pas vérifiées ;
-/// ces implémentations correspondent à l'algorithme documenté dans les
-/// références open-source (Guinness-Bot Kotlin, Dofus-1.29 Amakna).
+/// Ces algorithmes sont documentés dans plusieurs implémentations open-source
+/// (Guinness-Bot Kotlin, Romain-P, AstrubTools/dofus-protocol).
+/// Le protocole étant textuel, ces routines manipulent uniquement de l'ASCII imprimable.
 /// </summary>
 public static class ChiffrementDofus
 {
-    private const string AlphabetHex = "ABCDEF";
-    private const string AlphabetEtendu = "-_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    /// <summary>Alphabet hex Dofus (16 caractères) utilisé par <see cref="ChiffrerMotDePasse"/>.</summary>
+    private const string AlphabetHex = "0123456789abcdef";
+
+    /// <summary>Alphabet base-64-like utilisé par cryptedIp/cryptedPort.</summary>
+    private const string AlphabetBase64Dofus = "-_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
     /// <summary>
-    /// Chiffre un mot de passe à l'aide de la clé publique reçue dans le paquet HC.
-    /// L'algorithme Dofus Retro repose sur un XOR caractère par caractère entre
-    /// la clé et le mot de passe, chaque octet étant ensuite transformé en deux
-    /// caractères hex préfixés d'un marqueur.
+    /// Chiffre un mot de passe pour la phase d'authentification (paquet AA).
+    /// Algorithme Ankama :
+    ///   - on préfixe le résultat par "#1"
+    ///   - pour chaque caractère du mdp, on additionne ses deux nibbles à la
+    ///     valeur ASCII modulée du caractère correspondant de la clé,
+    ///     modulo 16 ; chaque nibble produit un caractère hex.
     /// </summary>
     public static string ChiffrerMotDePasse(string motDePasse, string clePublique)
     {
         if (string.IsNullOrEmpty(motDePasse) || string.IsNullOrEmpty(clePublique))
-            return motDePasse ?? string.Empty;
+        {
+            return "#1";
+        }
 
-        // Implémentation placeholder : XOR caractère par caractère, encodé en hex.
-        // TODO : remplacer par l'algorithme exact Ankama (voir Guinness-Bot Kotlin
-        //        et D1ElectronLauncher deobfusqué pour la variante Hystoria).
-        var sb = new StringBuilder(motDePasse.Length * 2 + 1);
-        sb.Append('#');
+        var sb = new StringBuilder(motDePasse.Length * 2 + 2);
+        sb.Append("#1");
 
         for (int i = 0; i < motDePasse.Length; i++)
         {
-            int aV = motDePasse[i];
-            int bV = clePublique[i % clePublique.Length];
-            int xor = aV ^ (bV & 0x7F);
+            int p = motDePasse[i];
+            int k = clePublique[i % clePublique.Length];
 
-            int indexHaut = (xor >> 4) & 0x0F;
-            int indexBas = xor & 0x0F;
-            sb.Append(AlphabetHex[indexHaut % AlphabetHex.Length]);
-            sb.Append(AlphabetHex[indexBas % AlphabetHex.Length]);
+            int hautMdp = (p >> 4) & 0x0F;
+            int basMdp = p & 0x0F;
+            int hautCle = (k >> 4) & 0x0F;
+            int basCle = k & 0x0F;
+
+            int hautChiffre = (hautMdp + hautCle) & 0x0F;
+            int basChiffre = (basMdp + basCle) & 0x0F;
+
+            sb.Append(AlphabetHex[hautChiffre]);
+            sb.Append(AlphabetHex[basChiffre]);
         }
 
         return sb.ToString();
     }
 
     /// <summary>
-    /// Décode une IP chiffrée Dofus (champ cryptedIp) en retournant la notation a.b.c.d.
-    /// Chaque caractère de la chaîne encode un octet via <see cref="AlphabetEtendu"/>.
+    /// Décode un champ <c>cryptedIp</c> (8 caractères Dofus) en notation a.b.c.d.
+    /// Chaque octet est encodé sur 2 caractères de l'alphabet base-64-like.
     /// </summary>
     public static string DecoderIpChiffree(string ipChiffree)
     {
-        if (string.IsNullOrEmpty(ipChiffree) || ipChiffree.Length < 4)
+        if (string.IsNullOrEmpty(ipChiffree) || ipChiffree.Length < 8)
+        {
             return "0.0.0.0";
+        }
 
         var octets = new int[4];
         for (int i = 0; i < 4; i++)
         {
-            octets[i] = AlphabetEtendu.IndexOf(ipChiffree[i]);
-            if (octets[i] < 0) octets[i] = 0;
+            int haut = AlphabetBase64Dofus.IndexOf(ipChiffree[i * 2]);
+            int bas = AlphabetBase64Dofus.IndexOf(ipChiffree[i * 2 + 1]);
+            if (haut < 0) haut = 0;
+            if (bas < 0) bas = 0;
+            octets[i] = (haut * AlphabetBase64Dofus.Length + bas) & 0xFF;
         }
         return string.Join('.', octets);
     }
 
-    /// <summary>Décode un port chiffré Dofus (champ cryptedPort) en retournant l'entier.</summary>
+    /// <summary>
+    /// Décode un champ <c>cryptedPort</c> (3 caractères) en entier 16 bits.
+    /// </summary>
     public static int DecoderPortChiffre(string portChiffre)
     {
         if (string.IsNullOrEmpty(portChiffre) || portChiffre.Length < 3) return 0;
         int r = 0;
-        for (int i = 0; i < portChiffre.Length; i++)
+        foreach (var c in portChiffre)
         {
-            var pos = AlphabetEtendu.IndexOf(portChiffre[i]);
-            if (pos < 0) pos = 0;
-            r = (r * AlphabetEtendu.Length) + pos;
+            int idx = AlphabetBase64Dofus.IndexOf(c);
+            if (idx < 0) idx = 0;
+            r = r * AlphabetBase64Dofus.Length + idx;
         }
-        return r;
+        return r & 0xFFFF;
     }
 }

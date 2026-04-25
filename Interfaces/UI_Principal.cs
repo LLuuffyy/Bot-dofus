@@ -26,6 +26,7 @@ public sealed class UI_Principal : UserControl
     private readonly Label _etiquetteEtapeCourante;
     private readonly Label _etiquetteCombats;
     private readonly CheckBox _caseEnregistrement;
+    private readonly CheckBox _caseModePassif;
 
     private ContexteCompte? _contexte;
     private readonly ChargeurLua _chargeur = new();
@@ -62,11 +63,19 @@ public sealed class UI_Principal : UserControl
 
         _caseEnregistrement = new CheckBox
         {
-            Left = 12, Top = 260, Width = 300, Height = 22,
+            Left = 12, Top = 260, Width = 320, Height = 22,
             Text = "Enregistrer les paquets dans un fichier",
             Checked = false
         };
         _caseEnregistrement.CheckedChanged += (_, _) => BasculerEnregistrement();
+
+        _caseModePassif = new CheckBox
+        {
+            Left = 12, Top = 286, Width = 480, Height = 22,
+            Text = "Mode passif (capture seulement, aucune trame ni injection)",
+            Checked = false
+        };
+        _caseModePassif.CheckedChanged += (_, _) => { if (_contexte != null) _contexte.ModePassif = _caseModePassif.Checked; };
 
         Controls.AddRange(new Control[]
         {
@@ -75,7 +84,7 @@ public sealed class UI_Principal : UserControl
             lblScript, _choixScript, btnActualiser,
             _btnDemarrerScript, _btnPauseScript, _btnArreterScript,
             _etiquetteEtapeCourante, _etiquetteCombats,
-            _caseEnregistrement
+            _caseEnregistrement, _caseModePassif
         });
     }
 
