@@ -18,9 +18,17 @@ public sealed class MessageJeuPret : MessageDofus, IMessageVersServeur
     public override string Serialiser() => Prefixe + (Pret ? "K" : "F");
 }
 
-/// <summary>GA : action de jeu (déplacement, lancer sort, utiliser objet...). Le sous-code qualifie.</summary>
+/// <summary>
+/// GA : action de jeu (déplacement, lancer sort, utiliser objet...).
+/// Le sous-code à 3 caractères qualifie l'action. Sous-codes observés :
+///   001 : déplacement → paramètre = chemin compressé MapPoint (ex. "deQcgEdhi")
+///   300 : lancer un sort → paramètre = "&lt;idSort&gt;;&lt;celluleCible&gt;" (à valider)
+/// </summary>
 public sealed class MessageJeuAction : MessageDofus, IMessageVersServeur
 {
+    public const string SousCodeDeplacement = "001";
+    public const string SousCodeLancerSort = "300";
+
     public override string Prefixe => "GA";
     public override DirectionPaquet Direction => DirectionPaquet.VersServeur;
     public string SousCode { get; set; } = string.Empty;
@@ -34,6 +42,14 @@ public sealed class MessageJeuAction : MessageDofus, IMessageVersServeur
     }
 
     public override string Serialiser() => $"{Prefixe}{SousCode}{Parametres}";
+
+    /// <summary>Construit une action de déplacement à partir d'un chemin compressé.</summary>
+    public static MessageJeuAction Deplacement(string cheminCompresse)
+        => new() { SousCode = SousCodeDeplacement, Parametres = cheminCompresse };
+
+    /// <summary>Construit une action de lancer de sort.</summary>
+    public static MessageJeuAction LancerSort(int idSort, int celluleCible)
+        => new() { SousCode = SousCodeLancerSort, Parametres = $"{idSort};{celluleCible}" };
 }
 
 /// <summary>GC : créer/démarrer un combat (défi à un joueur ou attaque d'un monstre).</summary>

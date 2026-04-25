@@ -9,20 +9,33 @@ namespace BotDofus.Commun.Messages.VersClient.Jeu;
 // Messages cœur du gameplay : carte, combat, action, tour.
 // =====================================================================
 
-/// <summary>GDM : données de carte (identifiant, clé de décryption, flags).</summary>
+/// <summary>
+/// GDM : données de carte. Format observé sur Hystoria :
+/// <c>GDM|&lt;mapId&gt;|&lt;dateVersion&gt;|&lt;hexDataChiffre&gt;</c>
+/// La <c>dateVersion</c> sert de seed à l'algorithme de décryption Ankama
+/// qui produit la liste des cellules (mouv, layer, los) en clair.
+/// </summary>
 public sealed class MessageDonneesCarte : MessageDofus, IMessageVersClient
 {
     public override string Prefixe => "GDM";
     public override DirectionPaquet Direction => DirectionPaquet.VersClient;
 
     public int IdentifiantCarte { get; private set; }
-    public string Clef { get; private set; } = string.Empty;
+    public string DateVersion { get; private set; } = string.Empty;
+    public string DonneesChiffrees { get; private set; } = string.Empty;
+
+    /// <summary>Alias de <see cref="DateVersion"/> pour rétro-compat.</summary>
+    public string Clef => DateVersion;
+
     public override void Desserialiser(string charge)
     {
         Charge = charge;
-        var parts = charge.Split('|');
+        // La charge commence souvent par '|' (entre préfixe et premier champ).
+        var bloc = charge.StartsWith('|') ? charge[1..] : charge;
+        var parts = bloc.Split('|');
         if (parts.Length > 0 && int.TryParse(parts[0], out var id)) IdentifiantCarte = id;
-        if (parts.Length > 1) Clef = parts[1];
+        if (parts.Length > 1) DateVersion = parts[1];
+        if (parts.Length > 2) DonneesChiffrees = parts[2];
     }
 }
 

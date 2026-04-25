@@ -117,6 +117,8 @@ public static class FabriqueMessages
 
         // --- VersClient : Jeu ---
         EnregistrerVersClient<VersClient.Jeu.MessageDonneesCarte>("GDM");
+        EnregistrerVersClient<VersClient.Jeu.MessageDonneesCarteFin>("GDF");
+        EnregistrerVersClient<VersClient.Jeu.MessageDonneesCarteKeyframe>("GDK");
         EnregistrerVersClient<VersClient.Jeu.MessageRejoindreJeu>("GJ");
         EnregistrerVersClient<VersClient.Jeu.MessagePositionsCombat>("GP");
         EnregistrerVersClient<VersClient.Jeu.MessageDebutCombat>("GS");
@@ -125,6 +127,8 @@ public static class FabriqueMessages
         EnregistrerVersClient<VersClient.Jeu.MessageActionJeu>("GA");
         EnregistrerVersClient<VersClient.Jeu.MessagePret>("GR");
         EnregistrerVersClient<VersClient.Jeu.MessageCreationJeu>("GC");
+        EnregistrerVersClient<VersClient.Jeu.MessageMouvementCarte>("GM");
+        EnregistrerVersClient<VersClient.Jeu.MessageNombreCombats>("fC");
 
         // --- VersClient : Info ---
         EnregistrerVersClient<VersClient.Info.MessageInfoMessage>("Im");
@@ -158,6 +162,10 @@ public static class FabriqueMessages
         EnregistrerVersServeur<VersServeur.Jeu.MessageJeuFinirTour>("GE");
         EnregistrerVersServeur<VersServeur.Jeu.MessageJeuPosition>("GP");
         EnregistrerVersServeur<VersServeur.Jeu.MessageJeuQuitter>("GQ");
+        EnregistrerVersServeur<VersServeur.Jeu.MessageFinMouvement>("GKK");
+        EnregistrerVersServeur<VersServeur.Jeu.MessageDemandeInfosJeu>("GI");
+        EnregistrerVersServeur<VersServeur.Jeu.MessageDemandeDate>("BD");
+        EnregistrerVersServeur<VersServeur.Jeu.MessageCanalChat>("cC");
 
         // --- VersServeur : Chat ---
         EnregistrerVersServeur<VersServeur.Chat.MessageChatEnvoyer>("BM");

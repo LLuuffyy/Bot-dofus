@@ -6,17 +6,34 @@ namespace BotDofus.Commun.Reseau;
 /// </summary>
 public sealed class ConfigReseau
 {
-    /// <summary>Hôte (IP ou DNS) du serveur de jeu distant. Placeholder tant que l'IP du serveur privé n'est pas connue.</summary>
-    public string HoteDistant { get; set; } = "127.0.0.1";
+    // =====================================================================
+    // Le protocole Hystoria sépare l'authentification et le jeu en deux
+    // serveurs distincts (observé via Synfus Bot) :
+    //   - Auth : 162.19.127.156:450
+    //   - Jeu  : 162.19.127.155:5555 (transmis chiffré dans AYK)
+    // Le proxy expose deux listeners locaux pour MITM les deux étapes.
+    // =====================================================================
 
-    /// <summary>Port du serveur de jeu distant. Dofus Retro historique : 443 (auth) ou 5555 (jeu).</summary>
-    public int PortDistant { get; set; } = 443;
+    /// <summary>Hôte du serveur d'authentification distant.</summary>
+    public string HoteDistant { get; set; } = "162.19.127.156";
 
-    /// <summary>Adresse d'écoute locale du proxy MITM.</summary>
+    /// <summary>Port du serveur d'authentification distant.</summary>
+    public int PortDistant { get; set; } = 450;
+
+    /// <summary>Hôte du serveur de jeu distant (utilisé après redirect AYK).</summary>
+    public string HoteJeuDistant { get; set; } = "162.19.127.155";
+
+    /// <summary>Port du serveur de jeu distant.</summary>
+    public int PortJeuDistant { get; set; } = 5555;
+
+    /// <summary>Adresse d'écoute locale du proxy MITM (les deux listeners).</summary>
     public string AdresseEcouteLocale { get; set; } = "127.0.0.1";
 
-    /// <summary>Port d'écoute local. Le client Dofus sera redirigé vers cette adresse.</summary>
+    /// <summary>Port local du listener routant vers le serveur d'auth.</summary>
     public int PortEcouteLocal { get; set; } = 5555;
+
+    /// <summary>Port local du listener routant vers le serveur de jeu.</summary>
+    public int PortEcouteJeuLocal { get; set; } = 5556;
 
     /// <summary>Délai maximum d'attente d'octets avant considérer la connexion zombie (ms).</summary>
     public int DelaiLectureMs { get; set; } = 30_000;
