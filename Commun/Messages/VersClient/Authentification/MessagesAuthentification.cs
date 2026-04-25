@@ -111,19 +111,42 @@ public sealed class MessageListeServeurs : MessageDofus, IMessageVersClient
     public readonly record struct InfoServeur(int Identifiant, int EtatBrut, int NombreJoueurs);
 }
 
-/// <summary>AYK : hôte chiffré du serveur de jeu sélectionné, avec ticket d'authentification.</summary>
+/// <summary>
+/// AYK : redirect vers le serveur de jeu après login validé.
+/// Format observé sur Hystoria : <c>AYK&lt;ip&gt;:&lt;port&gt;;&lt;ticket&gt;</c>
+/// (ex. <c>AYK162.19.127.155:5555;7504</c>) — IP en clair, pas de cryptedIp/Port.
+/// Le ticket est numérique et sera renvoyé via <c>AT&lt;ticket&gt;</c> sur le serveur de jeu.
+/// </summary>
 public sealed class MessageHoteChiffre : MessageDofus, IMessageVersClient
 {
     public override string Prefixe => "AYK";
     public override DirectionPaquet Direction => DirectionPaquet.VersClient;
-    public string IpPortChiffre { get; private set; } = string.Empty;
+
+    public string Hote { get; private set; } = string.Empty;
+    public int Port { get; private set; }
     public string Ticket { get; private set; } = string.Empty;
+
+    /// <summary>Compat avec l'ancienne API : retourne "&lt;ip&gt;:&lt;port&gt;".</summary>
+    public string IpPortChiffre => Port > 0 ? $"{Hote}:{Port}" : Hote;
+
     public override void Desserialiser(string charge)
     {
         Charge = charge;
         var parts = charge.Split(';', 2);
-        IpPortChiffre = parts[0];
+        var ipPort = parts[0];
         if (parts.Length > 1) Ticket = parts[1];
+
+        var sep = ipPort.LastIndexOf(':');
+        if (sep > 0)
+        {
+            Hote = ipPort[..sep];
+            int.TryParse(ipPort[(sep + 1)..], out var p);
+            Port = p;
+        }
+        else
+        {
+            Hote = ipPort;
+        }
     }
 }
 
