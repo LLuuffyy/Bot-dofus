@@ -123,13 +123,43 @@ public sealed class UI_Debug : UserControl
 
     private void OnPaquetRecu(object? sender, EvenementPaquetRecu e)
     {
+        var tag = ClassifierPaquet(e.Paquet.Prefixe);
+        var sens = e.Paquet.Direction == DirectionPaquet.VersClient ? "[S→C]" : "[C→S]";
+
         _file.Enqueue(new ElementDebug(
             e.Paquet.Horodatage.ToString("HH:mm:ss.fff"),
-            e.Paquet.Direction == DirectionPaquet.VersClient ? "← SRV" : "CLI →",
+            $"{tag} {sens}",
             e.Paquet.Prefixe,
             e.Paquet.Contenu.Length > 500 ? e.Paquet.Contenu[..500] + "..." : e.Paquet.Contenu,
-            e.Paquet.Direction == DirectionPaquet.VersClient ? Color.LightSkyBlue : Color.LightSalmon));
+            CouleurPourTag(tag, e.Paquet.Direction)));
     }
+
+    /// <summary>Classifie un paquet en catégorie haut-niveau (CONNEXION, MAP, COMBAT, CHAT, OBJET, INFO, PKT).</summary>
+    private static string ClassifierPaquet(string prefixe) => prefixe switch
+    {
+        "HC" or "HG" or "Af" or "AlK" or "AlE" or "Ad" or "AV" or "AQ"
+            or "AxK" or "AYK" or "ATK" or "ALK" or "ASK" or "AR" or "As"
+            or "AA" or "AX" or "Ax" or "AL" or "AS" or "AT" or "Ai" => "[CONNEXION]",
+        "GDM" or "GDK" or "GDF" or "GM" or "GJ" or "fC" or "GI" => "[MAP]",
+        "GS" or "GE" or "GP" or "GT" or "GA" or "GR" or "GC" or "GKK" => "[COMBAT]",
+        "BM" or "BS" or "cMK" or "cMS" or "cC" => "[CHAT]",
+        "OAK" or "OR" or "Oq" or "OW" or "OM" => "[OBJET]",
+        "DC" or "DQ" or "DV" or "DR" or "DB" => "[DIALOGUE]",
+        "Im" or "IO" or "IL" or "BC" or "BP" or "BD" or "BT" => "[INFO]",
+        _ => "[PKT]"
+    };
+
+    private static Color CouleurPourTag(string tag, DirectionPaquet direction) => tag switch
+    {
+        "[CONNEXION]" => Color.MediumPurple,
+        "[MAP]" => Color.LimeGreen,
+        "[COMBAT]" => Color.OrangeRed,
+        "[CHAT]" => Color.Khaki,
+        "[OBJET]" => Color.PaleGoldenrod,
+        "[DIALOGUE]" => Color.Orchid,
+        "[INFO]" => Color.LightCyan,
+        _ => direction == DirectionPaquet.VersClient ? Color.LightSkyBlue : Color.LightSalmon
+    };
 
     private void OnJournalEntree(object? sender, EvenementEntreeJournal e)
     {
