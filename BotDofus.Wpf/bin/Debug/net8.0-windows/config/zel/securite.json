@@ -1,0 +1,16 @@
+{
+  "verificationStaffActive": true,
+  "intervalleCheckMinMin": 20,
+  "intervalleCheckMinMax": 40,
+  "arretCompletSiModo": false,
+  "pauseSiModoMin": 15,
+  "pauseSiModoMax": 30,
+  "ralentirSiModo": false,
+  "facteurRalentissement": 250,
+  "pausesEntreCombatsSiModo": false,
+  "pauseCombatsXMin": 2,
+  "pauseCombatsXMax": 4,
+  "dureePauseSecMin": 60,
+  "dureePauseSecMax": 180,
+  "alerteUniquementSiModo": false
+}

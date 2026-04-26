@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./BotDofusWpf.exe)",
+      "Bash(dotnet build:*)"
+    ]
+  }
+}

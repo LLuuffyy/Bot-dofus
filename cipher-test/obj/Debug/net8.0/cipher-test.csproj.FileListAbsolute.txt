@@ -1,0 +1,15 @@
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\cipher-test\bin\Debug\net8.0\cipher-test.exe
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\cipher-test\bin\Debug\net8.0\cipher-test.deps.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\cipher-test\bin\Debug\net8.0\cipher-test.runtimeconfig.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\cipher-test\bin\Debug\net8.0\cipher-test.dll
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\cipher-test\bin\Debug\net8.0\cipher-test.pdb
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\cipher-test\obj\Debug\net8.0\cipher-test.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\cipher-test\obj\Debug\net8.0\cipher-test.AssemblyInfoInputs.cache
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\cipher-test\obj\Debug\net8.0\cipher-test.AssemblyInfo.cs
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\cipher-test\obj\Debug\net8.0\cipher-test.csproj.CoreCompileInputs.cache
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\cipher-test\obj\Debug\net8.0\cipher-test.sourcelink.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\cipher-test\obj\Debug\net8.0\cipher-test.dll
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\cipher-test\obj\Debug\net8.0\refint\cipher-test.dll
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\cipher-test\obj\Debug\net8.0\cipher-test.pdb
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\cipher-test\obj\Debug\net8.0\cipher-test.genruntimeconfig.cache
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\cipher-test\obj\Debug\net8.0\ref\cipher-test.dll

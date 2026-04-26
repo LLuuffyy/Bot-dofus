@@ -1,0 +1,39 @@
+<UserControl x:Class="BotDofus.Wpf.Vues.VueScripts"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+    <DockPanel Margin="16">
+        <Border DockPanel.Dock="Top" Padding="0,0,0,12">
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="BtnCharger" Click="BtnCharger_Click" Style="{StaticResource MaterialDesignRaisedButton}">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="FolderOpen"/>
+                        <TextBlock Text=" Charger script .lua" Margin="4,0,0,0"/>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="BtnDemarrer" Click="BtnDemarrer_Click" Style="{StaticResource MaterialDesignRaisedButton}" Margin="8,0,0,0" IsEnabled="False">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Play"/>
+                        <TextBlock Text=" Démarrer" Margin="4,0,0,0"/>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="BtnArreter" Click="BtnArreter_Click" Style="{StaticResource MaterialDesignOutlinedButton}" Margin="8,0,0,0" IsEnabled="False">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Stop"/>
+                        <TextBlock Text=" Arrêter" Margin="4,0,0,0"/>
+                    </StackPanel>
+                </Button>
+                <TextBlock x:Name="TxtFichier" Margin="16,0,0,0" VerticalAlignment="Center" Opacity="0.7" Text="Aucun script chargé"/>
+            </StackPanel>
+        </Border>
+
+        <materialDesign:Card Padding="0">
+            <TextBox x:Name="TxtScriptContenu" AcceptsReturn="True" AcceptsTab="True"
+                     FontFamily="Consolas" FontSize="13"
+                     VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                     BorderThickness="0" Padding="12"
+                     IsReadOnly="True"
+                     Text="-- Ouvre un fichier .lua pour voir/éditer son contenu&#10;-- L'auto-script (scripts/&lt;identifiant&gt;.lua) se lance automatiquement à la connexion"/>
+        </materialDesign:Card>
+    </DockPanel>
+</UserControl>

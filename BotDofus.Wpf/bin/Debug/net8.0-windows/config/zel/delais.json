@@ -1,0 +1,71 @@
+{
+  "profilNom": "Humain normal",
+  "actionCombatGeneral": {
+    "min": 150,
+    "max": 400
+  },
+  "cliquerPret": {
+    "min": 300,
+    "max": 800
+  },
+  "lancerSort": {
+    "min": 100,
+    "max": 300
+  },
+  "entreDeuxSorts": {
+    "min": 150,
+    "max": 400
+  },
+  "passerLeTour": {
+    "min": 100,
+    "max": 250
+  },
+  "apresDeplacement": {
+    "min": 50,
+    "max": 150
+  },
+  "captureDame": {
+    "min": 800,
+    "max": 1200
+  },
+  "timeoutSort": {
+    "min": 500,
+    "max": 800
+  },
+  "timeoutMouvement": {
+    "min": 1500,
+    "max": 2500
+  },
+  "placementCombat": {
+    "min": 200,
+    "max": 400
+  },
+  "mouvementTactique": {
+    "min": 800,
+    "max": 1200
+  },
+  "monstreVole": {
+    "min": 200,
+    "max": 500
+  },
+  "deplacementMap": {
+    "min": 100,
+    "max": 350
+  },
+  "changementMap": {
+    "min": 200,
+    "max": 600
+  },
+  "apresFinCombat": {
+    "min": 300,
+    "max": 1000
+  },
+  "engagerCombat": {
+    "min": 200,
+    "max": 700
+  },
+  "reponsePnj": {
+    "min": 250,
+    "max": 600
+  }
+}

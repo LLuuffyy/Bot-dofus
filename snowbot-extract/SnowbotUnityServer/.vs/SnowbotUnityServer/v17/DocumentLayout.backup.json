@@ -1,0 +1,1225 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|c:\\users\\quent\\source\\repos\\snowbotunityserver\\controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|solutionrelative:controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\main\\nonamebot.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\program.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FBE13BDE-BDC6-488B-AB36-CFE156B27E85}|..\\DofusUnityMapping\\DofusUnityMapping.csproj|c:\\users\\quent\\source\\repos\\dofusunitymapping\\game\\any.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FBE13BDE-BDC6-488B-AB36-CFE156B27E85}|..\\DofusUnityMapping\\DofusUnityMapping.csproj|c:\\users\\quent\\source\\repos\\dofusunitymapping\\game\\dofusgameserverclean.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FBE13BDE-BDC6-488B-AB36-CFE156B27E85}|..\\DofusUnityMapping\\DofusUnityMapping.csproj|c:\\users\\quent\\source\\repos\\dofusunitymapping\\game\\dofusgameserverclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FBE13BDE-BDC6-488B-AB36-CFE156B27E85}|..\\DofusUnityMapping\\DofusUnityMapping.csproj|c:\\users\\quent\\source\\repos\\dofusunitymapping\\gameframe.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FBE13BDE-BDC6-488B-AB36-CFE156B27E85}|..\\DofusUnityMapping\\DofusUnityMapping.csproj|c:\\users\\quent\\source\\repos\\dofusunitymapping\\protocol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\config\\configpersistence.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\main\\dofuslistener.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\unityparser\\unityparser.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\tcplistener.vbproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|c:\\users\\quent\\source\\repos\\snowbotunityserver\\data\\apikeystorageservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|solutionrelative:data\\apikeystorageservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|c:\\users\\quent\\source\\repos\\snowbotunityserver\\pages\\managekeys.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|solutionrelative:pages\\managekeys.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|c:\\users\\quent\\source\\repos\\snowbotunityserver\\data\\charactercacheservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|solutionrelative:data\\charactercacheservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|c:\\users\\quent\\source\\repos\\snowbotunityserver\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FBE13BDE-BDC6-488B-AB36-CFE156B27E85}|..\\DofusUnityMapping\\DofusUnityMapping.csproj|c:\\users\\quent\\source\\repos\\dofusunitymapping\\gamemessage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\quent\\AppData\\Local\\SourceServer\\363dddb7903d1c73daab29fbd62a01f02d0bdd83480d76407f4a5146c601021b\\src\\libraries\\System.Private.CoreLib\\src\\System\\IO\\Enumeration\\FileSystemEnumerator.Windows.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FBE13BDE-BDC6-488B-AB36-CFE156B27E85}|..\\DofusUnityMapping\\DofusUnityMapping.csproj|c:\\users\\quent\\source\\repos\\dofusunitymapping\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FBE13BDE-BDC6-488B-AB36-CFE156B27E85}|..\\DofusUnityMapping\\DofusUnityMapping.csproj|c:\\users\\quent\\source\\repos\\dofusunitymapping\\loginframe.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\unityparser\\messages\\gamemessageencoder.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FBE13BDE-BDC6-488B-AB36-CFE156B27E85}|..\\DofusUnityMapping\\DofusUnityMapping.csproj|c:\\users\\quent\\source\\repos\\dofusunitymapping\\protodynamicmapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\messages\\servercode\\resultencodemessage.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\messages\\servercode\\sendencodemessage.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\remote\\models\\sendapikey.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\program.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\io\\networkmessage.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\connexion\\scriptdecrypt2.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\connexion\\scriploadedintegrity.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\messages\\treasureaccess.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\connexion\\ping.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\messages\\sendlabelchallenge.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\connexion\\sendresult.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\connexion\\sendmoderator.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\connexion\\sendlabel.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\connexion\\sendauthentification.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\connexion\\selectedserverdatacustommessage.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\connexion\\scriptdecryptresult2.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\connexion\\scriptdecryptresult.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\connexion\\scriptdecrypt.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\connexion\\authenticationticketcustommessage.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\connexion\\addmsg.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\quent\\AppData\\Local\\SourceServer\\bdf8f754510f4c8a97aad86be62804e2ffb267c5b9671043c1ef95f649fb2dfe\\src\\libraries\\System.Private.CoreLib\\src\\System\\Threading\\Tasks\\Task.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\filedecoder\\stringextensions.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\filedecoder\\decoder.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\quent\\AppData\\Local\\SourceServer\\fa53341ec3352045bcd53a051660aeaf83de13cb555066e5c22c251b7fc17a62\\src\\coreclr\\System.Private.CoreLib\\src\\System\\RuntimeHandles.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\unityparser\\messages\\gamemessageparser.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\packets\\types\\game\\context\\identifiedentitydispositioninformations.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|c:\\users\\quent\\source\\repos\\snowbotunityserver\\mapping.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|solutionrelative:mapping.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\messageregistry.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\utils\\aes.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\utils\\toolsforbot.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\packets\\messages\\game\\interactive\\interactiveuserequestmessage.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\io\\bigendianwriter.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\packets\\messages\\game\\character\\status\\playerstatusupdatemessage.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\packets\\messages\\game\\character\\status\\playerstatusupdaterequestmessage.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\packets\\types\\game\\character\\status\\playerstatus.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B7B6061-EB7B-4C6B-8A52-DAC68D88E736}|..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj|c:\\users\\quent\\source\\repos\\snowbotserver\\panelbulltradingserver\\tcplistener\\messages\\botfunctions.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|c:\\users\\quent\\source\\repos\\snowbotunityserver\\pages\\counter.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|solutionrelative:pages\\counter.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|c:\\users\\quent\\source\\repos\\snowbotunityserver\\pages\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|solutionrelative:pages\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|c:\\users\\quent\\source\\repos\\snowbotunityserver\\shared\\mainlayout.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|solutionrelative:shared\\mainlayout.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|c:\\users\\quent\\source\\repos\\snowbotunityserver\\pages\\_host.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|solutionrelative:pages\\_host.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|c:\\users\\quent\\source\\repos\\snowbotunityserver\\data\\weatherforecast.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|solutionrelative:data\\weatherforecast.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|c:\\users\\quent\\source\\repos\\snowbotunityserver\\data\\weatherforecastservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|solutionrelative:data\\weatherforecastservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|c:\\users\\quent\\source\\repos\\snowbotunityserver\\app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|solutionrelative:app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|c:\\users\\quent\\source\\repos\\snowbotunityserver\\_imports.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|solutionrelative:_imports.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\packets\\networkmessage.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\unityparser\\dynamicconverter\\dofus2todofus3converter.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\packets\\messages\\queues\\loginqueuestatusmessage.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\packets\\messages\\handshake\\protocolrequired.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\io\\finaluint64.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\io\\finalint64.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\io\\booleanbytewrapper.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\io\\bigendianreader.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{71055F48-0A85-44C7-8FAB-D808C846016D}|..\\UnityParser\\UnityParser.vbproj|c:\\users\\quent\\source\\repos\\unityparser\\unityparser.vbproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|c:\\users\\quent\\source\\repos\\snowbotunityserver\\wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|solutionrelative:wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|c:\\users\\quent\\source\\repos\\snowbotunityserver\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{8437C4B4-8A19-44F9-BF8D-209E82566BA2}|SnowbotUnityServer.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 9,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "UnityParser.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\UnityParser\\UnityParser.vb",
+              "RelativeDocumentMoniker": "..\\UnityParser\\UnityParser\\UnityParser.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\UnityParser\\UnityParser.vb",
+              "RelativeToolTip": "..\\UnityParser\\UnityParser\\UnityParser.vb",
+              "ViewState": "AQIAAJUAAAAAAAAAAAAAAHYAAAAaAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T01:35:32.046Z",
+              "IsPinned": true
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "NoNameBot.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Main\\NoNameBot.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Main\\NoNameBot.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Main\\NoNameBot.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Main\\NoNameBot.vb",
+              "ViewState": "AgIAAPYAAAAAAAAAAAAMwAcBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T01:43:29.782Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{dcc4ea97-1c0c-482b-b205-e541c0df9728}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Any.cs",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\DofusUnityMapping\\game\\Any.cs",
+              "RelativeDocumentMoniker": "..\\DofusUnityMapping\\game\\Any.cs",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\DofusUnityMapping\\game\\Any.cs",
+              "RelativeToolTip": "..\\DofusUnityMapping\\game\\Any.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-20T12:35:53.642Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "DofusListener.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Main\\DofusListener.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Main\\DofusListener.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Main\\DofusListener.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Main\\DofusListener.vb",
+              "ViewState": "AQIAAFEAAAAAAAAAAAAQwGEAAAAIAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T03:03:16.683Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "AccountController.cs",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Controllers\\AccountController.cs",
+              "RelativeDocumentMoniker": "Controllers\\AccountController.cs",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Controllers\\AccountController.cs",
+              "RelativeToolTip": "Controllers\\AccountController.cs",
+              "ViewState": "AgIAAJoAAAAAAAAAAAAAAK8AAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-13T22:41:30.129Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Protocol.cs",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\DofusUnityMapping\\Protocol.cs",
+              "RelativeDocumentMoniker": "..\\DofusUnityMapping\\Protocol.cs",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\DofusUnityMapping\\Protocol.cs",
+              "RelativeToolTip": "..\\DofusUnityMapping\\Protocol.cs",
+              "ViewState": "AgIAABUAAAAAAAAAAAAqwCkAAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-29T09:36:26.814Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "GameFrame.cs",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\DofusUnityMapping\\GameFrame.cs",
+              "RelativeDocumentMoniker": "..\\DofusUnityMapping\\GameFrame.cs",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\DofusUnityMapping\\GameFrame.cs",
+              "RelativeToolTip": "..\\DofusUnityMapping\\GameFrame.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAbAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-19T15:09:02.046Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "DofusGameServerclient.cs",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\DofusUnityMapping\\game\\DofusGameServerclient.cs",
+              "RelativeDocumentMoniker": "..\\DofusUnityMapping\\game\\DofusGameServerclient.cs",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\DofusUnityMapping\\game\\DofusGameServerclient.cs",
+              "RelativeToolTip": "..\\DofusUnityMapping\\game\\DofusGameServerclient.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwv7H0BQAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-15T13:34:16.796Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Program.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Program.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Program.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Program.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Program.vb",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-13T22:40:33.081Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "DofusGameServerclean.cs",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\DofusUnityMapping\\game\\DofusGameServerclean.cs",
+              "RelativeDocumentMoniker": "..\\DofusUnityMapping\\game\\DofusGameServerclean.cs",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\DofusUnityMapping\\game\\DofusGameServerclean.cs",
+              "RelativeToolTip": "..\\DofusUnityMapping\\game\\DofusGameServerclean.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAALH0BQAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-18T16:25:11.313Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "ConfigPersistence.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Config\\ConfigPersistence.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Config\\ConfigPersistence.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Config\\ConfigPersistence.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Config\\ConfigPersistence.vb",
+              "ViewState": "AgIAAJAAAAAAAAAAAAAnwKYAAAAxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-05-13T12:10:24.666Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "TcpListener.vbproj",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\TcpListener.vbproj",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAUAAAAZAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003380|",
+              "WhenOpened": "2025-02-14T00:29:21.538Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "ManageKeys.razor",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Pages\\ManageKeys.razor",
+              "RelativeDocumentMoniker": "Pages\\ManageKeys.razor",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Pages\\ManageKeys.razor",
+              "RelativeToolTip": "Pages\\ManageKeys.razor",
+              "ViewState": "AQIAALMAAAAAAAAAAAAAAIAAAAAIAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-02-13T22:48:39.077Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "ApiKeyStorageService.cs",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Data\\ApiKeyStorageService.cs",
+              "RelativeDocumentMoniker": "Data\\ApiKeyStorageService.cs",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Data\\ApiKeyStorageService.cs",
+              "RelativeToolTip": "Data\\ApiKeyStorageService.cs",
+              "ViewState": "AQIAABsAAAAAAAAAAAAAAH4AAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-14T12:37:33.45Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "CharacterCacheService.cs",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Data\\CharacterCacheService.cs",
+              "RelativeDocumentMoniker": "Data\\CharacterCacheService.cs",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Data\\CharacterCacheService.cs",
+              "RelativeToolTip": "Data\\CharacterCacheService.cs",
+              "ViewState": "AQIAAAoAAAAAAAAAAAApwBgAAAA7AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-13T12:21:16.765Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AQIAABEAAAAAAAAAAAAAAB8AAAAzAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-13T22:40:42.598Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "GameMessage.cs",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\DofusUnityMapping\\GameMessage.cs",
+              "RelativeDocumentMoniker": "..\\DofusUnityMapping\\GameMessage.cs",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\DofusUnityMapping\\GameMessage.cs",
+              "RelativeToolTip": "..\\DofusUnityMapping\\GameMessage.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAUAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-22T17:19:32.973Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "FileSystemEnumerator.Windows.cs",
+              "DocumentMoniker": "C:\\Users\\quent\\AppData\\Local\\SourceServer\\363dddb7903d1c73daab29fbd62a01f02d0bdd83480d76407f4a5146c601021b\\src\\libraries\\System.Private.CoreLib\\src\\System\\IO\\Enumeration\\FileSystemEnumerator.Windows.cs",
+              "RelativeDocumentMoniker": "..\\..\\..\\AppData\\Local\\SourceServer\\363dddb7903d1c73daab29fbd62a01f02d0bdd83480d76407f4a5146c601021b\\src\\libraries\\System.Private.CoreLib\\src\\System\\IO\\Enumeration\\FileSystemEnumerator.Windows.cs",
+              "ToolTip": "C:\\Users\\quent\\AppData\\Local\\SourceServer\\363dddb7903d1c73daab29fbd62a01f02d0bdd83480d76407f4a5146c601021b\\src\\libraries\\System.Private.CoreLib\\src\\System\\IO\\Enumeration\\FileSystemEnumerator.Windows.cs",
+              "RelativeToolTip": "..\\..\\..\\AppData\\Local\\SourceServer\\363dddb7903d1c73daab29fbd62a01f02d0bdd83480d76407f4a5146c601021b\\src\\libraries\\System.Private.CoreLib\\src\\System\\IO\\Enumeration\\FileSystemEnumerator.Windows.cs",
+              "ViewState": "AQIAALEAAAAAAAAAAAAAAMAAAAAQAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-14T19:28:29.924Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\DofusUnityMapping\\Program.cs",
+              "RelativeDocumentMoniker": "..\\DofusUnityMapping\\Program.cs",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\DofusUnityMapping\\Program.cs",
+              "RelativeToolTip": "..\\DofusUnityMapping\\Program.cs",
+              "ViewState": "AQIAABwAAAAAAAAAAAAAADsAAAAoAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-22T20:20:56.33Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "LoginFrame.cs",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\DofusUnityMapping\\LoginFrame.cs",
+              "RelativeDocumentMoniker": "..\\DofusUnityMapping\\LoginFrame.cs",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\DofusUnityMapping\\LoginFrame.cs",
+              "RelativeToolTip": "..\\DofusUnityMapping\\LoginFrame.cs",
+              "ViewState": "AQIAACwAAAAAAAAAAAAAABQAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-22T17:20:11.405Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "GameMessageEncoder.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\UnityParser\\Messages\\GameMessageEncoder.vb",
+              "RelativeDocumentMoniker": "..\\UnityParser\\UnityParser\\Messages\\GameMessageEncoder.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\UnityParser\\Messages\\GameMessageEncoder.vb",
+              "RelativeToolTip": "..\\UnityParser\\UnityParser\\Messages\\GameMessageEncoder.vb",
+              "ViewState": "AQIAACMGAAAAAAAAAAAhwEsGAAATAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T01:36:21.17Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "ProtoDynamicMapper.cs",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\DofusUnityMapping\\ProtoDynamicMapper.cs",
+              "RelativeDocumentMoniker": "..\\DofusUnityMapping\\ProtoDynamicMapper.cs",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\DofusUnityMapping\\ProtoDynamicMapper.cs",
+              "RelativeToolTip": "..\\DofusUnityMapping\\ProtoDynamicMapper.cs",
+              "ViewState": "AQIAAB8AAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-19T15:02:37.038Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "ResultEncodeMessage.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\ServerCode\\ResultEncodeMessage.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\ServerCode\\ResultEncodeMessage.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\ServerCode\\ResultEncodeMessage.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\ServerCode\\ResultEncodeMessage.vb",
+              "ViewState": "AQIAABkAAAAAAAAAAAASwCUAAAAtAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T10:29:58.786Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "SendEncodeMessage.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\ServerCode\\SendEncodeMessage.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\ServerCode\\SendEncodeMessage.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\ServerCode\\SendEncodeMessage.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\ServerCode\\SendEncodeMessage.vb",
+              "ViewState": "AQIAABkAAAAAAAAAAAAIwCkAAAAMAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T01:42:27.137Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "SendApiKey.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Remote\\Models\\SendApiKey.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Remote\\Models\\SendApiKey.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Remote\\Models\\SendApiKey.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Remote\\Models\\SendApiKey.vb",
+              "ViewState": "AQIAABQAAAAAAAAAAAAQwBgAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-03-25T15:01:41.389Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "Program.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\Program.vb",
+              "RelativeDocumentMoniker": "..\\UnityParser\\Program.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\Program.vb",
+              "RelativeToolTip": "..\\UnityParser\\Program.vb",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAoAAAAMAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T00:53:51.603Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "NetworkMessage.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\IO\\NetworkMessage.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\IO\\NetworkMessage.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\IO\\NetworkMessage.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\IO\\NetworkMessage.vb",
+              "ViewState": "AQIAABAAAAAAAAAAAAAAAC8AAAAmAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-03-25T14:59:27.494Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "ScriptDecrypt2.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScriptDecrypt2.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScriptDecrypt2.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScriptDecrypt2.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScriptDecrypt2.vb",
+              "ViewState": "AQIAAAQAAAAAAAAAAAAgwBsAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-03-25T15:00:38.843Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "Ping.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\Ping.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\Ping.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\Ping.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\Ping.vb",
+              "ViewState": "AQIAAA0AAAAAAAAAAADgvxgAAAAPAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-03-25T15:00:29.291Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "ScripLoadedIntegrity.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScripLoadedIntegrity.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScripLoadedIntegrity.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScripLoadedIntegrity.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScripLoadedIntegrity.vb",
+              "ViewState": "AQIAABIAAAAAAAAAAAAAABEAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-03-25T15:54:45.462Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "TreasureAccess.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\TreasureAccess.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\TreasureAccess.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\TreasureAccess.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\TreasureAccess.vb",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA4AAABsAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-18T21:29:37.202Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "SendlabelChallenge.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\SendlabelChallenge.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\SendlabelChallenge.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\SendlabelChallenge.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\SendlabelChallenge.vb",
+              "ViewState": "AQIAABgAAAAAAAAAAAAAACQAAAAtAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T01:40:47.689Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 32,
+              "Title": "SendResult.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\SendResult.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\SendResult.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\SendResult.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\SendResult.vb",
+              "ViewState": "AQIAABAAAAAAAAAAAAAAABwAAAAtAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-03-25T15:01:28.012Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 33,
+              "Title": "SendModerator.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\SendModerator.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\SendModerator.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\SendModerator.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\SendModerator.vb",
+              "ViewState": "AQIAABAAAAAAAAAAAAAiwBkAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-03-25T15:01:03.656Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 34,
+              "Title": "Sendlabel.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\Sendlabel.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\Sendlabel.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\Sendlabel.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\Sendlabel.vb",
+              "ViewState": "AQIAABUAAAAAAAAAAAAiwCEAAAAPAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-03-25T15:00:55.983Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 35,
+              "Title": "sendauthentification.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\sendauthentification.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\sendauthentification.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\sendauthentification.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\sendauthentification.vb",
+              "ViewState": "AQIAABAAAAAAAAAAAAAAABsAAAAtAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-03-25T15:00:56.41Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 36,
+              "Title": "SelectedServerDataCustomMessage.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\SelectedServerDataCustomMessage.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\SelectedServerDataCustomMessage.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\SelectedServerDataCustomMessage.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\SelectedServerDataCustomMessage.vb",
+              "ViewState": "AQIAACcAAAAAAAAAAAAgwCYAAAAtAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-03-25T15:00:50.875Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 37,
+              "Title": "ScriptDecryptResult2.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScriptDecryptResult2.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScriptDecryptResult2.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScriptDecryptResult2.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScriptDecryptResult2.vb",
+              "ViewState": "AQIAAAsAAAAAAAAAAAAqwBgAAAAtAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-03-25T15:00:47.249Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 38,
+              "Title": "ScriptDecryptResult.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScriptDecryptResult.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScriptDecryptResult.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScriptDecryptResult.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScriptDecryptResult.vb",
+              "ViewState": "AQIAAAsAAAAAAAAAAAAqwBcAAAAtAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-03-25T15:00:43.136Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 39,
+              "Title": "ScriptDecrypt.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScriptDecrypt.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScriptDecrypt.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScriptDecrypt.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\ScriptDecrypt.vb",
+              "ViewState": "AQIAAAwAAAAAAAAAAAAQwBkAAAAtAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-03-25T15:00:34.275Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 40,
+              "Title": "AuthenticationTicketCustomMessage.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\AuthenticationTicketCustomMessage.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\AuthenticationTicketCustomMessage.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\AuthenticationTicketCustomMessage.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\AuthenticationTicketCustomMessage.vb",
+              "ViewState": "AQIAABUAAAAAAAAAAAAqwCEAAAAtAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-03-25T15:00:24.842Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 41,
+              "Title": "Addmsg.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\Addmsg.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\Addmsg.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\Addmsg.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Connexion\\Addmsg.vb",
+              "ViewState": "AQIAABIAAAAAAAAAAADgvx0AAAAPAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-03-25T14:42:27.426Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 42,
+              "Title": "Task.cs",
+              "DocumentMoniker": "C:\\Users\\quent\\AppData\\Local\\SourceServer\\bdf8f754510f4c8a97aad86be62804e2ffb267c5b9671043c1ef95f649fb2dfe\\src\\libraries\\System.Private.CoreLib\\src\\System\\Threading\\Tasks\\Task.cs",
+              "RelativeDocumentMoniker": "..\\..\\..\\AppData\\Local\\SourceServer\\bdf8f754510f4c8a97aad86be62804e2ffb267c5b9671043c1ef95f649fb2dfe\\src\\libraries\\System.Private.CoreLib\\src\\System\\Threading\\Tasks\\Task.cs",
+              "ToolTip": "C:\\Users\\quent\\AppData\\Local\\SourceServer\\bdf8f754510f4c8a97aad86be62804e2ffb267c5b9671043c1ef95f649fb2dfe\\src\\libraries\\System.Private.CoreLib\\src\\System\\Threading\\Tasks\\Task.cs",
+              "RelativeToolTip": "..\\..\\..\\AppData\\Local\\SourceServer\\bdf8f754510f4c8a97aad86be62804e2ffb267c5b9671043c1ef95f649fb2dfe\\src\\libraries\\System.Private.CoreLib\\src\\System\\Threading\\Tasks\\Task.cs",
+              "ViewState": "AQIAAC8JAAAAAAAAAAAMwD8JAAAMAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-24T06:02:39.123Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 44,
+              "Title": "Decoder.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\FileDecoder\\Decoder.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\FileDecoder\\Decoder.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\FileDecoder\\Decoder.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\FileDecoder\\Decoder.vb",
+              "ViewState": "AQIAAEwAAAAAAAAAAAAcwAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T01:41:52.031Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 43,
+              "Title": "StringExtensions.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\FileDecoder\\StringExtensions.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\FileDecoder\\StringExtensions.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\FileDecoder\\StringExtensions.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\FileDecoder\\StringExtensions.vb",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T01:42:05.03Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 45,
+              "Title": "RuntimeHandles.cs",
+              "DocumentMoniker": "C:\\Users\\quent\\AppData\\Local\\SourceServer\\fa53341ec3352045bcd53a051660aeaf83de13cb555066e5c22c251b7fc17a62\\src\\coreclr\\System.Private.CoreLib\\src\\System\\RuntimeHandles.cs",
+              "RelativeDocumentMoniker": "..\\..\\..\\AppData\\Local\\SourceServer\\fa53341ec3352045bcd53a051660aeaf83de13cb555066e5c22c251b7fc17a62\\src\\coreclr\\System.Private.CoreLib\\src\\System\\RuntimeHandles.cs",
+              "ToolTip": "C:\\Users\\quent\\AppData\\Local\\SourceServer\\fa53341ec3352045bcd53a051660aeaf83de13cb555066e5c22c251b7fc17a62\\src\\coreclr\\System.Private.CoreLib\\src\\System\\RuntimeHandles.cs",
+              "RelativeToolTip": "..\\..\\..\\AppData\\Local\\SourceServer\\fa53341ec3352045bcd53a051660aeaf83de13cb555066e5c22c251b7fc17a62\\src\\coreclr\\System.Private.CoreLib\\src\\System\\RuntimeHandles.cs",
+              "ViewState": "AQIAABgCAAAAAAAAAAAnwCgCAAAMAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-24T00:27:07.646Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 46,
+              "Title": "GameMessageParser.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\UnityParser\\Messages\\GameMessageParser.vb",
+              "RelativeDocumentMoniker": "..\\UnityParser\\UnityParser\\Messages\\GameMessageParser.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\UnityParser\\Messages\\GameMessageParser.vb",
+              "RelativeToolTip": "..\\UnityParser\\UnityParser\\Messages\\GameMessageParser.vb",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAH1BAAAWAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T01:36:13.734Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 47,
+              "Title": "IdentifiedEntityDispositionInformations.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\Packets\\types\\game\\context\\IdentifiedEntityDispositionInformations.vb",
+              "RelativeDocumentMoniker": "..\\UnityParser\\Packets\\types\\game\\context\\IdentifiedEntityDispositionInformations.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\Packets\\types\\game\\context\\IdentifiedEntityDispositionInformations.vb",
+              "RelativeToolTip": "..\\UnityParser\\Packets\\types\\game\\context\\IdentifiedEntityDispositionInformations.vb",
+              "ViewState": "AQIAAAkAAAAAAAAAAIA9wBYAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-03-22T17:30:48.702Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 48,
+              "Title": "mapping.txt",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\mapping.txt",
+              "RelativeDocumentMoniker": "mapping.txt",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\mapping.txt",
+              "RelativeToolTip": "mapping.txt",
+              "ViewState": "AQIAAGAAAAAAAAAAAADwv4wAAAAcAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
+              "WhenOpened": "2025-02-18T20:35:51.696Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 49,
+              "Title": "MessageRegistry.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\MessageRegistry.vb",
+              "RelativeDocumentMoniker": "..\\UnityParser\\MessageRegistry.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\MessageRegistry.vb",
+              "RelativeToolTip": "..\\UnityParser\\MessageRegistry.vb",
+              "ViewState": "AQIAAB8AAAAAAAAAAAAAACkAAAAmAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T02:52:51.656Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 51,
+              "Title": "ToolsForBot.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Utils\\ToolsForBot.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Utils\\ToolsForBot.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Utils\\ToolsForBot.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Utils\\ToolsForBot.vb",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-18T21:29:34.445Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 50,
+              "Title": "AES.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Utils\\AES.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Utils\\AES.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Utils\\AES.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Utils\\AES.vb",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-18T21:29:36.317Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 52,
+              "Title": "InteractiveUseRequestMessage.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\Packets\\messages\\game\\interactive\\InteractiveUseRequestMessage.vb",
+              "RelativeDocumentMoniker": "..\\UnityParser\\Packets\\messages\\game\\interactive\\InteractiveUseRequestMessage.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\Packets\\messages\\game\\interactive\\InteractiveUseRequestMessage.vb",
+              "RelativeToolTip": "..\\UnityParser\\Packets\\messages\\game\\interactive\\InteractiveUseRequestMessage.vb",
+              "ViewState": "AQIAABAAAAAAAAAAAIA5wBoAAAAcAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-16T12:28:16.828Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 53,
+              "Title": "BigEndianWriter.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\IO\\BigEndianWriter.vb",
+              "RelativeDocumentMoniker": "..\\UnityParser\\IO\\BigEndianWriter.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\IO\\BigEndianWriter.vb",
+              "RelativeToolTip": "..\\UnityParser\\IO\\BigEndianWriter.vb",
+              "ViewState": "AQIAAJAAAAAAAAAAAAAAAJ4AAAAdAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T01:01:58.597Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 54,
+              "Title": "PlayerStatusUpdateMessage.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\Packets\\messages\\game\\character\\status\\PlayerStatusUpdateMessage.vb",
+              "RelativeDocumentMoniker": "..\\UnityParser\\Packets\\messages\\game\\character\\status\\PlayerStatusUpdateMessage.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\Packets\\messages\\game\\character\\status\\PlayerStatusUpdateMessage.vb",
+              "RelativeToolTip": "..\\UnityParser\\Packets\\messages\\game\\character\\status\\PlayerStatusUpdateMessage.vb",
+              "ViewState": "AQIAAAYAAAAAAAAAAAAAAB8AAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-15T18:43:31.276Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 55,
+              "Title": "PlayerStatusUpdateRequestMessage.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\Packets\\messages\\game\\character\\status\\PlayerStatusUpdateRequestMessage.vb",
+              "RelativeDocumentMoniker": "..\\UnityParser\\Packets\\messages\\game\\character\\status\\PlayerStatusUpdateRequestMessage.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\Packets\\messages\\game\\character\\status\\PlayerStatusUpdateRequestMessage.vb",
+              "RelativeToolTip": "..\\UnityParser\\Packets\\messages\\game\\character\\status\\PlayerStatusUpdateRequestMessage.vb",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABoAAAAhAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-15T18:45:44.307Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 56,
+              "Title": "PlayerStatus.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\Packets\\types\\game\\character\\status\\PlayerStatus.vb",
+              "RelativeDocumentMoniker": "..\\UnityParser\\Packets\\types\\game\\character\\status\\PlayerStatus.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\Packets\\types\\game\\character\\status\\PlayerStatus.vb",
+              "RelativeToolTip": "..\\UnityParser\\Packets\\types\\game\\character\\status\\PlayerStatus.vb",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-15T18:43:28.765Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 57,
+              "Title": "Botfunctions.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\Botfunctions.vb",
+              "RelativeDocumentMoniker": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\Botfunctions.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\Botfunctions.vb",
+              "RelativeToolTip": "..\\SnowbotServer\\PanelBullTradingServer\\TcpListener\\Messages\\Botfunctions.vb",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAkAAAAnAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T00:53:10.31Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 62,
+              "Title": "WeatherForecast.cs",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Data\\WeatherForecast.cs",
+              "RelativeDocumentMoniker": "Data\\WeatherForecast.cs",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Data\\WeatherForecast.cs",
+              "RelativeToolTip": "Data\\WeatherForecast.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-14T13:02:03.499Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 58,
+              "Title": "Counter.razor",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Pages\\Counter.razor",
+              "RelativeDocumentMoniker": "Pages\\Counter.razor",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Pages\\Counter.razor",
+              "RelativeToolTip": "Pages\\Counter.razor",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-02-13T22:48:40.467Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 60,
+              "Title": "MainLayout.razor",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Shared\\MainLayout.razor",
+              "RelativeDocumentMoniker": "Shared\\MainLayout.razor",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Shared\\MainLayout.razor",
+              "RelativeToolTip": "Shared\\MainLayout.razor",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAIAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-02-13T22:24:54.314Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 61,
+              "Title": "_Host.cshtml",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Pages\\_Host.cshtml",
+              "RelativeDocumentMoniker": "Pages\\_Host.cshtml",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Pages\\_Host.cshtml",
+              "RelativeToolTip": "Pages\\_Host.cshtml",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAcAAAAaAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-02-13T22:28:09.415Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 59,
+              "Title": "_Layout.cshtml",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Pages\\_Layout.cshtml",
+              "RelativeDocumentMoniker": "Pages\\_Layout.cshtml",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Pages\\_Layout.cshtml",
+              "RelativeToolTip": "Pages\\_Layout.cshtml",
+              "ViewState": "AQIAAAYAAAAAAAAAAAAAABoAAAAbAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-02-13T22:29:02.26Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 63,
+              "Title": "WeatherForecastService.cs",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Data\\WeatherForecastService.cs",
+              "RelativeDocumentMoniker": "Data\\WeatherForecastService.cs",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\Data\\WeatherForecastService.cs",
+              "RelativeToolTip": "Data\\WeatherForecastService.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-14T13:11:50.257Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 65,
+              "Title": "_Imports.razor",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\_Imports.razor",
+              "RelativeDocumentMoniker": "_Imports.razor",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\_Imports.razor",
+              "RelativeToolTip": "_Imports.razor",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-02-13T22:25:39.715Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 64,
+              "Title": "App.razor",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\App.razor",
+              "RelativeDocumentMoniker": "App.razor",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\App.razor",
+              "RelativeToolTip": "App.razor",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAABGAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-02-13T22:25:40.213Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 66,
+              "Title": "NetworkMessage.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\Packets\\NetworkMessage.vb",
+              "RelativeDocumentMoniker": "..\\UnityParser\\Packets\\NetworkMessage.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\Packets\\NetworkMessage.vb",
+              "RelativeToolTip": "..\\UnityParser\\Packets\\NetworkMessage.vb",
+              "ViewState": "AQIAAAAAAAAAAAAAAADgvwsAAABAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T01:31:23.187Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 67,
+              "Title": "Dofus2ToDofus3Converter.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\UnityParser\\DynamicConverter\\Dofus2ToDofus3Converter.vb",
+              "RelativeDocumentMoniker": "..\\UnityParser\\UnityParser\\DynamicConverter\\Dofus2ToDofus3Converter.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\UnityParser\\DynamicConverter\\Dofus2ToDofus3Converter.vb",
+              "RelativeToolTip": "..\\UnityParser\\UnityParser\\DynamicConverter\\Dofus2ToDofus3Converter.vb",
+              "ViewState": "AQIAAPcAAAAAAAAAAAAAAN8AAAAlAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T01:32:56.442Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 68,
+              "Title": "LoginQueueStatusMessage.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\Packets\\messages\\queues\\LoginQueueStatusMessage.vb",
+              "RelativeDocumentMoniker": "..\\UnityParser\\Packets\\messages\\queues\\LoginQueueStatusMessage.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\Packets\\messages\\queues\\LoginQueueStatusMessage.vb",
+              "RelativeToolTip": "..\\UnityParser\\Packets\\messages\\queues\\LoginQueueStatusMessage.vb",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAoAAAAXAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T01:27:16.138Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 69,
+              "Title": "ProtocolRequired.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\Packets\\messages\\handshake\\ProtocolRequired.vb",
+              "RelativeDocumentMoniker": "..\\UnityParser\\Packets\\messages\\handshake\\ProtocolRequired.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\Packets\\messages\\handshake\\ProtocolRequired.vb",
+              "RelativeToolTip": "..\\UnityParser\\Packets\\messages\\handshake\\ProtocolRequired.vb",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA8AAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T01:26:15.602Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 70,
+              "Title": "FinalUInt64.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\IO\\FinalUInt64.vb",
+              "RelativeDocumentMoniker": "..\\UnityParser\\IO\\FinalUInt64.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\IO\\FinalUInt64.vb",
+              "RelativeToolTip": "..\\UnityParser\\IO\\FinalUInt64.vb",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T01:02:00.7Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 71,
+              "Title": "FinalInt64.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\IO\\FinalInt64.vb",
+              "RelativeDocumentMoniker": "..\\UnityParser\\IO\\FinalInt64.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\IO\\FinalInt64.vb",
+              "RelativeToolTip": "..\\UnityParser\\IO\\FinalInt64.vb",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T01:02:00.123Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 72,
+              "Title": "BooleanByteWrapper.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\IO\\BooleanByteWrapper.vb",
+              "RelativeDocumentMoniker": "..\\UnityParser\\IO\\BooleanByteWrapper.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\IO\\BooleanByteWrapper.vb",
+              "RelativeToolTip": "..\\UnityParser\\IO\\BooleanByteWrapper.vb",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T01:01:59.512Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 73,
+              "Title": "BigEndianReader.vb",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\IO\\BigEndianReader.vb",
+              "RelativeDocumentMoniker": "..\\UnityParser\\IO\\BigEndianReader.vb",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\IO\\BigEndianReader.vb",
+              "RelativeToolTip": "..\\UnityParser\\IO\\BigEndianReader.vb",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2025-02-14T01:01:57.655Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 74,
+              "Title": "UnityParser.vbproj",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\UnityParser\\UnityParser.vbproj",
+              "RelativeDocumentMoniker": "..\\UnityParser\\UnityParser.vbproj",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\UnityParser\\UnityParser.vbproj",
+              "RelativeToolTip": "..\\UnityParser\\UnityParser.vbproj",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003380|",
+              "WhenOpened": "2025-02-14T01:01:55.663Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 75,
+              "Title": "site.css",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\wwwroot\\css\\site.css",
+              "RelativeDocumentMoniker": "wwwroot\\css\\site.css",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\wwwroot\\css\\site.css",
+              "RelativeToolTip": "wwwroot\\css\\site.css",
+              "ViewState": "AQIAALAAAAAAAAAAAAAAALYAAAAYAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2025-02-13T22:33:01.598Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 76,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "C:\\Users\\quent\\source\\repos\\SnowbotUnityServer\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-02-13T22:54:04.814Z"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{269a02dc-6af8-11d3-bdc4-00c04f688e50}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

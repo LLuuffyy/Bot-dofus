@@ -1,0 +1,20 @@
+{
+  "afkAleatoireActive": false,
+  "afkIntervalleMin": 15,
+  "afkDureeSecMin": 5,
+  "afkDureeSecMax": 30,
+  "pauseLongueActive": false,
+  "pauseLongueTousLesXCombats": 30,
+  "pauseLongueDureeMinutesMin": 5,
+  "pauseLongueDureeMinutesMax": 15,
+  "fatigueProgressive": false,
+  "ralentissementParDeuxHeures": 20,
+  "pauseAleatoireSurCellule": false,
+  "chanceParCellulePct": 10,
+  "horairesActifs": false,
+  "heureDebut": 8,
+  "heureFin": 23,
+  "limiterDureeSession": false,
+  "dureeMaxHeures": 6,
+  "reconnexionAutomatique": false
+}

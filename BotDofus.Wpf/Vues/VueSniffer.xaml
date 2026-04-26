@@ -1,0 +1,38 @@
+<UserControl x:Class="BotDofus.Wpf.Vues.VueSniffer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+    <DockPanel Margin="16">
+        <!-- Toolbar : filtres + clear -->
+        <Border DockPanel.Dock="Top" Padding="0,0,0,12">
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="TxtFiltre" Width="200" materialDesign:HintAssist.Hint="Filtre préfixe (ex: GA, Ow)"
+                         TextChanged="TxtFiltre_TextChanged" Margin="0,0,8,0"/>
+                <ComboBox x:Name="CmbDirection" Width="120" SelectionChanged="CmbDirection_SelectionChanged"
+                          materialDesign:HintAssist.Hint="Sens">
+                    <ComboBoxItem Content="Tous" IsSelected="True"/>
+                    <ComboBoxItem Content="C→S"/>
+                    <ComboBoxItem Content="S→C"/>
+                </ComboBox>
+                <Button Click="BtnClear_Click" Style="{StaticResource MaterialDesignOutlinedButton}" Margin="8,0,0,0">
+                    <materialDesign:PackIcon Kind="Delete"/>
+                </Button>
+                <CheckBox x:Name="ChkAutoScroll" Content="Auto-scroll" IsChecked="True" Margin="16,0,0,0" VerticalAlignment="Center"/>
+                <TextBlock x:Name="TxtCount" Text="0 paquets" Margin="16,0,0,0" VerticalAlignment="Center" Opacity="0.7"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Liste packets -->
+        <DataGrid x:Name="GridPaquets" AutoGenerateColumns="False" IsReadOnly="True"
+                  HeadersVisibility="Column" CanUserSortColumns="False"
+                  GridLinesVisibility="Horizontal"
+                  RowHeight="22" FontFamily="Consolas" FontSize="12">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Heure" Binding="{Binding Heure}" Width="90"/>
+                <DataGridTextColumn Header="Sens" Binding="{Binding Sens}" Width="50"/>
+                <DataGridTextColumn Header="Préfixe" Binding="{Binding Prefixe}" Width="60"/>
+                <DataGridTextColumn Header="Charge" Binding="{Binding Charge}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

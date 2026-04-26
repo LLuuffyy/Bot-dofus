@@ -1,0 +1,215 @@
+using System;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using BotDofus.Divers;
+using BotDofus.Divers.Combats.IA;
+using BotDofus.Divers.Jeu.Personnage.Spells;
+
+namespace BotDofus.Wpf.Vues;
+
+public partial class VueCombat : UserControl
+{
+    private ContexteCompte? _contexte;
+    public ObservableCollection<SortItemVm> SortsAppris { get; } = new();
+    public ObservableCollection<SortConfigureVm> SortsConfig { get; } = new();
+
+    public VueCombat()
+    {
+        InitializeComponent();
+        ListeSortsConfig.ItemsSource = SortsConfig;
+        ListeSortsAppris.ItemsSource = SortsAppris;
+        CmbSort.ItemsSource = SortsAppris;
+    }
+
+    public void Lier(ContexteCompte ctx)
+    {
+        _contexte = ctx;
+        CmbStrategie.SelectedIndex = (int)ctx.ConfigCombat.Strategie;
+        ctx.PaquetRecu += (_, __) => Dispatcher.Invoke(Rafraichir);
+        ctx.EtatJeu.Personnage.SortsChanges += (_, __) => Dispatcher.Invoke(RafraichirSortsAppris);
+        Rafraichir();
+        RafraichirSortsAppris();
+    }
+
+    private void RafraichirSortsAppris()
+    {
+        if (_contexte == null) return;
+        SortsAppris.Clear();
+        foreach (var (id, niv) in _contexte.EtatJeu.Personnage.SortsAppris.OrderBy(kv => kv.Key))
+        {
+            var info = BaseSorts.Instance.Trouver(id);
+            SortsAppris.Add(new SortItemVm(id, niv, info?.Nom ?? $"Sort #{id}", info));
+        }
+        TxtSortsAppris.Text = $"📚 SORTS APPRIS ({SortsAppris.Count})";
+    }
+
+    private void Rafraichir()
+    {
+        if (_contexte == null) return;
+        SortsConfig.Clear();
+        int n = 1;
+        foreach (var r in _contexte.ConfigCombat.Regles)
+        {
+            var info = BaseSorts.Instance.Trouver(r.IdSort);
+            SortsConfig.Add(new SortConfigureVm(n++, r, info));
+        }
+    }
+
+    private void CmbSort_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (CmbSort.SelectedItem is SortItemVm vm)
+        {
+            // Auto-remplit le coût PA depuis la BaseSorts
+            // (placeholder, on l'utilise au moment de l'ajout)
+        }
+    }
+
+    private void CmbStrategie_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_contexte == null) return;
+        _contexte.ConfigCombat.Strategie = (StrategieCombat)CmbStrategie.SelectedIndex;
+    }
+
+    private void BtnAjouter_Click(object sender, RoutedEventArgs e)
+    {
+        if (_contexte == null || CmbSort.SelectedItem is not SortItemVm sortVm) return;
+        var info = sortVm.Info;
+        var regle = new RegleSort
+        {
+            IdSort = sortVm.Identifiant,
+            Priorite = int.TryParse(TxtPriorite.Text, out var p) ? p : 5,
+            CoutPA = info?.CoutPA ?? 4,
+            PorteeMin = info?.PorteeMin ?? 1,
+            PorteeMax = info?.PorteeMax ?? 6,
+            Cible = (CibleSort)CmbCible.SelectedIndex,
+        };
+        _contexte.ConfigCombat.Regles.Add(regle);
+        Rafraichir();
+    }
+
+    private void BtnViderTout_Click(object sender, RoutedEventArgs e)
+    {
+        _contexte?.ConfigCombat.Regles.Clear();
+        Rafraichir();
+    }
+
+    private void BtnSupprimer_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button b && b.Tag is SortConfigureVm vm && _contexte != null)
+        {
+            _contexte.ConfigCombat.Regles.Remove(vm.Regle);
+            Rafraichir();
+        }
+    }
+
+    private void BtnMonter_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button b && b.Tag is SortConfigureVm vm && _contexte != null)
+        {
+            int idx = _contexte.ConfigCombat.Regles.IndexOf(vm.Regle);
+            if (idx > 0)
+            {
+                _contexte.ConfigCombat.Regles.RemoveAt(idx);
+                _contexte.ConfigCombat.Regles.Insert(idx - 1, vm.Regle);
+                Rafraichir();
+            }
+        }
+    }
+
+    private void BtnDescendre_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button b && b.Tag is SortConfigureVm vm && _contexte != null)
+        {
+            int idx = _contexte.ConfigCombat.Regles.IndexOf(vm.Regle);
+            if (idx >= 0 && idx < _contexte.ConfigCombat.Regles.Count - 1)
+            {
+                _contexte.ConfigCombat.Regles.RemoveAt(idx);
+                _contexte.ConfigCombat.Regles.Insert(idx + 1, vm.Regle);
+                Rafraichir();
+            }
+        }
+    }
+
+    private void BtnSauver_Click(object sender, RoutedEventArgs e)
+    {
+        if (_contexte == null) return;
+        var chemin = Path.Combine("peleas", $"{_contexte.Compte.Identifiant}.json");
+        _contexte.ConfigCombat.Sauvegarder(chemin);
+        MessageBox.Show($"Sauvegardé : {chemin}", "OK", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+}
+
+/// <summary>VM pour un sort APPRIS du perso (affichage liste + dropdown).</summary>
+public sealed class SortItemVm
+{
+    public int Identifiant { get; }
+    public int Niveau { get; }
+    public string Nom { get; }
+    public InfoSort? Info { get; }
+
+    public SortItemVm(int id, int niv, string nom, InfoSort? info)
+    {
+        Identifiant = id; Niveau = niv; Nom = nom; Info = info;
+    }
+
+    public string Affichage => $"[{Identifiant}] {Nom} (niv.{Niveau})";
+
+    /// <summary>Couleur unique par sort, dérivée du hash du nom (proche du look MoonBot).</summary>
+    public Brush CouleurBrush
+    {
+        get
+        {
+            int h = (int)((Identifiant * 2654435761) & int.MaxValue);
+            byte r = (byte)((h >> 16) & 0xFF);
+            byte g = (byte)((h >> 8) & 0xFF);
+            byte b = (byte)(h & 0xFF);
+            // Boost saturation : minimum 80
+            r = Math.Max(r, (byte)80); g = Math.Max(g, (byte)80); b = Math.Max(b, (byte)80);
+            return new SolidColorBrush(Color.FromRgb(r, g, b));
+        }
+    }
+
+    public override string ToString() => Affichage;
+}
+
+/// <summary>VM pour un sort CONFIGURÉ dans la rotation.</summary>
+public sealed class SortConfigureVm
+{
+    public int Numero { get; }
+    public RegleSort Regle { get; }
+    public InfoSort? Info { get; }
+
+    public SortConfigureVm(int numero, RegleSort regle, InfoSort? info)
+    {
+        Numero = numero; Regle = regle; Info = info;
+    }
+
+    public string NomSort => Info?.Nom ?? $"Sort #{Regle.IdSort}";
+    public string InfoSort => Info != null ? $"PA {Info.CoutPA} · range {Info.PorteeMin}-{Info.PorteeMax}" : $"PA {Regle.CoutPA}";
+    public string CibleTexte => Regle.Cible switch
+    {
+        CibleSort.EnnemiPlusProche => "Ennemi le plus proche",
+        CibleSort.EnnemiPlusFaible => "Ennemi le plus faible",
+        CibleSort.EnnemiPlusFort => "Ennemi le plus fort",
+        CibleSort.Soi => "Soi",
+        CibleSort.AlliePlusBlesse => "Allié le plus blessé",
+        _ => "—"
+    };
+    public string ConditionsTexte => $"P:{Regle.Priorite}";
+
+    public Brush CouleurBrush
+    {
+        get
+        {
+            int h = (int)((Regle.IdSort * 2654435761) & int.MaxValue);
+            byte r = (byte)Math.Max((h >> 16) & 0xFF, 80);
+            byte g = (byte)Math.Max((h >> 8) & 0xFF, 80);
+            byte b = (byte)Math.Max(h & 0xFF, 80);
+            return new SolidColorBrush(Color.FromRgb(r, g, b));
+        }
+    }
+}

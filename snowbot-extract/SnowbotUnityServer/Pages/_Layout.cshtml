@@ -1,0 +1,35 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@namespace SnowbotUnityServer.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Snowbot Dofus 3.00 | Unity</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0">
+    <meta name="keywords" content="Bot, Dofus, Unity, Ankama, Bots, Dofus2.00, maj, Ankabot, Kamas, Astuce Kamas">
+    <meta name="description" content="Snowbot est un bot Dofus 3.00 (privé) permettant d'automatiser toutes sortes de tâches: Chasses au trésor, Kolizéum, récoltes, HDV, crafts, combats, donjons, ...">
+    <meta name="theme-color" content="#03173d" />
+    <meta property="og:title" content="Snowbot Dofus 3.00 | Unity">
+    <meta property="og:description" content="Snowbot est un bot Dofus 3.00 (privé) permettant d'automatiser toutes sortes de tâches: Chasses au trésor, Kolizéum, récoltes, HDV, crafts, combats, donjons, ...">
+    <meta property="og:url" content="https://snowbot.eu">
+    <meta property="og:image" content="/snowbot.png">
+    <meta name="twitter:site" content="/snowbot.png" />
+    <link rel="icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="256x256" href="/favicon.ico" />
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="~/" />
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link href="css/site.css" rel="stylesheet" />
+    <link href="SnowbotUnityServer.styles.css" rel="stylesheet" />
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+</head>
+<body>
+    @RenderBody()
+    <script src="_framework/blazor.server.js"></script>
+  
+</body>
+</html>

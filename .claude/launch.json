@@ -1,0 +1,25 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "BotDofusWpf",
+      "runtimeExecutable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "BotDofus.Wpf"
+      ],
+      "port": 0
+    },
+    {
+      "name": "BotDofusWinForms",
+      "runtimeExecutable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "temp-clone\\BotDofus.csproj"
+      ],
+      "port": 0
+    }
+  ]
+}

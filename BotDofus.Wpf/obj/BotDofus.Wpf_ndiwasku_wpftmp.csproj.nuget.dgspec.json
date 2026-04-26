@@ -1,0 +1,154 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\touki\\Desktop\\Bot-dofus\\.claude\\worktrees\\vigorous-murdock\\BotDofus.Wpf\\BotDofus.Wpf.csproj": {}
+  },
+  "projects": {
+    "C:\\Users\\touki\\Desktop\\Bot-dofus\\.claude\\worktrees\\vigorous-murdock\\BotDofus.Wpf\\BotDofus.Wpf.csproj": {
+      "version": "0.2.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\touki\\Desktop\\Bot-dofus\\.claude\\worktrees\\vigorous-murdock\\BotDofus.Wpf\\BotDofus.Wpf.csproj",
+        "projectName": "BotDofusWpf",
+        "projectPath": "C:\\Users\\touki\\Desktop\\Bot-dofus\\.claude\\worktrees\\vigorous-murdock\\BotDofus.Wpf\\BotDofus.Wpf.csproj",
+        "packagesPath": "C:\\Users\\touki\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\touki\\Desktop\\Bot-dofus\\.claude\\worktrees\\vigorous-murdock\\BotDofus.Wpf\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\touki\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0-windows"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0-windows7.0": {
+            "targetAlias": "net8.0-windows",
+            "projectReferences": {
+              "C:\\Users\\touki\\Desktop\\Bot-dofus\\.claude\\worktrees\\vigorous-murdock\\temp-clone\\BotDofus.csproj": {
+                "projectPath": "C:\\Users\\touki\\Desktop\\Bot-dofus\\.claude\\worktrees\\vigorous-murdock\\temp-clone\\BotDofus.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0-windows7.0": {
+          "targetAlias": "net8.0-windows",
+          "dependencies": {
+            "MaterialDesignColors": {
+              "target": "Package",
+              "version": "[3.1.0, )"
+            },
+            "MaterialDesignThemes": {
+              "target": "Package",
+              "version": "[5.1.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            },
+            "Microsoft.WindowsDesktop.App": {
+              "privateAssets": "none"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.420/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\touki\\Desktop\\Bot-dofus\\.claude\\worktrees\\vigorous-murdock\\temp-clone\\BotDofus.csproj": {
+      "version": "0.1.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\touki\\Desktop\\Bot-dofus\\.claude\\worktrees\\vigorous-murdock\\temp-clone\\BotDofus.csproj",
+        "projectName": "BotDofus",
+        "projectPath": "C:\\Users\\touki\\Desktop\\Bot-dofus\\.claude\\worktrees\\vigorous-murdock\\temp-clone\\BotDofus.csproj",
+        "packagesPath": "C:\\Users\\touki\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\touki\\Desktop\\Bot-dofus\\.claude\\worktrees\\vigorous-murdock\\temp-clone\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\touki\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0-windows"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0-windows7.0": {
+            "targetAlias": "net8.0-windows",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0-windows7.0": {
+          "targetAlias": "net8.0-windows",
+          "dependencies": {
+            "MoonSharp": {
+              "target": "Package",
+              "version": "[2.0.0, )"
+            },
+            "System.Configuration.ConfigurationManager": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            },
+            "Microsoft.WindowsDesktop.App.WindowsForms": {
+              "privateAssets": "none"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.420/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

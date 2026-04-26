@@ -1,0 +1,45 @@
+<config>
+
+    <delay value="500"/>
+    <rdelay value="3000"/>
+    <rcount value="10"/>
+
+    <conf name="En ligne (Bot Local)" zaapconnectport="25000">
+        <databank id="0">
+            <dataserver url="data/" type="local" priority="4"/>
+            <dataserver url="http://51.178.36.51/dofus/" priority="3"/>
+            <dataserver url="http://51.178.36.51/dofus/" priority="0"/>
+        </databank>
+
+        <connserver name="Hystoria-Bot" ip="127.0.0.1" port="5555"/>
+
+        <servers>
+            <server id="601" ip="127.0.0.1" port="5556"/>
+        </servers>
+    </conf>
+
+    <cacheasbitmap>
+        <cache element="ExternalContainer/InteractionCell" value="true"/>
+        <cache element="ExternalContainer/Ground" value="true"/>
+        <cache element="ExternalContainer/Object1" value="true"/>
+        <cache element="ExternalContainer/Object2" value="true"/>
+        <cache element="ExternalContainer/Zone" value="true"/>
+        <cache element="ExternalContainer/Select" value="false"/>
+        <cache element="ExternalContainer/Grid" value="true"/>
+        <cache element="ExternalContainer/Pointer" value="true"/>
+        <cache element="GAPI/UI" value="false"/>
+        <cache element="GAPI/UITop" value="false"/>
+        <cache element="GAPI/Popup" value="false"/>
+        <cache element="GAPI/UIUltimate" value="false"/>
+        <cache element="GAPI/Cursor" value="true"/>
+        <cache element="mapHandler/BACKGROUND" value="false"/>
+        <cache element="mapHandler/Cell/Ground" value="false"/>
+        <cache element="mapHandler/Cell/Object1" value="false"/>
+        <cache element="mapHandler/Cell/Object2" value="false"/>
+        <cache element="mapHandler/Cell/ObjectExternal" value="false"/>
+        <cache element="Zone/Zone" value="true"/>
+        <cache element="Zone/Pointers" value="true"/>
+        <cache element="Controls/Loader" value="false" />
+    </cacheasbitmap>
+
+</config>

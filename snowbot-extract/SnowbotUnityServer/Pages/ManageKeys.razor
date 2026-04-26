@@ -1,0 +1,261 @@
+﻿@page "/manage-keys"
+@using Microsoft.AspNetCore.Hosting
+@using SnowbotUnityServer.Data
+@inject ApiKeyStorageService ApiKeyStorage
+@inject IConfiguration Configuration
+@inject IWebHostEnvironment WebHostEnvironment
+<h3>Gestion des Clés API</h3>
+
+@if (!IsAuthenticated)
+{
+    <!-- Formulaire de connexion (inchangé) -->
+    <div class="border rounded p-3 mb-4">
+        <h4>Connexion</h4>
+        @if (ErrorMessage != null)
+        {
+            <div class="alert alert-danger">@ErrorMessage</div>
+        }
+        <div class="mb-2">
+            <label>Mot de passe : </label>
+            <input type="password" @bind="EnteredPassword" />
+        </div>
+        <button class="btn btn-primary" @onclick="Login">Se connecter</button>
+    </div>
+}
+else
+{
+    <!-- Section pour afficher et modifier la version Dofus -->
+    <div class="border rounded p-3 mb-4">
+        <h4>Version Dofus</h4>
+        @if (VersionUpdateMessage != null)
+        {
+            <div class="alert @(VersionUpdateIsError ? "alert-danger" : "alert-success")">
+                @VersionUpdateMessage
+            </div>
+        }
+        <div class="mb-2">
+            <label>Version actuelle : </label>
+            <input @bind="DofusVersionContent" class="form-control" />
+        </div>
+        <button class="btn btn-primary" @onclick="UpdateDofusVersion">Mettre à jour la version</button>
+    </div>
+
+    <!-- Formulaire d'ajout de clé (inchangé) -->
+    <div class="border rounded p-3 mb-4">
+        <h4>Ajouter une clé</h4>
+        <div class="mb-2">
+            <label>Clé : </label>
+            <input @bind="NewApiKey.Key" />
+        </div>
+        <div class="mb-2">
+            <label>Email : </label>
+            <input @bind="NewApiKey.Email" />
+        </div>
+        <div class="mb-2">
+            <label>Date d'expiration : </label>
+            <input type="date" @bind="NewApiKeyExpirationDate" />
+        </div>
+        <div class="mb-2">
+            <label>Nombre d'instances : </label>
+            <input type="number" @bind="NewApiKey.InstanceCount" />
+        </div>
+        <button class="btn btn-primary" @onclick="AddKey">Ajouter</button>
+    </div>
+
+    <!-- Liste des clés existantes (Modifiée pour permettre l'édition des instances) -->
+    <div>
+        <h4>Liste des clés API</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Clé</th>
+                    <th>Email</th>
+                    <th>Date d'expiration</th>
+                    <th>Nombre d'instances</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var key in ApiKeyStorage.GetApiKeys())
+                {
+                    <tr>
+                        <td>@key.Key</td>
+                        <td>@key.Email</td>
+                        <td>
+                            @if (EditingKey == key) // Si cette ligne est en mode édition
+                            {
+                                <input type="date" @bind="EditedExpirationDate" />
+                            }
+                            else // Sinon, afficher la date normalement
+                            {
+                                @key.ExpirationDate.ToShortDateString()
+                            }
+                        </td>
+                        <td>
+                            @if (EditingKey == key) // Si cette ligne est en mode édition
+                            {
+                                <input type="number" @bind="EditedInstanceCount" class="form-control" />
+                            }
+                            else // Sinon, afficher le nombre d'instances normalement
+                            {
+                                @key.InstanceCount
+                            }
+                        </td>
+                        <td>
+                            @if (EditingKey == key) // Si cette ligne est en mode édition
+                            {
+                                <button class="btn btn-success btn-sm me-1" @onclick="SaveChanges">Enregistrer</button>
+                                <button class="btn btn-warning btn-sm" @onclick="CancelEditing">Annuler</button>
+                            }
+                            else // Sinon, afficher les boutons normaux
+                            {
+                                <button class="btn btn-secondary btn-sm me-1" @onclick="() => StartEditing(key)">Modifier</button>
+                                <button class="btn btn-danger btn-sm" @onclick="() => RemoveKey(key)">Supprimer</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+<style>
+
+    body {
+        background: white !important;
+        color: black !important;
+    }
+
+</style>
+
+@code {
+    // --- États existants ---
+    private bool IsAuthenticated = false;
+    private string EnteredPassword;
+    private string ErrorMessage;
+    private string AdminPassword => "789456123@!";
+    private ApiKeyInfo NewApiKey = new ApiKeyInfo();
+    private DateTime? NewApiKeyExpirationDate { get; set; }
+    private ApiKeyInfo? EditingKey = null;
+    private DateTime EditedExpirationDate;
+    // Nouvel état pour éditer le nombre d'instances
+    private int EditedInstanceCount;
+
+    // --- États pour la version Dofus ---
+    private string? DofusVersionContent; // Contenu du fichier
+    private string? DofusVersionFilePath; // Chemin complet du fichier
+    private string? VersionUpdateMessage; // Message succès/erreur pour la version
+    private bool VersionUpdateIsError = false; // Pour styler le message
+
+    // --- Méthodes existantes (Login modifiée) ---
+    private async Task Login() // Rendre la méthode async pour la lecture du fichier
+    {
+        if (EnteredPassword == AdminPassword)
+        {
+            IsAuthenticated = true;
+            ErrorMessage = null;
+            await LoadDofusVersion(); // Charger la version après la connexion
+        }
+        else
+        {
+            ErrorMessage = "Mot de passe incorrect.";
+            IsAuthenticated = false; // S'assurer que l'état est faux
+            DofusVersionContent = null; // Réinitialiser si la connexion échoue
+        }
+    }
+
+    // --- Méthode pour charger la version ---
+    private async Task LoadDofusVersion()
+    {
+        VersionUpdateMessage = null; // Réinitialiser les messages
+        try
+        {
+            // Construire le chemin complet du fichier dans wwwroot
+            DofusVersionFilePath = Path.Combine(WebHostEnvironment.WebRootPath, "dofus_version.txt");
+
+            if (File.Exists(DofusVersionFilePath))
+            {
+                DofusVersionContent = await File.ReadAllTextAsync(DofusVersionFilePath);
+            }
+            else
+            {
+                DofusVersionContent = ""; // ou null, ou un message d'erreur spécifique
+                VersionUpdateMessage = "Le fichier dofus_version.txt n'a pas été trouvé.";
+                VersionUpdateIsError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            DofusVersionContent = "Erreur de lecture";
+            VersionUpdateMessage = $"Erreur lors de la lecture du fichier : {ex.Message}";
+            VersionUpdateIsError = true;
+            Console.Error.WriteLine($"Erreur lecture dofus_version.txt: {ex}"); // Log l'erreur côté serveur
+        }
+    }
+
+    // --- Méthode pour mettre à jour la version ---
+    private async Task UpdateDofusVersion()
+    {
+        VersionUpdateMessage = null; // Réinitialiser le message
+        if (string.IsNullOrEmpty(DofusVersionFilePath))
+        {
+            VersionUpdateMessage = "Le chemin du fichier de version n'est pas initialisé.";
+            VersionUpdateIsError = true;
+            return; // Ne rien faire si le chemin n'est pas connu
+        }
+
+        try
+        {
+            await File.WriteAllTextAsync(DofusVersionFilePath, DofusVersionContent ?? ""); // Écrire le contenu (gérer le cas null)
+            VersionUpdateMessage = "Version Dofus mise à jour avec succès.";
+            VersionUpdateIsError = false;
+        }
+        catch (Exception ex)
+        {
+            VersionUpdateMessage = $"Erreur lors de l'écriture dans le fichier : {ex.Message}";
+            VersionUpdateIsError = true;
+            Console.Error.WriteLine($"Erreur écriture dofus_version.txt: {ex}"); // Log l'erreur côté serveur
+        }
+    }
+
+    // --- Méthodes existantes pour les clés (modifiées) ---
+    private void AddKey()
+    {
+        NewApiKey.ExpirationDate = NewApiKeyExpirationDate ?? DateTime.Today;
+        ApiKeyStorage.AddApiKey(NewApiKey);
+        NewApiKey = new ApiKeyInfo();
+        NewApiKeyExpirationDate = null;
+    }
+
+    private void RemoveKey(ApiKeyInfo key)
+    {
+        if (EditingKey == key)
+        {
+            CancelEditing();
+        }
+        ApiKeyStorage.RemoveApiKey(key);
+    }
+
+    private void StartEditing(ApiKeyInfo keyToEdit)
+    {
+        EditingKey = keyToEdit;
+        EditedExpirationDate = keyToEdit.ExpirationDate;
+        EditedInstanceCount = keyToEdit.InstanceCount; // Initialiser avec la valeur actuelle
+    }
+
+    private void SaveChanges()
+    {
+        if (EditingKey != null)
+        {
+            EditingKey.ExpirationDate = EditedExpirationDate;
+            EditingKey.InstanceCount = EditedInstanceCount; // Sauvegarder le nombre d'instances modifié
+            ApiKeyStorage.UpdateApiKey(EditingKey);
+            EditingKey = null;
+        }
+    }
+
+    private void CancelEditing()
+    {
+        EditingKey = null;
+    }
+}

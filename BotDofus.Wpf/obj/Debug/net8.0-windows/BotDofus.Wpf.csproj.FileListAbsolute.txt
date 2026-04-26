@@ -1,0 +1,118 @@
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\BotDofus.Wpf.csproj.AssemblyReference.cache
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\AjouterCompteDialog.baml
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\Vues\VueCombat.baml
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\Vues\VueDashboard.baml
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\Vues\VueMapViewer.baml
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\Vues\VueScripts.baml
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\Vues\VueSniffer.baml
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\AjouterCompteDialog.g.cs
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\MainWindow.g.cs
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\Vues\VueCombat.g.cs
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\Vues\VueDashboard.g.cs
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\Vues\VueMapViewer.g.cs
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\Vues\VueScripts.g.cs
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\Vues\VueSniffer.g.cs
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\App.g.cs
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\GeneratedInternalTypeHelper.g.cs
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\BotDofusWpf_MarkupCompile.cache
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\BotDofusWpf_MarkupCompile.lref
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\BotDofus.deps.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\BotDofus.runtimeconfig.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\accounts.bot
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\banque\Toutan-kamou.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\banque\Zeliox - [III].json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\banque\Zeliox - [IV].json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\banque\Zeliox - [VII].json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\banque\Zeliox - [VI].json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\banque\Zeliox - [V].json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\config\Toutan-kamou.human.config
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\config\Zeliox - [III].human.config
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\config\Zeliox - [IV].human.config
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\config\Zeliox - [VII].human.config
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\config\Zeliox - [VI].human.config
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\config\Zeliox - [V].human.config
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\interactions\Zeliox - [III].json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\interactions\Zeliox - [IV].json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\interactions\Zeliox - [VII].json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\interactions\Zeliox - [VI].json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\interactions\Zeliox - [V].json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\peleas\exemple_combat.lua
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\peleas\Pda-four.config
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\peleas\Pda-one.config
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\peleas\Pda-three.config
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\peleas\Pda-two.config
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\peleas\Toutan-kamou.config
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\peleas\Zeliox - [III].config
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\peleas\Zeliox - [IV].config
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\peleas\Zeliox - [VII].config
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\peleas\Zeliox - [VII]_unlimit.txt
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\peleas\Zeliox - [VI].config
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\peleas\Zeliox - [V].config
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\Resources\data\dialogs_fr.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\Resources\data\effects_hystoria.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\Resources\data\interactiveobjects_hystoria.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\Resources\data\items_custom.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\Resources\data\items_hystoria.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\Resources\data\items_merged.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\Resources\data\maps_hystoria.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\Resources\data\map_coordinates.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\Resources\data\monsters_fr.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\Resources\data\monsters_hystoria.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\Resources\data\monsters_hystoria_stats.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\Resources\data\npcs_fr.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\Resources\data\npcs_hystoria.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\Resources\data\skills_hystoria.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\Resources\data\spells_fr.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\Resources\data\spells_hystoria.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\Resources\data\spells_stats_hystoria.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\trajectories\Bworker.lua
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\trajectories\djblop.lua
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\trajectories\DJ_AA_Capture.lua
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\trajectories\dj_bouf.lua
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\trajectories\dj_ili.lua
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\trajectories\DJ_meu_cap.lua
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\trajectories\DJ_MP.lua
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\trajectories\DJ_tanu.lua
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\trajectories\donjons\donjon_bouftou.lua
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\trajectories\donjons\template_donjon.lua
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\trajectories\Farm_Corbac.lua
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\trajectories\Farm_Dark_vlad.lua
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\trajectories\Farm_Meu.lua
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\trajectories\Nouveau_DJ_AA.lua
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\trajectories\nouveau_script.lua
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\trajectories\Qtan_2.lua
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\trajectories\Q_tahn.lua
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\BotDofus.exe
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\BotDofusWpf.exe
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\BotDofusWpf.deps.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\BotDofusWpf.runtimeconfig.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\BotDofusWpf.dll
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\BotDofusWpf.pdb
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\MaterialDesignColors.dll
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\MaterialDesignThemes.Wpf.dll
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\Microsoft.Xaml.Behaviors.dll
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\MoonSharp.Interpreter.dll
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\BotDofus.dll
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\BotDofus.pdb
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\BotDofus.dll.config
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\App.baml
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\MainWindow.baml
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\BotDofusWpf.g.resources
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\BotDofus.Wpf.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\BotDofus.Wpf.AssemblyInfoInputs.cache
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\BotDofus.Wpf.AssemblyInfo.cs
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\BotDofus.Wpf.csproj.CoreCompileInputs.cache
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\BotDofus.Wpf.sourcelink.json
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\BotDofus.52FF8C96.Up2Date
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\BotDofusWpf.dll
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\refint\BotDofusWpf.dll
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\BotDofusWpf.pdb
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\BotDofus.Wpf.genruntimeconfig.cache
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\ref\BotDofusWpf.dll
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\bin\Debug\net8.0-windows\peleas\exemple_combat_par_nom.lua
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\Vues\VueConfig.baml
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\Vues\VueInventaire.baml
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\Vues\VuePersonnage.baml
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\Vues\VueConfig.g.cs
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\Vues\VueInventaire.g.cs
+C:\Users\touki\Desktop\Bot-dofus\.claude\worktrees\vigorous-murdock\BotDofus.Wpf\obj\Debug\net8.0-windows\Vues\VuePersonnage.g.cs

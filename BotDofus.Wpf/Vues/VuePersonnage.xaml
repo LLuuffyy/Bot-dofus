@@ -1,0 +1,72 @@
+<UserControl x:Class="BotDofus.Wpf.Vues.VuePersonnage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+    <ScrollViewer Padding="20">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Avatar + nom + niveau -->
+            <materialDesign:Card Grid.Column="0" Padding="20" Margin="0,0,16,0" VerticalAlignment="Top">
+                <StackPanel HorizontalAlignment="Center">
+                    <Ellipse Width="120" Height="120" Fill="{DynamicResource PrimaryHueMidBrush}"/>
+                    <TextBlock x:Name="TxtNom" Text="—" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,12,0,4"/>
+                    <TextBlock x:Name="TxtClasse" Text="Classe / Sexe" Opacity="0.7" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="TxtNiveau" Text="Niveau —" FontSize="16" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                    <Separator Margin="0,16"/>
+                    <TextBlock Text="Kamas" FontSize="11" Opacity="0.7" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="TxtKamas" Text="0" FontSize="16" FontWeight="Bold" Foreground="#FFC107" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </materialDesign:Card>
+
+            <!-- Caracs -->
+            <materialDesign:Card Grid.Column="1" Padding="20">
+                <StackPanel>
+                    <TextBlock Text="Caractéristiques" FontSize="18" FontWeight="Bold" Margin="0,0,0,16"/>
+
+                    <UniformGrid Columns="2">
+                        <StackPanel Margin="0,4">
+                            <TextBlock Text="Points de vie" Opacity="0.7" FontSize="11"/>
+                            <TextBlock x:Name="TxtPv" Text="—" FontSize="16" FontWeight="Bold" Foreground="#E53935"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,4">
+                            <TextBlock Text="Énergie" Opacity="0.7" FontSize="11"/>
+                            <TextBlock x:Name="TxtEnergie" Text="—" FontSize="16" FontWeight="Bold" Foreground="#1E88E5"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,4">
+                            <TextBlock Text="PA" Opacity="0.7" FontSize="11"/>
+                            <TextBlock x:Name="TxtPa" Text="—" FontSize="16" FontWeight="Bold"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,4">
+                            <TextBlock Text="PM" Opacity="0.7" FontSize="11"/>
+                            <TextBlock x:Name="TxtPm" Text="—" FontSize="16" FontWeight="Bold"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,4">
+                            <TextBlock Text="Poids" Opacity="0.7" FontSize="11"/>
+                            <TextBlock x:Name="TxtPoids" Text="—" FontSize="16" FontWeight="Bold" Foreground="#43A047"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,4">
+                            <TextBlock Text="XP %" Opacity="0.7" FontSize="11"/>
+                            <TextBlock x:Name="TxtXp" Text="—" FontSize="16" FontWeight="Bold" Foreground="#FB8C00"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,4">
+                            <TextBlock Text="Points caracs" Opacity="0.7" FontSize="11"/>
+                            <TextBlock x:Name="TxtPointsCaracs" Text="—" FontSize="16" FontWeight="Bold"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,4">
+                            <TextBlock Text="Points sorts" Opacity="0.7" FontSize="11"/>
+                            <TextBlock x:Name="TxtPointsSorts" Text="—" FontSize="16" FontWeight="Bold"/>
+                        </StackPanel>
+                    </UniformGrid>
+
+                    <Separator Margin="0,16"/>
+                    <TextBlock Text="Position" FontWeight="Bold" Margin="0,0,0,8"/>
+                    <TextBlock x:Name="TxtPosition" Text="Carte —" Margin="0,2"/>
+                </StackPanel>
+            </materialDesign:Card>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

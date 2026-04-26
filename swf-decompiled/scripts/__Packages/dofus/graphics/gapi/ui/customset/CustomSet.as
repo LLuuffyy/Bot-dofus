@@ -1,0 +1,348 @@
+class dofus.graphics.gapi.ui.customset.CustomSet extends dofus.graphics.gapi.core.DofusAdvancedComponent
+{
+   var _btnEdit;
+   var _btnLoad;
+   var _btnSave;
+   var _lblAP;
+   var _lblAPValue;
+   var _lblAgility;
+   var _lblAgilityValue;
+   var _lblChance;
+   var _lblChanceValue;
+   var _lblCustomSet;
+   var _lblDiscernment;
+   var _lblDiscernmentValue;
+   var _lblForce;
+   var _lblForceValue;
+   var _lblInitiative;
+   var _lblInitiativeValue;
+   var _lblIntelligence;
+   var _lblIntelligenceValue;
+   var _lblLP;
+   var _lblLPValue;
+   var _lblMP;
+   var _lblMPValue;
+   var _lblVitality;
+   var _lblVitalityValue;
+   var _lblWisdom;
+   var _lblWisdomValue;
+   var _oSelectedRapidStuff;
+   var addToQueue;
+   var gapi;
+   static var CLASS_NAME = "CustomSet";
+   static var MAX_CONTAINER = 10;
+   function CustomSet()
+   {
+      super();
+   }
+   function init()
+   {
+      super.init(false,dofus.graphics.gapi.ui.customset.CustomSet.CLASS_NAME);
+   }
+   function destroy()
+   {
+      this.gapi.hideTooltip();
+   }
+   function createChildren()
+   {
+      this.addToQueue({object:this,method:this.addListeners});
+      this.addToQueue({object:this,method:this.initTexts});
+      this.addToQueue({object:this,method:this.initData});
+   }
+   function addListeners()
+   {
+      this._btnSave.addEventListener("over",this);
+      this._btnSave.addEventListener("out",this);
+      this._btnSave.addEventListener("click",this);
+      this._btnLoad.addEventListener("over",this);
+      this._btnLoad.addEventListener("out",this);
+      this._btnLoad.addEventListener("click",this);
+      this._btnEdit.addEventListener("over",this);
+      this._btnEdit.addEventListener("out",this);
+      this._btnEdit.addEventListener("click",this);
+      this.api.datacenter.Player.data.addListener(this);
+      this.api.datacenter.Player.addEventListener("lpChanged",this);
+      this.api.datacenter.Player.addEventListener("lpMaxChanged",this);
+      this.api.datacenter.Player.addEventListener("apChanged",this);
+      this.api.datacenter.Player.addEventListener("mpChanged",this);
+      this.api.datacenter.Player.addEventListener("initiativeChanged",this);
+      this.api.datacenter.Player.addEventListener("discernmentChanged",this);
+      this.api.datacenter.Player.addEventListener("forceXtraChanged",this);
+      this.api.datacenter.Player.addEventListener("vitalityXtraChanged",this);
+      this.api.datacenter.Player.addEventListener("wisdomXtraChanged",this);
+      this.api.datacenter.Player.addEventListener("chanceXtraChanged",this);
+      this.api.datacenter.Player.addEventListener("agilityXtraChanged",this);
+      this.api.datacenter.Player.addEventListener("intelligenceXtraChanged",this);
+      this.api.datacenter.Player.addEventListener("rapidStuffPut",this);
+      var _loc2_ = 0;
+      var _loc3_;
+      while(_loc2_ < dofus.graphics.gapi.ui.customset.CustomSet.MAX_CONTAINER)
+      {
+         _loc3_ = this["_ctr" + _loc2_];
+         _loc3_.addEventListener("click",this);
+         _loc3_.addEventListener("dblClick",this);
+         _loc3_.addEventListener("over",this);
+         _loc3_.addEventListener("out",this);
+         _loc3_.addEventListener("selectItem",this);
+         _loc2_ = _loc2_ + 1;
+      }
+   }
+   function initTexts()
+   {
+      this._lblLP.text = this.api.lang.getText("LP");
+      this._lblAP.text = this.api.lang.getText("AP");
+      this._lblMP.text = this.api.lang.getText("MP");
+      this._lblInitiative.text = this.api.lang.getText("INITIATIVE");
+      this._lblDiscernment.text = this.api.lang.getText("DISCERNMENT");
+      this._lblForce.text = this.api.lang.getText("FORCE");
+      this._lblVitality.text = this.api.lang.getText("VITALITY");
+      this._lblWisdom.text = this.api.lang.getText("WISDOM");
+      this._lblChance.text = this.api.lang.getText("CHANCE");
+      this._lblAgility.text = this.api.lang.getText("AGILITY");
+      this._lblIntelligence.text = this.api.lang.getText("INTEL");
+      this._lblCustomSet.text = this.api.lang.getText("CUSTOM_SET_CHOOSE_SET");
+   }
+   function initData()
+   {
+      this._btnLoad.enabled = false;
+      this._btnSave.enabled = false;
+      this._btnEdit.enabled = false;
+      var _loc2_ = this.api.datacenter.Player;
+      var _loc3_ = 0;
+      var _loc4_;
+      var _loc5_;
+      while(_loc3_ < dofus.datacenter.LocalPlayer.MAX_RAPID_STUFFS_COUNT)
+      {
+         _loc4_ = this["_ctr" + _loc3_];
+         _loc5_ = _loc2_.getRapidStuff(_loc3_);
+         _loc4_.contentData = _loc5_;
+         _loc3_ = _loc3_ + 1;
+      }
+      this.lpChanged({value:_loc2_.LP});
+      this.lpMaxChanged({value:_loc2_.LPmax});
+      this.apChanged({value:_loc2_.AP});
+      this.mpChanged({value:_loc2_.MP});
+      this.initiativeChanged({value:_loc2_.Initiative});
+      this.discernmentChanged({value:_loc2_.Discernment});
+      this.forceXtraChanged({value:_loc2_.ForceXtra});
+      this.vitalityXtraChanged({value:_loc2_.VitalityXtra});
+      this.wisdomXtraChanged({value:_loc2_.WisdomXtra});
+      this.chanceXtraChanged({value:_loc2_.ChanceXtra});
+      this.agilityXtraChanged({value:_loc2_.AgilityXtra});
+      this.intelligenceXtraChanged({value:_loc2_.IntelligenceXtra});
+   }
+   function askLoadSet(oRapidStuff, bPopup)
+   {
+      if(this._oSelectedRapidStuff == undefined || oRapidStuff.isEmptyRapidStuff)
+      {
+         this.api.kernel.showMessage(undefined,this.api.lang.getText("CUSTOM_SET_INVALID_LOAD"),"ERROR_CHAT");
+         return undefined;
+      }
+      var _loc4_;
+      if(bPopup)
+      {
+         _loc4_ = this.gapi.loadUIComponent("AskYesNo","AskYesNoLoad",{title:this.api.lang.getText("QUESTION"),text:this.api.lang.getText("CUSTOM_SET_CONFIRM_LOAD")});
+         _loc4_.addEventListener("yes",this);
+      }
+      else
+      {
+         this.api.network.RapidStuff.loadRapidStuff(this._oSelectedRapidStuff.id);
+         this.api.kernel.showMessage(undefined,this.api.lang.getText("CUSTOM_SET_LOADED",[this._oSelectedRapidStuff.name]),"INFO_CHAT");
+      }
+   }
+   function lpChanged(oEvent)
+   {
+      this._lblLPValue.text = this.api.datacenter.Player.LP + "/" + this.api.datacenter.Player.LPmax;
+   }
+   function lpMaxChanged(oEvent)
+   {
+      this._lblLPValue.text = this.api.datacenter.Player.LP + "/" + this.api.datacenter.Player.LPmax;
+   }
+   function apChanged(oEvent)
+   {
+      this._lblAPValue.text = String(Math.max(0,oEvent.value));
+   }
+   function mpChanged(oEvent)
+   {
+      this._lblMPValue.text = String(Math.max(0,oEvent.value));
+   }
+   function initiativeChanged(oEvent)
+   {
+      this._lblInitiativeValue.text = String(oEvent.value);
+   }
+   function discernmentChanged(oEvent)
+   {
+      this._lblDiscernmentValue.text = String(oEvent.value);
+   }
+   function forceXtraChanged(oEvent)
+   {
+      this._lblForceValue.text = this.api.datacenter.Player.Force + (oEvent.value == 0 ? "" : (oEvent.value <= 0 ? " (" : " (+") + String(oEvent.value) + ")");
+   }
+   function vitalityXtraChanged(oEvent)
+   {
+      this._lblVitalityValue.text = this.api.datacenter.Player.Vitality + (oEvent.value == 0 ? "" : (oEvent.value <= 0 ? " (" : " (+") + String(oEvent.value) + ")");
+   }
+   function wisdomXtraChanged(oEvent)
+   {
+      this._lblWisdomValue.text = this.api.datacenter.Player.Wisdom + (oEvent.value == 0 ? "" : (oEvent.value <= 0 ? " (" : " (+") + String(oEvent.value) + ")");
+   }
+   function chanceXtraChanged(oEvent)
+   {
+      this._lblChanceValue.text = this.api.datacenter.Player.Chance + (oEvent.value == 0 ? "" : (oEvent.value <= 0 ? " (" : " (+") + String(oEvent.value) + ")");
+   }
+   function agilityXtraChanged(oEvent)
+   {
+      this._lblAgilityValue.text = this.api.datacenter.Player.Agility + (oEvent.value == 0 ? "" : (oEvent.value <= 0 ? " (" : " (+") + String(oEvent.value) + ")");
+   }
+   function intelligenceXtraChanged(oEvent)
+   {
+      this._lblIntelligenceValue.text = this.api.datacenter.Player.Intelligence + (oEvent.value == 0 ? "" : (oEvent.value <= 0 ? " (" : " (+") + String(oEvent.value) + ")");
+   }
+   function rapidStuffPut(oEvent)
+   {
+      var _loc3_ = oEvent.value;
+      if(_loc3_ == undefined)
+      {
+         return undefined;
+      }
+      var _loc4_ = this["_ctr" + _loc3_.id];
+      _loc4_.contentData = _loc3_;
+      if(this._oSelectedRapidStuff != undefined && this._oSelectedRapidStuff.id == _loc3_.id)
+      {
+         this.onSelectedRapidStuff(_loc3_);
+      }
+   }
+   function unSelectAll()
+   {
+      var _loc2_ = 0;
+      var _loc3_;
+      while(_loc2_ <= dofus.graphics.gapi.ui.customset.CustomSet.MAX_CONTAINER)
+      {
+         _loc3_ = this["_ctr" + _loc2_];
+         if(_loc3_.selected)
+         {
+            _loc3_.selected = false;
+            this._oSelectedRapidStuff = undefined;
+         }
+         _loc2_ = _loc2_ + 1;
+      }
+      this._btnLoad.enabled = false;
+      this._btnSave.enabled = false;
+      this._btnEdit.enabled = false;
+   }
+   function click(oEvent)
+   {
+      var _loc3_;
+      var _loc4_;
+      switch(oEvent.target._name)
+      {
+         case "_btnSave":
+            if(this._oSelectedRapidStuff == undefined)
+            {
+               this.api.kernel.showMessage(undefined,this.api.lang.getText("CUSTOM_SET_INVALID_SAVE"),"ERROR_CHAT");
+               return undefined;
+            }
+            _loc3_ = this.gapi.loadUIComponent("AskYesNo","AskYesNoSave",{title:this.api.lang.getText("QUESTION"),text:this.api.lang.getText("CONFIRM_CUSTOM_SET")});
+            _loc3_.addEventListener("yes",this);
+            return;
+            break;
+         case "_btnLoad":
+            this.askLoadSet(this._oSelectedRapidStuff,false);
+            return;
+         case "_btnEdit":
+            if(this._oSelectedRapidStuff == undefined)
+            {
+               this.api.kernel.showMessage(undefined,this.api.lang.getText("CUSTOM_SET_INVALID_EDIT"),"ERROR_CHAT");
+               return undefined;
+            }
+            _loc4_ = this.api.ui.loadUIComponent("CustomSetEdit","CustomSetEdit",{rapidStuff:this._oSelectedRapidStuff});
+            return;
+            break;
+         default:
+            this.selectItem(oEvent);
+            return;
+      }
+   }
+   function selectItem(oEvent)
+   {
+      this.unSelectAll();
+      oEvent.target.selected = true;
+      var _loc3_ = oEvent.target;
+      var _loc4_ = dofus.datacenter.RapidStuff(_loc3_.contentData);
+      this.onSelectedRapidStuff(_loc4_);
+   }
+   function onSelectedRapidStuff(oRapidStuff)
+   {
+      if(oRapidStuff != undefined)
+      {
+         this._btnSave.enabled = !oRapidStuff.isEmptyRapidStuff;
+         this._btnLoad.enabled = !oRapidStuff.isEmptyRapidStuff;
+         this._lblCustomSet.text = oRapidStuff.name.length <= 0 ? this.api.lang.getText("CUSTOM_SET_EMPTY_SLOT") : oRapidStuff.name;
+      }
+      else
+      {
+         this._btnSave.enabled = false;
+         this._btnLoad.enabled = false;
+         this._lblCustomSet.text = this.api.lang.getText("CUSTOM_SET_EMPTY_SLOT");
+      }
+      this._oSelectedRapidStuff = oRapidStuff;
+      this._btnEdit.enabled = true;
+   }
+   function over(oEvent)
+   {
+      var _loc3_;
+      switch(oEvent.target._name)
+      {
+         case "_btnSave":
+            return;
+         case "_ctr0":
+         case "_ctr1":
+         case "_ctr2":
+         case "_ctr3":
+         case "_ctr4":
+         case "_ctr5":
+         case "_ctr6":
+         case "_ctr7":
+         case "_ctr8":
+         case "_ctr9":
+            _loc3_ = oEvent.target.contentData;
+            if(_loc3_ != undefined && !_loc3_.isEmptyRapidStuff)
+            {
+               this.gapi.showTooltip(this.api.lang.getText("CUSTOM_SET_EQUIP"),oEvent.target,-20);
+            }
+            else
+            {
+               this.gapi.showTooltip(this.api.lang.getText("CUSTOM_SET_SELECT_SLOT"),oEvent.target,-20);
+            }
+            return;
+         default:
+            this.gapi.showTooltip(oEvent.target.contentData.name,oEvent.target,-20);
+            return;
+      }
+   }
+   function out(oEvent)
+   {
+      this.gapi.hideTooltip();
+   }
+   function yes(oEvent)
+   {
+      switch(oEvent.target._name)
+      {
+         case "AskYesNoSave":
+            this.api.network.RapidStuff.saveRapidStuff(this._oSelectedRapidStuff.id);
+            this.api.kernel.showMessage(undefined,this.api.lang.getText("CUSTOM_SET_SAVED",[this._oSelectedRapidStuff.name]),"INFO_CHAT");
+            break;
+         case "AskYesNoLoad":
+            this.api.network.RapidStuff.loadRapidStuff(this._oSelectedRapidStuff.id);
+            this.api.kernel.showMessage(undefined,this.api.lang.getText("CUSTOM_SET_LOADED",[this._oSelectedRapidStuff.name]),"INFO_CHAT");
+         default:
+            return;
+      }
+   }
+   function dblClick(oEvent)
+   {
+      this.selectItem(oEvent);
+      var _loc3_ = oEvent.target.contentData;
+      this.askLoadSet(_loc3_,false);
+   }
+}
