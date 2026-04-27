@@ -47,6 +47,81 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
         <StackPanel>
+            <!-- ===== ÉTAT COMBAT LIVE ===== -->
+            <Border Style="{StaticResource SectionBorderStyle}">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,12">
+                        <TextBlock Text="ÉTAT COMBAT EN COURS"
+                                   Style="{StaticResource SectionTitleTextStyle}"
+                                   VerticalAlignment="Center"/>
+                        <Border DockPanel.Dock="Right"
+                                x:Name="BadgeEtat"
+                                Background="#3D3D3D"
+                                CornerRadius="10"
+                                Padding="10,3"
+                                HorizontalAlignment="Right">
+                            <TextBlock x:Name="TxtEtat" Text="Hors combat" FontSize="11" FontWeight="SemiBold"/>
+                        </Border>
+                    </DockPanel>
+
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="TOUR" Style="{StaticResource MutedTextStyle}" FontSize="10"/>
+                            <TextBlock x:Name="TxtTour" Text="—" FontSize="22" FontWeight="Bold"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="ALLIÉS" Style="{StaticResource MutedTextStyle}" FontSize="10"/>
+                            <TextBlock x:Name="TxtNbAllies" Text="0" FontSize="22" FontWeight="Bold" Foreground="#65C56F"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="ENNEMIS" Style="{StaticResource MutedTextStyle}" FontSize="10"/>
+                            <TextBlock x:Name="TxtNbEnnemis" Text="0" FontSize="22" FontWeight="Bold" Foreground="#C95761"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Text="COMBATTANTS" Style="{StaticResource MutedTextStyle}" FontSize="10" Margin="0,8,0,6"/>
+                    <ItemsControl x:Name="ListeCombattants">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{Binding CouleurFond}"
+                                        BorderBrush="{Binding CouleurBordure}"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        Padding="10,6"
+                                        Margin="0,0,0,5">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Ellipse Grid.Column="0" Width="10" Height="10" Fill="{Binding CouleurEquipe}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Nom}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding PvTexte}" Foreground="#E53935" FontFamily="Consolas" Margin="10,0" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="3" Text="{Binding PaTexte}" Foreground="#1E88E5" FontFamily="Consolas" Margin="10,0" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="4" Text="{Binding PmTexte}" Foreground="#43A047" FontFamily="Consolas" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock x:Name="TxtCombatVide"
+                               Text="Aucun combat en cours. La vue se remplira automatiquement quand tu lanceras un combat."
+                               Foreground="{DynamicResource FaintTextBrush}"
+                               FontStyle="Italic"
+                               TextWrapping="Wrap"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- ===== CONFIG IA (existante) ===== -->
             <Border Style="{StaticResource SectionBorderStyle}">
                 <StackPanel>
                     <DockPanel Margin="0,0,0,14">

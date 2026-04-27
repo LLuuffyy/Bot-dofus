@@ -47,7 +47,26 @@ public sealed class TrameJeu : TrameBase
         Ecouter<MessageObjetPoids>(msg => _etat.Personnage.ActualiserPoids(msg.PoidsActuel, msg.PoidsMax));
         Ecouter<MessageChatMessage>(OnChatMessage);
         Ecouter<MessageChatServeur>(msg => Journaliseur.Info($"[SERVEUR] {msg.Texte}"));
-        Ecouter<MessageTourCombat>(_ => _compte.ChangerEtat(EtatsCompte.EnCombat));
+
+        // Mises à jour de l'état combat (GS, GE, GT) — alimente Combat.Etat / NumeroTour pour la vue live.
+        Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageDebutCombat>(_ =>
+        {
+            _etat.Combat.Demarrer();
+            _etat.Combat.PassageEnCombat();
+            _compte.ChangerEtat(EtatsCompte.EnCombat);
+        });
+        Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageFinCombat>(_ =>
+        {
+            _etat.Combat.Reinitialiser();
+            _compte.ChangerEtat(EtatsCompte.EnJeu);
+            Journaliseur.Info("[COMBAT] Combat terminé");
+        });
+        Ecouter<MessageTourCombat>(msg =>
+        {
+            _etat.Combat.NouveauTour(msg.IdentifiantCombattant);
+            _compte.ChangerEtat(EtatsCompte.EnCombat);
+        });
+
         Ecouter<MessagePingMoyen>(_ => { /* silence ping */ });
     }
 

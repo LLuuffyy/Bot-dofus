@@ -16,12 +16,14 @@ public partial class VueCombat : UserControl
     private ContexteCompte? _contexte;
     public ObservableCollection<SortItemVm> SortsAppris { get; } = new();
     public ObservableCollection<SortConfigureVm> SortsConfig { get; } = new();
+    public ObservableCollection<CombattantVm> CombattantsLive { get; } = new();
 
     public VueCombat()
     {
         InitializeComponent();
         ListeSortsConfig.ItemsSource = SortsConfig;
         ListeSortsAppris.ItemsSource = SortsAppris;
+        ListeCombattants.ItemsSource = CombattantsLive;
         CmbSort.ItemsSource = SortsAppris;
     }
 
@@ -29,10 +31,50 @@ public partial class VueCombat : UserControl
     {
         _contexte = ctx;
         CmbStrategie.SelectedIndex = (int)ctx.ConfigCombat.Strategie;
-        ctx.PaquetRecu += (_, __) => Dispatcher.Invoke(Rafraichir);
+        ctx.PaquetRecu += (_, __) => Dispatcher.Invoke(() => { Rafraichir(); RafraichirCombatLive(); });
         ctx.EtatJeu.Personnage.SortsChanges += (_, __) => Dispatcher.Invoke(RafraichirSortsAppris);
+        ctx.EtatJeu.Combat.EtatChange += (_, __) => Dispatcher.Invoke(RafraichirCombatLive);
+        ctx.EtatJeu.Combat.TourChange += (_, __) => Dispatcher.Invoke(RafraichirCombatLive);
         Rafraichir();
         RafraichirSortsAppris();
+        RafraichirCombatLive();
+    }
+
+    private void RafraichirCombatLive()
+    {
+        if (_contexte == null) return;
+        var combat = _contexte.EtatJeu.Combat;
+
+        TxtTour.Text = combat.NumeroTour > 0 ? combat.NumeroTour.ToString() : "—";
+        TxtNbAllies.Text = combat.Allies.Count.ToString();
+        TxtNbEnnemis.Text = combat.Ennemis.Count.ToString();
+
+        var (libelle, couleur) = combat.Etat switch
+        {
+            BotDofus.Divers.Combats.Enums.EtatCombat.Inactif => ("Hors combat", "#3D3D3D"),
+            BotDofus.Divers.Combats.Enums.EtatCombat.Placement => ("Placement", "#C9A14B"),
+            BotDofus.Divers.Combats.Enums.EtatCombat.EnCours => ("En combat", "#65C56F"),
+            BotDofus.Divers.Combats.Enums.EtatCombat.Termine => ("Terminé", "#9AA0AC"),
+            _ => (combat.Etat.ToString(), "#3D3D3D"),
+        };
+        TxtEtat.Text = libelle;
+        BadgeEtat.Background = (Brush)new BrushConverter().ConvertFromString(couleur)!;
+
+        CombattantsLive.Clear();
+        foreach (var allie in combat.Allies)
+        {
+            CombattantsLive.Add(new CombattantVm(allie, estAllie: true,
+                joueActuellement: combat.IdentifiantCombattantActuel == allie.Identifiant));
+        }
+        foreach (var ennemi in combat.Ennemis)
+        {
+            CombattantsLive.Add(new CombattantVm(ennemi, estAllie: false,
+                joueActuellement: combat.IdentifiantCombattantActuel == ennemi.Identifiant));
+        }
+
+        var horsCombat = combat.Etat == BotDofus.Divers.Combats.Enums.EtatCombat.Inactif
+                      && CombattantsLive.Count == 0;
+        TxtCombatVide.Visibility = horsCombat ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void RafraichirSortsAppris()
@@ -181,6 +223,37 @@ public sealed class SortItemVm
     }
 
     public override string ToString() => Affichage;
+}
+
+public sealed class CombattantVm
+{
+    private readonly BotDofus.Divers.Combats.Combattants.Combattant _src;
+    private readonly bool _estAllie;
+    private readonly bool _joueActuellement;
+
+    public CombattantVm(BotDofus.Divers.Combats.Combattants.Combattant src, bool estAllie, bool joueActuellement)
+    {
+        _src = src;
+        _estAllie = estAllie;
+        _joueActuellement = joueActuellement;
+    }
+
+    public string Nom => string.IsNullOrEmpty(_src.Nom) ? $"#{_src.Identifiant}" : _src.Nom;
+    public string PvTexte => $"♥ {_src.PV}/{_src.PVMax}";
+    public string PaTexte => $"PA {_src.PA}";
+    public string PmTexte => $"PM {_src.PM}";
+
+    public Brush CouleurEquipe => _estAllie
+        ? new SolidColorBrush(Color.FromRgb(0x65, 0xC5, 0x6F))
+        : new SolidColorBrush(Color.FromRgb(0xC9, 0x57, 0x61));
+
+    public Brush CouleurFond => _joueActuellement
+        ? new SolidColorBrush(Color.FromRgb(0x3A, 0x42, 0x55))
+        : new SolidColorBrush(Color.FromRgb(0x2A, 0x2D, 0x35));
+
+    public Brush CouleurBordure => _joueActuellement
+        ? new SolidColorBrush(Color.FromRgb(0x6C, 0x76, 0xFF))
+        : new SolidColorBrush(Color.FromRgb(0x39, 0x3D, 0x47));
 }
 
 public sealed class SortConfigureVm
