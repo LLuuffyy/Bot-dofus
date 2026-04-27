@@ -3,26 +3,83 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
     <DockPanel Margin="16">
-        <Border DockPanel.Dock="Top" Padding="0,0,0,12">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Inventaire" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
-                <TextBox x:Name="TxtFiltre" materialDesign:HintAssist.Hint="Filtre nom"
-                         Width="200" Margin="24,0,0,0" TextChanged="TxtFiltre_TextChanged"/>
-                <TextBlock x:Name="TxtCount" Margin="16,0,0,0" VerticalAlignment="Center" Opacity="0.7" Text="0 objets"/>
-                <Button Click="BtnRafraichir_Click" Style="{StaticResource MaterialDesignOutlinedButton}" Margin="16,0,0,0">
-                    <materialDesign:PackIcon Kind="Refresh"/>
-                </Button>
-            </StackPanel>
+        <Border DockPanel.Dock="Top"
+                Style="{StaticResource PanelBorderStyle}"
+                Padding="12"
+                Margin="0,0,0,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="BagPersonal" Width="22" Height="22" Margin="0,0,8,0"/>
+                    <TextBlock Text="Inventaire" Style="{StaticResource SectionTitleTextStyle}" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="24,0,0,0" VerticalAlignment="Center">
+                    <Border Style="{StaticResource PanelBorderStyle}" Padding="10,6" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Text="Objets" Opacity="0.65" FontSize="11"/>
+                            <TextBlock x:Name="TxtCount" Text="0" FontFamily="Consolas" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource PanelBorderStyle}" Padding="10,6" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Text="Equipe" Opacity="0.65" FontSize="11"/>
+                            <TextBlock x:Name="TxtEquipes" Text="0" FontFamily="Consolas" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource PanelBorderStyle}" Padding="10,6" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Text="Pods objets" Opacity="0.65" FontSize="11"/>
+                            <TextBlock x:Name="TxtPodsObjets" Text="0" FontFamily="Consolas" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource PanelBorderStyle}" Padding="10,6">
+                        <StackPanel>
+                            <TextBlock Text="Pods perso" Opacity="0.65" FontSize="11"/>
+                            <TextBlock x:Name="TxtPodsPerso" Text="0 / 0" FontFamily="Consolas" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBox x:Name="TxtFiltre"
+                             materialDesign:HintAssist.Hint="Filtre nom, type, id"
+                             Width="260"
+                             Margin="0,0,8,0"
+                             TextChanged="TxtFiltre_TextChanged"/>
+                    <Button Click="BtnRafraichir_Click"
+                            Style="{StaticResource TopNavButtonStyle}"
+                            ToolTip="Rafraichir l'inventaire depuis l'etat live">
+                        <materialDesign:PackIcon Kind="Refresh" Width="16" Height="16"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
         </Border>
 
-        <DataGrid x:Name="GridObjets" AutoGenerateColumns="False" IsReadOnly="True"
-                  HeadersVisibility="Column" RowHeight="28" FontFamily="Consolas">
+        <DataGrid x:Name="GridObjets"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  HeadersVisibility="Column"
+                  RowHeight="30"
+                  FontFamily="Consolas"
+                  CanUserSortColumns="True"
+                  GridLinesVisibility="Horizontal">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="ID Inventaire" Binding="{Binding Identifiant}" Width="110"/>
-                <DataGridTextColumn Header="Template" Binding="{Binding IdTemplate}" Width="80"/>
+                <DataGridTextColumn Header="Etat" Binding="{Binding Etat}" Width="90"/>
                 <DataGridTextColumn Header="Nom" Binding="{Binding Nom}" Width="*"/>
-                <DataGridTextColumn Header="Quantité" Binding="{Binding Quantite}" Width="80"/>
-                <DataGridTextColumn Header="Position" Binding="{Binding PositionTexte}" Width="120"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="150"/>
+                <DataGridTextColumn Header="Niv." Binding="{Binding Niveau}" Width="60"/>
+                <DataGridTextColumn Header="Qté" Binding="{Binding Quantite}" Width="70"/>
+                <DataGridTextColumn Header="Pods/u" Binding="{Binding PoidsUnitaire}" Width="75"/>
+                <DataGridTextColumn Header="Pods" Binding="{Binding PoidsTotal}" Width="75"/>
+                <DataGridTextColumn Header="Position" Binding="{Binding PositionTexte}" Width="130"/>
+                <DataGridTextColumn Header="Template" Binding="{Binding IdTemplate}" Width="90"/>
+                <DataGridTextColumn Header="UID" Binding="{Binding Identifiant}" Width="100"/>
             </DataGrid.Columns>
         </DataGrid>
     </DockPanel>

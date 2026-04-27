@@ -56,6 +56,7 @@ public sealed class TrameJeu : TrameBase
             _etat.Combat.Demarrer();
             _etat.Combat.PassageEnCombat();
             _compte.ChangerEtat(EtatsCompte.EnCombat);
+            PeuplerCombatDepuisCarte();
         });
         Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageFinCombat>(_ =>
         {
@@ -299,5 +300,64 @@ public sealed class TrameJeu : TrameBase
     {
         var nom = Divers.Donnees.BaseDonnees.Instance.Monstre(idGabarit)?.Nom;
         return string.IsNullOrWhiteSpace(nom) ? $"Monstre #{idGabarit}" : nom;
+    }
+
+    /// <summary>Quand un combat démarre, on copie les entités de la carte vers Combat.Allies/Ennemis
+    /// pour que la Vue Combat puisse afficher les combattants en live.</summary>
+    private void PeuplerCombatDepuisCarte()
+    {
+        var carte = _etat.CarteCourante;
+        if (carte == null) return;
+
+        _etat.Combat.Allies.Clear();
+        _etat.Combat.Ennemis.Clear();
+
+        foreach (var ent in carte.Entites.Values)
+        {
+            if (ent is BotDofus.Divers.Cartes.Entites.EntiteJoueur joueur)
+            {
+                _etat.Combat.Allies.Add(new BotDofus.Divers.Combats.Combattants.CombattantAllie
+                {
+                    Identifiant = joueur.Identifiant,
+                    Nom = joueur.Nom,
+                    CellulePosition = joueur.CellulePosition,
+                    Niveau = joueur.Niveau,
+                    Equipe = 0
+                });
+            }
+            else if (ent is BotDofus.Divers.Cartes.Entites.EntiteMonstre mob)
+            {
+                _etat.Combat.Ennemis.Add(new BotDofus.Divers.Combats.Combattants.CombattantMonstre
+                {
+                    Identifiant = mob.Identifiant,
+                    Nom = NomMonstre(mob.IdGabarit),
+                    CellulePosition = mob.CellulePosition,
+                    IdGabarit = mob.IdGabarit,
+                    NiveauGabarit = mob.NiveauGroupe,
+                    Equipe = 1
+                });
+            }
+        }
+
+        // S'assure que le perso est bien dans les alliés (s'il n'a pas été capturé via GM).
+        if (!_etat.Combat.Allies.Any(a => a.Nom == _etat.Personnage.Nom)
+            && !string.IsNullOrEmpty(_etat.Personnage.Nom))
+        {
+            _etat.Combat.Allies.Add(new BotDofus.Divers.Combats.Combattants.CombattantAllie
+            {
+                Identifiant = _etat.Personnage.Identifiant,
+                Nom = _etat.Personnage.Nom,
+                CellulePosition = _etat.Personnage.CellulePosition ?? 0,
+                Niveau = _etat.Personnage.Niveau,
+                IdClasse = _etat.Personnage.IdClasse,
+                PV = _etat.Personnage.Vie,
+                PVMax = _etat.Personnage.VieMax,
+                PA = _etat.Personnage.PA,
+                PM = _etat.Personnage.PM,
+                Equipe = 0
+            });
+        }
+
+        Journaliseur.Info($"[COMBAT] {_etat.Combat.Allies.Count} allié(s) vs {_etat.Combat.Ennemis.Count} ennemi(s)");
     }
 }
