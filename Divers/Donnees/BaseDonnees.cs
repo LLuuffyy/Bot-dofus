@@ -88,6 +88,7 @@ public sealed class BaseDonnees
                         item.IdType = LireIntSur(v, "t");
                         item.Niveau = LireIntSur(v, "l", "lvl");
                         item.Poids = LireIntSur(v, "w");
+                        item.IdGfx = LireIntSur(v, "g", "gfx");
                     }
                     else if (v.ValueKind == JsonValueKind.String)
                     {
@@ -205,7 +206,8 @@ public sealed class BaseDonnees
         try
         {
             var doc = JsonDocument.Parse(File.ReadAllText(fichier));
-            foreach (var prop in doc.RootElement.EnumerateObject())
+            var racine = doc.RootElement.TryGetProperty("maps", out var maps) ? maps : doc.RootElement;
+            foreach (var prop in racine.EnumerateObject())
             {
                 try
                 {
@@ -298,6 +300,7 @@ public sealed class InfoItem
     public string Nom { get; set; } = "";
     public string Description { get; set; } = "";
     public int IdType { get; set; }
+    public int IdGfx { get; set; }
     public int Niveau { get; set; }
     public int Poids { get; set; }
     public override string ToString() => $"#{Identifiant} {Nom} (lvl {Niveau}, {Poids}p)";
