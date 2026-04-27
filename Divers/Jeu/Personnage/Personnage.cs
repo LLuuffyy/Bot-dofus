@@ -57,6 +57,12 @@ public sealed class Personnage
         Mis_A_Jour?.Invoke(this, EventArgs.Empty);
     }
 
+    public void ActualiserEnergie(int energie, int energieMax)
+    {
+        Energie = energie; EnergieMax = energieMax;
+        Mis_A_Jour?.Invoke(this, EventArgs.Empty);
+    }
+
     public void ActualiserPoids(int actuel, int max)
     {
         PoidsActuel = actuel; PoidsMax = max;

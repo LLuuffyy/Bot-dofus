@@ -6,6 +6,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0"
@@ -59,7 +60,16 @@
                       FontFamily="Consolas"
                       FontSize="12"
                       Background="Transparent"
-                      BorderThickness="0">
+                      BorderThickness="0"
+                      SelectionMode="Extended"
+                      SelectionUnit="CellOrRowHeader"
+                      ClipboardCopyMode="IncludeHeader"
+                      SelectionChanged="GridPaquets_SelectionChanged"
+                      ScrollViewer.VerticalScrollBarVisibility="Visible"
+                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                      ScrollViewer.CanContentScroll="False"
+                      EnableRowVirtualization="False"
+                      EnableColumnVirtualization="False">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Heure" Binding="{Binding Heure}" Width="100"/>
                     <DataGridTextColumn Header="Sens" Binding="{Binding Sens}" Width="64"/>
@@ -67,6 +77,42 @@
                     <DataGridTextColumn Header="Charge" Binding="{Binding Charge}" Width="*"/>
                 </DataGrid.Columns>
             </DataGrid>
+        </Border>
+
+        <Border Grid.Row="2"
+                Style="{StaticResource PanelBorderStyle}"
+                Padding="12"
+                Margin="0,12,0,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,6">
+                    <TextBlock DockPanel.Dock="Left"
+                               Text="Détail paquet sélectionné"
+                               FontSize="11"
+                               Foreground="{DynamicResource MutedTextBrush}"
+                               VerticalAlignment="Center"/>
+                    <Button DockPanel.Dock="Right"
+                            Click="BtnCopierDetail_Click"
+                            Style="{StaticResource TopNavButtonStyle}"
+                            Content="Copier"/>
+                </DockPanel>
+                <TextBox Grid.Row="1"
+                         x:Name="TxtDetail"
+                         IsReadOnly="True"
+                         FontFamily="Consolas"
+                         FontSize="12"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         MaxHeight="160"
+                         VerticalScrollBarVisibility="Auto"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         Foreground="{DynamicResource PrimaryTextBrush}"
+                         Text="(sélectionne une ligne ci-dessus pour voir le contenu complet)"/>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>

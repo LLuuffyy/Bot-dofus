@@ -318,6 +318,14 @@
                                     <Button Style="{StaticResource TopNavButtonStyle}" Margin="0,0,10,0">
                                         <TextBlock Text="Choix serveur" />
                                     </Button>
+                                    <CheckBox x:Name="ChkModePassif"
+                                              Content="Mode passif"
+                                              IsChecked="True"
+                                              Checked="ChkModePassif_Toggle"
+                                              Unchecked="ChkModePassif_Toggle"
+                                              VerticalAlignment="Center"
+                                              ToolTip="Coché : le bot observe seulement, le client Dofus gère l'auth (sûr). Décoché : le bot fait l'auth tout seul (mode actif)."
+                                              Margin="0,0,14,0" />
                                     <Button x:Name="BtnLancerJeu"
                                             Click="BtnLancerJeu_Click"
                                             Background="#243D55"

@@ -242,6 +242,12 @@ public sealed class MessageStats : MessageDofus, IMessageVersClient
         Charge = charge;
         var blocs = charge.Split('|');
 
+        // Diagnostic : log les 12 premiers blocs pour pouvoir corriger la position des champs
+        // (Vie/Énergie/PA/PM diffèrent entre Dofus officiel et Hystoria).
+        var apercu = string.Join(" | ", blocs.Take(12).Select((b, i) =>
+            $"[{i}]={(b.Length > 30 ? b[..30] + "…" : b)}"));
+        Utilitaires.Journaux.Journaliseur.Debogue($"[As] blocs : {apercu}");
+
         // Bloc 0 : XP (actuelle,palier,prochain)
         if (blocs.Length > 0)
         {
@@ -255,14 +261,44 @@ public sealed class MessageStats : MessageDofus, IMessageVersClient
             }
         }
 
-        Kamas = ParserLong(blocs, 1);
+        // Hystoria : le bloc Kamas peut avoir un suffixe "#<bonusKolizeum>" — on ne garde que la partie numérique.
+        Kamas = ParserLongAvant(blocs, 1, '#');
         PointsCaracteristiques = ParserInt(blocs, 2);
         PointsSorts = ParserInt(blocs, 3);
 
-        (Vie, VieMax) = ParserPaire(blocs, 4);
-        (Energie, EnergieMax) = ParserPaire(blocs, 5);
-        PA = ParserPremier(blocs, 6);
-        PM = ParserPremier(blocs, 7);
+        // Format Hystoria observé en debug live (paquet As réel) :
+        //   blocs[0]=XP, blocs[1]=kamas#bonus, blocs[2]=pCaracs, blocs[3]=pSorts,
+        //   blocs[4]=alignement (ignoré), blocs[5]=vie/vieMax, blocs[6]=energie/energieMax,
+        //   blocs[7]=initiative, blocs[8]=prospection,
+        //   blocs[9]=PA,PM,?,? (ex: "7,5,0,0")
+        (Vie, VieMax) = ParserPaire(blocs, 5);
+        (Energie, EnergieMax) = ParserPaire(blocs, 6);
+        // Stats Dofus 1.29 : chaque stat a 4 composants "base,equipement,potion,boost".
+        // Le total affiché = somme des 4. Hystoria garde ce format.
+        //   blocs[9] = PA (ex: "7,5,0,0" → 12 PA total)
+        //   blocs[10] = PM (ex: "3,1,0,0" → 4 PM total)
+        PA = SommeStat(blocs, 9);
+        PM = SommeStat(blocs, 10);
+    }
+
+    private static int SommeStat(string[] blocs, int index)
+    {
+        if (blocs.Length <= index) return 0;
+        var total = 0;
+        foreach (var p in blocs[index].Split(','))
+        {
+            if (int.TryParse(p, out var v)) total += v;
+        }
+        return total;
+    }
+
+    private static long ParserLongAvant(string[] blocs, int index, char separateur)
+    {
+        if (blocs.Length <= index) return 0;
+        var brut = blocs[index];
+        var idx = brut.IndexOf(separateur);
+        var partie = idx >= 0 ? brut[..idx] : brut;
+        return long.TryParse(partie, out var v) ? v : 0;
     }
 
     private static long ParserLong(string[] blocs, int index)

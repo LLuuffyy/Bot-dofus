@@ -162,7 +162,12 @@ public sealed class SessionProxy : IDisposable
                 continue;
             }
 
-            var brut = contenu.Substring(debut, i - debut).TrimEnd('\r', '\n');
+            // IMPORTANT : on NE STRIPPE PAS les \r\n trailing. Le protocole Dofus utilise \n
+            // comme SÉPARATEUR INTERNE dans le paquet d'auth ("login\n#hashedpwd[\n]"). Un
+            // TrimEnd('\n') casserait silencieusement le mot de passe : le serveur reçoit
+            // un paquet incomplet et drop l'auth sans erreur (symptôme : keep-alives Af et
+            // jamais de Af0|0|0|1|-1 en réponse). Cf. session debug 2026-04-27 + SynFus.
+            var brut = contenu.Substring(debut, i - debut);
             debut = i + 1;
 
             if (brut.Length == 0)

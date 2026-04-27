@@ -99,14 +99,20 @@ public sealed class ContexteCompte : IDisposable
         SessionJeuActive = session;
         Api.LierSession(session);
 
-        if (!ModePassif)
+        if (ModePassif)
+        {
+            // Mode passif : on installe quand même TrameJeu pour parser les paquets serveur
+            // (carte, HP, kamas, poids, combat) et alimenter EtatJeu / les vues WPF.
+            // TrameJeu n'envoie RIEN au serveur — c'est de l'observation pure.
+            Trames.RemplacerTrame(new TrameJeu(Repartiteur, Compte, EtatJeu, session));
+        }
+        else
         {
             Trames.RemplacerTrame(new TrameSelectionPersonnage(Repartiteur, Compte, session, Compte.PersonnagePrefere));
         }
 
         Journaliseur.Info($"Contexte {Compte.Identifiant} : session jeu attachée");
         Journaliseur.Info("[ORCH] Session JEU attachee - le cipher Hystoria sera gere automatiquement par SessionProxy");
-        Journaliseur.Info($"Contexte {Compte.Identifiant} : session JEU attachee (cipher Hystoria gere automatiquement par SessionProxy)");
         SessionJeuAttachee?.Invoke(this, session);
     }
 

@@ -1,4 +1,5 @@
 using System.Windows.Controls;
+using System.Windows.Media;
 using BotDofus.Divers;
 
 namespace BotDofus.Wpf.Vues;
@@ -24,8 +25,12 @@ public partial class VuePersonnage : UserControl
         if (_contexte == null) return;
         var p = _contexte.EtatJeu.Personnage;
 
+        var (nomClasse, abrev, couleur) = InfosClasse(p.IdClasse);
+        TxtClasseAbrev.Text = abrev;
+        EllipseAvatar.Fill = new SolidColorBrush(couleur);
+
         TxtNom.Text = string.IsNullOrEmpty(p.Nom) ? "—" : p.Nom;
-        TxtClasse.Text = $"Classe #{p.IdClasse} · Sexe {(p.Sexe == 1 ? "F" : "H")}";
+        TxtClasse.Text = $"{nomClasse} · {(p.Sexe == 1 ? "Femme" : "Homme")}";
         TxtNiveau.Text = p.Niveau > 0 ? $"Niveau {p.Niveau}" : "Niveau —";
         TxtKamas.Text = p.Kamas.ToString("N0");
 
@@ -42,4 +47,23 @@ public partial class VuePersonnage : UserControl
             ? $"Carte {p.CarteCourante} · Cellule {p.CellulePosition?.ToString() ?? "—"}"
             : "Carte —";
     }
+
+    private static (string Nom, string Abrev, Color Couleur) InfosClasse(int idClasse) => idClasse switch
+    {
+        1  => ("Feca",      "FEC", Color.FromRgb(0x4A, 0x90, 0xE2)),
+        2  => ("Osamodas",  "OSA", Color.FromRgb(0x7D, 0x4F, 0x9F)),
+        3  => ("Enutrof",   "ENU", Color.FromRgb(0xC9, 0xA1, 0x4B)),
+        4  => ("Sram",      "SRA", Color.FromRgb(0x6B, 0x6B, 0x6B)),
+        5  => ("Xelor",     "XEL", Color.FromRgb(0xD9, 0xC9, 0x3B)),
+        6  => ("Ecaflip",   "ECA", Color.FromRgb(0xE2, 0x71, 0x4A)),
+        7  => ("Eniripsa",  "ENI", Color.FromRgb(0xE5, 0x6B, 0xA8)),
+        8  => ("Iop",       "IOP", Color.FromRgb(0xC4, 0x3D, 0x3D)),
+        9  => ("Cra",       "CRA", Color.FromRgb(0x4F, 0xA3, 0x6B)),
+        10 => ("Sadida",    "SAD", Color.FromRgb(0x5C, 0x8A, 0x4F)),
+        11 => ("Sacrieur",  "SAC", Color.FromRgb(0x9C, 0x2A, 0x2A)),
+        12 => ("Pandawa",   "PAN", Color.FromRgb(0xD2, 0xB4, 0x8C)),
+        13 => ("Roublard",  "ROU", Color.FromRgb(0x3D, 0x3D, 0x6B)),
+        14 => ("Zobal",     "ZOB", Color.FromRgb(0x8B, 0x4F, 0x9F)),
+        _  => ($"Classe #{idClasse}", "—", Color.FromRgb(0x9E, 0x9E, 0x9E)),
+    };
 }

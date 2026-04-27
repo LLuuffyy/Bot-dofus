@@ -42,6 +42,11 @@ public sealed class MessageInfoVie : MessageDofus, IMessageVersClient
     public override void Desserialiser(string charge)
     {
         Charge = charge;
+        // Hystoria envoie aussi "ILS2000" qui n'est PAS une mise à jour de PV (probablement
+        // un compteur lié aux sorts). Sans cette garde, "S2000" était parsé en Vie=0/VieMax=0
+        // et écrasait les vraies valeurs reçues du paquet As.
+        if (charge.Length > 0 && !char.IsDigit(charge[0])) return;
+
         var parts = charge.Split(',');
         if (parts.Length > 0 && int.TryParse(parts[0], out var v)) Vie = v;
         if (parts.Length > 1 && int.TryParse(parts[1], out var m)) VieMax = m;

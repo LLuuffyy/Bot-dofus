@@ -54,7 +54,7 @@ public static class FabriqueMessages
             {
                 var msg = ctor3();
                 msg.Source = paquet;
-                msg.Desserialiser(paquet.Contenu[3..]);
+                msg.Desserialiser(StripSeparateurInitial(paquet.Contenu[3..]));
                 return msg;
             }
         }
@@ -67,7 +67,7 @@ public static class FabriqueMessages
             {
                 var msg = ctor2();
                 msg.Source = paquet;
-                msg.Desserialiser(paquet.Contenu[2..]);
+                msg.Desserialiser(StripSeparateurInitial(paquet.Contenu[2..]));
                 return msg;
             }
         }
@@ -80,6 +80,14 @@ public static class FabriqueMessages
         inconnu.Desserialiser(paquet.Charge);
         return inconnu;
     }
+
+    /// <summary>
+    /// Strip le séparateur '|' initial s'il est présent juste après le préfixe.
+    /// Sans ça, les Desserialiser qui font Split('|') récupèrent un parts[0]="" et tout est
+    /// décalé d'un cran (bug observé sur ASK, AYK, AxK, etc.).
+    /// </summary>
+    private static string StripSeparateurInitial(string charge)
+        => charge.Length > 0 && charge[0] == '|' ? charge[1..] : charge;
 
     /// <summary>
     /// Enregistre tous les types de messages standards du protocole Dofus Retro 1.29.
@@ -143,7 +151,7 @@ public static class FabriqueMessages
         EnregistrerVersClient<VersClient.Objet.MessageObjetAjout>("OAK");
         EnregistrerVersClient<VersClient.Objet.MessageObjetRetrait>("OR");
         EnregistrerVersClient<VersClient.Objet.MessageObjetQuantite>("Oq");
-        EnregistrerVersClient<VersClient.Objet.MessageObjetPoids>("OW");
+        EnregistrerVersClient<VersClient.Objet.MessageObjetPoids>("Ow");
         EnregistrerVersClient<VersClient.Objet.MessageObjetDeplacement>("OM");
 
         // --- VersServeur : Authentification ---

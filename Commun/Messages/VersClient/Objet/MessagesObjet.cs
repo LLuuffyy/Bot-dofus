@@ -54,17 +54,18 @@ public sealed class MessageObjetQuantite : MessageDofus, IMessageVersClient
     }
 }
 
-/// <summary>OW : poids actuel et max du personnage.</summary>
+/// <summary>Ow : poids actuel et max du personnage. Format Hystoria : "Ow<actuel>|<max>".</summary>
 public sealed class MessageObjetPoids : MessageDofus, IMessageVersClient
 {
-    public override string Prefixe => "OW";
+    public override string Prefixe => "Ow";
     public override DirectionPaquet Direction => DirectionPaquet.VersClient;
     public int PoidsActuel { get; private set; }
     public int PoidsMax { get; private set; }
     public override void Desserialiser(string charge)
     {
         Charge = charge;
-        var parts = charge.Split(',');
+        // Séparateur pipe (pas virgule) : "Ow5464|12190" → actuel=5464, max=12190.
+        var parts = charge.Split('|');
         if (parts.Length > 0 && int.TryParse(parts[0], out var a)) PoidsActuel = a;
         if (parts.Length > 1 && int.TryParse(parts[1], out var m)) PoidsMax = m;
     }

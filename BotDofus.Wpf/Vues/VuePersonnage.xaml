@@ -12,7 +12,16 @@
             <!-- Avatar + nom + niveau -->
             <materialDesign:Card Grid.Column="0" Padding="20" Margin="0,0,16,0" VerticalAlignment="Top">
                 <StackPanel HorizontalAlignment="Center">
-                    <Ellipse Width="120" Height="120" Fill="{DynamicResource PrimaryHueMidBrush}"/>
+                    <Grid Width="120" Height="120">
+                        <Ellipse x:Name="EllipseAvatar" Fill="{DynamicResource PrimaryHueMidBrush}"/>
+                        <TextBlock x:Name="TxtClasseAbrev"
+                                   Text="—"
+                                   FontSize="32"
+                                   FontWeight="Bold"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
                     <TextBlock x:Name="TxtNom" Text="—" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,12,0,4"/>
                     <TextBlock x:Name="TxtClasse" Text="Classe / Sexe" Opacity="0.7" HorizontalAlignment="Center"/>
                     <TextBlock x:Name="TxtNiveau" Text="Niveau —" FontSize="16" HorizontalAlignment="Center" Margin="0,8,0,0"/>

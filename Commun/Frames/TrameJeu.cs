@@ -1,3 +1,4 @@
+using BotDofus.Commun.Messages.VersClient.Authentification;
 using BotDofus.Commun.Messages.VersClient.Base;
 using BotDofus.Commun.Messages.VersClient.Chat;
 using BotDofus.Commun.Messages.VersClient.Info;
@@ -38,6 +39,8 @@ public sealed class TrameJeu : TrameBase
         Ecouter<MessageDonneesCarte>(OnDonneesCarte);
         Ecouter<MessageInfoMessage>(OnInfoMessage);
         Ecouter<MessageInfoVie>(OnInfoVie);
+        Ecouter<MessageSelectionPersonnage>(OnSelectionPersonnage);
+        Ecouter<MessageStats>(OnStats);
         Ecouter<MessageObjetAjout>(_ => Journaliseur.Debogue("Objet ajouté à l'inventaire"));
         Ecouter<MessageObjetRetrait>(msg => Journaliseur.Debogue($"Objet {msg.IdentifiantObjet} retiré"));
         Ecouter<MessageObjetQuantite>(msg => Journaliseur.Debogue($"Objet {msg.IdentifiantObjet} → quantité {msg.NouvelleQuantite}"));
@@ -46,6 +49,34 @@ public sealed class TrameJeu : TrameBase
         Ecouter<MessageChatServeur>(msg => Journaliseur.Info($"[SERVEUR] {msg.Texte}"));
         Ecouter<MessageTourCombat>(_ => _compte.ChangerEtat(EtatsCompte.EnCombat));
         Ecouter<MessagePingMoyen>(_ => { /* silence ping */ });
+    }
+
+    private void OnSelectionPersonnage(MessageSelectionPersonnage msg)
+    {
+        // ASK : sert à la fois à confirmer la sélection ET à pousser l'identité du perso (nom/niveau/classe).
+        var perso = _etat.Personnage;
+        perso.Identifiant = msg.Identifiant;
+        perso.Nom = msg.Nom;
+        perso.Niveau = msg.Niveau;
+        perso.IdClasse = msg.IdClasse;
+        _compte.PseudoAffiche = msg.Nom;
+        Journaliseur.Info($"Personnage : {msg.Nom} (classe #{msg.IdClasse}, niv {msg.Niveau})");
+    }
+
+    private void OnStats(MessageStats msg)
+    {
+        // As : statistiques complètes du perso (PV / Énergie / PA / PM / Kamas / XP / pts caracs / pts sorts).
+        var perso = _etat.Personnage;
+        perso.XpActuelle = msg.XpActuelle;
+        perso.XpPalierCourant = msg.XpPalier;
+        perso.XpPalierSuivant = msg.XpProchainPalier;
+        perso.Kamas = msg.Kamas;
+        perso.PointsCaracteristiques = msg.PointsCaracteristiques;
+        perso.PointsSorts = msg.PointsSorts;
+        perso.PA = msg.PA;
+        perso.PM = msg.PM;
+        perso.ActualiserVie(msg.Vie, msg.VieMax);
+        perso.ActualiserEnergie(msg.Energie, msg.EnergieMax);
     }
 
     private void OnDonneesCarte(MessageDonneesCarte msg)
@@ -61,6 +92,9 @@ public sealed class TrameJeu : TrameBase
 
     private void OnInfoVie(MessageInfoVie msg)
     {
+        // Sécurité : on n'écrase pas la vie réelle (déjà fournie par le paquet As) avec 0/0
+        // si jamais le paquet IL arrive sous une variante non-life-info (ex: "ILS2000").
+        if (msg.VieMax <= 0) return;
         _etat.Personnage.ActualiserVie(msg.Vie, msg.VieMax);
     }
 

@@ -12,6 +12,7 @@ using System.Windows.Threading;
 using BotDofus.Commun.Reseau;
 using BotDofus.Divers;
 using BotDofus.Utilitaires.Config;
+using BotDofus.Utilitaires.Hystoria;
 using BotDofus.Utilitaires.Journaux;
 using Microsoft.Win32;
 
@@ -23,6 +24,11 @@ public partial class MainWindow : Window
     private ContexteCompte? _contexteSelectionne;
     private readonly DispatcherTimer _timerRafraichissement;
     private readonly ConfigWpf _configWpf;
+
+    // Patch SWF + entrée hosts : on garde l'état pour pouvoir nettoyer à la fermeture.
+    private PatcheurCoreSwf? _patcheurSwf;
+    private string? _cheminCoreSwfPatche;
+    private GestionnaireHosts? _gestionnaireHosts;
 
     public MainWindow()
     {
@@ -110,7 +116,8 @@ public partial class MainWindow : Window
                 LstComptes.SelectedItem = Comptes.FirstOrDefault(c => c.Contexte == contexte);
             }
 
-            contexte.ModePassif = true;
+            // Le ModePassif est piloté par le ChkModePassif (checkbox du header) — pas de hardcoding ici.
+            contexte.ModePassif = ChkModePassif?.IsChecked == true;
             contexte.DemarrerProxy();
 
             var cheminClientOriginal = ObtenirCheminClientDofus();
@@ -120,16 +127,24 @@ public partial class MainWindow : Window
             }
 
             FermerClientsDofusExistants(cheminClientOriginal);
-            var cheminClient = ClientDofusPrepare.PreparerCopieLocale(cheminClientOriginal);
 
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = cheminClient,
-                WorkingDirectory = Path.GetDirectoryName(cheminClient) ?? AppContext.BaseDirectory,
-                UseShellExecute = true
-            });
+            // Patcher core.swf in-place : remplace l'IP serveur par "dofusproxy.bot"
+            // et garde un backup core_original.swf à côté pour pouvoir restaurer à la fermeture.
+            var cheminCoreSwf = Path.Combine(
+                Path.GetDirectoryName(cheminClientOriginal)!,
+                "modules", "core.swf");
+            _patcheurSwf ??= new PatcheurCoreSwf();
+            _patcheurSwf.Patcher(cheminCoreSwf);
+            _cheminCoreSwfPatche = cheminCoreSwf;
 
-            Journaliseur.Info($"Client Dofus lance : {cheminClient}");
+            // Ajouter l'entrée hosts : 127.0.0.1 dofusproxy.bot. Idempotent.
+            _gestionnaireHosts ??= new GestionnaireHosts(PatcheurCoreSwf.HostnameProxy);
+            _gestionnaireHosts.Ajouter();
+
+            // Lancer Dofus.exe directement (bypass du launcher Hystoria Electron) :
+            // le client résoudra dofusproxy.bot via hosts → 127.0.0.1 → notre proxy.
+            var lanceur = new LanceurDofus(cheminClientOriginal);
+            lanceur.Lancer();
         }
         catch (Exception ex)
         {
@@ -140,6 +155,43 @@ public partial class MainWindow : Window
     private void BtnDeconnecter_Click(object sender, RoutedEventArgs e)
     {
         _contexteSelectionne?.ArreterProxy();
+    }
+
+    private void ChkModePassif_Toggle(object sender, RoutedEventArgs e)
+    {
+        // Propage l'état du checkbox à tous les contextes : décoché = bot tente l'auth lui-même
+        // (mode actif, à utiliser uniquement avec un client Dofus qui ne tape PAS le mdp en parallèle).
+        var passif = ChkModePassif.IsChecked == true;
+        foreach (var c in Comptes)
+        {
+            c.Contexte.ModePassif = passif;
+        }
+        Journaliseur.Info($"Mode {(passif ? "PASSIF" : "ACTIF")} appliqué à {Comptes.Count} compte(s)");
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        base.OnClosed(e);
+
+        // Stoppe tous les proxies (auth + jeu) avant le cleanup système.
+        foreach (var c in Comptes)
+        {
+            try { c.Contexte.ArreterProxy(); } catch { }
+        }
+
+        // Restaure core.swf depuis le backup : l'utilisateur retrouve son client Hystoria intact.
+        if (_patcheurSwf != null && _cheminCoreSwfPatche != null)
+        {
+            try { _patcheurSwf.Restaurer(_cheminCoreSwfPatche); }
+            catch (Exception ex) { Journaliseur.Avertir($"Restauration core.swf : {ex.Message}"); }
+        }
+
+        // Retire l'entrée dofusproxy.bot du fichier hosts.
+        if (_gestionnaireHosts != null)
+        {
+            try { _gestionnaireHosts.Retirer(); }
+            catch (Exception ex) { Journaliseur.Avertir($"Retrait hosts : {ex.Message}"); }
+        }
     }
 
     private void RafraichirStatsHeader()
@@ -187,9 +239,11 @@ public partial class MainWindow : Window
             }
         }
 
+        // Lecture de l'état initial du checkbox (par défaut coché = passif au démarrage).
+        var passifInitial = ChkModePassif?.IsChecked == true;
         foreach (var entree in comptes.Where(c => !string.IsNullOrWhiteSpace(c.Identifiant)))
         {
-            AjouterCompteDepuisEntree(entree, modePassif: true);
+            AjouterCompteDepuisEntree(entree, modePassif: passifInitial);
         }
 
         if (Comptes.Count > 0)
@@ -197,7 +251,7 @@ public partial class MainWindow : Window
             LstComptes.SelectedIndex = 0;
             try
             {
-                Comptes[0].Contexte.ModePassif = true;
+                Comptes[0].Contexte.ModePassif = passifInitial;
                 Comptes[0].Contexte.DemarrerProxy();
             }
             catch (Exception ex)
