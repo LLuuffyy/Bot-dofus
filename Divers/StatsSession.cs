@@ -12,6 +12,9 @@ namespace BotDofus.Divers;
 /// </summary>
 public sealed class StatsSession
 {
+    private bool _baselineKamasCapture;
+    private bool _baselineXpCapture;
+
     public DateTime? DemarreA { get; private set; }
 
     public long PaquetsRecus { get; private set; }
@@ -40,6 +43,8 @@ public sealed class StatsSession
         KamasCourants = perso.Kamas;
         XpInitiale = perso.XpActuelle;
         XpCourante = perso.XpActuelle;
+        _baselineKamasCapture = perso.Kamas != 0;
+        _baselineXpCapture = perso.XpActuelle != 0;
         Change?.Invoke(this, EventArgs.Empty);
     }
 
@@ -75,6 +80,12 @@ public sealed class StatsSession
 
     public void NotifierKamas(long valeur)
     {
+        if (!_baselineKamasCapture)
+        {
+            KamasInitiaux = valeur;
+            _baselineKamasCapture = true;
+        }
+
         if (KamasCourants == valeur) return;
         KamasCourants = valeur;
         Change?.Invoke(this, EventArgs.Empty);
@@ -82,6 +93,12 @@ public sealed class StatsSession
 
     public void NotifierXp(long valeur)
     {
+        if (!_baselineXpCapture)
+        {
+            XpInitiale = valeur;
+            _baselineXpCapture = true;
+        }
+
         if (XpCourante == valeur) return;
         XpCourante = valeur;
         Change?.Invoke(this, EventArgs.Empty);
@@ -95,6 +112,7 @@ public sealed class StatsSession
         CombatsTotaux = CombatsEnCours = 0;
         KamasInitiaux = KamasCourants = 0;
         XpInitiale = XpCourante = 0;
+        _baselineKamasCapture = _baselineXpCapture = false;
         Change?.Invoke(this, EventArgs.Empty);
     }
 }

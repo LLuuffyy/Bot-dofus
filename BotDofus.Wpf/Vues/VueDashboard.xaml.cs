@@ -4,6 +4,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using BotDofus.Commun.Reseau;
 using BotDofus.Divers;
 using BotDofus.Utilitaires.Journaux;
 
@@ -37,12 +38,31 @@ public partial class VueDashboard : UserControl
 
     public void Lier(ContexteCompte contexte)
     {
+        if (ReferenceEquals(_contexte, contexte))
+        {
+            RafraichirEntete();
+            RafraichirStats();
+            return;
+        }
+
+        if (_contexte != null)
+        {
+            _contexte.PaquetRecu -= OnPaquetRecu;
+            _contexte.Stats.Change -= OnStatsChange;
+        }
+
         _contexte = contexte;
-        contexte.PaquetRecu += (_, __) => Dispatcher.BeginInvoke(new Action(RafraichirEntete), DispatcherPriority.Background);
-        contexte.Stats.Change += (_, __) => Dispatcher.BeginInvoke(new Action(RafraichirStats), DispatcherPriority.Background);
+        contexte.PaquetRecu += OnPaquetRecu;
+        contexte.Stats.Change += OnStatsChange;
         RafraichirEntete();
         RafraichirStats();
     }
+
+    private void OnPaquetRecu(object? sender, EvenementPaquetRecu e)
+        => Dispatcher.BeginInvoke(new Action(RafraichirEntete), DispatcherPriority.Background);
+
+    private void OnStatsChange(object? sender, EventArgs e)
+        => Dispatcher.BeginInvoke(new Action(RafraichirStats), DispatcherPriority.Background);
 
     private void RafraichirEntete()
     {
