@@ -21,6 +21,8 @@ public sealed class Carte
     public Cellule[] Cellules { get; }
     public Dictionary<int, Entite> Entites { get; } = new();
 
+    private Dictionary<long, Cellule>? _indexParCoords;
+
     public event EventHandler? Rechargee;
 
     public Carte(int identifiant, int nombreCellules = NombreCellulesParDefaut)
@@ -39,6 +41,27 @@ public sealed class Carte
         => identifiantCellule >= 0 && identifiantCellule < Cellules.Length
             ? Cellules[identifiantCellule]
             : null;
+
+    /// <summary>
+    /// Recherche O(1) d'une cellule par ses coordonnées (x, y). L'index est construit
+    /// paresseusement à la première utilisation et invalidé quand <see cref="AppliquerMouvements"/>
+    /// est rappelé (utile pour le pathfinder qui interroge 8 voisins par expansion).
+    /// </summary>
+    public Cellule? ObtenirParCoords(int x, int y)
+    {
+        if (_indexParCoords == null)
+        {
+            _indexParCoords = new Dictionary<long, Cellule>(Cellules.Length);
+            foreach (var c in Cellules)
+            {
+                if (c == null) continue;
+                _indexParCoords[CleCoords(c.X, c.Y)] = c;
+            }
+        }
+        return _indexParCoords.TryGetValue(CleCoords(x, y), out var trouve) ? trouve : null;
+    }
+
+    private static long CleCoords(int x, int y) => ((long)x << 32) ^ (uint)y;
 
     /// <summary>
     /// Retourne les voisins directs d'une cellule. En Dofus Retro les 4 directions
@@ -74,6 +97,7 @@ public sealed class Carte
                 _ => TypesCellule.Marchable
             };
         }
+        _indexParCoords = null;
         Rechargee?.Invoke(this, EventArgs.Empty);
     }
 

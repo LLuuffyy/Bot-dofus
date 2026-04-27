@@ -189,9 +189,7 @@ public static class Pathfinder
 
         foreach (var (dx, dy) in deltas)
         {
-            int x = centre.X + dx;
-            int y = centre.Y + dy;
-            var c = carte.Cellules.FirstOrDefault(cel => cel != null && cel.X == x && cel.Y == y);
+            var c = carte.ObtenirParCoords(centre.X + dx, centre.Y + dy);
             if (c != null) yield return c;
         }
     }
