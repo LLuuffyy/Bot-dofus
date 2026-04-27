@@ -14,6 +14,7 @@ public partial class VueSniffer : UserControl
     private string _filtreSens = "Tous";
     private const int LimiteLignes = 5000;
     private System.Windows.Controls.ScrollViewer? _scrollViewer;
+    private ContexteCompte? _contexteLie;
 
     public VueSniffer()
     {
@@ -39,6 +40,17 @@ public partial class VueSniffer : UserControl
 
     public void Lier(ContexteCompte contexte)
     {
+        if (ReferenceEquals(_contexteLie, contexte))
+        {
+            return;
+        }
+
+        if (_contexteLie != null)
+        {
+            _contexteLie.PaquetRecu -= OnPaquet;
+        }
+
+        _contexteLie = contexte;
         contexte.PaquetRecu += OnPaquet;
     }
 
@@ -52,7 +64,7 @@ public partial class VueSniffer : UserControl
         {
             if (Lignes.Count >= LimiteLignes) Lignes.RemoveAt(0);
 
-            Lignes.Add(new LignePaquet
+            var ligne = new LignePaquet
             {
                 Heure = paquet.Horodatage.ToLocalTime().ToString("HH:mm:ss.fff"),
                 Sens = sens,
@@ -61,15 +73,22 @@ public partial class VueSniffer : UserControl
                 // mais le panneau "Détail" en bas montre tout, et Ctrl+C copie le contenu réel.
                 Charge = paquet.Contenu,
                 ContenuComplet = paquet.Contenu
-            });
+            };
+
+            Lignes.Add(ligne);
 
             TxtCount.Text = $"{Lignes.Count} paquets";
             // Auto-scroll : différé à DispatcherPriority.Background pour que le layout soit
             // recalculé APRÈS l'ajout du nouvel item, sinon ScrollToEnd ne voit pas le nouveau.
-            if (ChkAutoScroll.IsChecked == true && _scrollViewer != null)
+            if (ChkAutoScroll.IsChecked == true)
             {
-                var sv = _scrollViewer;
-                Dispatcher.BeginInvoke(new Action(sv.ScrollToEnd), System.Windows.Threading.DispatcherPriority.Background);
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    GridPaquets.UpdateLayout();
+                    GridPaquets.ScrollIntoView(ligne);
+                    _scrollViewer ??= TrouverScrollViewer(GridPaquets);
+                    _scrollViewer?.ScrollToEnd();
+                }), System.Windows.Threading.DispatcherPriority.ContextIdle);
             }
         });
     }

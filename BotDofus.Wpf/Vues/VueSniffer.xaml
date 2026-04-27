@@ -55,6 +55,8 @@
                       IsReadOnly="True"
                       HeadersVisibility="Column"
                       CanUserSortColumns="False"
+                      EnableRowVirtualization="False"
+                      EnableColumnVirtualization="False"
                       GridLinesVisibility="Horizontal"
                       RowHeight="28"
                       FontFamily="Consolas"

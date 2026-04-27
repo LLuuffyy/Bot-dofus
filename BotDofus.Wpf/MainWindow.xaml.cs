@@ -38,7 +38,7 @@ public partial class MainWindow : Window
         _configWpf = ConfigWpf.Charger();
         ChargerComptesSauvegardes();
 
-        // Timer 500ms pour MAJ stats UI (sinon on s'abonne Ã  PaquetRecu mais ça peut spammer)
+        // Timer 500ms pour MAJ stats UI (sinon on s'abonne a PaquetRecu mais ça peut spammer)
         _timerRafraichissement = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
         _timerRafraichissement.Tick += (_, __) => RafraichirStatsHeader();
         _timerRafraichissement.Start();
@@ -120,7 +120,13 @@ public partial class MainWindow : Window
             return;
         }
 
-        try { contexte.DemarrerProxy(); }
+        try
+        {
+            contexte.ModePassif = ChkModePassif?.IsChecked == true;
+            contexte.DemarrerProxy();
+            Journaliseur.Info($"[UI] Demarrage compte selectionne : {contexte.Compte.Identifiant} (mode {(contexte.ModePassif ? "passif" : "actif")})");
+            RafraichirStatsHeader();
+        }
         catch (Exception ex)
         {
             MessageBox.Show($"Démarrage {contexte.Compte.Identifiant} échoué : {ex.Message}",
@@ -202,6 +208,8 @@ public partial class MainWindow : Window
                 contexte.DemarrerProxy();
                 Journaliseur.Info($"[UI] Proxy démarré pour {contexte.Compte.Identifiant} (mode {(contexte.ModePassif ? "passif" : "actif")})");
             }
+
+            RafraichirStatsHeader();
         }
         catch (Exception ex)
         {
@@ -263,7 +271,18 @@ public partial class MainWindow : Window
 
     private void BtnDeconnecter_Click(object sender, RoutedEventArgs e)
     {
-        _contexteSelectionne?.ArreterProxy();
+        try
+        {
+            _contexteSelectionne?.ArreterProxy();
+            NettoyerPatchEtHosts();
+            Journaliseur.Info("[UI] Deconnexion demandee : proxy arrete, core.swf/hosts nettoyes");
+            RafraichirStatsHeader();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Déconnexion incomplète : {ex.Message}", "Déconnexion",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     private void ChkModePassif_Toggle(object sender, RoutedEventArgs e)
@@ -288,11 +307,17 @@ public partial class MainWindow : Window
             try { c.Contexte.ArreterProxy(); } catch { }
         }
 
+        NettoyerPatchEtHosts();
+    }
+
+    private void NettoyerPatchEtHosts()
+    {
         // Restaure core.swf depuis le backup : l'utilisateur retrouve son client Hystoria intact.
         if (_patcheurSwf != null && _cheminCoreSwfPatche != null)
         {
             try { _patcheurSwf.Restaurer(_cheminCoreSwfPatche); }
             catch (Exception ex) { Journaliseur.Avertir($"Restauration core.swf : {ex.Message}"); }
+            finally { _cheminCoreSwfPatche = null; }
         }
 
         // Retire l'entrée dofusproxy.bot du fichier hosts.
@@ -308,7 +333,7 @@ public partial class MainWindow : Window
         if (_contexteSelectionne == null) return;
         var p = _contexteSelectionne.EtatJeu.Personnage;
 
-        TxtNomPerso.Text = string.IsNullOrEmpty(p.Nom) ? "—”" : p.Nom;
+        TxtNomPerso.Text = string.IsNullOrEmpty(p.Nom) ? "—" : p.Nom;
         TxtClassePerso.Text = p.Niveau > 0
             ? $"Classe #{p.IdClasse} · Niveau {p.Niveau}"
             : "Aucun perso connecté";
@@ -330,6 +355,8 @@ public partial class MainWindow : Window
 
         // MAJ status visuel des comptes (couleur du cercle)
         foreach (var vm in Comptes) vm.Refresh();
+
+        TxtProxyButton.Text = _contexteSelectionne.Proxy.EnEcoute ? "Stop proxy" : "Proxy";
     }
 
     private void ChargerComptesSauvegardes()
@@ -517,4 +544,3 @@ public sealed class CompteVm : System.ComponentModel.INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(StatusBrush)));
     }
 }
-
