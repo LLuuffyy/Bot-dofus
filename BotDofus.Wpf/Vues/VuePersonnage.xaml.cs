@@ -1,24 +1,49 @@
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Media;
 using BotDofus.Divers;
+using BotDofus.Divers.Jeu.Personnage;
+using BotDofus.Divers.Jeu.Personnage.Spells;
 
 namespace BotDofus.Wpf.Vues;
 
 public partial class VuePersonnage : UserControl
 {
     private ContexteCompte? _contexte;
+    private Personnage? _personnageLie;
+    public ObservableCollection<SortAppris> Sorts { get; } = new();
 
     public VuePersonnage()
     {
         InitializeComponent();
+        ListeSorts.ItemsSource = Sorts;
     }
 
     public void Lier(ContexteCompte ctx)
     {
+        if (ReferenceEquals(_contexte, ctx))
+        {
+            Rafraichir();
+            return;
+        }
+
+        if (_personnageLie != null)
+        {
+            _personnageLie.Mis_A_Jour -= Personnage_Change;
+            _personnageLie.SortsChanges -= Personnage_Change;
+        }
+
         _contexte = ctx;
-        ctx.PaquetRecu += (_, __) => Dispatcher.Invoke(Rafraichir);
+        _personnageLie = ctx.EtatJeu.Personnage;
+        _personnageLie.Mis_A_Jour += Personnage_Change;
+        _personnageLie.SortsChanges += Personnage_Change;
         Rafraichir();
     }
+
+    private void Personnage_Change(object? sender, EventArgs e)
+        => Dispatcher.BeginInvoke(new Action(Rafraichir), System.Windows.Threading.DispatcherPriority.Background);
 
     private void Rafraichir()
     {
@@ -46,6 +71,24 @@ public partial class VuePersonnage : UserControl
         TxtPosition.Text = p.CarteCourante.HasValue
             ? $"Carte {p.CarteCourante} · Cellule {p.CellulePosition?.ToString() ?? "—"}"
             : "Carte —";
+
+        Sorts.Clear();
+        foreach (var paire in p.SortsAppris.OrderByDescending(kv => kv.Value).ThenBy(kv => kv.Key))
+        {
+            var info = BaseSorts.Instance.Trouver(paire.Key);
+            var nom = info?.Nom ?? $"Sort #{paire.Key}";
+            var details = info != null
+                ? $"{info.CoutPA} PA · portée {info.PorteeMin}-{info.PorteeMax}"
+                : "—";
+            Sorts.Add(new SortAppris
+            {
+                Id = paire.Key,
+                Niveau = paire.Value,
+                Nom = nom,
+                Details = details,
+            });
+        }
+        TxtNbSorts.Text = $"{Sorts.Count} sort{(Sorts.Count > 1 ? "s" : "")}";
     }
 
     private static (string Nom, string Abrev, Color Couleur) InfosClasse(int idClasse) => idClasse switch
@@ -66,4 +109,12 @@ public partial class VuePersonnage : UserControl
         14 => ("Zobal",     "ZOB", Color.FromRgb(0x8B, 0x4F, 0x9F)),
         _  => ($"Classe #{idClasse}", "—", Color.FromRgb(0x9E, 0x9E, 0x9E)),
     };
+}
+
+public sealed class SortAppris
+{
+    public int Id { get; set; }
+    public int Niveau { get; set; }
+    public string Nom { get; set; } = "";
+    public string Details { get; set; } = "";
 }
