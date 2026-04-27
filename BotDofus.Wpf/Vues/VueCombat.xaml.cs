@@ -253,6 +253,28 @@ public partial class VueCombat : UserControl
         _contexte.ConfigCombat.Sauvegarder(chemin);
         MessageBox.Show($"Sauvegarde : {chemin}", "OK", MessageBoxButton.OK, MessageBoxImage.Information);
     }
+
+    private async void BtnFinirTour_Click(object sender, RoutedEventArgs e)
+    {
+        if (_contexte == null) return;
+        await _contexte.Api.FinirTourAsync(System.Threading.CancellationToken.None);
+    }
+
+    private async void BtnReady_Click(object sender, RoutedEventArgs e)
+    {
+        // GR<id_perso> : annonce ready en placement (Dofus Retro 1.29)
+        if (_contexte == null) return;
+        await _contexte.Api.EnvoyerPaquetBrutAsync($"GR{_contexte.EtatJeu.Personnage.Identifiant}",
+            System.Threading.CancellationToken.None);
+    }
+
+    private async void BtnQuitterCombat_Click(object sender, RoutedEventArgs e)
+    {
+        // Gv : abandonner combat (Dofus Retro 1.29)
+        if (_contexte == null) return;
+        await _contexte.Api.EnvoyerPaquetBrutAsync("Gv",
+            System.Threading.CancellationToken.None);
+    }
 }
 
 public sealed class SortItemVm

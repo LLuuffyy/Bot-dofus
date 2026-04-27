@@ -118,6 +118,36 @@
                                FontStyle="Italic"
                                TextWrapping="Wrap"
                                Margin="0,4,0,0"/>
+
+                    <UniformGrid Columns="3" Margin="0,12,0,0">
+                        <Button Click="BtnFinirTour_Click"
+                                Style="{StaticResource AccentNavButtonStyle}"
+                                Margin="0,0,4,0"
+                                ToolTip="Termine immédiatement le tour courant">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="SkipNext" Width="14" Height="14" Margin="0,0,4,0"/>
+                                <TextBlock Text="Finir tour"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Click="BtnReady_Click"
+                                Style="{StaticResource TopNavButtonStyle}"
+                                Margin="4,0"
+                                ToolTip="Annonce 'prêt' (placement)">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Check" Width="14" Height="14" Margin="0,0,4,0"/>
+                                <TextBlock Text="Pret"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Click="BtnQuitterCombat_Click"
+                                Style="{StaticResource TopNavButtonStyle}"
+                                Margin="4,0,0,0"
+                                ToolTip="Quitte le combat (.fight leave Hystoria)">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="ExitRun" Width="14" Height="14" Margin="0,0,4,0"/>
+                                <TextBlock Text="Quitter"/>
+                            </StackPanel>
+                        </Button>
+                    </UniformGrid>
                 </StackPanel>
             </Border>
 
