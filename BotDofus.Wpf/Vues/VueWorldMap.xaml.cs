@@ -19,20 +19,74 @@ public partial class VueWorldMap : UserControl
 {
     private const double TileSize = 250;
     private readonly List<TuileWorldMap> _tuiles = new();
+    private readonly Dictionary<int, (int x, int y)> _coordsParCarte = new();
     private ContexteCompte? _contexte;
     private ScaleTransform _zoom = new(1, 1);
     private TuileWorldMap? _tuileSelectionnee;
+    private Ellipse? _marqueurPerso;
+    private int _minXCache, _minYCache;
 
     public VueWorldMap()
     {
         InitializeComponent();
         CanvasWorld.LayoutTransform = _zoom;
         ChargerWorldMap();
+        ChargerCoordsCartes();
     }
 
     public void Lier(ContexteCompte contexte)
     {
         _contexte = contexte;
+        // Quand le perso change de map, on actualise le marqueur de position.
+        contexte.PaquetRecu += (_, __) => Dispatcher.Invoke(MettreAJourMarqueurPerso);
+        MettreAJourMarqueurPerso();
+    }
+
+    private void ChargerCoordsCartes()
+    {
+        var chemin = IoPath.Combine(AppContext.BaseDirectory, "Resources", "data", "maps_hystoria.json");
+        if (!IoFile.Exists(chemin)) return;
+
+        try
+        {
+            using var doc = JsonDocument.Parse(IoFile.ReadAllText(chemin));
+            if (!doc.RootElement.TryGetProperty("maps", out var maps)) return;
+            foreach (var prop in maps.EnumerateObject())
+            {
+                if (!int.TryParse(prop.Name, out var idCarte)) continue;
+                if (!prop.Value.TryGetProperty("x", out var xp)) continue;
+                if (!prop.Value.TryGetProperty("y", out var yp)) continue;
+                _coordsParCarte[idCarte] = (xp.GetInt32(), yp.GetInt32());
+            }
+        }
+        catch (Exception ex)
+        {
+            Utilitaires.Journaux.Journaliseur.Avertir($"[MAPVIEW] Echec chargement maps_hystoria.json : {ex.Message}");
+        }
+    }
+
+    private void MettreAJourMarqueurPerso()
+    {
+        if (_contexte == null || _marqueurPerso == null) return;
+        var idCarte = _contexte.EtatJeu.Personnage.CarteCourante;
+        if (idCarte == null || !_coordsParCarte.TryGetValue(idCarte.Value, out var coords))
+        {
+            _marqueurPerso.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        // Centre la pastille sur la tuile correspondante.
+        var left = (coords.x - _minXCache) * TileSize + TileSize / 2 - 12;
+        var top = (coords.y - _minYCache) * TileSize + TileSize / 2 - 12;
+        Canvas.SetLeft(_marqueurPerso, left);
+        Canvas.SetTop(_marqueurPerso, top);
+        Canvas.SetZIndex(_marqueurPerso, 100);
+        _marqueurPerso.Visibility = Visibility.Visible;
+
+        if (TxtStatut != null)
+        {
+            TxtStatut.Text = $"Perso sur carte #{idCarte} = [{coords.x},{coords.y}]";
+        }
     }
 
     private void ChargerWorldMap()
@@ -175,6 +229,25 @@ public partial class VueWorldMap : UserControl
 
         CanvasWorld.Width = (maxX - minX + 1) * TileSize;
         CanvasWorld.Height = (maxY - minY + 1) * TileSize;
+
+        // Mémorise minX/minY pour pouvoir repositionner le marqueur perso après chaque redessin.
+        _minXCache = minX;
+        _minYCache = minY;
+
+        // Marqueur position perso : pastille rouge clignotante.
+        _marqueurPerso = new Ellipse
+        {
+            Width = 24,
+            Height = 24,
+            Fill = new SolidColorBrush(Color.FromRgb(0xFF, 0x44, 0x55)),
+            Stroke = Brushes.White,
+            StrokeThickness = 2,
+            IsHitTestVisible = false,
+            Visibility = Visibility.Collapsed
+        };
+        CanvasWorld.Children.Add(_marqueurPerso);
+        MettreAJourMarqueurPerso();
+
         TxtStatut.Text = $"{_tuiles.Count} tuiles | clic gauche remplit .travel | clic droit ouvre le menu";
     }
 
