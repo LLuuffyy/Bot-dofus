@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -48,6 +49,31 @@ public partial class VueScripts : UserControl
             TxtFichier.Text = Path.GetFileName(_cheminCharge);
             TxtScriptContenu.Text = File.ReadAllText(_cheminCharge);
             BtnDemarrer.IsEnabled = _contexte != null;
+            BtnEnregistrer.IsEnabled = ChkEditable?.IsChecked == true;
+        }
+    }
+
+    private void ChkEditable_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (TxtScriptContenu == null) return;
+        var editable = ChkEditable?.IsChecked == true;
+        TxtScriptContenu.IsReadOnly = !editable;
+        if (BtnEnregistrer != null) BtnEnregistrer.IsEnabled = editable && _cheminCharge != null;
+    }
+
+    private void BtnEnregistrer_Click(object sender, RoutedEventArgs e)
+    {
+        if (_cheminCharge == null) return;
+        try
+        {
+            File.WriteAllText(_cheminCharge, TxtScriptContenu.Text ?? "");
+            MessageBox.Show($"Sauvegardé : {Path.GetFileName(_cheminCharge)}",
+                "OK", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Erreur sauvegarde : {ex.Message}",
+                "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

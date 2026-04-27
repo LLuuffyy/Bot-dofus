@@ -23,6 +23,20 @@
                         <TextBlock Text=" Arrêter" Margin="4,0,0,0"/>
                     </StackPanel>
                 </Button>
+                <Button x:Name="BtnEnregistrer" Click="BtnEnregistrer_Click" Style="{StaticResource MaterialDesignOutlinedButton}" Margin="8,0,0,0" IsEnabled="False">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="ContentSave"/>
+                        <TextBlock Text=" Enregistrer" Margin="4,0,0,0"/>
+                    </StackPanel>
+                </Button>
+                <CheckBox x:Name="ChkEditable"
+                          Content="Editer"
+                          IsChecked="False"
+                          Margin="16,0,0,0"
+                          VerticalAlignment="Center"
+                          Checked="ChkEditable_Toggled"
+                          Unchecked="ChkEditable_Toggled"
+                          ToolTip="Active l'édition du contenu chargé"/>
                 <TextBlock x:Name="TxtFichier" Margin="16,0,0,0" VerticalAlignment="Center" Opacity="0.7" Text="Aucun script chargé"/>
             </StackPanel>
         </Border>
