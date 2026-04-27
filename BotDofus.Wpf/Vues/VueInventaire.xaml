@@ -3,22 +3,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
     <DockPanel Margin="16">
-        <Border DockPanel.Dock="Top"
-                Style="{StaticResource PanelBorderStyle}"
-                Padding="12"
-                Margin="0,0,0,12">
+        <Border DockPanel.Dock="Top" Style="{StaticResource PanelBorderStyle}" Padding="12" Margin="0,0,0,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <materialDesign:PackIcon Kind="BagPersonal" Width="22" Height="22" Margin="0,0,8,0"/>
                     <TextBlock Text="Inventaire" Style="{StaticResource SectionTitleTextStyle}" VerticalAlignment="Center"/>
                 </StackPanel>
-
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="24,0,0,0" VerticalAlignment="Center">
                     <Border Style="{StaticResource PanelBorderStyle}" Padding="10,6" Margin="0,0,8,0">
                         <StackPanel>
@@ -45,41 +40,46 @@
                         </StackPanel>
                     </Border>
                 </StackPanel>
-
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBox x:Name="TxtFiltre"
-                             materialDesign:HintAssist.Hint="Filtre nom, type, id"
+                             materialDesign:HintAssist.Hint="Filtre nom, type, niveau"
                              Width="260"
                              Margin="0,0,8,0"
                              TextChanged="TxtFiltre_TextChanged"/>
-                    <Button Click="BtnRafraichir_Click"
-                            Style="{StaticResource TopNavButtonStyle}"
-                            ToolTip="Rafraichir l'inventaire depuis l'etat live">
+                    <Button Click="BtnRafraichir_Click" Style="{StaticResource TopNavButtonStyle}" ToolTip="Rafraichir l'inventaire depuis l'etat live">
                         <materialDesign:PackIcon Kind="Refresh" Width="16" Height="16"/>
                     </Button>
                 </StackPanel>
             </Grid>
         </Border>
-
-        <DataGrid x:Name="GridObjets"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  HeadersVisibility="Column"
-                  RowHeight="30"
-                  FontFamily="Consolas"
-                  CanUserSortColumns="True"
-                  GridLinesVisibility="Horizontal">
+        <DataGrid x:Name="GridObjets" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" RowHeight="46" CanUserSortColumns="True" GridLinesVisibility="Horizontal">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Etat" Binding="{Binding Etat}" Width="90"/>
-                <DataGridTextColumn Header="Nom" Binding="{Binding Nom}" Width="*"/>
+                <DataGridTemplateColumn Header="Objet" Width="2.2*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="38"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="30" Height="30" CornerRadius="5" Background="{Binding IconeBrush}" BorderBrush="{DynamicResource BorderSoftBrush}" BorderThickness="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding IconeTexte}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Foreground="White"/>
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Nom}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding Details}" FontSize="11" Foreground="{DynamicResource MutedTextBrush}"/>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="150"/>
                 <DataGridTextColumn Header="Niv." Binding="{Binding Niveau}" Width="60"/>
-                <DataGridTextColumn Header="Qté" Binding="{Binding Quantite}" Width="70"/>
+                <DataGridTextColumn Header="Qte" Binding="{Binding Quantite}" Width="70"/>
                 <DataGridTextColumn Header="Pods/u" Binding="{Binding PoidsUnitaire}" Width="75"/>
                 <DataGridTextColumn Header="Pods" Binding="{Binding PoidsTotal}" Width="75"/>
                 <DataGridTextColumn Header="Position" Binding="{Binding PositionTexte}" Width="130"/>
-                <DataGridTextColumn Header="Template" Binding="{Binding IdTemplate}" Width="90"/>
-                <DataGridTextColumn Header="UID" Binding="{Binding Identifiant}" Width="100"/>
+                <DataGridTextColumn Header="Etat" Binding="{Binding Etat}" Width="90"/>
             </DataGrid.Columns>
         </DataGrid>
     </DockPanel>

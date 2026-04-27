@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using BotDofus.Divers;
 using BotDofus.Divers.Donnees;
 using BotDofus.Divers.Jeu.Personnage;
@@ -78,7 +79,11 @@ public partial class VueInventaire : UserControl
                 PoidsUnitaire = poidsUnitaire,
                 PoidsTotal = poidsTotal,
                 PositionTexte = position,
-                Etat = obj.Position == 63 ? "Sac" : "Equipe"
+                Etat = obj.Position == 63 ? "Sac" : "Equipe",
+                IdGfx = info?.IdGfx ?? 0,
+                Details = ConstruireDetails(obj, info, position),
+                IconeTexte = IconeTexte(info?.IdType ?? 0, nom),
+                IconeBrush = new SolidColorBrush(CouleurType(info?.IdType ?? 0))
             });
         }
 
@@ -94,6 +99,7 @@ public partial class VueInventaire : UserControl
         return nom.Contains(_filtre, StringComparison.OrdinalIgnoreCase)
             || type.Contains(_filtre, StringComparison.OrdinalIgnoreCase)
             || position.Contains(_filtre, StringComparison.OrdinalIgnoreCase)
+            || obj.Quantite.ToString().Contains(_filtre, StringComparison.OrdinalIgnoreCase)
             || obj.IdTemplate.ToString().Contains(_filtre, StringComparison.OrdinalIgnoreCase)
             || obj.Identifiant.ToString().Contains(_filtre, StringComparison.OrdinalIgnoreCase);
     }
@@ -158,6 +164,48 @@ public partial class VueInventaire : UserControl
         84 => "Sac",
         _ => type > 0 ? $"Type #{type}" : "Inconnu"
     };
+
+    private static string ConstruireDetails(ObjetInventaire obj, InfoItem? info, string position)
+    {
+        var gfx = info?.IdGfx > 0 ? $"gfx {info.IdGfx}" : "gfx ?";
+        var id = info?.Identifiant > 0 ? $"item {info.Identifiant}" : $"item {obj.IdTemplate}";
+        return $"{position} | {id} | {gfx} | uid {obj.Identifiant}";
+    }
+
+    private static string IconeTexte(int type, string nom)
+    {
+        var symbole = type switch
+        {
+            1 => "A",
+            2 or 3 or 4 or 5 or 6 or 7 or 8 or 19 or 20 or 21 or 22 => "W",
+            9 => "R",
+            10 => "B",
+            11 => "S",
+            16 => "H",
+            17 => "C",
+            18 => "P",
+            23 => "D",
+            24 or 34 => "Q",
+            33 => "F",
+            35 => "M",
+            36 => "N",
+            82 => "O",
+            84 => "B",
+            _ => ""
+        };
+        if (!string.IsNullOrWhiteSpace(symbole)) return symbole;
+        return string.IsNullOrWhiteSpace(nom) ? "?" : nom.Trim()[0].ToString().ToUpperInvariant();
+    }
+
+    private static Color CouleurType(int type) => type switch
+    {
+        1 or 9 or 10 or 11 or 16 or 17 or 18 or 23 or 82 or 84 => Color.FromRgb(0x6C, 0x76, 0xFF),
+        2 or 3 or 4 or 5 or 6 or 7 or 8 or 19 or 20 or 21 or 22 => Color.FromRgb(0xC9, 0x57, 0x61),
+        24 or 34 => Color.FromRgb(0xC9, 0xA1, 0x4B),
+        33 or 36 => Color.FromRgb(0x65, 0xC5, 0x6F),
+        35 => Color.FromRgb(0x3B, 0xA6, 0xB8),
+        _ => Color.FromRgb(0x55, 0x5C, 0x6D)
+    };
 }
 
 public sealed class LigneObjet
@@ -172,4 +220,8 @@ public sealed class LigneObjet
     public int PoidsTotal { get; set; }
     public string PositionTexte { get; set; } = "";
     public string Etat { get; set; } = "";
+    public int IdGfx { get; set; }
+    public string Details { get; set; } = "";
+    public string IconeTexte { get; set; } = "?";
+    public Brush IconeBrush { get; set; } = Brushes.DimGray;
 }

@@ -73,7 +73,7 @@ public partial class VueWorldMap : UserControl
         try
         {
             using var doc = JsonDocument.Parse(IoFile.ReadAllText(chemin));
-            if (!doc.RootElement.TryGetProperty("maps", out var maps)) return;
+            var maps = doc.RootElement.TryGetProperty("maps", out var mapsNode) ? mapsNode : doc.RootElement;
             foreach (var prop in maps.EnumerateObject())
             {
                 if (!int.TryParse(prop.Name, out var idCarte)) continue;

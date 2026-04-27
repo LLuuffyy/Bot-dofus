@@ -13,12 +13,14 @@
             <Border DockPanel.Dock="Top" Padding="8" Background="{DynamicResource MaterialDesignCardBackground}">
                 <DockPanel LastChildFill="False">
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                    <CheckBox x:Name="ChkAfficherIds" Content="Afficher IDs cellules" Margin="0,0,16,0"
+                    <CheckBox x:Name="ChkAfficherIds" Content="IDs cellules" Margin="0,0,16,0"
                               Checked="ChkAfficherIds_Changed" Unchecked="ChkAfficherIds_Changed"/>
                     <CheckBox x:Name="ChkAfficherEntites" Content="Afficher entités" IsChecked="True"
                               Checked="ChkAfficherIds_Changed" Unchecked="ChkAfficherIds_Changed" Margin="0,0,16,0"/>
-                    <CheckBox x:Name="ChkAfficherTransitions" Content="Afficher transitions" IsChecked="True"
-                              Checked="ChkAfficherIds_Changed" Unchecked="ChkAfficherIds_Changed"/>
+                    <CheckBox x:Name="ChkAfficherTransitions" Content="Transitions" IsChecked="True"
+                              Checked="ChkAfficherIds_Changed" Unchecked="ChkAfficherIds_Changed" Margin="0,0,16,0"/>
+                    <CheckBox x:Name="ChkDeplacerAuClic" Content="Deplacer au clic" IsChecked="False"
+                              ToolTip="Quand actif, clic gauche sur une cellule envoie un deplacement direct"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
                     <TextBlock Text=".travel" VerticalAlignment="Center" FontFamily="Consolas" Opacity="0.75" Margin="0,0,8,0"/>
@@ -42,16 +44,21 @@
             <!-- Canvas iso interactif -->
             <Border Background="#1A1A1A" ClipToBounds="True">
                 <Grid>
-                    <Canvas x:Name="CanvasMap" Background="Transparent"
-                            MouseWheel="CanvasMap_MouseWheel"
-                            MouseLeftButtonDown="CanvasMap_MouseLeftButtonDown"
-                            MouseRightButtonDown="CanvasMap_MouseRightButtonDown"
-                            MouseRightButtonUp="CanvasMap_MouseRightButtonUp"
-                            MouseMove="CanvasMap_MouseMove">
-                        <Canvas.LayoutTransform>
-                            <ScaleTransform x:Name="ZoomTransform" ScaleX="1" ScaleY="1"/>
-                        </Canvas.LayoutTransform>
-                    </Canvas>
+                    <ScrollViewer x:Name="ScrollerMap"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Auto"
+                                  Background="#1A1A1A">
+                        <Canvas x:Name="CanvasMap" Background="Transparent"
+                                MouseWheel="CanvasMap_MouseWheel"
+                                MouseLeftButtonDown="CanvasMap_MouseLeftButtonDown"
+                                MouseRightButtonDown="CanvasMap_MouseRightButtonDown"
+                                MouseRightButtonUp="CanvasMap_MouseRightButtonUp"
+                                MouseMove="CanvasMap_MouseMove">
+                            <Canvas.LayoutTransform>
+                                <ScaleTransform x:Name="ZoomTransform" ScaleX="1" ScaleY="1"/>
+                            </Canvas.LayoutTransform>
+                        </Canvas>
+                    </ScrollViewer>
 
                     <!-- Tooltip hover -->
                     <Border x:Name="TooltipBorder" Background="#CC222222" Padding="8,4"
@@ -134,8 +141,8 @@
                     <Separator Margin="0,12"/>
 
                     <TextBlock Text="ACTIONS" FontWeight="Bold" FontSize="11" Opacity="0.7"/>
-                    <TextBlock Text="Clic gauche cellule : déplacer" Margin="0,4,0,2" FontSize="11" Opacity="0.7"/>
-                    <TextBlock Text="Clic droit entité : menu" FontSize="11" Opacity="0.7"/>
+                    <TextBlock Text="Clic gauche cellule : selection/deplacement" Margin="0,4,0,2" FontSize="11" Opacity="0.7"/>
+                    <TextBlock Text="Clic droit entite : menu" FontSize="11" Opacity="0.7"/>
                     <TextBlock Text="Clic droit + drag : pan" FontSize="11" Opacity="0.7"/>
                     <TextBlock Text="Molette : zoom" FontSize="11" Opacity="0.7"/>
                 </StackPanel>

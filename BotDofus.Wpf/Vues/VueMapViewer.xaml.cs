@@ -34,6 +34,7 @@ public partial class VueMapViewer : UserControl
     private Point _panOrigine;
     private bool _centrageNecessaire = true;
     private int _carteCarteSuivie = -1;
+    private int? _celluleSelectionnee;
 
     public VueMapViewer()
     {
@@ -80,6 +81,8 @@ public partial class VueMapViewer : UserControl
         {
             _carteCarteSuivie = carte.Identifiant;
             _centrageNecessaire = true;
+            _celluleSelectionnee = _contexte.EtatJeu.Personnage.CellulePosition;
+            RecalculerCadreCarte(carte);
         }
 
         var info = BaseDonnees.Instance.Map(carte.Identifiant);
@@ -109,6 +112,55 @@ public partial class VueMapViewer : UserControl
         if (ChkAfficherEntites.IsChecked == true) DessinerEntites(carte);
         DessinerJoueur();
         MettreAJourListeEntites(carte);
+        CentrerSiNecessaire(carte);
+    }
+
+    private void RecalculerCadreCarte(Carte carte)
+    {
+        var bounds = CalculerBounds(carte, decalageX: 0, decalageY: 0);
+        _decalageX = -bounds.minX + 90;
+        _decalageY = -bounds.minY + 90;
+
+        var framed = CalculerBounds(carte, _decalageX, _decalageY);
+        CanvasMap.Width = Math.Max(900, framed.maxX + 90);
+        CanvasMap.Height = Math.Max(620, framed.maxY + 90);
+    }
+
+    private (double minX, double minY, double maxX, double maxY) CalculerBounds(Carte carte, double decalageX, double decalageY)
+    {
+        var minX = double.MaxValue;
+        var minY = double.MaxValue;
+        var maxX = double.MinValue;
+        var maxY = double.MinValue;
+
+        foreach (var cell in carte.Cellules)
+        {
+            if (cell == null) continue;
+            var cx = decalageX + (cell.X - cell.Y) * _largeurCellule;
+            var cy = decalageY + (cell.X + cell.Y) * _hauteurCellule;
+            minX = Math.Min(minX, cx - _largeurCellule);
+            minY = Math.Min(minY, cy);
+            maxX = Math.Max(maxX, cx + _largeurCellule);
+            maxY = Math.Max(maxY, cy + _hauteurCellule * 2);
+        }
+
+        if (minX == double.MaxValue) return (0, 0, 900, 620);
+        return (minX, minY, maxX, maxY);
+    }
+
+    private void CentrerSiNecessaire(Carte carte)
+    {
+        if (!_centrageNecessaire || ScrollerMap == null) return;
+        var cellule = _contexte?.EtatJeu.Personnage.CellulePosition is int pos ? carte.Obtenir(pos) : null;
+        if (cellule == null) return;
+
+        _centrageNecessaire = false;
+        var (cx, cy) = ProjeterIso(cellule.X, cellule.Y);
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+            ScrollerMap.ScrollToHorizontalOffset(Math.Max(0, cx * ZoomTransform.ScaleX - ScrollerMap.ViewportWidth / 2));
+            ScrollerMap.ScrollToVerticalOffset(Math.Max(0, cy * ZoomTransform.ScaleY - ScrollerMap.ViewportHeight / 2));
+        }), System.Windows.Threading.DispatcherPriority.Background);
     }
 
     private void DessinerGrille(Carte carte)
@@ -120,6 +172,11 @@ public partial class VueMapViewer : UserControl
             var (cx, cy) = ProjeterIso(cell.X, cell.Y);
 
             var poly = CreerPolygoneCellule(cell, CouleurCellule(cell), 0.5);
+            if (_celluleSelectionnee == cell.Identifiant)
+            {
+                poly.Stroke = new SolidColorBrush(Color.FromRgb(0x6C, 0x76, 0xFF));
+                poly.StrokeThickness = 2.2;
+            }
             poly.MouseEnter += Poly_MouseEnter;
             poly.MouseLeave += Poly_MouseLeave;
             poly.MouseRightButtonDown += Poly_MouseRightButtonDown;
@@ -313,6 +370,7 @@ public partial class VueMapViewer : UserControl
 
     private Brush CouleurCellule(Cellule cell)
     {
+        if (_celluleSelectionnee == cell.Identifiant) return new SolidColorBrush(Color.FromRgb(0x3A, 0x42, 0x55));
         if (cell.Type == TypesCellule.Obstacle) return new SolidColorBrush(Color.FromRgb(40, 40, 40));
         if (cell.Type == TypesCellule.Transition) return new SolidColorBrush(Color.FromRgb(255, 152, 0));
         if (cell.EstInteractif) return new SolidColorBrush(Color.FromRgb(120, 90, 50));
@@ -346,6 +404,15 @@ public partial class VueMapViewer : UserControl
         MenuContextuel.Visibility = Visibility.Collapsed;
         if (_celluleHover == null || _contexte == null) return;
         var cible = _celluleHover.Identifiant;
+        _celluleSelectionnee = cible;
+        TxtCellId.Text = $"Cellule : {cible}";
+        TxtCoords.Text = $"(x, y) : ({_celluleHover.X}, {_celluleHover.Y})";
+        if (ChkDeplacerAuClic?.IsChecked != true)
+        {
+            Rafraichir();
+            return;
+        }
+
         try { await _contexte.Api.SeDeplacerVersCelluleAsync(cible); }
         catch (Exception ex) { MessageBox.Show($"Deplacement echoue : {ex.Message}", "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning); }
     }
@@ -531,6 +598,11 @@ public partial class VueMapViewer : UserControl
     {
         _decalageX = 500;
         _decalageY = 60;
+        if (_contexte?.EtatJeu.CarteCourante is Carte carte)
+        {
+            RecalculerCadreCarte(carte);
+            _centrageNecessaire = true;
+        }
         ZoomTransform.ScaleX = 1;
         ZoomTransform.ScaleY = 1;
         Rafraichir();
