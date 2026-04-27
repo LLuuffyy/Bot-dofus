@@ -15,6 +15,7 @@ public partial class VueSniffer : UserControl
     private const int LimiteLignes = 5000;
     private System.Windows.Controls.ScrollViewer? _scrollViewer;
     private ContexteCompte? _contexteLie;
+    private bool _enPause;
 
     public VueSniffer()
     {
@@ -56,6 +57,8 @@ public partial class VueSniffer : UserControl
 
     private void OnPaquet(object? sender, EvenementPaquetRecu e)
     {
+        if (_enPause) return;
+
         var paquet = e.Paquet;
         var sens = paquet.Direction == DirectionPaquet.VersClient ? "S->C" : "C->S";
         if (!Correspond(paquet.Prefixe, sens)) return;
@@ -69,6 +72,7 @@ public partial class VueSniffer : UserControl
                 Heure = paquet.Horodatage.ToLocalTime().ToString("HH:mm:ss.fff"),
                 Sens = sens,
                 Prefixe = paquet.Prefixe,
+                Taille = paquet.Contenu.Length.ToString(),
                 // Contenu complet pour la copie ; la grille n'affichera qu'une ligne par défaut
                 // mais le panneau "Détail" en bas montre tout, et Ctrl+C copie le contenu réel.
                 Charge = paquet.Contenu,
@@ -95,6 +99,15 @@ public partial class VueSniffer : UserControl
 
     private bool Correspond(string prefixe, string sens)
     {
+        // Pings/keep-alives Hystoria : "CK" (cookie/check côté client) et "CP" (côté serveur).
+        // Décochés par défaut car très bavards (un par seconde environ).
+        if (ChkPings?.IsChecked != true
+            && (prefixe.StartsWith("CK", StringComparison.Ordinal)
+             || prefixe.StartsWith("CP", StringComparison.Ordinal)))
+        {
+            return false;
+        }
+
         if (!string.IsNullOrEmpty(_filtrePrefixe)
             && !prefixe.StartsWith(_filtrePrefixe, StringComparison.OrdinalIgnoreCase))
         {
@@ -107,6 +120,12 @@ public partial class VueSniffer : UserControl
         }
 
         return true;
+    }
+
+    private void BtnPause_Click(object sender, RoutedEventArgs e)
+    {
+        _enPause = BtnPause.IsChecked == true;
+        BtnPause.Content = _enPause ? "▶ Reprendre" : "Pause";
     }
 
     private void TxtFiltre_TextChanged(object sender, TextChangedEventArgs e)
@@ -147,6 +166,7 @@ public sealed class LignePaquet
     public string Heure { get; set; } = "";
     public string Sens { get; set; } = "";
     public string Prefixe { get; set; } = "";
+    public string Taille { get; set; } = "";
     public string Charge { get; set; } = "";
     public string ContenuComplet { get; set; } = "";
 }

@@ -27,11 +27,24 @@
                         <ComboBoxItem Content="C->S"/>
                         <ComboBoxItem Content="S->C"/>
                     </ComboBox>
+                    <CheckBox x:Name="ChkPings"
+                              Content="Pings (CK/CP)"
+                              IsChecked="False"
+                              Margin="14,0,0,0"
+                              VerticalAlignment="Center"
+                              ToolTip="Affiche les keep-alives CK/CP (très bavards)"/>
                     <CheckBox x:Name="ChkAutoScroll"
                               Content="Auto-scroll"
                               IsChecked="True"
                               Margin="14,0,0,0"
                               VerticalAlignment="Center"/>
+                    <ToggleButton x:Name="BtnPause"
+                                  Content="Pause"
+                                  Margin="14,0,0,0"
+                                  Padding="10,4"
+                                  Click="BtnPause_Click"
+                                  VerticalAlignment="Center"
+                                  ToolTip="Met en pause la capture (les paquets continuent d'arriver mais ne sont plus affichés)"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
@@ -69,8 +82,36 @@
                       SelectionChanged="GridPaquets_SelectionChanged">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Heure" Binding="{Binding Heure}" Width="100"/>
-                    <DataGridTextColumn Header="Sens" Binding="{Binding Sens}" Width="64"/>
-                    <DataGridTextColumn Header="Prefixe" Binding="{Binding Prefixe}" Width="80"/>
+                    <DataGridTextColumn Header="Sens" Binding="{Binding Sens}" Width="64">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Sens}" Value="S->C">
+                                        <Setter Property="Foreground" Value="#5BC8FF"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Sens}" Value="C->S">
+                                        <Setter Property="Foreground" Value="#FFB347"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Prefixe" Binding="{Binding Prefixe}" Width="80">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Taille" Binding="{Binding Taille}" Width="60">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
                     <DataGridTextColumn Header="Charge" Binding="{Binding Charge}" Width="*"/>
                 </DataGrid.Columns>
             </DataGrid>
