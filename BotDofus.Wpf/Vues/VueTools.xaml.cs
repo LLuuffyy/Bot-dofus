@@ -111,6 +111,44 @@ public partial class VueTools : UserControl
         Diagnostics.Add(new DiagnosticVm(ouvert, libelle, ouvert ? "✓ en écoute" : "non écouté — démarrer le proxy"));
     }
 
+    private void BtnInstallerHosts_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            new GestionnaireHosts(PatcheurCoreSwf.HostnameProxy).Ajouter();
+            TxtDerniereAction.Text = "Hosts file modifié — entrée installée.";
+            RafraichirDiagnostic();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            MessageBox.Show("Lancer Luffy-bot.exe en tant qu'administrateur pour modifier le fichier hosts.",
+                "Permissions insuffisantes", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Erreur : {ex.Message}", "Hosts", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void BtnRetirerHosts_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            new GestionnaireHosts(PatcheurCoreSwf.HostnameProxy).Retirer();
+            TxtDerniereAction.Text = "Hosts file nettoyé.";
+            RafraichirDiagnostic();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            MessageBox.Show("Lancer Luffy-bot.exe en tant qu'administrateur pour modifier le fichier hosts.",
+                "Permissions insuffisantes", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Erreur : {ex.Message}", "Hosts", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     public void Lier(ContexteCompte contexte)
     {
         if (ReferenceEquals(_contexte, contexte))
