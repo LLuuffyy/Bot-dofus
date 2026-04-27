@@ -1,9 +1,8 @@
 using System;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
+using System.Collections.Generic;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using BotDofus.Divers;
 using BotDofus.Utilitaires.Journaux;
 
@@ -12,23 +11,20 @@ namespace BotDofus.Wpf.Vues;
 public partial class VueDashboard : UserControl
 {
     private ContexteCompte? _contexte;
-    private readonly ObservableCollection<EntreeLogUi> _toutesLignes = new();
-    private readonly ObservableCollection<EntreeLogUi> _lignesAffichees = new();
+    private readonly List<EntreeJournal> _toutesLignes = new();
     private const int LimiteLignes = 5000;
     private string _recherche = string.Empty;
 
     public VueDashboard()
     {
         InitializeComponent();
-        ListLogs.ItemsSource = _lignesAffichees;
-
         Journaliseur.NiveauMinimum = NiveauJournal.Debug;
         Journaliseur.EntreeAjoutee += OnEntreeJournal;
     }
 
-    private void ScrollLogs_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+    private void TxtLogs_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
     {
-        // Roulette = interaction utilisateur : on décoche auto-scroll pour pas le snapper en bas.
+        // Roulette = interaction utilisateur : on décoche auto-scroll pour pas snapper en bas.
         if (ChkAutoScrollConsole != null) ChkAutoScrollConsole.IsChecked = false;
     }
 
@@ -54,7 +50,6 @@ public partial class VueDashboard : UserControl
 
     private void OnEntreeJournal(object? sender, EvenementEntreeJournal e)
     {
-        // Marshalling vers le thread UI (Journaliseur peut être appelé depuis n'importe où).
         if (!Dispatcher.CheckAccess())
         {
             Dispatcher.BeginInvoke(new Action(() => OnEntreeJournal(sender, e)));
@@ -63,47 +58,38 @@ public partial class VueDashboard : UserControl
 
         try
         {
-            var entree = e.Entree;
-            var ligne = new EntreeLogUi
-            {
-                Heure = entree.Horodatage.ToString("HH:mm:ss.fff"),
-                Niveau = entree.Niveau,
-                NiveauTexte = AbreviationNiveau(entree.Niveau),
-                Message = entree.Message,
-                Couleur = CouleurNiveau(entree.Niveau),
-            };
-
             if (_toutesLignes.Count >= LimiteLignes) _toutesLignes.RemoveAt(0);
-            _toutesLignes.Add(ligne);
+            _toutesLignes.Add(e.Entree);
 
-            if (Correspond(ligne))
+            if (Correspond(e.Entree))
             {
-                if (_lignesAffichees.Count >= LimiteLignes) _lignesAffichees.RemoveAt(0);
-                _lignesAffichees.Add(ligne);
-
-                // Auto-scroll : on utilise notre ScrollViewer explicite (pas un caché de ListBox).
-                // Différé en Background pour que le layout soit fini après l'ajout.
-                if (ChkAutoScrollConsole?.IsChecked == true && ScrollLogs != null)
-                {
-                    Dispatcher.BeginInvoke(new Action(ScrollLogs.ScrollToEnd), System.Windows.Threading.DispatcherPriority.Background);
-                }
+                AjouterLigneAuTextBox(e.Entree);
             }
 
             if (TxtCount != null)
             {
-                TxtCount.Text = $"{_lignesAffichees.Count}/{_toutesLignes.Count} lignes";
+                TxtCount.Text = $"{ComptageVisible()} / {_toutesLignes.Count} lignes";
             }
         }
-        catch
+        catch { /* un bug d'affichage de log ne doit jamais tuer le bot */ }
+    }
+
+    private void AjouterLigneAuTextBox(EntreeJournal entree)
+    {
+        if (TxtLogs == null) return;
+        var ligne = $"[{entree.Horodatage:HH:mm:ss.fff}] {AbreviationNiveau(entree.Niveau)} {entree.Message}\r\n";
+        TxtLogs.AppendText(ligne);
+
+        // Auto-scroll si la checkbox est cochée — TxtLogs.ScrollToEnd est éprouvé et fiable.
+        if (ChkAutoScrollConsole?.IsChecked == true)
         {
-            // Un bug d'affichage de log ne doit jamais tuer le bot.
+            TxtLogs.ScrollToEnd();
         }
     }
 
-    private bool Correspond(EntreeLogUi ligne)
+    private bool Correspond(EntreeJournal entree)
     {
-        // Filtre par niveau via checkboxes
-        var passe = ligne.Niveau switch
+        var passe = entree.Niveau switch
         {
             NiveauJournal.Trace => ChkDebug.IsChecked == true,
             NiveauJournal.Debug => ChkDebug.IsChecked == true,
@@ -115,48 +101,55 @@ public partial class VueDashboard : UserControl
         };
         if (!passe) return false;
 
-        // Filtre texte (recherche par sous-chaîne, insensible à la casse)
         if (!string.IsNullOrEmpty(_recherche)
-            && ligne.Message.IndexOf(_recherche, StringComparison.OrdinalIgnoreCase) < 0)
+            && entree.Message.IndexOf(_recherche, StringComparison.OrdinalIgnoreCase) < 0)
         {
             return false;
         }
-
         return true;
     }
 
-    private void RecalculerListe()
+    private int ComptageVisible()
     {
-        // Garde : les checkboxes ont IsChecked="True" en XAML, ce qui fire Filtre_Toggle
-        // PENDANT InitializeComponent — moment où TxtCount/ListLogs ne sont pas encore créés.
-        if (TxtCount == null || ListLogs == null) return;
+        var n = 0;
+        foreach (var l in _toutesLignes) if (Correspond(l)) n++;
+        return n;
+    }
 
-        _lignesAffichees.Clear();
-        foreach (var ligne in _toutesLignes)
+    /// <summary>Reconstruit complètement le contenu du TextBox depuis _toutesLignes filtré.</summary>
+    private void RecalculerTexte()
+    {
+        if (TxtLogs == null || TxtCount == null) return;
+
+        var sb = new StringBuilder();
+        foreach (var l in _toutesLignes)
         {
-            if (Correspond(ligne)) _lignesAffichees.Add(ligne);
+            if (!Correspond(l)) continue;
+            sb.Append('[').Append(l.Horodatage.ToString("HH:mm:ss.fff")).Append("] ")
+              .Append(AbreviationNiveau(l.Niveau)).Append(' ').Append(l.Message).Append("\r\n");
         }
-        TxtCount.Text = $"{_lignesAffichees.Count}/{_toutesLignes.Count} lignes";
+        TxtLogs.Text = sb.ToString();
+        TxtCount.Text = $"{ComptageVisible()} / {_toutesLignes.Count} lignes";
 
-        if (ChkAutoScrollConsole?.IsChecked == true && ScrollLogs != null)
+        if (ChkAutoScrollConsole?.IsChecked == true)
         {
-            ScrollLogs.ScrollToEnd();
+            TxtLogs.ScrollToEnd();
         }
     }
 
-    private void Filtre_Toggle(object sender, RoutedEventArgs e) => RecalculerListe();
+    private void Filtre_Toggle(object sender, RoutedEventArgs e) => RecalculerTexte();
 
     private void TxtRecherche_TextChanged(object sender, TextChangedEventArgs e)
     {
         _recherche = TxtRecherche?.Text ?? string.Empty;
-        RecalculerListe();
+        RecalculerTexte();
     }
 
     private void BtnEffacer_Click(object sender, RoutedEventArgs e)
     {
         _toutesLignes.Clear();
-        _lignesAffichees.Clear();
-        if (TxtCount != null) TxtCount.Text = "0/0 lignes";
+        if (TxtLogs != null) TxtLogs.Clear();
+        if (TxtCount != null) TxtCount.Text = "0 / 0 lignes";
     }
 
     private static string AbreviationNiveau(NiveauJournal n) => n switch
@@ -169,24 +162,4 @@ public partial class VueDashboard : UserControl
         NiveauJournal.Critique => "CRT",
         _ => "???",
     };
-
-    private static Brush CouleurNiveau(NiveauJournal n) => n switch
-    {
-        NiveauJournal.Trace => Brushes.Gray,
-        NiveauJournal.Debug => new SolidColorBrush(Color.FromRgb(0x9A, 0xA8, 0xB6)),
-        NiveauJournal.Info => new SolidColorBrush(Color.FromRgb(0xE0, 0xE5, 0xEC)),
-        NiveauJournal.Avertissement => new SolidColorBrush(Color.FromRgb(0xF1, 0xC4, 0x4F)),
-        NiveauJournal.Erreur => new SolidColorBrush(Color.FromRgb(0xF0, 0x80, 0x8A)),
-        NiveauJournal.Critique => new SolidColorBrush(Color.FromRgb(0xFF, 0x55, 0x66)),
-        _ => Brushes.LightGray,
-    };
-}
-
-public sealed class EntreeLogUi
-{
-    public string Heure { get; set; } = "";
-    public NiveauJournal Niveau { get; set; }
-    public string NiveauTexte { get; set; } = "";
-    public string Message { get; set; } = "";
-    public Brush Couleur { get; set; } = Brushes.White;
 }

@@ -79,6 +79,24 @@ public sealed class TrameJeu : TrameBase
         perso.Niveau = msg.Niveau;
         perso.IdClasse = msg.IdClasse;
         _compte.PseudoAffiche = msg.Nom;
+
+        // Inventaire initial inclus dans le paquet ASK (pas besoin d'attendre des OAK)
+        if (msg.ObjetsInitiaux.Count > 0)
+        {
+            perso.Inventaire.Clear();
+            foreach (var o in msg.ObjetsInitiaux)
+            {
+                perso.Inventaire.Add(new BotDofus.Divers.Jeu.Personnage.ObjetInventaire
+                {
+                    Identifiant = o.Identifiant,
+                    IdTemplate = o.IdTemplate,
+                    Quantite = o.Quantite,
+                    Position = o.Position
+                });
+            }
+            Journaliseur.Info($"[INV] Inventaire initial chargé : {msg.ObjetsInitiaux.Count} objets");
+        }
+
         Journaliseur.Info($"Personnage : {msg.Nom} (classe #{msg.IdClasse}, niv {msg.Niveau})");
     }
 

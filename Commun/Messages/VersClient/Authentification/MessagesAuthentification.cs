@@ -189,7 +189,7 @@ public sealed class MessageListePersonnages : MessageDofus, IMessageVersClient
     public readonly record struct InfoPersonnage(int Identifiant, string Nom, int Niveau, int IdClasse, int Sexe);
 }
 
-/// <summary>ASK : confirmation de sélection de personnage avec infos de base.</summary>
+/// <summary>ASK : confirmation de sélection de personnage avec infos de base + inventaire initial.</summary>
 public sealed class MessageSelectionPersonnage : MessageDofus, IMessageVersClient
 {
     public override string Prefixe => "ASK";
@@ -198,6 +198,9 @@ public sealed class MessageSelectionPersonnage : MessageDofus, IMessageVersClien
     public string Nom { get; private set; } = string.Empty;
     public int Niveau { get; private set; }
     public int IdClasse { get; private set; }
+    public IReadOnlyList<VersClient.Objet.ObjetParse> ObjetsInitiaux { get; private set; }
+        = System.Array.Empty<VersClient.Objet.ObjetParse>();
+
     public override void Desserialiser(string charge)
     {
         Charge = charge;
@@ -208,7 +211,30 @@ public sealed class MessageSelectionPersonnage : MessageDofus, IMessageVersClien
         Nom = parts[1];
         if (int.TryParse(parts[2], out var niv)) Niveau = niv;
         if (int.TryParse(parts[3], out var cl)) IdClasse = cl;
+
+        // Format Hystoria observé : ASK|id|nom|niv|classe|sexe|align|coul1|coul2|coul3|<items>
+        // Items à parts[10] (index 0..9 = autres champs). Format : "<id_hex>~<tpl>~<qty>~<pos>~<effets>;..."
+        if (parts.Length > 10)
+        {
+            var liste = new List<VersClient.Objet.ObjetParse>();
+            foreach (var item in parts[10].Split(';', System.StringSplitOptions.RemoveEmptyEntries))
+            {
+                var ip = item.Split('~');
+                if (ip.Length < 4) continue;
+                var idObj = ParseHex(ip[0]);
+                var tpl = ParseHex(ip[1]);
+                var qty = ParseHex(ip[2]);
+                var pos = ip[3].Length > 0 ? ParseHex(ip[3]) : 63;
+                if (idObj > 0 && tpl > 0)
+                    liste.Add(new VersClient.Objet.ObjetParse(idObj, tpl, qty == 0 ? 1 : qty, pos));
+            }
+            ObjetsInitiaux = liste;
+        }
     }
+
+    private static int ParseHex(string s)
+        => int.TryParse(s, System.Globalization.NumberStyles.HexNumber,
+            System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : 0;
 }
 
 /// <summary>AR : restrictions du compte (actions interdites selon le statut d'abonnement).</summary>
