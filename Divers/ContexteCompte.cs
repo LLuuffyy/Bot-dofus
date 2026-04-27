@@ -1,7 +1,10 @@
 using System;
+using System.IO;
+using System.Text.RegularExpressions;
 using BotDofus.Commun;
 using BotDofus.Commun.Frames;
 using BotDofus.Commun.Reseau;
+using BotDofus.Divers.Combats.IA;
 using BotDofus.Divers.Jeu;
 using BotDofus.Divers.Scripts;
 using BotDofus.Divers.Scripts.Api;
@@ -20,13 +23,19 @@ public sealed class ContexteCompte : IDisposable
 {
     public Compte Compte { get; }
     public ProxyReseau Proxy { get; }
+    public ProxyReseau? ProxyJeu { get; private set; }
     public Repartiteur Repartiteur { get; }
     public GestionnaireTrames Trames { get; }
     public EtatJeu EtatJeu { get; }
     public ApiBot Api { get; }
+    public ApiLua ApiLua { get; }
     public GestionnaireScripts Scripts { get; }
+    public MoteurLuaInteractif Lua { get; }
+    public ConfigCombat ConfigCombat { get; }
 
-    public SessionProxy? SessionActive { get; private set; }
+    public SessionProxy? SessionAuthActive { get; private set; }
+    public SessionProxy? SessionJeuActive { get; private set; }
+    public SessionProxy? SessionActive => SessionJeuActive ?? SessionAuthActive;
     public EnregistreurPaquets? EnregistreurActif { get; private set; }
 
     /// <summary>
@@ -37,25 +46,39 @@ public sealed class ContexteCompte : IDisposable
     public bool ModePassif { get; set; }
 
     public event EventHandler<SessionProxy>? SessionAttachee;
+    public event EventHandler<SessionProxy>? SessionJeuAttachee;
+    public event EventHandler<EvenementPaquetRecu>? PaquetRecu;
+
+    private static readonly Regex RegexAyk = new(
+        @"^AYK(?<ip>\d{1,3}(?:\.\d{1,3}){3}):(?<port>\d+);(?<ticket>.+)$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+    private readonly ConfigReseau _configReseau;
 
     public ContexteCompte(Compte compte, ConfigReseau configReseau)
     {
         Compte = compte;
+        _configReseau = configReseau;
         Proxy = new ProxyReseau(configReseau);
         Repartiteur = new Repartiteur();
         Trames = new GestionnaireTrames();
         EtatJeu = new EtatJeu();
         Api = new ApiBot(compte, EtatJeu);
+        ConfigCombat = ConfigCombat.Charger(Path.Combine("peleas", $"{compte.Identifiant}.json"));
+        ApiLua = new ApiLua(Api, EtatJeu, ConfigCombat);
         Scripts = new GestionnaireScripts(compte, Api);
+        Lua = new MoteurLuaInteractif(ApiLua);
 
-        Proxy.PaquetRecu += (_, e) => Repartiteur.TraiterPaquet(e.Paquet);
+        Compte.EtatChange += OnEtatCompteChange;
+        Proxy.PaquetRecu += OnPaquetRecu;
         Proxy.SessionDemarree += OnSessionDemarree;
     }
 
     private void OnSessionDemarree(object? sender, SessionProxy session)
     {
-        SessionActive = session;
+        SessionAuthActive = session;
         Api.LierSession(session);
+        InstallerInterceptionAyk(session);
 
         if (ModePassif)
         {
@@ -71,8 +94,132 @@ public sealed class ContexteCompte : IDisposable
         SessionAttachee?.Invoke(this, session);
     }
 
+    private void OnSessionJeuDemarree(object? sender, SessionProxy session)
+    {
+        SessionJeuActive = session;
+        Api.LierSession(session);
+
+        if (!ModePassif)
+        {
+            Trames.RemplacerTrame(new TrameSelectionPersonnage(Repartiteur, Compte, session, Compte.PersonnagePrefere));
+        }
+
+        Journaliseur.Info($"Contexte {Compte.Identifiant} : session jeu attachée");
+        Journaliseur.Info("[ORCH] Session JEU attachee - le cipher Hystoria sera gere automatiquement par SessionProxy");
+        Journaliseur.Info($"Contexte {Compte.Identifiant} : session JEU attachee (cipher Hystoria gere automatiquement par SessionProxy)");
+        SessionJeuAttachee?.Invoke(this, session);
+    }
+
+    private void OnEtatCompteChange(object? sender, Enums.EtatsCompte etat)
+    {
+        if (ModePassif)
+        {
+            return;
+        }
+
+        if (etat == Enums.EtatsCompte.SelectionServeur && SessionAuthActive != null &&
+            Trames.TrameActive is not TrameSelectionServeur)
+        {
+            Trames.RemplacerTrame(new TrameSelectionServeur(Repartiteur, Compte, SessionAuthActive, Compte.ServeurPrefere));
+            return;
+        }
+
+        if (etat == Enums.EtatsCompte.EnJeu && SessionJeuActive != null &&
+            Trames.TrameActive is not TrameJeu)
+        {
+            Trames.RemplacerTrame(new TrameJeu(Repartiteur, Compte, EtatJeu, SessionJeuActive));
+        }
+    }
+
+    private void InstallerInterceptionAyk(SessionProxy session)
+    {
+        var modificateurExistant = session.ModificateurPaquet;
+        session.ModificateurPaquet = (paquet, direction) =>
+        {
+            var modifie = modificateurExistant?.Invoke(paquet, direction);
+            var aTraiter = modifie ?? paquet;
+            if (aTraiter.Length == 0)
+            {
+                return aTraiter;
+            }
+
+            return IntercepterAyk(aTraiter, direction);
+        };
+    }
+
+    private string? IntercepterAyk(string paquet, DirectionPaquet direction)
+    {
+        if (direction != DirectionPaquet.VersClient || !paquet.StartsWith("AYK", StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        var match = RegexAyk.Match(paquet);
+        if (!match.Success)
+        {
+            Journaliseur.Avertir($"AYK reçu mais format inattendu : {paquet}");
+            return null;
+        }
+
+        var ipJeu = match.Groups["ip"].Value;
+        var portJeu = int.Parse(match.Groups["port"].Value);
+        var ticket = match.Groups["ticket"].Value;
+
+        Journaliseur.Info($"[ORCH] AYK intercepte : serveur jeu reel = {ipJeu}:{portJeu}, ticket={ticket}");
+        DemarrerProxyJeu(ipJeu, portJeu);
+
+        var aykLocal = $"AYK127.0.0.1:{_configReseau.PortEcouteJeuLocal};{ticket}";
+        Journaliseur.Info($"[ORCH] AYK reecrit -> {aykLocal}");
+        Journaliseur.Info($"[CONTEXTE] AYK redirige : serveur jeu reel {ipJeu}:{portJeu} -> proxy local 127.0.0.1:{_configReseau.PortEcouteJeuLocal}");
+        return aykLocal;
+    }
+
+    private void DemarrerProxyJeu(string hoteDistant, int portDistant)
+    {
+        if (ProxyJeu?.EnEcoute == true)
+        {
+            return;
+        }
+
+        var configJeu = new ConfigReseau
+        {
+            HoteDistant = hoteDistant,
+            PortDistant = portDistant,
+            HoteJeuDistant = hoteDistant,
+            PortJeuDistant = portDistant,
+            AdresseEcouteLocale = "0.0.0.0",
+            PortEcouteLocal = _configReseau.PortEcouteJeuLocal,
+            PortEcouteJeuLocal = _configReseau.PortEcouteJeuLocal,
+            DelaiLectureMs = _configReseau.DelaiLectureMs,
+            TailleTamponOctets = _configReseau.TailleTamponOctets
+        };
+
+        ProxyJeu = new ProxyReseau(configJeu);
+        ProxyJeu.PaquetRecu += OnPaquetRecu;
+        ProxyJeu.SessionDemarree += OnSessionJeuDemarree;
+        _ = ProxyJeu.DemarrerAsync();
+
+        if (EnregistreurActif != null)
+        {
+            EnregistreurActif.AttacherA(ProxyJeu);
+        }
+
+        Journaliseur.Info($"[ORCH] Proxy jeu demarre ({configJeu.AdresseEcouteLocale}:{configJeu.PortEcouteLocal} -> {hoteDistant}:{portDistant})");
+    }
+
+    private void OnPaquetRecu(object? sender, EvenementPaquetRecu e)
+    {
+        Repartiteur.TraiterPaquet(e.Paquet);
+        PaquetRecu?.Invoke(this, e);
+    }
+
     public void DemarrerProxy() => Proxy.DemarrerAsync();
-    public void ArreterProxy() => Proxy.Arreter();
+
+    public void ArreterProxy()
+    {
+        ProxyJeu?.Arreter();
+        Proxy.Arreter();
+    }
 
     /// <summary>Active l'enregistrement des paquets vers un fichier plat (un par ligne).</summary>
     public void ActiverEnregistrement(string dossier = "logs")
@@ -80,12 +227,14 @@ public sealed class ContexteCompte : IDisposable
         if (EnregistreurActif != null) return;
         EnregistreurActif = new EnregistreurPaquets(dossier);
         EnregistreurActif.AttacherA(Proxy);
+        if (ProxyJeu != null) EnregistreurActif.AttacherA(ProxyJeu);
     }
 
     public void DesactiverEnregistrement()
     {
         if (EnregistreurActif == null) return;
         EnregistreurActif.Detacher(Proxy);
+        if (ProxyJeu != null) EnregistreurActif.Detacher(ProxyJeu);
         EnregistreurActif.Dispose();
         EnregistreurActif = null;
     }
@@ -93,9 +242,12 @@ public sealed class ContexteCompte : IDisposable
     public void Dispose()
     {
         try { DesactiverEnregistrement(); } catch { }
+        try { Lua.Dispose(); } catch { }
         try { Scripts.Dispose(); } catch { }
         try { Trames.Vider(); } catch { }
+        try { ProxyJeu?.Dispose(); } catch { }
         try { Proxy.Dispose(); } catch { }
+        try { Compte.EtatChange -= OnEtatCompteChange; } catch { }
         try { Compte.Dispose(); } catch { }
     }
 }

@@ -19,6 +19,8 @@ public sealed class Compte : IEffacable
     public string Identifiant { get; }
     public string MotDePasse { get; }
     public string? PseudoAffiche { get; set; }
+    public int ServeurPrefere { get; set; }
+    public int PersonnagePrefere { get; set; }
 
     public EtatsCompte Etat { get; set; }
 

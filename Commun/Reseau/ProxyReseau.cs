@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using BotDofus.Utilitaires.Journaux;
@@ -18,8 +19,12 @@ namespace BotDofus.Commun.Reseau;
 /// </summary>
 public sealed class ProxyReseau : IDisposable
 {
+    private const string PolicyResponse =
+        "<?xml version=\"1.0\"?><cross-domain-policy><site-control permitted-cross-domain-policies=\"all\"/><allow-access-from domain=\"*\" to-ports=\"*\"/></cross-domain-policy>";
+
     private readonly ConfigReseau _config;
     private readonly TcpListener _ecouteur;
+    private TcpListener? _serveurPolicy;
     private CancellationTokenSource? _annulation;
     private readonly ConcurrentBag<SessionProxy> _sessions = new();
 
@@ -56,7 +61,48 @@ public sealed class ProxyReseau : IDisposable
         EnEcoute = true;
         Journaliseur.Info($"Proxy MITM en écoute sur {_config.AdresseEcouteLocale}:{_config.PortEcouteLocal} → {_config.HoteDistant}:{_config.PortDistant}");
 
+        DemarrerPolicyServerSiNecessaire(_annulation.Token);
         return Task.Run(() => BoucleAcceptationAsync(_annulation.Token), _annulation.Token);
+    }
+
+    private void DemarrerPolicyServerSiNecessaire(CancellationToken ct)
+    {
+        try
+        {
+            _serveurPolicy = new TcpListener(IPAddress.Any, 843);
+            _serveurPolicy.Start();
+            Journaliseur.Info("Policy server Flash en ecoute sur 0.0.0.0:843");
+            _ = Task.Run(() => BouclePolicyAsync(_serveurPolicy, ct), ct);
+        }
+        catch (Exception ex)
+        {
+            Journaliseur.Avertir($"Policy server 843 indisponible : {ex.Message}");
+        }
+    }
+
+    private static async Task BouclePolicyAsync(TcpListener serveur, CancellationToken ct)
+    {
+        while (!ct.IsCancellationRequested)
+        {
+            TcpClient? client = null;
+            try
+            {
+                client = await serveur.AcceptTcpClientAsync(ct).ConfigureAwait(false);
+                var reponse = Encoding.UTF8.GetBytes(PolicyResponse + '\0');
+                await client.GetStream().WriteAsync(reponse, ct).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+            catch
+            {
+            }
+            finally
+            {
+                try { client?.Close(); } catch { }
+            }
+        }
     }
 
     private async Task BoucleAcceptationAsync(CancellationToken ct)
@@ -109,6 +155,8 @@ public sealed class ProxyReseau : IDisposable
 
         try { _annulation?.Cancel(); } catch { /* ignoré */ }
         try { _ecouteur.Stop(); } catch { /* ignoré */ }
+
+        try { _serveurPolicy?.Stop(); } catch { }
 
         foreach (var session in _sessions)
         {

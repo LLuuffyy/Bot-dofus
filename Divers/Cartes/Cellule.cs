@@ -3,21 +3,27 @@ using System;
 namespace BotDofus.Divers.Cartes;
 
 /// <summary>
-/// Représente une cellule de la grille de combat/carte Dofus Retro.
+/// Représente une cellule de la grille de carte Dofus Retro.
 /// Les cartes standards font 14 × 17 en pattern losange, soit 560 cellules.
 ///
-/// Le système de coordonnées Dofus est particulier : l'index linéaire <see cref="Identifiant"/>
-/// (0..559) se convertit en coordonnées (x, y) suivant la formule officielle :
-///   x = (id % 14) + (id / 28) * 14  // colonne isométrique
-///   y = (id / 14) - (id / 28) * 14  // ligne isométrique
+/// Le système de coordonnées Dofus est isométrique losange. Pour un mapWidth=14 :
+///   loc5 = id / 27          // 27 = mapWidth*2 - 1
+///   loc6 = id - loc5 * 27
+///   loc7 = loc6 % 14
+///   y    = loc5 - loc7
+///   x    = (id - 13*y) / 14   // 13 = mapWidth - 1
+/// (référence : dyshay Cell.cs)
+///
+/// Champs A* (coste_g/h/f, parentNode) sont mis à jour par le Pathfinder
+/// pour éviter d'allouer des structures auxiliaires.
 /// </summary>
 public sealed class Cellule
 {
-    public Cellule(int identifiant, TypesCellule type)
+    public Cellule(int identifiant, TypesCellule type, int mapWidth = 14)
     {
         Identifiant = identifiant;
         Type = type;
-        (X, Y) = CalculerCoordonnees(identifiant);
+        (X, Y) = CalculerCoordonnees(identifiant, mapWidth);
     }
 
     public int Identifiant { get; }
@@ -25,32 +31,103 @@ public sealed class Cellule
     public int X { get; }
     public int Y { get; }
 
+    /// <summary>Hauteur du sol (layer ground), influence le timing déplacement et la LOS.</summary>
+    public byte LayerNiveau { get; set; }
+
+    /// <summary>Pente du sol (0=plat, 1=montée).</summary>
+    public byte LayerSlope { get; set; }
+
+    /// <summary>ID de l'objet sur layer 1 (utilisé pour détecter les cellules de téléport).</summary>
+    public short LayerObjet1 { get; set; }
+
+    /// <summary>ID de l'objet sur layer 2.</summary>
+    public short LayerObjet2 { get; set; }
+
+    /// <summary>True si en LOS (line of sight) — utilisé pour les calculs de cast de sort.</summary>
+    public bool EnLigneDeVue { get; set; } = true;
+
+    /// <summary>ID d'objet interactif sur cette cellule (-1 si aucun).</summary>
+    public short IdInteractif { get; set; } = -1;
+
     public bool EstMarchable => Type == TypesCellule.Marchable || Type == TypesCellule.Interactif;
     public bool EstInteractif => Type == TypesCellule.Interactif
                                || Type == TypesCellule.Zaap
                                || Type == TypesCellule.Zaapi
                                || Type == TypesCellule.Transition;
 
-    /// <summary>Distance de Chebyshev (déplacement en diagonale libre) entre deux cellules.</summary>
+    // -------------------------------------------------------------
+    // État A* (réinitialisé par Pathfinder à chaque calcul)
+    // -------------------------------------------------------------
+    public int CouG { get; set; }
+    public int CouH { get; set; }
+    public int CouF { get; set; }
+    public Cellule? ParentNoeud { get; set; }
+
+    public void ResetA()
+    {
+        CouG = 0;
+        CouH = 0;
+        CouF = 0;
+        ParentNoeud = null;
+    }
+
+    // -------------------------------------------------------------
+    // Distances et géométrie
+    // -------------------------------------------------------------
     public int DistanceChebyshev(Cellule autre)
         => Math.Max(Math.Abs(X - autre.X), Math.Abs(Y - autre.Y));
 
-    /// <summary>Distance de Manhattan (Dofus : pas de diagonale pour marcher).</summary>
     public int DistanceManhattan(Cellule autre)
         => Math.Abs(X - autre.X) + Math.Abs(Y - autre.Y);
 
-    public static (int x, int y) CalculerCoordonnees(int identifiant)
+    public bool SurMemeLigne(Cellule autre) => X == autre.X || Y == autre.Y;
+
+    /// <summary>
+    /// Détermine la direction (a..h) entre cette cellule et une cellule voisine.
+    /// 8 directions Dofus : 0=NE, 1=E, 2=SE, 3=S, 4=SW, 5=W, 6=NW, 7=N.
+    /// Note : c'est l'index dans l'alphabet ASCII donc 'a'+0='a', 'a'+7='h'.
+    /// (référence : dyshay Cell.GetCharDirection)
+    /// </summary>
+    public char DirectionVers(Cellule voisine)
     {
-        // Placeholder : les vraies coordonnées Dofus suivent la formule
-        // Ankama (lozenge isométrique) que l'on validera quand on disposera
-        // d'un dump de carte réel pour calibrer. Pour l'instant on utilise
-        // une grille linéaire 14 × N, suffisante pour le pathfinding basique.
-        int x = identifiant % 14;
-        int y = identifiant / 14;
+        if (X == voisine.X)
+            return voisine.Y < Y ? (char)('a' + 3) : (char)('a' + 7);
+        if (Y == voisine.Y)
+            return voisine.X < X ? (char)('a' + 1) : (char)('a' + 5);
+        if (X > voisine.X)
+            return Y > voisine.Y ? (char)('a' + 2) : (char)('a' + 0);
+        // X < voisine.X
+        return Y < voisine.Y ? (char)('a' + 6) : (char)('a' + 4);
+    }
+
+    /// <summary>True si la cellule est un pad de téléport (changement de map).</summary>
+    public bool EstCelluleTeleport()
+    {
+        // Sprites layer Dofus 1.29 connus pour téléport
+        return LayerObjet1 == 1030 || LayerObjet1 == 1029 || LayerObjet1 == 1764 || LayerObjet1 == 2298 || LayerObjet1 == 745
+            || LayerObjet2 == 1030 || LayerObjet2 == 1029 || LayerObjet2 == 1764 || LayerObjet2 == 2298 || LayerObjet2 == 745;
+    }
+
+    // -------------------------------------------------------------
+    // Conversion id ↔ (x,y)
+    // -------------------------------------------------------------
+    public static (int x, int y) CalculerCoordonnees(int identifiant, int mapWidth = 14)
+    {
+        int loc5 = identifiant / ((mapWidth * 2) - 1);
+        int loc6 = identifiant - (loc5 * ((mapWidth * 2) - 1));
+        int loc7 = loc6 % mapWidth;
+        int y = loc5 - loc7;
+        int x = (identifiant - ((mapWidth - 1) * y)) / mapWidth;
         return (x, y);
     }
 
-    public static int CoordonneesVersId(int x, int y) => y * 14 + x;
+    public static int CoordonneesVersId(int x, int y, int mapWidth = 14)
+    {
+        // Inverse formule Dofus
+        return (mapWidth - 1) * y + x * mapWidth - (x - y) * 0;
+        // Note : implémentation directe rare car les ids viennent du serveur.
+        // Cette fonction n'est utile que pour navigation manuelle.
+    }
 
     public override string ToString() => $"Cellule #{Identifiant} ({X},{Y}) {Type}";
 }

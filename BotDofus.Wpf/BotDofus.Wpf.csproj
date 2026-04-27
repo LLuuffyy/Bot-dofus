@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <!-- Pas de UseWindowsForms ici (conflits ambigus avec WPF). BotDofus.csproj le fait déjà côté lib. -->
+    <AssemblyName>Luffy-bot</AssemblyName>
+    <RootNamespace>BotDofus.Wpf</RootNamespace>
+    <Company>Luffy-bot</Company>
+    <Product>Luffy-bot</Product>
+    <ApplicationIcon />
+    <Version>0.2.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Référence au projet principal pour réutiliser tout le code (proxy, cipher, EtatJeu, scripts, IA combat) -->
+    <ProjectReference Include="..\BotDofus.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Thème dark moderne style Material Design (proche du look SynFus) -->
+    <PackageReference Include="MaterialDesignThemes" Version="5.1.0" />
+    <PackageReference Include="MaterialDesignColors" Version="3.1.0" />
+  </ItemGroup>
+
+</Project>

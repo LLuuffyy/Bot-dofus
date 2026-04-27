@@ -1,0 +1,29 @@
+<UserControl x:Class="BotDofus.Wpf.Vues.VueInventaire"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+    <DockPanel Margin="16">
+        <Border DockPanel.Dock="Top" Padding="0,0,0,12">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Inventaire" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBox x:Name="TxtFiltre" materialDesign:HintAssist.Hint="Filtre nom"
+                         Width="200" Margin="24,0,0,0" TextChanged="TxtFiltre_TextChanged"/>
+                <TextBlock x:Name="TxtCount" Margin="16,0,0,0" VerticalAlignment="Center" Opacity="0.7" Text="0 objets"/>
+                <Button Click="BtnRafraichir_Click" Style="{StaticResource MaterialDesignOutlinedButton}" Margin="16,0,0,0">
+                    <materialDesign:PackIcon Kind="Refresh"/>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <DataGrid x:Name="GridObjets" AutoGenerateColumns="False" IsReadOnly="True"
+                  HeadersVisibility="Column" RowHeight="28" FontFamily="Consolas">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID Inventaire" Binding="{Binding Identifiant}" Width="110"/>
+                <DataGridTextColumn Header="Template" Binding="{Binding IdTemplate}" Width="80"/>
+                <DataGridTextColumn Header="Nom" Binding="{Binding Nom}" Width="*"/>
+                <DataGridTextColumn Header="Quantité" Binding="{Binding Quantite}" Width="80"/>
+                <DataGridTextColumn Header="Position" Binding="{Binding PositionTexte}" Width="120"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

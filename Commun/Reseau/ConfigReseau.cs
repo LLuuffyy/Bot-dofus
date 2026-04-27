@@ -27,10 +27,10 @@ public sealed class ConfigReseau
     public int PortJeuDistant { get; set; } = 5555;
 
     /// <summary>Adresse d'écoute locale du proxy MITM (les deux listeners).</summary>
-    public string AdresseEcouteLocale { get; set; } = "127.0.0.1";
+    public string AdresseEcouteLocale { get; set; } = "0.0.0.0";
 
     /// <summary>Port local du listener routant vers le serveur d'auth.</summary>
-    public int PortEcouteLocal { get; set; } = 5555;
+    public int PortEcouteLocal { get; set; } = 450;
 
     /// <summary>Port local du listener routant vers le serveur de jeu.</summary>
     public int PortEcouteJeuLocal { get; set; } = 5556;

@@ -1,0 +1,406 @@
+<Window x:Class="BotDofus.Wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vues="clr-namespace:BotDofus.Wpf.Vues"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="Luffy-bot"
+        Height="960"
+        Width="1720"
+        MinWidth="1360"
+        MinHeight="820"
+        WindowStartupLocation="CenterScreen">
+
+    <Grid Background="{StaticResource AppBackgroundBrush}">
+        <Border Margin="24"
+                Background="{StaticResource ShellBackgroundBrush}"
+                BorderBrush="{StaticResource BorderSoftBrush}"
+                BorderThickness="1"
+                CornerRadius="18">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="64" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0"
+                        Background="#242730"
+                        BorderBrush="{StaticResource BorderSoftBrush}"
+                        BorderThickness="0,0,0,1"
+                        CornerRadius="18,18,0,0">
+                    <Grid Margin="18,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Grid Width="18" Height="18" Margin="0,0,10,0">
+                                <Ellipse Fill="#B61F2D" />
+                                <Path Fill="#F88B34"
+                                      Margin="4"
+                                      Stretch="Fill"
+                                      Data="M 0 1 C 1 -0.2 2 0.2 1.8 1.3 C 1.7 2 1.1 2.6 0.8 3.2 C 0.4 2.6 -0.2 2.2 0 1 Z" />
+                            </Grid>
+                            <TextBlock Text="Luffy-bot"
+                                       FontSize="17"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="v0.1.0"
+                                       Margin="8,2,0,0"
+                                       FontSize="10"
+                                       Foreground="{StaticResource FaintTextBrush}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center"
+                                    Margin="30,0,0,0">
+                            <Button Style="{StaticResource TopNavButtonStyle}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="ViewDashboardOutline" Width="14" Height="14" Margin="0,0,6,0" />
+                                    <TextBlock Text="Gestionnaire" />
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource AccentNavButtonStyle}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="RobotOutline" Width="14" Height="14" Margin="0,0,6,0" />
+                                    <TextBlock Text="Bot" />
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource TopNavButtonStyle}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="BookOpenVariant" Width="14" Height="14" Margin="0,0,6,0" />
+                                    <TextBlock Text="Docs" />
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource TopNavButtonStyle}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="AccountOutline" Width="14" Height="14" Margin="0,0,6,0" />
+                                    <TextBlock Text="Espace Personnel" />
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource TopNavButtonStyle}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="CrownOutline" Width="14" Height="14" Margin="0,0,6,0" />
+                                    <TextBlock Text="Admin" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+                            <Border Background="#153C34"
+                                    BorderBrush="#1E6559"
+                                    BorderThickness="1"
+                                    CornerRadius="9"
+                                    Padding="8,4"
+                                    Margin="0,0,10,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="CrownOutline" Width="13" Height="13" Foreground="#2FD39D" Margin="0,0,4,0" />
+                                    <TextBlock Text="Pro" FontSize="11" FontWeight="SemiBold" Foreground="#2FD39D" />
+                                </StackPanel>
+                            </Border>
+                            <TextBlock Text="18/200" VerticalAlignment="Center" FontWeight="SemiBold" />
+                            <TextBlock Text="   " />
+                            <materialDesign:PackIcon Kind="LogoutVariant" Width="15" Height="15" Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text=" Déconnexion"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource MutedTextBrush}" />
+                            <Border Width="18" Height="12" CornerRadius="2" Background="#2E5BFF" Margin="14,0,0,0" VerticalAlignment="Center">
+                                <Rectangle Fill="#FFFFFF" Width="6" HorizontalAlignment="Right" />
+                            </Border>
+                            <materialDesign:PackIcon Kind="CogOutline" Width="16" Height="16" Margin="16,0,0,0" Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="278" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0"
+                            Background="{StaticResource SidebarBrush}"
+                            BorderBrush="{StaticResource BorderSoftBrush}"
+                            BorderThickness="0,0,1,0">
+                        <DockPanel Margin="12">
+                            <Border DockPanel.Dock="Bottom"
+                                    Background="#2A2E38"
+                                    BorderBrush="{StaticResource BorderSoftBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="12"
+                                    Padding="14,12"
+                                    Margin="0,10,0,0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Gestionnaire"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="Panneau principal"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource FaintTextBrush}" />
+                                    </StackPanel>
+                                    <materialDesign:PackIcon Grid.Column="1"
+                                                             Kind="ChevronRight"
+                                                             Width="18"
+                                                             Height="18"
+                                                             VerticalAlignment="Center"
+                                                             Foreground="{StaticResource MutedTextBrush}" />
+                                </Grid>
+                            </Border>
+
+                            <StackPanel DockPanel.Dock="Top">
+                                <Grid Margin="2,6,2,14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="COMPTES"
+                                               Style="{StaticResource SectionTitleTextStyle}" />
+                                    <Border Grid.Column="1"
+                                            Background="#2F3340"
+                                            CornerRadius="8"
+                                            Padding="6,2">
+                                        <TextBlock Text="{Binding ElementName=LstComptes, Path=Items.Count}"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource MutedTextBrush}" />
+                                    </Border>
+                                </Grid>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                    <Button x:Name="BtnAjouterCompte"
+                                            Click="BtnAjouterCompte_Click"
+                                            Width="40"
+                                            Height="40"
+                                            Style="{StaticResource MaterialDesignRaisedButton}"
+                                            Background="{StaticResource AccentBrush}">
+                                        <materialDesign:PackIcon Kind="Plus" />
+                                    </Button>
+                                    <Button x:Name="BtnDemarrerTous"
+                                            Click="BtnDemarrerTous_Click"
+                                            Margin="10,0,0,0"
+                                            Style="{StaticResource TopNavButtonStyle}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="Play" Width="14" Height="14" Margin="0,0,6,0" />
+                                            <TextBlock Text="Démarrer tous" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <ListBox x:Name="LstComptes" SelectionChanged="LstComptes_SelectionChanged">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Padding="12">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid Width="40" Height="40" Margin="0,2,12,0">
+                                                    <Ellipse Fill="#4A2E22" />
+                                                    <Ellipse Width="28" Height="28" Fill="#D48A2A" />
+                                                    <Ellipse Width="10" Height="10"
+                                                             Fill="{Binding StatusBrush}"
+                                                             HorizontalAlignment="Right"
+                                                             VerticalAlignment="Bottom"
+                                                             Stroke="#23252B"
+                                                             StrokeThickness="2" />
+                                                </Grid>
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBlock Text="{Binding Identifiant}"
+                                                               FontWeight="SemiBold"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding NomPerso}"
+                                                               FontSize="11"
+                                                               Foreground="{StaticResource FaintTextBrush}"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding StatusTexte}"
+                                                               FontSize="11"
+                                                               Foreground="{Binding StatusBrush}" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </DockPanel>
+                    </Border>
+
+                    <Grid Grid.Column="1" Margin="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Style="{StaticResource PanelBorderStyle}" Padding="18,14">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                    <Grid Width="52" Height="52" Margin="0,0,14,0">
+                                        <Ellipse Fill="#3B3128" />
+                                        <Ellipse Width="34" Height="34" Fill="#D59638" />
+                                    </Grid>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock x:Name="TxtNomPerso"
+                                                   Text="—"
+                                                   FontSize="18"
+                                                   FontWeight="Bold" />
+                                        <TextBlock x:Name="TxtClassePerso"
+                                                   Text="Aucun perso connecté"
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource FaintTextBrush}" />
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <Grid Grid.Column="1" Margin="28,0,24,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.2*" />
+                                        <ColumnDefinition Width="1.2*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                        <TextBlock Text="VIE" Style="{StaticResource SectionTitleTextStyle}" />
+                                        <ProgressBar x:Name="BarVie"
+                                                     Maximum="100"
+                                                     Foreground="{StaticResource DangerBrush}"
+                                                     Margin="0,7,0,3" />
+                                        <TextBlock x:Name="TxtVie" FontSize="11" Foreground="{StaticResource MutedTextBrush}" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" Margin="0,0,16,0">
+                                        <TextBlock Text="ÉNERGIE" Style="{StaticResource SectionTitleTextStyle}" />
+                                        <ProgressBar x:Name="BarEnergie"
+                                                     Maximum="100"
+                                                     Foreground="#5198FF"
+                                                     Margin="0,7,0,3" />
+                                        <TextBlock x:Name="TxtEnergie" FontSize="11" Foreground="{StaticResource MutedTextBrush}" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2" Margin="0,0,16,0">
+                                        <TextBlock Text="XP" Style="{StaticResource SectionTitleTextStyle}" />
+                                        <ProgressBar x:Name="BarXp"
+                                                     Maximum="100"
+                                                     Foreground="{StaticResource WarningBrush}"
+                                                     Margin="0,7,0,3" />
+                                        <TextBlock x:Name="TxtXp" FontSize="11" Foreground="{StaticResource MutedTextBrush}" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="3">
+                                        <TextBlock Text="POIDS" Style="{StaticResource SectionTitleTextStyle}" />
+                                        <ProgressBar x:Name="BarPoids"
+                                                     Maximum="100"
+                                                     Foreground="{StaticResource SuccessBrush}"
+                                                     Margin="0,7,0,3" />
+                                        <TextBlock x:Name="TxtPoids" FontSize="11" Foreground="{StaticResource MutedTextBrush}" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Style="{StaticResource TopNavButtonStyle}" Margin="0,0,10,0">
+                                        <TextBlock Text="Choix serveur" />
+                                    </Button>
+                                    <Button x:Name="BtnLancerJeu"
+                                            Click="BtnLancerJeu_Click"
+                                            Background="#243D55"
+                                            Foreground="#72B7FF"
+                                            BorderBrush="#315E86"
+                                            BorderThickness="1"
+                                            Style="{StaticResource TopNavButtonStyle}"
+                                            Margin="0,0,10,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="RocketLaunchOutline" Width="14" Height="14" Margin="0,0,6,0" />
+                                            <TextBlock Text="Lancer jeu" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button x:Name="BtnDeconnecter"
+                                            Click="BtnDeconnecter_Click"
+                                            Background="#4A2C31"
+                                            Foreground="#F0808A"
+                                            BorderBrush="#6B3D45"
+                                            BorderThickness="1"
+                                            Style="{StaticResource TopNavButtonStyle}"
+                                            Margin="0,0,10,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="StopCircleOutline" Width="14" Height="14" Margin="0,0,6,0" />
+                                            <TextBlock Text="Déconnexion" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button x:Name="BtnConnecter"
+                                            Click="BtnConnecter_Click"
+                                            Background="#4A4B2D"
+                                            Foreground="#F1D74F"
+                                            BorderBrush="#696A42"
+                                            BorderThickness="1"
+                                            Style="{StaticResource TopNavButtonStyle}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="PlayCircleOutline" Width="14" Height="14" Margin="0,0,6,0" />
+                                            <TextBlock Text="Proxy" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Row="1"
+                                Margin="0,14,0,0"
+                                Background="Transparent"
+                                BorderBrush="{StaticResource BorderSoftBrush}"
+                                BorderThickness="0,0,0,1">
+                            <TabControl x:Name="TabsContent" TabStripPlacement="Top">
+                                <TabItem Header="Chat">
+                                    <vues:VueDashboard x:Name="VueDash" />
+                                </TabItem>
+                                <TabItem Header="Personnage">
+                                    <vues:VuePersonnage x:Name="VuePersoTab" />
+                                </TabItem>
+                                <TabItem Header="Combat">
+                                    <vues:VueCombat x:Name="VueCombatTab" />
+                                </TabItem>
+                                <TabItem Header="Carte">
+                                    <vues:VueMapViewer x:Name="VueMap" />
+                                </TabItem>
+                                <TabItem Header="MapViewer">
+                                    <vues:VueWorldMap x:Name="VueWorldMapTab" />
+                                </TabItem>
+                                <TabItem Header="Inventaire">
+                                    <vues:VueInventaire x:Name="VueInvTab" />
+                                </TabItem>
+                                <TabItem Header="Tools">
+                                    <vues:VueTools x:Name="VueToolsTab" />
+                                </TabItem>
+                                <TabItem Header="Sniffer">
+                                    <vues:VueSniffer x:Name="VueSnif" />
+                                </TabItem>
+                                <TabItem Header="Scripts">
+                                    <vues:VueScripts x:Name="VueScriptsTab" />
+                                </TabItem>
+                                <TabItem Header="Config">
+                                    <vues:VueConfig x:Name="VueConfigTab" />
+                                </TabItem>
+                            </TabControl>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

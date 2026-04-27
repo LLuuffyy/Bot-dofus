@@ -39,7 +39,17 @@ public sealed class Personnage
 
     public List<ObjetInventaire> Inventaire { get; } = new();
 
+    /// <summary>Sorts appris par le personnage. Clé = ID sort, valeur = niveau (SR/SM packets).</summary>
+    public Dictionary<int, int> SortsAppris { get; } = new();
+
     public event EventHandler? Mis_A_Jour;
+    public event EventHandler? SortsChanges;
+
+    public void AjouterOuMajSort(int idSort, int niveau)
+    {
+        SortsAppris[idSort] = niveau;
+        SortsChanges?.Invoke(this, EventArgs.Empty);
+    }
 
     public void ActualiserVie(int vie, int vieMax)
     {

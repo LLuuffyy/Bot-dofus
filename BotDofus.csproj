@@ -12,8 +12,8 @@
     <RootNamespace>BotDofus</RootNamespace>
     <AssemblyName>BotDofus</AssemblyName>
     <Version>0.1.0</Version>
-    <Company>BotDofus</Company>
-    <Product>Bot Dofus Retro 1.29</Product>
+    <Company>Luffy-bot</Company>
+    <Product>Luffy-bot</Product>
     <ApplicationIcon />
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
@@ -21,8 +21,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="BotDofus.Wpf\**\*.cs" />
+    <EmbeddedResource Remove="BotDofus.Wpf\**\*" />
+    <None Remove="BotDofus.Wpf\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Les ressources de jeu (maps, items, monsters, sorts) sont copiées à la sortie -->
     <None Update="Resources\data\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\worldmap\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="trajectories\**\*.lua">

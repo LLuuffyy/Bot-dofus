@@ -67,6 +67,12 @@ public sealed class TrameSelectionServeur : TrameBase
 
     private void OnHoteChiffre(MessageHoteChiffre msg)
     {
+        if (!string.IsNullOrWhiteSpace(msg.Hote) && msg.Port > 0)
+        {
+            Journaliseur.Info($"Hôte de jeu reçu : {msg.Hote}:{msg.Port}, ticket len={msg.Ticket.Length}");
+            return;
+        }
+
         // cryptedIp = 8 caractères, suivi parfois de cryptedPort = 3 caractères.
         // Format usuel : "<cryptedIp><cryptedPort>;<ticket>" — déjà splité dans MessageHoteChiffre.
         var ipBrute = msg.IpPortChiffre;

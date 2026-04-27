@@ -1,8 +1,10 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotDofus", "BotDofus.csproj", "{FB9E710F-1DF4-47A5-939D-C14ED77F2749}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotDofus.Wpf", "BotDofus.Wpf\BotDofus.Wpf.csproj", "{64719B83-6CDF-420F-99F9-ED6D38B3C835}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,6 +16,10 @@ Global
 		{FB9E710F-1DF4-47A5-939D-C14ED77F2749}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB9E710F-1DF4-47A5-939D-C14ED77F2749}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB9E710F-1DF4-47A5-939D-C14ED77F2749}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64719B83-6CDF-420F-99F9-ED6D38B3C835}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64719B83-6CDF-420F-99F9-ED6D38B3C835}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64719B83-6CDF-420F-99F9-ED6D38B3C835}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64719B83-6CDF-420F-99F9-ED6D38B3C835}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
