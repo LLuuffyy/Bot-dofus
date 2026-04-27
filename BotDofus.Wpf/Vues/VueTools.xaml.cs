@@ -204,7 +204,7 @@ public partial class VueTools : UserControl
 
         if (LstBestiaire.Items.Count == 0)
         {
-            LstBestiaire.Items.Add($"Aucun monstre trouvé pour « {filtre} »");
+            LstBestiaire.Items.Add($"Aucun monstre trouve pour \"{filtre}\"");
         }
     }
 
