@@ -61,34 +61,59 @@ public sealed class BaseDonnees
 
     private static void ChargerItems(BaseDonnees bdd, string dossier)
     {
-        // items_merged.json : { "id": { "n": "Nom", "d": "Description", "t": typeId, "lvl": niveau, "w": poids, ... } }
+        // items_merged.json : { "id": { "n": "Nom", "d": "Description", "t": typeId, "l": niveau, "w": poids, ... } }
+        // Attention : certains champs ("l", "wd", "g") sont parfois des nombres, parfois des objets selon
+        // l'item. JsonElement.TryGetInt32 THROWS si la value n'est PAS un Number — il faut checker ValueKind
+        // avant. Sans ça, item 3 (où "l":{"entry":{}}) cassait la boucle et seuls 9 items étaient chargés.
         var fichier = Path.Combine(dossier, "items_merged.json");
         if (!File.Exists(fichier)) fichier = Path.Combine(dossier, "items_hystoria.json");
         if (!File.Exists(fichier)) return;
         try
         {
             var doc = JsonDocument.Parse(File.ReadAllText(fichier));
+            int total = 0, errs = 0;
             foreach (var prop in doc.RootElement.EnumerateObject())
             {
-                if (!int.TryParse(prop.Name, out var id)) continue;
-                var v = prop.Value;
-                var item = new InfoItem { Identifiant = id };
-                if (v.ValueKind == JsonValueKind.Object)
+                try
                 {
-                    if (v.TryGetProperty("n", out var n)) item.Nom = n.GetString() ?? "";
-                    if (v.TryGetProperty("d", out var d)) item.Description = d.GetString() ?? "";
-                    if (v.TryGetProperty("t", out var t) && t.TryGetInt32(out var ti)) item.IdType = ti;
-                    if (v.TryGetProperty("lvl", out var l) && l.TryGetInt32(out var li)) item.Niveau = li;
-                    if (v.TryGetProperty("w", out var w) && w.TryGetInt32(out var wi)) item.Poids = wi;
+                    if (!int.TryParse(prop.Name, out var id)) continue;
+                    var v = prop.Value;
+                    var item = new InfoItem { Identifiant = id };
+                    if (v.ValueKind == JsonValueKind.Object)
+                    {
+                        if (v.TryGetProperty("n", out var n) && n.ValueKind == JsonValueKind.String)
+                            item.Nom = n.GetString() ?? "";
+                        if (v.TryGetProperty("d", out var d) && d.ValueKind == JsonValueKind.String)
+                            item.Description = d.GetString() ?? "";
+                        item.IdType = LireIntSur(v, "t");
+                        item.Niveau = LireIntSur(v, "l", "lvl");
+                        item.Poids = LireIntSur(v, "w");
+                    }
+                    else if (v.ValueKind == JsonValueKind.String)
+                    {
+                        item.Nom = v.GetString() ?? "";
+                    }
+                    bdd.Items[id] = item;
+                    total++;
                 }
-                else if (v.ValueKind == JsonValueKind.String)
-                {
-                    item.Nom = v.GetString() ?? "";
-                }
-                bdd.Items[id] = item;
+                catch { errs++; /* item individuel mal formé : on saute, on n'arrête pas tout */ }
             }
+            if (errs > 0) Journaliseur.Avertir($"[BDD] items : {total} chargés, {errs} ignorés (champ malformé)");
         }
         catch (Exception ex) { Journaliseur.Avertir($"[BDD] items : {ex.Message}"); }
+    }
+
+    /// <summary>Lit un int depuis un JsonElement, peu importe le type effectif (number / objet / null).
+    /// Retourne 0 si absent ou non-numérique. Évite les InvalidOperationException de TryGetInt32.</summary>
+    private static int LireIntSur(JsonElement parent, params string[] nomsCandidats)
+    {
+        foreach (var nom in nomsCandidats)
+        {
+            if (!parent.TryGetProperty(nom, out var v)) continue;
+            if (v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out var i)) return i;
+            // Sinon (objet, array, etc.) on ignore et on essaie le candidat suivant.
+        }
+        return 0;
     }
 
     private static void ChargerMonstres(BaseDonnees bdd, string dossier)
@@ -102,13 +127,18 @@ public sealed class BaseDonnees
                 var doc = JsonDocument.Parse(File.ReadAllText(fStats));
                 foreach (var prop in doc.RootElement.EnumerateObject())
                 {
-                    if (!int.TryParse(prop.Name, out var id)) continue;
-                    var v = prop.Value;
-                    var mob = new InfoMonstre { Identifiant = id };
-                    if (v.TryGetProperty("n", out var n)) mob.Nom = n.GetString() ?? "";
-                    if (v.TryGetProperty("lvl", out var l) && l.TryGetInt32(out var li)) mob.Niveau = li;
-                    if (v.TryGetProperty("hp", out var hp) && hp.TryGetInt32(out var hpi)) mob.PointsVie = hpi;
-                    bdd.Monstres[id] = mob;
+                    try
+                    {
+                        if (!int.TryParse(prop.Name, out var id)) continue;
+                        var v = prop.Value;
+                        var mob = new InfoMonstre { Identifiant = id };
+                        if (v.TryGetProperty("n", out var n) && n.ValueKind == JsonValueKind.String)
+                            mob.Nom = n.GetString() ?? "";
+                        mob.Niveau = LireIntSur(v, "lvl", "l");
+                        mob.PointsVie = LireIntSur(v, "hp");
+                        bdd.Monstres[id] = mob;
+                    }
+                    catch { /* skip malformed */ }
                 }
             }
             catch (Exception ex) { Journaliseur.Avertir($"[BDD] monsters_stats : {ex.Message}"); }
@@ -177,17 +207,21 @@ public sealed class BaseDonnees
             var doc = JsonDocument.Parse(File.ReadAllText(fichier));
             foreach (var prop in doc.RootElement.EnumerateObject())
             {
-                if (!int.TryParse(prop.Name, out var id)) continue;
-                var v = prop.Value;
-                var map = new InfoMap { Identifiant = id };
-                if (v.ValueKind == JsonValueKind.Object)
+                try
                 {
-                    if (v.TryGetProperty("x", out var x) && x.TryGetInt32(out var xi)) map.X = xi;
-                    if (v.TryGetProperty("y", out var y) && y.TryGetInt32(out var yi)) map.Y = yi;
-                    if (v.TryGetProperty("area", out var a) && a.TryGetInt32(out var ai)) map.IdArea = ai;
-                    if (v.TryGetProperty("sub", out var s) && s.TryGetInt32(out var si)) map.IdSubArea = si;
+                    if (!int.TryParse(prop.Name, out var id)) continue;
+                    var v = prop.Value;
+                    var map = new InfoMap { Identifiant = id };
+                    if (v.ValueKind == JsonValueKind.Object)
+                    {
+                        map.X = LireIntSur(v, "x");
+                        map.Y = LireIntSur(v, "y");
+                        map.IdArea = LireIntSur(v, "area");
+                        map.IdSubArea = LireIntSur(v, "sub", "sa");
+                    }
+                    bdd.Maps[id] = map;
                 }
-                bdd.Maps[id] = map;
+                catch { /* skip malformed */ }
             }
         }
         catch (Exception ex) { Journaliseur.Avertir($"[BDD] maps : {ex.Message}"); }
