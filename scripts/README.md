@@ -9,6 +9,16 @@ Scripts d'exemple pour le bot. Charger via **Vue Scripts → Charger script .lua
 | `demo_observe.lua` | Observation passive : log des stats / inventaire / surveillance vie 60s | Passif ou Actif |
 | `demo_combat_iop.lua` | Configure une rotation IA combat pour un Iop bas-moyen niveau | Actif (l'IA agit) |
 
+## Auto-script
+
+Si un fichier `scripts/<identifiant_compte>.lua` existe (ex. `scripts/zel.lua`), il est **chargé et démarré automatiquement** à l'attache de la session jeu.
+
+Pour activer le démo combat sur le compte `zel`, il suffit de :
+
+```bash
+copy scripts/demo_combat_iop.lua scripts/zel.lua
+```
+
 ## API Lua disponible
 
 Toutes les fonctions sont sur l'objet global `bot.*`. Voir `Divers/Scripts/Api/ApiLua.cs` pour la liste complète.

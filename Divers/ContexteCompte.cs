@@ -138,9 +138,33 @@ public sealed class ContexteCompte : IDisposable
         // sera mis à jour par TrameJeu via Stats.NotifierKamas/NotifierXp.
         Stats.DemarrerSession(EtatJeu.Personnage);
 
+        DemarrerAutoScriptSiPresent();
+
         Journaliseur.Info($"Contexte {Compte.Identifiant} : session jeu attachée");
         Journaliseur.Info("[ORCH] Session JEU attachee - le cipher Hystoria sera gere automatiquement par SessionProxy");
         SessionJeuAttachee?.Invoke(this, session);
+    }
+
+    /// <summary>
+    /// Si <c>scripts/{identifiant}.lua</c> existe, le charge et le lance dans <see cref="MoteurLuaInteractif"/>.
+    /// Permet de personnaliser automatiquement la rotation IA combat / le comportement du bot
+    /// dès que la session jeu est attachée. Silencieux si aucun script n'est trouvé.
+    /// </summary>
+    private void DemarrerAutoScriptSiPresent()
+    {
+        try
+        {
+            var chemin = Path.Combine("scripts", $"{Compte.Identifiant}.lua");
+            if (!File.Exists(chemin)) return;
+
+            Lua.Charger(chemin);
+            Lua.Demarrer();
+            Journaliseur.Info($"[AUTO-SCRIPT] {chemin} démarré pour {Compte.Identifiant}");
+        }
+        catch (Exception ex)
+        {
+            Journaliseur.Avertir($"[AUTO-SCRIPT] Echec démarrage script auto : {ex.Message}");
+        }
     }
 
     private void OnEtatCompteChange(object? sender, Enums.EtatsCompte etat)
