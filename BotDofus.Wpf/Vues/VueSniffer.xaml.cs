@@ -21,19 +21,8 @@ public partial class VueSniffer : UserControl
         GridPaquets.ItemsSource = Lignes;
         Loaded += (_, _) => _scrollViewer = TrouverScrollViewer(GridPaquets);
 
-        // Quand l'utilisateur utilise la roulette ou clique sur la scrollbar, on décoche
-        // Auto-scroll automatiquement. Sans ça, le snap auto-scroll au moindre nouveau paquet
-        // empêche toute lecture/copie. L'utilisateur recoche manuellement quand il veut suivre live.
+        // Roulette = on désactive auto-scroll pour pas snapper à chaque paquet.
         GridPaquets.PreviewMouseWheel += (_, _) => ChkAutoScroll.IsChecked = false;
-        GridPaquets.PreviewMouseDown += (_, e) =>
-        {
-            // Drag scrollbar = clic dans le ScrollViewer hors des cellules ; on désactive aussi.
-            if (e.OriginalSource is System.Windows.Controls.Primitives.Thumb
-                || e.OriginalSource is System.Windows.Controls.Primitives.RepeatButton)
-            {
-                ChkAutoScroll.IsChecked = false;
-            }
-        };
     }
 
     private static System.Windows.Controls.ScrollViewer? TrouverScrollViewer(System.Windows.DependencyObject racine)

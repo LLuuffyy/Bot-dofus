@@ -16,45 +16,20 @@ public partial class VueDashboard : UserControl
     private readonly ObservableCollection<EntreeLogUi> _lignesAffichees = new();
     private const int LimiteLignes = 5000;
     private string _recherche = string.Empty;
-    private System.Windows.Controls.ScrollViewer? _scrollViewer;
 
     public VueDashboard()
     {
         InitializeComponent();
         ListLogs.ItemsSource = _lignesAffichees;
 
-        // Abonnement permanent au Journaliseur : on s'abonne une fois pour toutes, pas seulement
-        // sur Loaded (sinon quand l'utilisateur change de tab, on désabonne et les logs des
-        // phases suivantes — session jeu, packets As, etc. — sont perdus).
         Journaliseur.NiveauMinimum = NiveauJournal.Debug;
         Journaliseur.EntreeAjoutee += OnEntreeJournal;
-
-        // Cache le ScrollViewer interne pour faire un ScrollToEnd() fiable.
-        Loaded += (_, _) => _scrollViewer = TrouverScrollViewer(ListLogs);
-
-        // Désactive auto-scroll au premier signe d'interaction utilisateur (wheel ou drag scrollbar),
-        // pour permettre de lire/copier sans être snappé en bas à chaque nouveau log.
-        ListLogs.PreviewMouseWheel += (_, _) => ChkAutoScrollConsole.IsChecked = false;
-        ListLogs.PreviewMouseDown += (_, e) =>
-        {
-            if (e.OriginalSource is System.Windows.Controls.Primitives.Thumb
-                || e.OriginalSource is System.Windows.Controls.Primitives.RepeatButton)
-            {
-                ChkAutoScrollConsole.IsChecked = false;
-            }
-        };
     }
 
-    private static System.Windows.Controls.ScrollViewer? TrouverScrollViewer(System.Windows.DependencyObject racine)
+    private void ScrollLogs_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
     {
-        if (racine is System.Windows.Controls.ScrollViewer sv) return sv;
-        for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(racine); i++)
-        {
-            var enfant = System.Windows.Media.VisualTreeHelper.GetChild(racine, i);
-            var trouve = TrouverScrollViewer(enfant);
-            if (trouve != null) return trouve;
-        }
-        return null;
+        // Roulette = interaction utilisateur : on décoche auto-scroll pour pas le snapper en bas.
+        if (ChkAutoScrollConsole != null) ChkAutoScrollConsole.IsChecked = false;
     }
 
     public void Lier(ContexteCompte contexte)
@@ -106,13 +81,11 @@ public partial class VueDashboard : UserControl
                 if (_lignesAffichees.Count >= LimiteLignes) _lignesAffichees.RemoveAt(0);
                 _lignesAffichees.Add(ligne);
 
-                // Auto-scroll fiable via le ScrollViewer interne. On défère à DispatcherPriority.Background
-                // pour que le layout soit recalculé après l'ajout du nouvel item AVANT qu'on scrolle.
-                // Sans ça, ScrollToEnd voit l'ancien Extent et ne fait rien.
-                if (ChkAutoScrollConsole?.IsChecked == true && _scrollViewer != null)
+                // Auto-scroll : on utilise notre ScrollViewer explicite (pas un caché de ListBox).
+                // Différé en Background pour que le layout soit fini après l'ajout.
+                if (ChkAutoScrollConsole?.IsChecked == true && ScrollLogs != null)
                 {
-                    var sv = _scrollViewer;
-                    Dispatcher.BeginInvoke(new Action(sv.ScrollToEnd), System.Windows.Threading.DispatcherPriority.Background);
+                    Dispatcher.BeginInvoke(new Action(ScrollLogs.ScrollToEnd), System.Windows.Threading.DispatcherPriority.Background);
                 }
             }
 
@@ -165,9 +138,9 @@ public partial class VueDashboard : UserControl
         }
         TxtCount.Text = $"{_lignesAffichees.Count}/{_toutesLignes.Count} lignes";
 
-        if (ChkAutoScrollConsole?.IsChecked == true && _scrollViewer != null)
+        if (ChkAutoScrollConsole?.IsChecked == true && ScrollLogs != null)
         {
-            _scrollViewer.ScrollToEnd();
+            ScrollLogs.ScrollToEnd();
         }
     }
 

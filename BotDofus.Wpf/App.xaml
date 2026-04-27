@@ -206,23 +206,9 @@
                 <Setter Property="Height" Value="36" />
             </Style>
 
-            <!-- Scrollbar plus visible que la défaut WPF (très fine, presque invisible en dark theme).
-                 14px de large + couleurs contrastées pour qu'on la voie tout de suite. -->
-            <Style TargetType="ScrollBar">
-                <Setter Property="Background" Value="#1B1D22" />
-                <Setter Property="Foreground" Value="#5A6172" />
-                <Style.Triggers>
-                    <Trigger Property="Orientation" Value="Vertical">
-                        <Setter Property="Width" Value="14" />
-                    </Trigger>
-                    <Trigger Property="Orientation" Value="Horizontal">
-                        <Setter Property="Height" Value="14" />
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
-            <Style TargetType="Thumb" x:Key="ScrollThumbStyle">
-                <Setter Property="Background" Value="#5A6172" />
-            </Style>
+            <!-- Pas de style custom ScrollBar : on laisse WPF gérer avec les défauts éprouvés.
+                 Les défauts dark theme sont moins jolis mais cliquables/draggables, ce qui est l'essentiel. -->
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

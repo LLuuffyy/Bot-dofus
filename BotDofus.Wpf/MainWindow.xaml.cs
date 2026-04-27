@@ -38,7 +38,7 @@ public partial class MainWindow : Window
         _configWpf = ConfigWpf.Charger();
         ChargerComptesSauvegardes();
 
-        // Timer 500ms pour MAJ stats UI (sinon on s'abonne Ã  PaquetRecu mais Ã§a peut spammer)
+        // Timer 500ms pour MAJ stats UI (sinon on s'abonne Ã  PaquetRecu mais ça peut spammer)
         _timerRafraichissement = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
         _timerRafraichissement.Tick += (_, __) => RafraichirStatsHeader();
         _timerRafraichissement.Start();
@@ -67,11 +67,52 @@ public partial class MainWindow : Window
 
     private void BtnDemarrerTous_Click(object sender, RoutedEventArgs e)
     {
-        foreach (var c in Comptes)
+        // On NE démarre PLUS tous les comptes (collision garantie sur port 450). On démarre
+        // seulement le compte actuellement sélectionné, ou le premier à défaut.
+        var contexte = _contexteSelectionne ?? Comptes.FirstOrDefault()?.Contexte;
+        if (contexte == null)
         {
-            try { c.Contexte.DemarrerProxy(); }
-            catch (Exception ex) { Journaliseur.Avertir($"DÃ©marrage {c.Identifiant} Ã©chouÃ© : {ex.Message}"); }
+            MessageBox.Show("Aucun compte disponible. Ajoute un compte d'abord.", "Démarrer compte",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
         }
+
+        try { contexte.DemarrerProxy(); }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Démarrage {contexte.Compte.Identifiant} échoué : {ex.Message}",
+                "Démarrer compte", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void BtnChoixServeur_Click(object sender, RoutedEventArgs e)
+    {
+        if (_contexteSelectionne == null)
+        {
+            MessageBox.Show("Sélectionne un compte d'abord.", "Choix serveur",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var actuel = _contexteSelectionne.Compte.ServeurPrefere > 0
+            ? _contexteSelectionne.Compte.ServeurPrefere.ToString()
+            : "601";
+
+        // Hystoria n'a qu'un serveur (id=601). Dialog WPF custom, pas le VB InputBox qui rend mal.
+        var saisie = SaisieDialog.Demander(this, "Choix serveur",
+            $"ID du serveur préféré pour {_contexteSelectionne.Compte.Identifiant}\n(Hystoria = 601) :", actuel);
+
+        if (string.IsNullOrWhiteSpace(saisie)) return;
+        if (!int.TryParse(saisie, out var idServeur) || idServeur <= 0)
+        {
+            MessageBox.Show("ID invalide. Doit être un nombre positif.", "Choix serveur",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        _contexteSelectionne.Compte.ServeurPrefere = idServeur;
+        SauvegarderComptes();
+        Journaliseur.Info($"[CONFIG] Serveur préféré de {_contexteSelectionne.Compte.Identifiant} = #{idServeur}");
     }
 
     private void LstComptes_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -96,8 +137,33 @@ public partial class MainWindow : Window
 
     private void BtnConnecter_Click(object sender, RoutedEventArgs e)
     {
-        try { _contexteSelectionne?.DemarrerProxy(); }
-        catch (Exception ex) { MessageBox.Show($"Erreur : {ex.Message}", "DÃ©marrage", MessageBoxButton.OK, MessageBoxImage.Error); }
+        // Toggle : si le proxy tourne, on l'arrête. Sinon on le démarre.
+        var contexte = _contexteSelectionne;
+        if (contexte == null)
+        {
+            MessageBox.Show("Sélectionne un compte d'abord.", "Proxy",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        try
+        {
+            if (contexte.Proxy.EnEcoute)
+            {
+                contexte.ArreterProxy();
+                Journaliseur.Info($"[UI] Proxy arrêté pour {contexte.Compte.Identifiant}");
+            }
+            else
+            {
+                contexte.ModePassif = ChkModePassif?.IsChecked == true;
+                contexte.DemarrerProxy();
+                Journaliseur.Info($"[UI] Proxy démarré pour {contexte.Compte.Identifiant} (mode {(contexte.ModePassif ? "passif" : "actif")})");
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Erreur : {ex.Message}", "Proxy", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private void BtnLancerJeu_Click(object sender, RoutedEventArgs e)
@@ -199,10 +265,10 @@ public partial class MainWindow : Window
         if (_contexteSelectionne == null) return;
         var p = _contexteSelectionne.EtatJeu.Personnage;
 
-        TxtNomPerso.Text = string.IsNullOrEmpty(p.Nom) ? "â€”" : p.Nom;
+        TxtNomPerso.Text = string.IsNullOrEmpty(p.Nom) ? "—”" : p.Nom;
         TxtClassePerso.Text = p.Niveau > 0
-            ? $"Classe #{p.IdClasse} Â· Niveau {p.Niveau}"
-            : "Aucun perso connectÃ©";
+            ? $"Classe #{p.IdClasse} · Niveau {p.Niveau}"
+            : "Aucun perso connecté";
 
         BarVie.Maximum = Math.Max(p.VieMax, 1);
         BarVie.Value = p.Vie;

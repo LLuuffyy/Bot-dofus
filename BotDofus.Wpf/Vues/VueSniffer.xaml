@@ -64,12 +64,7 @@
                       SelectionMode="Extended"
                       SelectionUnit="CellOrRowHeader"
                       ClipboardCopyMode="IncludeHeader"
-                      SelectionChanged="GridPaquets_SelectionChanged"
-                      ScrollViewer.VerticalScrollBarVisibility="Visible"
-                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                      ScrollViewer.CanContentScroll="False"
-                      EnableRowVirtualization="False"
-                      EnableColumnVirtualization="False">
+                      SelectionChanged="GridPaquets_SelectionChanged">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Heure" Binding="{Binding Heure}" Width="100"/>
                     <DataGridTextColumn Header="Sens" Binding="{Binding Sens}" Width="64"/>
