@@ -65,6 +65,49 @@ public partial class MainWindow : Window
         }
     }
 
+    private void BtnAjouterCompteCourant_Click(object sender, RoutedEventArgs e)
+    {
+        // Cherche un contexte qui a capturé un login depuis le jeu
+        var contexteAvecLogin = _contexteSelectionne is { LoginCapture: not null }
+            ? _contexteSelectionne
+            : Comptes.Select(c => c.Contexte).FirstOrDefault(c => c.LoginCapture != null);
+
+        if (contexteAvecLogin?.LoginCapture == null)
+        {
+            MessageBox.Show(
+                "Aucun login capturé pour le moment. Lance Dofus, connecte-toi avec ton vrai compte, puis re-clique ici.",
+                "Ajouter compte courant", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var login = contexteAvecLogin.LoginCapture;
+
+        // Évite le doublon : si un compte avec ce login existe déjà, on ne re-ajoute pas.
+        if (Comptes.Any(c => string.Equals(c.Contexte.Compte.Identifiant, login, StringComparison.OrdinalIgnoreCase)))
+        {
+            MessageBox.Show($"Le compte « {login} » est déjà dans la liste.",
+                "Ajouter compte courant", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var dlg = new AjouterCompteDialog(login) { Owner = this };
+        if (dlg.ShowDialog() == true && (!string.IsNullOrWhiteSpace(dlg.Login) || !string.IsNullOrWhiteSpace(dlg.Identifiant)))
+        {
+            var loginFinal = string.IsNullOrWhiteSpace(dlg.Login) ? dlg.Identifiant : dlg.Login;
+            var alias = string.IsNullOrWhiteSpace(dlg.Identifiant) ? loginFinal : dlg.Identifiant;
+            var entree = new EntreeCompte
+            {
+                Identifiant = loginFinal,
+                MotDePasse = dlg.MotDePasse,
+                Commentaire = alias == loginFinal ? string.Empty : alias
+            };
+            var vm = AjouterCompteDepuisEntree(entree, dlg.ModePassif);
+            SauvegarderComptes();
+            LstComptes.SelectedItem = vm;
+            Journaliseur.Info($"[AUTO-ADD] Compte « {loginFinal} » ajouté depuis le jeu courant");
+        }
+    }
+
     private void BtnDemarrerTous_Click(object sender, RoutedEventArgs e)
     {
         // On NE démarre PLUS tous les comptes (collision garantie sur port 450). On démarre

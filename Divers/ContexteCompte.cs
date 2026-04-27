@@ -39,6 +39,12 @@ public sealed class ContexteCompte : IDisposable
     public EnregistreurPaquets? EnregistreurActif { get; private set; }
 
     /// <summary>
+    /// Login capturé du dernier paquet auth (paquet C→S juste après le HC challenge).
+    /// Permet d'ajouter le compte couramment connecté à la liste sans le retaper.
+    /// </summary>
+    public string? LoginCapture { get; private set; }
+
+    /// <summary>
     /// En mode passif, le proxy se contente de relayer/journaliser les octets
     /// SANS activer la moindre trame d'automatisation. Idéal pour capturer
     /// du trafic réel sans risquer d'envoyer des paquets invalides au serveur.
@@ -215,6 +221,25 @@ public sealed class ContexteCompte : IDisposable
 
     private void OnPaquetRecu(object? sender, EvenementPaquetRecu e)
     {
+        // Capture du login : paquet C→S juste après HC challenge, format "<login>\n#1<encrypted>".
+        // Le login est en clair, le mdp encrypté avec HC. On garde le login pour permettre
+        // l'auto-add du compte courant via la sidebar UI.
+        if (e.Paquet.Direction == DirectionPaquet.VersServeur
+            && LoginCapture == null
+            && e.Paquet.Contenu.Contains('\n')
+            && e.Paquet.Contenu.Contains("#1"))
+        {
+            var ligneLogin = e.Paquet.Contenu.Split('\n')[0];
+            // Le login Dofus n'est pas une version (ne commence pas par "1.") ni un keep-alive.
+            if (!string.IsNullOrWhiteSpace(ligneLogin)
+                && !ligneLogin.StartsWith("1.", System.StringComparison.Ordinal)
+                && ligneLogin.Length is >= 2 and <= 64)
+            {
+                LoginCapture = ligneLogin;
+                Journaliseur.Info($"[AUTO-ADD] Login capturé depuis le jeu : {ligneLogin}");
+            }
+        }
+
         Repartiteur.TraiterPaquet(e.Paquet);
         PaquetRecu?.Invoke(this, e);
     }

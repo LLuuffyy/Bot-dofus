@@ -182,14 +182,26 @@
                                             Click="BtnAjouterCompte_Click"
                                             Width="40"
                                             Height="40"
+                                            ToolTip="Ajouter un compte manuellement (login + mot de passe)"
                                             Style="{StaticResource MaterialDesignRaisedButton}"
                                             Background="{StaticResource AccentBrush}">
                                         <materialDesign:PackIcon Kind="Plus" />
                                     </Button>
+                                    <Button x:Name="BtnAjouterCompteCourant"
+                                            Click="BtnAjouterCompteCourant_Click"
+                                            Margin="10,0,0,0"
+                                            ToolTip="Ajoute le compte actuellement connecté en jeu (login pré-rempli, tape juste le mdp)"
+                                            Style="{StaticResource TopNavButtonStyle}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="AccountPlus" Width="14" Height="14" Margin="0,0,6,0" />
+                                            <TextBlock Text="Ajouter compte courant" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                                     <Button x:Name="BtnDemarrerTous"
                                             Click="BtnDemarrerTous_Click"
-                                            Margin="10,0,0,0"
-                                            ToolTip="Démarre le proxy MITM du compte sélectionné (un seul à la fois — port 450 partagé)"
+                                            ToolTip="Démarre le proxy MITM du compte sélectionné"
                                             Style="{StaticResource TopNavButtonStyle}">
                                         <StackPanel Orientation="Horizontal">
                                             <materialDesign:PackIcon Kind="Play" Width="14" Height="14" Margin="0,0,6,0" />

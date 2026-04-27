@@ -14,6 +14,14 @@ public partial class AjouterCompteDialog : Window
         InitializeComponent();
     }
 
+    /// <summary>Constructeur pour pré-remplir le login (capturé depuis le jeu en cours).</summary>
+    public AjouterCompteDialog(string loginPreRempli) : this()
+    {
+        TxtLogin.Text = loginPreRempli ?? string.Empty;
+        TxtIdentifiant.Text = loginPreRempli ?? string.Empty;
+        Loaded += (_, _) => TxtMdp.Focus();
+    }
+
     private void BtnOk_Click(object sender, RoutedEventArgs e)
     {
         if (string.IsNullOrWhiteSpace(Identifiant) && string.IsNullOrWhiteSpace(Login))
