@@ -212,12 +212,16 @@ public sealed class MessageSelectionPersonnage : MessageDofus, IMessageVersClien
         if (int.TryParse(parts[2], out var niv)) Niveau = niv;
         if (int.TryParse(parts[3], out var cl)) IdClasse = cl;
 
-        // Format Hystoria observé : ASK|id|nom|niv|classe|sexe|align|coul1|coul2|coul3|<items>
-        // Items à parts[10] (index 0..9 = autres champs). Format : "<id_hex>~<tpl>~<qty>~<pos>~<effets>;..."
-        if (parts.Length > 10)
+        // Format Hystoria : <id>|<nom>|<niv>|<classe>|<sexe>|<align>|<coul1>|<coul2>|<coul3>|<items>
+        // L'index exact des items varie. On scanne tous les parts à la recherche de la section
+        // items (reconnaissable par le motif `~` qui sépare les champs internes de chaque item,
+        // contrairement aux couleurs qui sont juste hex sans `~`).
+        var liste = new List<VersClient.Objet.ObjetParse>();
+        foreach (var part in parts.Skip(4)) // skip id/nom/niv/classe
         {
-            var liste = new List<VersClient.Objet.ObjetParse>();
-            foreach (var item in parts[10].Split(';', System.StringSplitOptions.RemoveEmptyEntries))
+            if (!part.Contains('~')) continue; // section pas-items (sexe, couleurs, etc.)
+
+            foreach (var item in part.Split(';', System.StringSplitOptions.RemoveEmptyEntries))
             {
                 var ip = item.Split('~');
                 if (ip.Length < 4) continue;
@@ -228,8 +232,9 @@ public sealed class MessageSelectionPersonnage : MessageDofus, IMessageVersClien
                 if (idObj > 0 && tpl > 0)
                     liste.Add(new VersClient.Objet.ObjetParse(idObj, tpl, qty == 0 ? 1 : qty, pos));
             }
-            ObjetsInitiaux = liste;
+            break; // une seule section items dans le paquet
         }
+        ObjetsInitiaux = liste;
     }
 
     private static int ParseHex(string s)
