@@ -31,6 +31,8 @@ public sealed class Carte
         {
             Cellules[i] = new Cellule(i, TypesCellule.Marchable);
         }
+
+        MarquerBordsCommeTransitions();
     }
 
     public Cellule? Obtenir(int identifiantCellule)
@@ -73,5 +75,23 @@ public sealed class Carte
             };
         }
         Rechargee?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void MarquerBordsCommeTransitions()
+    {
+        if (Cellules.Length == 0) return;
+
+        var minX = Cellules.Min(c => c.X);
+        var maxX = Cellules.Max(c => c.X);
+        var minY = Cellules.Min(c => c.Y);
+        var maxY = Cellules.Max(c => c.Y);
+
+        foreach (var cellule in Cellules)
+        {
+            if (cellule.X == minX || cellule.X == maxX || cellule.Y == minY || cellule.Y == maxY)
+            {
+                cellule.Type = TypesCellule.Transition;
+            }
+        }
     }
 }

@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using BotDofus.Commun.Reseau;
 using BotDofus.Divers;
 using BotDofus.Divers.Cartes;
 using BotDofus.Divers.Cartes.Entites;
@@ -19,6 +20,7 @@ namespace BotDofus.Wpf.Vues;
 public partial class VueMapViewer : UserControl
 {
     private ContexteCompte? _contexte;
+    private ContexteCompte? _contexteLie;
     public ObservableCollection<string> EntitesAffichees { get; } = new();
 
     private double _largeurCellule = 32;
@@ -41,9 +43,30 @@ public partial class VueMapViewer : UserControl
 
     public void Lier(ContexteCompte contexte)
     {
+        if (ReferenceEquals(_contexteLie, contexte)) return;
+        if (_contexteLie != null)
+        {
+            _contexteLie.PaquetRecu -= OnPaquet;
+        }
+
+        _contexteLie = contexte;
         _contexte = contexte;
-        contexte.PaquetRecu += (_, __) => Dispatcher.Invoke(Rafraichir);
+        contexte.PaquetRecu += OnPaquet;
         Rafraichir();
+    }
+
+    private void OnPaquet(object? sender, EvenementPaquetRecu e)
+    {
+        var contenu = e.Paquet.Contenu;
+        if (!contenu.StartsWith("GM", StringComparison.Ordinal)
+            && !contenu.StartsWith("GDM", StringComparison.Ordinal)
+            && !contenu.StartsWith("GDK", StringComparison.Ordinal)
+            && !contenu.StartsWith("GDF", StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        Dispatcher.BeginInvoke(new Action(Rafraichir), System.Windows.Threading.DispatcherPriority.Background);
     }
 
     private void Rafraichir()
@@ -59,13 +82,15 @@ public partial class VueMapViewer : UserControl
             _centrageNecessaire = true;
         }
 
-        TxtMapId.Text = $"Carte : {carte.Identifiant} ({carte.Cellules.Length} cells)";
+        var info = BaseDonnees.Instance.Map(carte.Identifiant);
+        TxtMapId.Text = info != null
+            ? $"Carte : {carte.Identifiant} [{info.X},{info.Y}] ({carte.Cellules.Length} cells)"
+            : $"Carte : {carte.Identifiant} ({carte.Cellules.Length} cells)";
         var pos = _contexte.EtatJeu.Personnage.CellulePosition;
         TxtCellId.Text = $"Cellule : {pos?.ToString() ?? "-"}";
         var cellPerso = pos.HasValue ? carte.Obtenir(pos.Value) : null;
         TxtCoords.Text = cellPerso != null ? $"(x, y) : ({cellPerso.X}, {cellPerso.Y})" : "(x, y) : -";
 
-        var info = BaseDonnees.Instance.Map(carte.Identifiant);
         if (info != null && cellPerso != null)
         {
             TxtPositionFooter.Text = $"Position : [{info.X}, {info.Y}] - [{carte.Identifiant}] | cellule {cellPerso.Identifiant}";
@@ -259,11 +284,27 @@ public partial class VueMapViewer : UserControl
     private void MettreAJourListeEntites(Carte carte)
     {
         EntitesAffichees.Clear();
+        var nbJoueurs = 0;
+        var nbMonstres = 0;
+        var nbPnjs = 0;
+
         foreach (var ent in carte.Entites.Values)
         {
             var typeNom = ent.GetType().Name.Replace("Entite", "");
             var info = ent is EntiteMonstre m ? $" Lv{m.NiveauGroupe} (id:{m.IdGabarit})" : "";
             EntitesAffichees.Add($"{typeNom} #{ent.Identifiant} cell {ent.CellulePosition}{info} - {ent.Nom}");
+            if (ent is EntiteJoueur) nbJoueurs++;
+            else if (ent is EntiteMonstre) nbMonstres++;
+            else if (ent is EntitePNJ) nbPnjs++;
+        }
+
+        if (EntitesAffichees.Count == 0)
+        {
+            EntitesAffichees.Add("Aucune entite detectee sur cette map");
+        }
+        else
+        {
+            EntitesAffichees.Insert(0, $"{nbJoueurs} joueur(s) | {nbMonstres} groupe(s) mob | {nbPnjs} PNJ");
         }
     }
 

@@ -32,6 +32,7 @@ public sealed class ContexteCompte : IDisposable
     public GestionnaireScripts Scripts { get; }
     public MoteurLuaInteractif Lua { get; }
     public ConfigCombat ConfigCombat { get; }
+    public BotDofus.Divers.Securite.DetecteurStaff DetecteurStaff { get; }
 
     public SessionProxy? SessionAuthActive { get; private set; }
     public SessionProxy? SessionJeuActive { get; private set; }
@@ -75,6 +76,11 @@ public sealed class ContexteCompte : IDisposable
         Scripts = new GestionnaireScripts(compte, Api);
         Lua = new MoteurLuaInteractif(ApiLua);
 
+        // Détecteur staff : check périodique .staff, alerte si modo détecté.
+        var configSec = BotDofus.Divers.Securite.ConfigSecurite.Charger(
+            Path.Combine("config", $"securite-{compte.Identifiant}.json"));
+        DetecteurStaff = new BotDofus.Divers.Securite.DetecteurStaff(configSec);
+
         Compte.EtatChange += OnEtatCompteChange;
         Proxy.PaquetRecu += OnPaquetRecu;
         Proxy.SessionDemarree += OnSessionDemarree;
@@ -107,15 +113,16 @@ public sealed class ContexteCompte : IDisposable
 
         if (ModePassif)
         {
-            // Mode passif : on installe quand même TrameJeu pour parser les paquets serveur
-            // (carte, HP, kamas, poids, combat) et alimenter EtatJeu / les vues WPF.
-            // TrameJeu n'envoie RIEN au serveur — c'est de l'observation pure.
             Trames.RemplacerTrame(new TrameJeu(Repartiteur, Compte, EtatJeu, session));
         }
         else
         {
             Trames.RemplacerTrame(new TrameSelectionPersonnage(Repartiteur, Compte, session, Compte.PersonnagePrefere));
         }
+
+        // Détecteur staff branché sur la session jeu (pour observer les paquets Im).
+        DetecteurStaff.LierSession(session);
+        _ = DetecteurStaff.DemarrerAsync();
 
         Journaliseur.Info($"Contexte {Compte.Identifiant} : session jeu attachée");
         Journaliseur.Info("[ORCH] Session JEU attachee - le cipher Hystoria sera gere automatiquement par SessionProxy");

@@ -9,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using BotDofus.Commun.Reseau;
 using BotDofus.Divers;
 using IoFile = System.IO.File;
 using IoPath = System.IO.Path;
@@ -26,6 +27,7 @@ public partial class VueWorldMap : UserControl
     private Ellipse? _marqueurPerso;
     private Ellipse? _haloPerso;
     private Rectangle? _bordureTuilePerso;
+    private ContexteCompte? _contexteLie;
     private int _minXCache, _minYCache;
     private bool _centrageInitial = true;
 
@@ -39,10 +41,28 @@ public partial class VueWorldMap : UserControl
 
     public void Lier(ContexteCompte contexte)
     {
+        if (ReferenceEquals(_contexteLie, contexte)) return;
+        if (_contexteLie != null)
+        {
+            _contexteLie.PaquetRecu -= OnPaquet;
+        }
+
+        _contexteLie = contexte;
         _contexte = contexte;
-        // Quand le perso change de map, on actualise le marqueur de position.
-        contexte.PaquetRecu += (_, __) => Dispatcher.Invoke(MettreAJourMarqueurPerso);
+        contexte.PaquetRecu += OnPaquet;
         MettreAJourMarqueurPerso();
+    }
+
+    private void OnPaquet(object? sender, EvenementPaquetRecu e)
+    {
+        var contenu = e.Paquet.Contenu;
+        if (!contenu.StartsWith("GDM", StringComparison.Ordinal)
+            && !contenu.StartsWith("GM", StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        Dispatcher.BeginInvoke(new Action(MettreAJourMarqueurPerso), System.Windows.Threading.DispatcherPriority.Background);
     }
 
     private void ChargerCoordsCartes()
