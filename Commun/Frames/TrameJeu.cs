@@ -6,6 +6,7 @@ using BotDofus.Commun.Messages.VersClient.Jeu;
 using BotDofus.Commun.Messages.VersClient.Objet;
 using BotDofus.Commun.Reseau;
 using BotDofus.Divers;
+using BotDofus.Divers.Cartes.Entites;
 using BotDofus.Divers.Enums;
 using BotDofus.Divers.Jeu;
 using BotDofus.Utilitaires.Journaux;
@@ -45,6 +46,7 @@ public sealed class TrameJeu : TrameBase
         Ecouter<MessageObjetRetrait>(OnObjetRetrait);
         Ecouter<MessageObjetQuantite>(OnObjetQuantite);
         Ecouter<MessageObjetPoids>(msg => _etat.Personnage.ActualiserPoids(msg.PoidsActuel, msg.PoidsMax));
+        Ecouter<MessageMouvementCarte>(OnMouvementCarte);
         Ecouter<MessageChatMessage>(OnChatMessage);
         Ecouter<MessageChatServeur>(msg => Journaliseur.Info($"[SERVEUR] {msg.Texte}"));
 
@@ -95,6 +97,7 @@ public sealed class TrameJeu : TrameBase
                 });
             }
             Journaliseur.Info($"[INV] Inventaire initial chargé : {msg.ObjetsInitiaux.Count} objets");
+            perso.NotifierInventaireChange();
         }
 
         Journaliseur.Info($"Personnage : {msg.Nom} (classe #{msg.IdClasse}, niv {msg.Niveau})");
@@ -120,6 +123,87 @@ public sealed class TrameJeu : TrameBase
     {
         Journaliseur.Info($"Changement de carte : #{msg.IdentifiantCarte}");
         _etat.ChangerCarte(msg.IdentifiantCarte, msg.Clef);
+    }
+
+    private void OnMouvementCarte(MessageMouvementCarte msg)
+    {
+        var carte = _etat.CarteCourante;
+        if (carte == null) return;
+
+        foreach (var entree in msg.Entrees)
+        {
+            if (entree.Operation == OperationGM.Despawn)
+            {
+                carte.Entites.Remove(entree.IdentifiantEntite);
+                continue;
+            }
+
+            var champs = entree.ContenuBrut.Length > 1
+                ? entree.ContenuBrut[1..].Split(';')
+                : Array.Empty<string>();
+            if (champs.Length < 2 || !int.TryParse(champs[0], out var cellule))
+            {
+                continue;
+            }
+
+            var type = ParserInt(champs, 1);
+            var idEntite = ParserInt(champs, 3);
+
+            if (EstEntreeJoueur(type, champs))
+            {
+                var nom = champs.ElementAtOrDefault(4) ?? string.Empty;
+                var niveau = ParserNiveau(champs.ElementAtOrDefault(6));
+
+                if ((idEntite != 0 && idEntite == _etat.Personnage.Identifiant)
+                    || (!string.IsNullOrWhiteSpace(nom) && nom == _etat.Personnage.Nom))
+                {
+                    _etat.Personnage.CellulePosition = cellule;
+                    continue;
+                }
+
+                carte.Entites[idEntite] = new EntiteJoueur
+                {
+                    Identifiant = idEntite,
+                    CellulePosition = cellule,
+                    Nom = nom,
+                    Niveau = niveau,
+                    Sexe = ParserInt(champs, 5)
+                };
+                continue;
+            }
+
+            if (type == 1)
+            {
+                var gabarits = champs.ElementAtOrDefault(4)?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+                var niveaux = champs.ElementAtOrDefault(6)?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+                var idGabarit = ParserInt(gabarits.ElementAtOrDefault(0));
+                var niveau = niveaux.Select(ParserNiveau).DefaultIfEmpty(0).Max();
+                var id = idEntite != 0 ? idEntite : -Math.Abs(cellule + 1);
+
+                carte.Entites[id] = new EntiteMonstre
+                {
+                    Identifiant = id,
+                    CellulePosition = cellule,
+                    IdGabarit = idGabarit,
+                    NiveauGroupe = niveau,
+                    TailleGroupe = Math.Max(1, gabarits.Length),
+                    Nom = NomMonstre(idGabarit)
+                };
+                continue;
+            }
+
+            if (type == -3 || type == 2)
+            {
+                var id = idEntite != 0 ? idEntite : cellule;
+                carte.Entites[id] = new EntitePNJ
+                {
+                    Identifiant = id,
+                    CellulePosition = cellule,
+                    IdGabarit = Math.Abs(idEntite),
+                    Nom = champs.ElementAtOrDefault(4) ?? $"PNJ #{Math.Abs(idEntite)}"
+                };
+            }
+        }
     }
 
     private void OnInfoMessage(MessageInfoMessage msg)
@@ -151,13 +235,18 @@ public sealed class TrameJeu : TrameBase
             }
         }
         Journaliseur.Debogue($"[INV] +{msg.ObjetsParse.Count} objets (total = {inv.Count})");
+        _etat.Personnage.NotifierInventaireChange();
     }
 
     private void OnObjetRetrait(MessageObjetRetrait msg)
     {
         var inv = _etat.Personnage.Inventaire;
         var n = inv.RemoveAll(x => x.Identifiant == msg.IdentifiantObjet);
-        if (n > 0) Journaliseur.Debogue($"[INV] -1 objet (id {msg.IdentifiantObjet}, total = {inv.Count})");
+        if (n > 0)
+        {
+            Journaliseur.Debogue($"[INV] -1 objet (id {msg.IdentifiantObjet}, total = {inv.Count})");
+            _etat.Personnage.NotifierInventaireChange();
+        }
     }
 
     private void OnObjetQuantite(MessageObjetQuantite msg)
@@ -167,6 +256,7 @@ public sealed class TrameJeu : TrameBase
         {
             existant.Quantite = msg.NouvelleQuantite;
             Journaliseur.Debogue($"[INV] objet {msg.IdentifiantObjet} → qty {msg.NouvelleQuantite}");
+            _etat.Personnage.NotifierInventaireChange();
         }
     }
 
@@ -181,5 +271,33 @@ public sealed class TrameJeu : TrameBase
     private void OnChatMessage(MessageChatMessage msg)
     {
         Journaliseur.Info($"[{msg.Canal}] {msg.PseudoEmetteur} : {msg.Texte}");
+    }
+
+    private static bool EstEntreeJoueur(int type, string[] champs)
+    {
+        if (type == 3 || type == 4) return true;
+        return champs.Length > 5
+               && int.TryParse(champs.ElementAtOrDefault(3), out var id)
+               && id > 0
+               && !string.IsNullOrWhiteSpace(champs.ElementAtOrDefault(4));
+    }
+
+    private static int ParserInt(string? valeur)
+        => int.TryParse(valeur, out var v) ? v : 0;
+
+    private static int ParserInt(string[] champs, int index)
+        => ParserInt(champs.ElementAtOrDefault(index));
+
+    private static int ParserNiveau(string? valeur)
+    {
+        if (string.IsNullOrWhiteSpace(valeur)) return 0;
+        var brut = valeur.Split('^', ',', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        return ParserInt(brut);
+    }
+
+    private static string NomMonstre(int idGabarit)
+    {
+        var nom = Divers.Donnees.BaseDonnees.Instance.Monstre(idGabarit)?.Nom;
+        return string.IsNullOrWhiteSpace(nom) ? $"Monstre #{idGabarit}" : nom;
     }
 }

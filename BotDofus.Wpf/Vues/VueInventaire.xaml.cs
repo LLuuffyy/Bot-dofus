@@ -23,7 +23,9 @@ public partial class VueInventaire : UserControl
     public void Lier(ContexteCompte ctx)
     {
         _contexte = ctx;
-        ctx.PaquetRecu += (_, __) => Dispatcher.Invoke(Rafraichir);
+        // Refresh ciblé : seulement quand l'inventaire change réellement (event dédié),
+        // pas sur chaque paquet réseau (économie CPU sur les sessions longues).
+        ctx.EtatJeu.Personnage.InventaireChange += (_, __) => Dispatcher.Invoke(Rafraichir);
         Rafraichir();
     }
 

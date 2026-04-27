@@ -43,6 +43,7 @@ public sealed class Personnage
     public Dictionary<int, int> SortsAppris { get; } = new();
 
     public event EventHandler? Mis_A_Jour;
+    public event EventHandler? InventaireChange;
     public event EventHandler? SortsChanges;
 
     public void AjouterOuMajSort(int idSort, int niveau)
@@ -66,6 +67,12 @@ public sealed class Personnage
     public void ActualiserPoids(int actuel, int max)
     {
         PoidsActuel = actuel; PoidsMax = max;
+        Mis_A_Jour?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void NotifierInventaireChange()
+    {
+        InventaireChange?.Invoke(this, EventArgs.Empty);
         Mis_A_Jour?.Invoke(this, EventArgs.Empty);
     }
 
