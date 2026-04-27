@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using BotDofus.Commun.Reseau;
 using BotDofus.Divers;
 using BotDofus.Divers.Cartes.Entites;
 using BotDofus.Divers.Donnees;
@@ -22,9 +23,34 @@ public partial class VueTools : UserControl
 
     public void Lier(ContexteCompte contexte)
     {
+        if (ReferenceEquals(_contexte, contexte))
+        {
+            Rafraichir();
+            return;
+        }
+
+        if (_contexte != null)
+        {
+            _contexte.PaquetRecu -= OnPaquetRecu;
+        }
+
         _contexte = contexte;
-        contexte.PaquetRecu += (_, __) => Dispatcher.Invoke(Rafraichir);
+        contexte.PaquetRecu += OnPaquetRecu;
         Rafraichir();
+    }
+
+    private void OnPaquetRecu(object? sender, EvenementPaquetRecu e)
+    {
+        var contenu = e.Paquet.Contenu;
+        if (!contenu.StartsWith("GM", StringComparison.Ordinal)
+            && !contenu.StartsWith("GDM", StringComparison.Ordinal)
+            && !contenu.StartsWith("GDK", StringComparison.Ordinal)
+            && !contenu.StartsWith("GDF", StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        Dispatcher.BeginInvoke(Rafraichir);
     }
 
     private void Rafraichir()

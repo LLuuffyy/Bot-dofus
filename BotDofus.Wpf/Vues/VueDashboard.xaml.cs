@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using BotDofus.Divers;
 using BotDofus.Utilitaires.Journaux;
 
@@ -14,12 +15,18 @@ public partial class VueDashboard : UserControl
     private readonly List<EntreeJournal> _toutesLignes = new();
     private const int LimiteLignes = 5000;
     private string _recherche = string.Empty;
+    private readonly DispatcherTimer _tickStats;
 
     public VueDashboard()
     {
         InitializeComponent();
         Journaliseur.NiveauMinimum = NiveauJournal.Debug;
         Journaliseur.EntreeAjoutee += OnEntreeJournal;
+
+        // Tick 1s pour rafraîchir le compteur "temps online" sans dépendre des paquets.
+        _tickStats = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        _tickStats.Tick += (_, __) => RafraichirStats();
+        _tickStats.Start();
     }
 
     private void TxtLogs_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
@@ -31,21 +38,62 @@ public partial class VueDashboard : UserControl
     public void Lier(ContexteCompte contexte)
     {
         _contexte = contexte;
-        contexte.PaquetRecu += (_, __) => Dispatcher.Invoke(RafraichirEntete);
+        contexte.PaquetRecu += (_, __) => Dispatcher.BeginInvoke(new Action(RafraichirEntete), DispatcherPriority.Background);
+        contexte.Stats.Change += (_, __) => Dispatcher.BeginInvoke(new Action(RafraichirStats), DispatcherPriority.Background);
         RafraichirEntete();
+        RafraichirStats();
     }
 
     private void RafraichirEntete()
     {
         if (_contexte == null) return;
         var p = _contexte.EtatJeu.Personnage;
-        TxtCarte.Text = p.CarteCourante?.ToString() ?? "—";
-        TxtPosition.Text = p.CellulePosition?.ToString() ?? "—";
-        TxtKamas.Text = p.Kamas.ToString("N0");
+        if (TxtCarte != null) TxtCarte.Text = p.CarteCourante?.ToString() ?? "—";
+        if (TxtPosition != null) TxtPosition.Text = p.CellulePosition?.ToString() ?? "—";
+        if (TxtKamas != null) TxtKamas.Text = p.Kamas.ToString("N0");
 
-        TxtStatut.Text = _contexte.SessionJeuActive != null
-            ? "✅ En jeu"
-            : (_contexte.SessionAuthActive != null ? "⏳ Auth" : "❌ Déconnecté");
+        if (TxtStatut != null)
+        {
+            TxtStatut.Text = _contexte.SessionJeuActive != null
+                ? "✅ En jeu"
+                : (_contexte.SessionAuthActive != null ? "⏳ Auth" : "❌ Déconnecté");
+        }
+    }
+
+    private void RafraichirStats()
+    {
+        if (_contexte == null) return;
+        var s = _contexte.Stats;
+
+        if (TxtStatTemps != null)
+        {
+            var t = s.TempsEcoule;
+            TxtStatTemps.Text = t.TotalHours >= 1
+                ? $"{(int)t.TotalHours:D2}:{t.Minutes:D2}:{t.Seconds:D2}"
+                : $"{t.Minutes:D2}:{t.Seconds:D2}";
+        }
+
+        if (TxtStatPaquets != null)
+            TxtStatPaquets.Text = $"{s.PaquetsRecus:N0} / {s.PaquetsEnvoyes:N0}";
+
+        if (TxtStatOctets != null)
+            TxtStatOctets.Text = $"{FormaterOctets(s.OctetsRecus)} / {FormaterOctets(s.OctetsEnvoyes)}";
+
+        if (TxtStatCombats != null)
+            TxtStatCombats.Text = s.CombatsTotaux.ToString();
+
+        if (TxtStatKamas != null)
+            TxtStatKamas.Text = (s.KamasGagnes >= 0 ? "+" : "") + s.KamasGagnes.ToString("N0");
+
+        if (TxtStatXp != null)
+            TxtStatXp.Text = (s.XpGagnee >= 0 ? "+" : "") + s.XpGagnee.ToString("N0");
+    }
+
+    private static string FormaterOctets(long o)
+    {
+        if (o < 1024) return $"{o}";
+        if (o < 1024 * 1024) return $"{o / 1024.0:F1} K";
+        return $"{o / (1024.0 * 1024.0):F2} M";
     }
 
     private void OnEntreeJournal(object? sender, EvenementEntreeJournal e)

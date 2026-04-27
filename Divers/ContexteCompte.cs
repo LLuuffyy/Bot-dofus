@@ -33,6 +33,7 @@ public sealed class ContexteCompte : IDisposable
     public MoteurLuaInteractif Lua { get; }
     public ConfigCombat ConfigCombat { get; }
     public BotDofus.Divers.Securite.DetecteurStaff DetecteurStaff { get; }
+    public StatsSession Stats { get; } = new();
 
     public SessionProxy? SessionAuthActive { get; private set; }
     public SessionProxy? SessionJeuActive { get; private set; }
@@ -84,6 +85,14 @@ public sealed class ContexteCompte : IDisposable
         Compte.EtatChange += OnEtatCompteChange;
         Proxy.PaquetRecu += OnPaquetRecu;
         Proxy.SessionDemarree += OnSessionDemarree;
+
+        // Stats de session : on suit l'évolution kamas/xp côté Personnage et l'état combat.
+        EtatJeu.Personnage.Mis_A_Jour += (_, __) =>
+        {
+            Stats.NotifierKamas(EtatJeu.Personnage.Kamas);
+            Stats.NotifierXp(EtatJeu.Personnage.XpActuelle);
+        };
+        EtatJeu.Combat.EtatChange += (_, etat) => Stats.NotifierEtatCombat(etat);
     }
 
     private void OnSessionDemarree(object? sender, SessionProxy session)
@@ -123,6 +132,11 @@ public sealed class ContexteCompte : IDisposable
         // Détecteur staff branché sur la session jeu (pour observer les paquets Im).
         DetecteurStaff.LierSession(session);
         _ = DetecteurStaff.DemarrerAsync();
+
+        // Stats de session : on attend que le packet As (stats) ait peuplé Kamas/Xp avant de figer le baseline.
+        // En attendant, on snapshot immédiatement avec les valeurs courantes (souvent 0) — le baseline
+        // sera mis à jour par TrameJeu via Stats.NotifierKamas/NotifierXp.
+        Stats.DemarrerSession(EtatJeu.Personnage);
 
         Journaliseur.Info($"Contexte {Compte.Identifiant} : session jeu attachée");
         Journaliseur.Info("[ORCH] Session JEU attachee - le cipher Hystoria sera gere automatiquement par SessionProxy");
@@ -247,6 +261,7 @@ public sealed class ContexteCompte : IDisposable
             }
         }
 
+        Stats.NotifierPaquet(e);
         Repartiteur.TraiterPaquet(e.Paquet);
         PaquetRecu?.Invoke(this, e);
     }
@@ -280,6 +295,7 @@ public sealed class ContexteCompte : IDisposable
     public void Dispose()
     {
         try { DesactiverEnregistrement(); } catch { }
+        try { DetecteurStaff.Dispose(); } catch { }
         try { Lua.Dispose(); } catch { }
         try { Scripts.Dispose(); } catch { }
         try { Trames.Vider(); } catch { }

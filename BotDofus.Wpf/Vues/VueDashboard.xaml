@@ -6,6 +6,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -40,8 +41,50 @@
             </Grid>
         </Border>
 
-        <!-- Barre de filtres pour la console -->
+        <!-- Stats de session : 6 cartes horizontales avec compteurs live. -->
         <Border Grid.Row="1"
+                Style="{StaticResource PanelBorderStyle}"
+                Padding="10"
+                Margin="0,0,0,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="6,0">
+                    <TextBlock Text="Temps online" Style="{StaticResource MutedTextStyle}"/>
+                    <TextBlock x:Name="TxtStatTemps" Text="00:00:00" FontFamily="Consolas" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}" Margin="0,4,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="6,0">
+                    <TextBlock Text="Paquets ↓ / ↑" Style="{StaticResource MutedTextStyle}"/>
+                    <TextBlock x:Name="TxtStatPaquets" Text="0 / 0" FontFamily="Consolas" FontSize="16" FontWeight="SemiBold" Margin="0,4,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Margin="6,0">
+                    <TextBlock Text="Octets ↓ / ↑" Style="{StaticResource MutedTextStyle}"/>
+                    <TextBlock x:Name="TxtStatOctets" Text="0 / 0" FontFamily="Consolas" FontSize="14" FontWeight="SemiBold" Margin="0,4,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="3" Margin="6,0">
+                    <TextBlock Text="Combats" Style="{StaticResource MutedTextStyle}"/>
+                    <TextBlock x:Name="TxtStatCombats" Text="0" FontFamily="Consolas" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource WarningBrush}" Margin="0,4,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="4" Margin="6,0">
+                    <TextBlock Text="Kamas gagnés" Style="{StaticResource MutedTextStyle}"/>
+                    <TextBlock x:Name="TxtStatKamas" Text="+0" FontFamily="Consolas" FontSize="16" FontWeight="SemiBold" Foreground="#FFB300" Margin="0,4,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="5" Margin="6,0">
+                    <TextBlock Text="XP gagnée" Style="{StaticResource MutedTextStyle}"/>
+                    <TextBlock x:Name="TxtStatXp" Text="+0" FontFamily="Consolas" FontSize="16" FontWeight="SemiBold" Foreground="#7BD389" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Barre de filtres pour la console -->
+        <Border Grid.Row="2"
                 Style="{StaticResource PanelBorderStyle}"
                 Padding="12"
                 Margin="0,0,0,10">
@@ -74,7 +117,7 @@
 
         <!-- Console : TextBox readonly multi-lignes — scroll WPF natif éprouvé.
              On perd la couleur par niveau mais la fiabilité du scroll est non-négociable. -->
-        <Border Grid.Row="2"
+        <Border Grid.Row="3"
                 Style="{StaticResource PanelBorderStyle}"
                 Padding="0">
             <TextBox x:Name="TxtLogs"

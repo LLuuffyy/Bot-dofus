@@ -5,8 +5,11 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using BotDofus.Commun.Reseau;
 using BotDofus.Divers;
+using BotDofus.Divers.Combats;
 using BotDofus.Divers.Combats.IA;
+using BotDofus.Divers.Jeu.Personnage;
 using BotDofus.Divers.Jeu.Personnage.Spells;
 
 namespace BotDofus.Wpf.Vues;
@@ -14,6 +17,8 @@ namespace BotDofus.Wpf.Vues;
 public partial class VueCombat : UserControl
 {
     private ContexteCompte? _contexte;
+    private Personnage? _personnageLie;
+    private Combat? _combatLie;
     public ObservableCollection<SortItemVm> SortsAppris { get; } = new();
     public ObservableCollection<SortConfigureVm> SortsConfig { get; } = new();
     public ObservableCollection<CombattantVm> CombattantsLive { get; } = new();
@@ -29,23 +34,83 @@ public partial class VueCombat : UserControl
 
     public void Lier(ContexteCompte ctx)
     {
+        if (ReferenceEquals(_contexte, ctx))
+        {
+            Rafraichir();
+            RafraichirSortsAppris();
+            RafraichirCombatLive();
+            return;
+        }
+
+        Detacher();
         _contexte = ctx;
+        _personnageLie = ctx.EtatJeu.Personnage;
+        _combatLie = ctx.EtatJeu.Combat;
         CmbStrategie.SelectedIndex = (int)ctx.ConfigCombat.Strategie;
-        ctx.PaquetRecu += (_, __) => Dispatcher.Invoke(() => { Rafraichir(); RafraichirCombatLive(); });
-        ctx.EtatJeu.Personnage.SortsChanges += (_, __) => Dispatcher.Invoke(RafraichirSortsAppris);
-        ctx.EtatJeu.Combat.EtatChange += (_, __) => Dispatcher.Invoke(RafraichirCombatLive);
-        ctx.EtatJeu.Combat.TourChange += (_, __) => Dispatcher.Invoke(RafraichirCombatLive);
+        ctx.PaquetRecu += OnPaquetRecu;
+        _personnageLie.SortsChanges += OnSortsChanges;
+        _combatLie.EtatChange += OnCombatChange;
+        _combatLie.TourChange += OnCombatChange;
         Rafraichir();
         RafraichirSortsAppris();
         RafraichirCombatLive();
     }
+
+    private void Detacher()
+    {
+        if (_contexte != null)
+        {
+            _contexte.PaquetRecu -= OnPaquetRecu;
+        }
+
+        if (_personnageLie != null)
+        {
+            _personnageLie.SortsChanges -= OnSortsChanges;
+        }
+
+        if (_combatLie != null)
+        {
+            _combatLie.EtatChange -= OnCombatChange;
+            _combatLie.TourChange -= OnCombatChange;
+        }
+
+        _personnageLie = null;
+        _combatLie = null;
+    }
+
+    private void OnPaquetRecu(object? sender, EvenementPaquetRecu e)
+    {
+        var contenu = e.Paquet.Contenu;
+        if (!contenu.StartsWith("G", StringComparison.Ordinal)
+            && !contenu.StartsWith("SL", StringComparison.Ordinal)
+            && !contenu.StartsWith("SM", StringComparison.Ordinal)
+            && !contenu.StartsWith("SR", StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        Dispatcher.BeginInvoke(() =>
+        {
+            Rafraichir();
+            RafraichirCombatLive();
+        });
+    }
+
+    private void OnSortsChanges(object? sender, EventArgs e)
+        => Dispatcher.BeginInvoke(RafraichirSortsAppris);
+
+    private void OnCombatChange(object? sender, BotDofus.Divers.Combats.Enums.EtatCombat e)
+        => Dispatcher.BeginInvoke(new Action(RafraichirCombatLive));
+
+    private void OnCombatChange(object? sender, int e)
+        => Dispatcher.BeginInvoke(new Action(RafraichirCombatLive));
 
     private void RafraichirCombatLive()
     {
         if (_contexte == null) return;
         var combat = _contexte.EtatJeu.Combat;
 
-        TxtTour.Text = combat.NumeroTour > 0 ? combat.NumeroTour.ToString() : "—";
+        TxtTour.Text = combat.NumeroTour > 0 ? combat.NumeroTour.ToString() : "-";
         TxtNbAllies.Text = combat.Allies.Count.ToString();
         TxtNbEnnemis.Text = combat.Ennemis.Count.ToString();
 
@@ -54,7 +119,7 @@ public partial class VueCombat : UserControl
             BotDofus.Divers.Combats.Enums.EtatCombat.Inactif => ("Hors combat", "#3D3D3D"),
             BotDofus.Divers.Combats.Enums.EtatCombat.Placement => ("Placement", "#C9A14B"),
             BotDofus.Divers.Combats.Enums.EtatCombat.EnCours => ("En combat", "#65C56F"),
-            BotDofus.Divers.Combats.Enums.EtatCombat.Termine => ("Terminé", "#9AA0AC"),
+            BotDofus.Divers.Combats.Enums.EtatCombat.Termine => ("Termine", "#9AA0AC"),
             _ => (combat.Etat.ToString(), "#3D3D3D"),
         };
         TxtEtat.Text = libelle;
@@ -239,7 +304,7 @@ public sealed class CombattantVm
     }
 
     public string Nom => string.IsNullOrEmpty(_src.Nom) ? $"#{_src.Identifiant}" : _src.Nom;
-    public string PvTexte => $"♥ {_src.PV}/{_src.PVMax}";
+    public string PvTexte => $"PV {_src.PV}/{_src.PVMax}";
     public string PaTexte => $"PA {_src.PA}";
     public string PmTexte => $"PM {_src.PM}";
 
