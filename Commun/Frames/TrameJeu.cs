@@ -41,9 +41,9 @@ public sealed class TrameJeu : TrameBase
         Ecouter<MessageInfoVie>(OnInfoVie);
         Ecouter<MessageSelectionPersonnage>(OnSelectionPersonnage);
         Ecouter<MessageStats>(OnStats);
-        Ecouter<MessageObjetAjout>(_ => Journaliseur.Debogue("Objet ajouté à l'inventaire"));
-        Ecouter<MessageObjetRetrait>(msg => Journaliseur.Debogue($"Objet {msg.IdentifiantObjet} retiré"));
-        Ecouter<MessageObjetQuantite>(msg => Journaliseur.Debogue($"Objet {msg.IdentifiantObjet} → quantité {msg.NouvelleQuantite}"));
+        Ecouter<MessageObjetAjout>(OnObjetAjout);
+        Ecouter<MessageObjetRetrait>(OnObjetRetrait);
+        Ecouter<MessageObjetQuantite>(OnObjetQuantite);
         Ecouter<MessageObjetPoids>(msg => _etat.Personnage.ActualiserPoids(msg.PoidsActuel, msg.PoidsMax));
         Ecouter<MessageChatMessage>(OnChatMessage);
         Ecouter<MessageChatServeur>(msg => Journaliseur.Info($"[SERVEUR] {msg.Texte}"));
@@ -107,6 +107,49 @@ public sealed class TrameJeu : TrameBase
     private void OnInfoMessage(MessageInfoMessage msg)
     {
         Journaliseur.Info($"Info #{msg.Code} : {msg.Arguments}");
+    }
+
+    private void OnObjetAjout(MessageObjetAjout msg)
+    {
+        var inv = _etat.Personnage.Inventaire;
+        foreach (var o in msg.ObjetsParse)
+        {
+            // Évite les doublons : si l'id existe déjà, on remplace quantité/position.
+            var existant = inv.FirstOrDefault(x => x.Identifiant == o.Identifiant);
+            if (existant != null)
+            {
+                existant.Quantite = o.Quantite;
+                existant.Position = o.Position;
+            }
+            else
+            {
+                inv.Add(new BotDofus.Divers.Jeu.Personnage.ObjetInventaire
+                {
+                    Identifiant = o.Identifiant,
+                    IdTemplate = o.IdTemplate,
+                    Quantite = o.Quantite,
+                    Position = o.Position
+                });
+            }
+        }
+        Journaliseur.Debogue($"[INV] +{msg.ObjetsParse.Count} objets (total = {inv.Count})");
+    }
+
+    private void OnObjetRetrait(MessageObjetRetrait msg)
+    {
+        var inv = _etat.Personnage.Inventaire;
+        var n = inv.RemoveAll(x => x.Identifiant == msg.IdentifiantObjet);
+        if (n > 0) Journaliseur.Debogue($"[INV] -1 objet (id {msg.IdentifiantObjet}, total = {inv.Count})");
+    }
+
+    private void OnObjetQuantite(MessageObjetQuantite msg)
+    {
+        var existant = _etat.Personnage.Inventaire.FirstOrDefault(x => x.Identifiant == msg.IdentifiantObjet);
+        if (existant != null)
+        {
+            existant.Quantite = msg.NouvelleQuantite;
+            Journaliseur.Debogue($"[INV] objet {msg.IdentifiantObjet} → qty {msg.NouvelleQuantite}");
+        }
     }
 
     private void OnInfoVie(MessageInfoVie msg)

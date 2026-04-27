@@ -16,13 +16,40 @@ public sealed class MessageObjetAjout : MessageDofus, IMessageVersClient
     public override string Prefixe => "OAK";
     public override DirectionPaquet Direction => DirectionPaquet.VersClient;
     public IReadOnlyList<string> BlocsObjets { get; private set; } = Array.Empty<string>();
+    public IReadOnlyList<ObjetParse> ObjetsParse { get; private set; } = Array.Empty<ObjetParse>();
 
     public override void Desserialiser(string charge)
     {
         Charge = charge;
-        BlocsObjets = charge.Split('|', StringSplitOptions.RemoveEmptyEntries);
+        // Hystoria : blocs séparés par ';' (parfois '|'). Chaque bloc :
+        //   <id_hex>~<template_hex>~<qty_hex>~<pos_hex>~<effets...>
+        BlocsObjets = charge.Split(new[] { '|', ';' }, StringSplitOptions.RemoveEmptyEntries);
+
+        var liste = new List<ObjetParse>(BlocsObjets.Count);
+        foreach (var bloc in BlocsObjets)
+        {
+            var parts = bloc.Split('~');
+            if (parts.Length < 4) continue;
+
+            // IDs en hexa, qty/pos parfois aussi.
+            var id = ParseHex(parts[0]);
+            var template = ParseHex(parts[1]);
+            var qty = ParseHex(parts[2]);
+            var pos = parts[3].Length > 0 ? ParseHex(parts[3]) : 63;
+
+            if (id <= 0 || template <= 0) continue;
+            liste.Add(new ObjetParse(id, template, qty == 0 ? 1 : qty, pos));
+        }
+        ObjetsParse = liste;
     }
+
+    private static int ParseHex(string s)
+        => int.TryParse(s, System.Globalization.NumberStyles.HexNumber,
+            System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : 0;
 }
+
+/// <summary>Représentation parsée d'un objet d'inventaire (info de base).</summary>
+public readonly record struct ObjetParse(int Identifiant, int IdTemplate, int Quantite, int Position);
 
 /// <summary>OR : retrait d'un objet de l'inventaire (id).</summary>
 public sealed class MessageObjetRetrait : MessageDofus, IMessageVersClient
