@@ -1,8 +1,10 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using BotDofus.Commun.Reseau;
 using BotDofus.Divers;
 using BotDofus.Divers.Cartes.Entites;
@@ -141,6 +143,69 @@ public partial class VueTools : UserControl
 
         await _contexte.Api.EnvoyerPaquetBrutAsync(paquet, CancellationToken.None);
         TxtDerniereAction.Text = $"Paquet envoye : {paquet}";
+    }
+
+    private async void BtnEnvoyerChat_Click(object sender, RoutedEventArgs e)
+        => await EnvoyerChat();
+
+    private async void TxtChat_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            await EnvoyerChat();
+            e.Handled = true;
+        }
+    }
+
+    private async System.Threading.Tasks.Task EnvoyerChat()
+    {
+        if (_contexte == null) return;
+        var texte = TxtChat.Text?.Trim();
+        if (string.IsNullOrWhiteSpace(texte)) return;
+
+        var canal = (CmbCanal.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "*";
+        await _contexte.Api.EnvoyerMessageAsync(canal, texte, CancellationToken.None);
+        TxtDerniereAction.Text = $"Chat [{canal}] : {texte}";
+        TxtChat.Clear();
+    }
+
+    private async void BtnQuickPos_Click(object sender, RoutedEventArgs e) => await EnvoyerCommandeRapide(".pos");
+    private async void BtnQuickWho_Click(object sender, RoutedEventArgs e) => await EnvoyerCommandeRapide(".who");
+    private async void BtnQuickStaff_Click(object sender, RoutedEventArgs e) => await EnvoyerCommandeRapide(".staff");
+    private async void BtnQuickHelp_Click(object sender, RoutedEventArgs e) => await EnvoyerCommandeRapide(".help");
+
+    private async System.Threading.Tasks.Task EnvoyerCommandeRapide(string commande)
+    {
+        if (_contexte == null)
+        {
+            TxtDerniereAction.Text = "Aucun compte selectionne.";
+            return;
+        }
+        await _contexte.Api.EnvoyerMessageAsync("*", commande, CancellationToken.None);
+        TxtDerniereAction.Text = $"Commande envoyee : {commande}";
+    }
+
+    private void TxtBestiaire_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        var filtre = TxtBestiaire.Text?.Trim() ?? "";
+        LstBestiaire.Items.Clear();
+        if (filtre.Length < 2) return;
+
+        var resultats = BaseDonnees.Instance.Monstres.Values
+            .Where(m => m.Nom.Contains(filtre, StringComparison.OrdinalIgnoreCase)
+                     || m.Identifiant.ToString().Equals(filtre, StringComparison.Ordinal))
+            .OrderBy(m => m.Nom)
+            .Take(50);
+
+        foreach (var m in resultats)
+        {
+            LstBestiaire.Items.Add($"#{m.Identifiant,-4}  Niv.{m.Niveau,-3}  {m.Nom}");
+        }
+
+        if (LstBestiaire.Items.Count == 0)
+        {
+            LstBestiaire.Items.Add($"Aucun monstre trouvé pour « {filtre} »");
+        }
     }
 
     private void BtnRafraichir_Click(object sender, RoutedEventArgs e) => Rafraichir();

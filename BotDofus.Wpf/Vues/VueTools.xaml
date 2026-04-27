@@ -58,7 +58,52 @@
                 </StackPanel>
             </Border>
 
-            <Border Style="{StaticResource PanelBorderStyle}" Padding="14">
+            <Border Style="{StaticResource PanelBorderStyle}" Padding="14" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="CHAT / COMMANDES"
+                               Style="{StaticResource SectionTitleTextStyle}"
+                               Margin="0,0,0,12"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox x:Name="CmbCanal" Grid.Column="0" Margin="0,0,8,0" SelectedIndex="0">
+                            <ComboBoxItem Content="*" ToolTip="Général"/>
+                            <ComboBoxItem Content="#" ToolTip="Recrutement"/>
+                            <ComboBoxItem Content="$" ToolTip="Commerce"/>
+                            <ComboBoxItem Content="^" ToolTip="Privé"/>
+                            <ComboBoxItem Content="%" ToolTip="Groupe"/>
+                            <ComboBoxItem Content="&amp;" ToolTip="Guilde"/>
+                        </ComboBox>
+                        <TextBox x:Name="TxtChat"
+                                 Grid.Column="1"
+                                 Margin="0,0,8,0"
+                                 KeyDown="TxtChat_KeyDown"
+                                 materialDesign:HintAssist.Hint="Message ou commande (.pos, .who...)"/>
+                        <Button Grid.Column="2" Click="BtnEnvoyerChat_Click" Style="{StaticResource AccentNavButtonStyle}">
+                            <materialDesign:PackIcon Kind="SendOutline" Width="14" Height="14"/>
+                        </Button>
+                    </Grid>
+                    <UniformGrid Columns="4" Margin="0,8,0,0">
+                        <Button Click="BtnQuickPos_Click" Style="{StaticResource TopNavButtonStyle}" Margin="0,0,4,0" ToolTip="Affiche la position courante">
+                            <TextBlock Text=".pos" FontFamily="Consolas"/>
+                        </Button>
+                        <Button Click="BtnQuickWho_Click" Style="{StaticResource TopNavButtonStyle}" Margin="0,0,4,0" ToolTip="Liste les joueurs sur la map">
+                            <TextBlock Text=".who" FontFamily="Consolas"/>
+                        </Button>
+                        <Button Click="BtnQuickStaff_Click" Style="{StaticResource TopNavButtonStyle}" Margin="0,0,4,0" ToolTip="Liste les modérateurs en ligne">
+                            <TextBlock Text=".staff" FontFamily="Consolas"/>
+                        </Button>
+                        <Button Click="BtnQuickHelp_Click" Style="{StaticResource TopNavButtonStyle}" ToolTip="Aide commandes Hystoria">
+                            <TextBlock Text=".help" FontFamily="Consolas"/>
+                        </Button>
+                    </UniformGrid>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource PanelBorderStyle}" Padding="14" Margin="0,0,0,12">
                 <StackPanel>
                     <TextBlock Text="PAQUET BRUT"
                                Style="{StaticResource SectionTitleTextStyle}"
@@ -75,6 +120,22 @@
                             <TextBlock Text="Envoyer au serveur"/>
                         </StackPanel>
                     </Button>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource PanelBorderStyle}" Padding="14">
+                <StackPanel>
+                    <TextBlock Text="BESTIAIRE"
+                               Style="{StaticResource SectionTitleTextStyle}"
+                               Margin="0,0,0,12"/>
+                    <TextBox x:Name="TxtBestiaire"
+                             materialDesign:HintAssist.Hint="Rechercher un monstre par nom ou ID"
+                             TextChanged="TxtBestiaire_TextChanged"/>
+                    <ListBox x:Name="LstBestiaire"
+                             MaxHeight="180"
+                             Margin="0,8,0,0"
+                             BorderThickness="1"
+                             BorderBrush="{DynamicResource BorderSoftBrush}"/>
                 </StackPanel>
             </Border>
         </StackPanel>
