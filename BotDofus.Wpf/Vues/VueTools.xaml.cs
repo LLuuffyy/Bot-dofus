@@ -1,14 +1,18 @@
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using BotDofus.Commun.Reseau;
 using BotDofus.Divers;
 using BotDofus.Divers.Cartes.Entites;
 using BotDofus.Divers.Donnees;
+using BotDofus.Utilitaires.Hystoria;
 
 namespace BotDofus.Wpf.Vues;
 
@@ -16,11 +20,95 @@ public partial class VueTools : UserControl
 {
     private ContexteCompte? _contexte;
     public ObservableCollection<OutilMapVm> Outils { get; } = new();
+    public ObservableCollection<DiagnosticVm> Diagnostics { get; } = new();
 
     public VueTools()
     {
         InitializeComponent();
         LstOutils.ItemsSource = Outils;
+        ListeDiagnostic.ItemsSource = Diagnostics;
+        Loaded += (_, __) => RafraichirDiagnostic();
+    }
+
+    private void BtnDiagnostic_Click(object sender, RoutedEventArgs e) => RafraichirDiagnostic();
+
+    private void RafraichirDiagnostic()
+    {
+        Diagnostics.Clear();
+
+        // 1. Hosts file
+        try
+        {
+            var hosts = new GestionnaireHosts(PatcheurCoreSwf.HostnameProxy);
+            var installe = hosts.EstInstalle();
+            Diagnostics.Add(new DiagnosticVm(installe, "Hosts file",
+                installe ? $"{PatcheurCoreSwf.HostnameProxy} → 127.0.0.1" : "Entrée absente — lancer en admin"));
+        }
+        catch (Exception ex)
+        {
+            Diagnostics.Add(DiagnosticVm.Erreur("Hosts file", ex.Message));
+        }
+
+        // 2. SWF patché
+        try
+        {
+            var racineHystoria = TrouverCoreSwf();
+            if (racineHystoria == null)
+            {
+                Diagnostics.Add(DiagnosticVm.Erreur("Core.swf", "Client Hystoria introuvable"));
+            }
+            else
+            {
+                var patcheur = new PatcheurCoreSwf();
+                var patche = patcheur.EstPatche(racineHystoria);
+                Diagnostics.Add(new DiagnosticVm(patche, "Core.swf",
+                    patche ? "Backup core_original.swf présent" : "Pas encore patché"));
+            }
+        }
+        catch (Exception ex)
+        {
+            Diagnostics.Add(DiagnosticVm.Erreur("Core.swf", ex.Message));
+        }
+
+        // 3-5. Ports d'écoute (ports TCP en LISTEN local)
+        var ports = IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners();
+        AjouterPortDiagnostic(ports, 450, "Auth proxy 450", "Port d'écoute auth Hystoria");
+        AjouterPortDiagnostic(ports, 5556, "Game proxy 5556", "Port d'écoute jeu (créé après login)");
+        AjouterPortDiagnostic(ports, 843, "Flash policy 843", "Server policy pour Flash");
+
+        // 6. Bases de données
+        var nbItems = BaseDonnees.Instance.Items.Count;
+        var nbMobs = BaseDonnees.Instance.Monstres.Count;
+        var nbMaps = BaseDonnees.Instance.Maps.Count;
+        var basesOk = nbItems > 1000 && nbMobs > 100;
+        Diagnostics.Add(new DiagnosticVm(basesOk, "Bases de donnees",
+            $"{nbItems} items · {nbMobs} mobs · {nbMaps} maps"));
+
+        // 7. Comptes chargés
+        if (_contexte != null)
+        {
+            Diagnostics.Add(new DiagnosticVm(true, "Compte courant",
+                $"{_contexte.Compte.Identifiant} ({(_contexte.ModePassif ? "passif" : "actif")})"));
+        }
+    }
+
+    private static string? TrouverCoreSwf()
+    {
+        // Cherche le core.swf du client Hystoria dans des emplacements connus.
+        var candidats = new[]
+        {
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                @"Hystoria\Dofus\resources\app\retroclient\modules\core.swf"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                @"Hystoria\Dofus\resources\app\retroclient\modules\core.swf"),
+        };
+        return candidats.FirstOrDefault(File.Exists);
+    }
+
+    private void AjouterPortDiagnostic(System.Net.IPEndPoint[] ports, int port, string libelle, string description)
+    {
+        var ouvert = ports.Any(p => p.Port == port);
+        Diagnostics.Add(new DiagnosticVm(ouvert, libelle, ouvert ? "✓ en écoute" : "non écouté — démarrer le proxy"));
     }
 
     public void Lier(ContexteCompte contexte)
@@ -229,6 +317,34 @@ public partial class VueTools : UserControl
         await _contexte.Api.EnvoyerPaquetBrutAsync(item.PaquetOuverture, CancellationToken.None);
         TxtDerniereAction.Text = $"Action envoyee : {item.PaquetOuverture}";
     }
+}
+
+public sealed class DiagnosticVm
+{
+    public string Icone { get; set; } = "";
+    public string Libelle { get; set; } = "";
+    public string Detail { get; set; } = "";
+    public Brush Couleur { get; set; } = Brushes.White;
+
+    public DiagnosticVm() { }
+
+    public DiagnosticVm(bool ok, string libelle, string detail)
+    {
+        Libelle = libelle;
+        Detail = detail;
+        Icone = ok ? "●" : "○";
+        Couleur = ok
+            ? new SolidColorBrush(Color.FromRgb(0x65, 0xC5, 0x6F))
+            : new SolidColorBrush(Color.FromRgb(0xE0, 0x6C, 0x6C));
+    }
+
+    public static DiagnosticVm Erreur(string libelle, string detail) => new()
+    {
+        Libelle = libelle,
+        Detail = detail,
+        Icone = "!",
+        Couleur = new SolidColorBrush(Color.FromRgb(0xE0, 0x9C, 0x6C))
+    };
 }
 
 public sealed class OutilMapVm

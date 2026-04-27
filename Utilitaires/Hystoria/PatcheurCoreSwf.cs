@@ -161,6 +161,24 @@ public sealed class PatcheurCoreSwf
         return occurrences;
     }
 
+    /// <summary>
+    /// Diagnostic : retourne true si un backup core_original.swf existe à côté du core.swf,
+    /// ce qui implique que le bot l'a déjà patché au moins une fois. Lecture seule.
+    /// </summary>
+    public bool EstPatche(string cheminCoreSwf)
+    {
+        try
+        {
+            var dossier = Path.GetDirectoryName(cheminCoreSwf);
+            if (string.IsNullOrEmpty(dossier)) return false;
+            return File.Exists(Path.Combine(dossier, "core_original.swf"));
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     /// <summary>Restaure le core_original.swf en core.swf (annule le patch).</summary>
     public bool Restaurer(string cheminCoreSwf)
     {

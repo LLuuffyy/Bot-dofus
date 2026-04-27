@@ -111,6 +111,23 @@ public sealed class GestionnaireHosts
         return false;
     }
 
+    /// <summary>
+    /// Diagnostic : retourne true si une entrée signée par le bot existe pour ce hostname.
+    /// Lecture seule, ne nécessite pas les droits admin.
+    /// </summary>
+    public bool EstInstalle()
+    {
+        if (!File.Exists(CheminHosts)) return false;
+        try
+        {
+            return File.ReadAllLines(CheminHosts).Any(ConcerneNotreEntree);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     private static void ViderCacheDns()
     {
         try
