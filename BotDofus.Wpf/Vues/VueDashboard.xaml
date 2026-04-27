@@ -7,11 +7,41 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
+        <!-- Alerte staff : visible uniquement si DetecteurStaff a détecté un modo -->
+        <Border x:Name="BandeauAlerteStaff"
+                Grid.Row="0"
+                Background="#552424"
+                BorderBrush="#E06C6C"
+                BorderThickness="0,0,0,2"
+                Padding="14,10"
+                Margin="0,0,0,10"
+                Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="⚠"
+                           FontSize="22"
+                           Foreground="#FFCD52"
+                           VerticalAlignment="Center"
+                           Margin="0,0,12,0"/>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="MODÉRATEUR DÉTECTÉ EN LIGNE"
+                               FontWeight="Bold"
+                               Foreground="#FFCD52"
+                               FontSize="14"/>
+                    <TextBlock x:Name="TxtAlerteDetail"
+                               Text="—"
+                               Foreground="#FFE7AC"
+                               FontSize="11"
+                               Margin="0,2,0,0"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
         <!-- Bandeau résumé compact (carte / position / kamas / statut) -->
-        <Border Grid.Row="0"
+        <Border Grid.Row="1"
                 Style="{StaticResource PanelBorderStyle}"
                 Padding="14"
                 Margin="0,0,0,10">
@@ -42,7 +72,7 @@
         </Border>
 
         <!-- Stats de session : 6 cartes horizontales avec compteurs live. -->
-        <Border Grid.Row="1"
+        <Border Grid.Row="2"
                 Style="{StaticResource PanelBorderStyle}"
                 Padding="10"
                 Margin="0,0,0,10">
@@ -84,7 +114,7 @@
         </Border>
 
         <!-- Barre de filtres pour la console -->
-        <Border Grid.Row="2"
+        <Border Grid.Row="3"
                 Style="{StaticResource PanelBorderStyle}"
                 Padding="12"
                 Margin="0,0,0,10">
@@ -117,7 +147,7 @@
 
         <!-- Console : TextBox readonly multi-lignes — scroll WPF natif éprouvé.
              On perd la couleur par niveau mais la fiabilité du scroll est non-négociable. -->
-        <Border Grid.Row="3"
+        <Border Grid.Row="4"
                 Style="{StaticResource PanelBorderStyle}"
                 Padding="0">
             <TextBox x:Name="TxtLogs"

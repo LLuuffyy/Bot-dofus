@@ -49,13 +49,37 @@ public partial class VueDashboard : UserControl
         {
             _contexte.PaquetRecu -= OnPaquetRecu;
             _contexte.Stats.Change -= OnStatsChange;
+            _contexte.DetecteurStaff.ModoDetecteChange -= OnModoChange;
         }
 
         _contexte = contexte;
         contexte.PaquetRecu += OnPaquetRecu;
         contexte.Stats.Change += OnStatsChange;
+        contexte.DetecteurStaff.ModoDetecteChange += OnModoChange;
         RafraichirEntete();
         RafraichirStats();
+        RafraichirAlerteStaff();
+    }
+
+    private void OnModoChange(object? sender, EventArgs e)
+        => Dispatcher.BeginInvoke(new Action(RafraichirAlerteStaff), DispatcherPriority.Send);
+
+    private void RafraichirAlerteStaff()
+    {
+        if (_contexte == null || BandeauAlerteStaff == null) return;
+        var det = _contexte.DetecteurStaff;
+        if (det.ModoDetecte)
+        {
+            BandeauAlerteStaff.Visibility = Visibility.Visible;
+            var quand = det.DernierModoDetecte?.ToString("HH:mm:ss") ?? "—";
+            var pause = det.EnPauseProtection ? " · BOT EN PAUSE PROTECTION" : "";
+            if (TxtAlerteDetail != null)
+                TxtAlerteDetail.Text = $"Détecté à {quand}{pause}. Configure la réaction dans Vue Config.";
+        }
+        else
+        {
+            BandeauAlerteStaff.Visibility = Visibility.Collapsed;
+        }
     }
 
     private void OnPaquetRecu(object? sender, EvenementPaquetRecu e)
