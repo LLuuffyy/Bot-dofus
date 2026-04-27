@@ -24,7 +24,10 @@ public partial class VueWorldMap : UserControl
     private ScaleTransform _zoom = new(1, 1);
     private TuileWorldMap? _tuileSelectionnee;
     private Ellipse? _marqueurPerso;
+    private Ellipse? _haloPerso;
+    private Rectangle? _bordureTuilePerso;
     private int _minXCache, _minYCache;
+    private bool _centrageInitial = true;
 
     public VueWorldMap()
     {
@@ -72,21 +75,58 @@ public partial class VueWorldMap : UserControl
         if (idCarte == null || !_coordsParCarte.TryGetValue(idCarte.Value, out var coords))
         {
             _marqueurPerso.Visibility = Visibility.Collapsed;
+            if (_haloPerso != null) _haloPerso.Visibility = Visibility.Collapsed;
+            if (_bordureTuilePerso != null) _bordureTuilePerso.Visibility = Visibility.Collapsed;
             return;
         }
 
-        // Centre la pastille sur la tuile correspondante.
-        var left = (coords.x - _minXCache) * TileSize + TileSize / 2 - 12;
-        var top = (coords.y - _minYCache) * TileSize + TileSize / 2 - 12;
-        Canvas.SetLeft(_marqueurPerso, left);
-        Canvas.SetTop(_marqueurPerso, top);
+        var centreLeft = (coords.x - _minXCache) * TileSize + TileSize / 2;
+        var centreTop = (coords.y - _minYCache) * TileSize + TileSize / 2;
+
+        Canvas.SetLeft(_marqueurPerso, centreLeft - 12);
+        Canvas.SetTop(_marqueurPerso, centreTop - 12);
         Canvas.SetZIndex(_marqueurPerso, 100);
         _marqueurPerso.Visibility = Visibility.Visible;
+
+        if (_haloPerso != null)
+        {
+            Canvas.SetLeft(_haloPerso, centreLeft - 30);
+            Canvas.SetTop(_haloPerso, centreTop - 30);
+            Canvas.SetZIndex(_haloPerso, 99);
+            _haloPerso.Visibility = Visibility.Visible;
+        }
+
+        if (_bordureTuilePerso != null)
+        {
+            Canvas.SetLeft(_bordureTuilePerso, (coords.x - _minXCache) * TileSize);
+            Canvas.SetTop(_bordureTuilePerso, (coords.y - _minYCache) * TileSize);
+            Canvas.SetZIndex(_bordureTuilePerso, 98);
+            _bordureTuilePerso.Visibility = Visibility.Visible;
+        }
 
         if (TxtStatut != null)
         {
             TxtStatut.Text = $"Perso sur carte #{idCarte} = [{coords.x},{coords.y}]";
         }
+
+        // Auto-centre la worldmap sur le perso au premier marker visible.
+        if (_centrageInitial && Scroller != null)
+        {
+            _centrageInitial = false;
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (Scroller is null) return;
+                Scroller.ScrollToHorizontalOffset(centreLeft * _zoom.ScaleX - Scroller.ViewportWidth / 2);
+                Scroller.ScrollToVerticalOffset(centreTop * _zoom.ScaleY - Scroller.ViewportHeight / 2);
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
+    }
+
+    /// <summary>Bouton "Centrer perso" : recentre la vue sur la position courante.</summary>
+    public void CentrerSurPerso()
+    {
+        _centrageInitial = true;
+        MettreAJourMarqueurPerso();
     }
 
     private void ChargerWorldMap()
@@ -234,7 +274,25 @@ public partial class VueWorldMap : UserControl
         _minXCache = minX;
         _minYCache = minY;
 
-        // Marqueur position perso : pastille rouge clignotante.
+        // Marqueur position perso : halo qui pulse + pastille rouge.
+        _haloPerso = new Ellipse
+        {
+            Width = 60, Height = 60,
+            Stroke = new SolidColorBrush(Color.FromArgb(200, 0xFF, 0x44, 0x55)),
+            StrokeThickness = 4,
+            IsHitTestVisible = false,
+            Visibility = Visibility.Collapsed
+        };
+        CanvasWorld.Children.Add(_haloPerso);
+        var pulseAnim = new System.Windows.Media.Animation.DoubleAnimation
+        {
+            From = 0.15, To = 1.0,
+            Duration = TimeSpan.FromSeconds(1),
+            AutoReverse = true,
+            RepeatBehavior = System.Windows.Media.Animation.RepeatBehavior.Forever
+        };
+        _haloPerso.BeginAnimation(UIElement.OpacityProperty, pulseAnim);
+
         _marqueurPerso = new Ellipse
         {
             Width = 24,
@@ -246,6 +304,19 @@ public partial class VueWorldMap : UserControl
             Visibility = Visibility.Collapsed
         };
         CanvasWorld.Children.Add(_marqueurPerso);
+
+        // Bordure de surlignage de la tuile courante.
+        _bordureTuilePerso = new Rectangle
+        {
+            Width = TileSize, Height = TileSize,
+            Stroke = new SolidColorBrush(Color.FromRgb(0xFF, 0x44, 0x55)),
+            StrokeThickness = 3,
+            Fill = Brushes.Transparent,
+            IsHitTestVisible = false,
+            Visibility = Visibility.Collapsed
+        };
+        CanvasWorld.Children.Add(_bordureTuilePerso);
+
         MettreAJourMarqueurPerso();
 
         TxtStatut.Text = $"{_tuiles.Count} tuiles | clic gauche remplit .travel | clic droit ouvre le menu";
@@ -305,6 +376,11 @@ public partial class VueWorldMap : UserControl
         }
 
         return false;
+    }
+
+    private void BtnCentrerPerso_Click(object sender, RoutedEventArgs e)
+    {
+        CentrerSurPerso();
     }
 
     private async void BtnTravel_Click(object sender, RoutedEventArgs e)

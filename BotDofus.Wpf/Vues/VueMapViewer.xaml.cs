@@ -30,6 +30,8 @@ public partial class VueMapViewer : UserControl
     private Cellule? _celluleHover;
     private bool _enPan;
     private Point _panOrigine;
+    private bool _centrageNecessaire = true;
+    private int _carteCarteSuivie = -1;
 
     public VueMapViewer()
     {
@@ -49,6 +51,13 @@ public partial class VueMapViewer : UserControl
         if (_contexte == null) return;
         var carte = _contexte.EtatJeu.CarteCourante;
         if (carte == null) return;
+
+        // Détection changement de carte → flag pour re-centrer.
+        if (carte.Identifiant != _carteCarteSuivie)
+        {
+            _carteCarteSuivie = carte.Identifiant;
+            _centrageNecessaire = true;
+        }
 
         TxtMapId.Text = $"Carte : {carte.Identifiant} ({carte.Cellules.Length} cells)";
         var pos = _contexte.EtatJeu.Personnage.CellulePosition;
@@ -198,12 +207,42 @@ public partial class VueMapViewer : UserControl
         if (cell == null) return;
         var (cx, cy) = ProjeterIso(cell.X, cell.Y);
 
+        // Highlight la cellule courante (losange vert clair sous le joueur).
+        if (_cellulesPolygons.TryGetValue(cell.Identifiant, out var poly))
+        {
+            poly.Fill = new SolidColorBrush(Color.FromRgb(0x65, 0xC5, 0x6F));
+            poly.Stroke = new SolidColorBrush(Color.FromRgb(0x2E, 0xCC, 0x71));
+            poly.StrokeThickness = 2;
+            Canvas.SetZIndex(poly, 4);
+        }
+
+        // Marker bleu : ellipse + halo qui pulse pour la visibilité.
+        var halo = new Ellipse
+        {
+            Width = 36, Height = 36,
+            Stroke = new SolidColorBrush(Color.FromArgb(180, 33, 150, 243)),
+            StrokeThickness = 2,
+            IsHitTestVisible = false,
+        };
+        Canvas.SetLeft(halo, cx - 18);
+        Canvas.SetTop(halo, cy + _hauteurCellule - 18);
+        Canvas.SetZIndex(halo, 19);
+        CanvasMap.Children.Add(halo);
+
+        var anim = new System.Windows.Media.Animation.DoubleAnimation
+        {
+            From = 0.2, To = 1.0,
+            Duration = TimeSpan.FromSeconds(1),
+            AutoReverse = true,
+            RepeatBehavior = System.Windows.Media.Animation.RepeatBehavior.Forever
+        };
+        halo.BeginAnimation(UIElement.OpacityProperty, anim);
+
         var marker = new Ellipse
         {
-            Width = 22,
-            Height = 22,
+            Width = 22, Height = 22,
             Fill = new SolidColorBrush(Color.FromRgb(33, 150, 243)),
-            Stroke = Brushes.Black,
+            Stroke = Brushes.White,
             StrokeThickness = 2,
             IsHitTestVisible = false,
         };
@@ -211,6 +250,10 @@ public partial class VueMapViewer : UserControl
         Canvas.SetTop(marker, cy + _hauteurCellule - 11);
         Canvas.SetZIndex(marker, 20);
         CanvasMap.Children.Add(marker);
+
+        // Pas de scroll auto-centre car CanvasMap n'est pas dans un ScrollViewer (zoom only).
+        // L'utilisateur peut zoomer/dézoomer pour voir tout.
+        _ = _centrageNecessaire;
     }
 
     private void MettreAJourListeEntites(Carte carte)
