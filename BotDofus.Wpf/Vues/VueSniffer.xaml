@@ -32,6 +32,8 @@
                               IsChecked="False"
                               Margin="14,0,0,0"
                               VerticalAlignment="Center"
+                              Checked="ChkPings_Toggled"
+                              Unchecked="ChkPings_Toggled"
                               ToolTip="Affiche les keep-alives CK/CP (très bavards)"/>
                     <CheckBox x:Name="ChkAutoScroll"
                               Content="Auto-scroll"

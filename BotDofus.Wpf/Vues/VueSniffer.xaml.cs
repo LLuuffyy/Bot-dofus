@@ -12,6 +12,7 @@ public partial class VueSniffer : UserControl
     public ObservableCollection<LignePaquet> Lignes { get; } = new();
     private string _filtrePrefixe = string.Empty;
     private string _filtreSens = "Tous";
+    private bool _afficherPings;
     private const int LimiteLignes = 5000;
     private System.Windows.Controls.ScrollViewer? _scrollViewer;
     private ContexteCompte? _contexteLie;
@@ -101,7 +102,9 @@ public partial class VueSniffer : UserControl
     {
         // Pings/keep-alives Hystoria : "CK" (cookie/check côté client) et "CP" (côté serveur).
         // Décochés par défaut car très bavards (un par seconde environ).
-        if (ChkPings?.IsChecked != true
+        // _afficherPings est un bool simple (mis à jour côté UI) pour pouvoir filtrer
+        // depuis le thread de relai sans toucher la DependencyProperty ChkPings.IsChecked.
+        if (!_afficherPings
             && (prefixe.StartsWith("CK", StringComparison.Ordinal)
              || prefixe.StartsWith("CP", StringComparison.Ordinal)))
         {
@@ -127,6 +130,9 @@ public partial class VueSniffer : UserControl
         _enPause = BtnPause.IsChecked == true;
         BtnPause.Content = _enPause ? "▶ Reprendre" : "Pause";
     }
+
+    private void ChkPings_Toggled(object sender, RoutedEventArgs e)
+        => _afficherPings = ChkPings.IsChecked == true;
 
     private void TxtFiltre_TextChanged(object sender, TextChangedEventArgs e)
         => _filtrePrefixe = TxtFiltre.Text ?? string.Empty;
