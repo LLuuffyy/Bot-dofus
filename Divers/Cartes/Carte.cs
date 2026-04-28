@@ -82,6 +82,13 @@ public sealed class Carte
         }
     }
 
+    /// <summary>Notifie les abonnés (vues UI) que le contenu de la carte a changé après un rechargement de données.</summary>
+    public void SignalerRechargee()
+    {
+        _indexParCoords = null;
+        Rechargee?.Invoke(this, EventArgs.Empty);
+    }
+
     /// <summary>Appliquer les types de cellules depuis la chaîne de mouvement décodée.</summary>
     public void AppliquerMouvements(ReadOnlySpan<int> codesMouvement)
     {

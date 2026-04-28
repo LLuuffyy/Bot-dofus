@@ -123,7 +123,7 @@ public sealed class TrameJeu : TrameBase
     private void OnDonneesCarte(MessageDonneesCarte msg)
     {
         Journaliseur.Info($"Changement de carte : #{msg.IdentifiantCarte}");
-        _etat.ChangerCarte(msg.IdentifiantCarte, msg.Clef);
+        _etat.ChangerCarte(msg.IdentifiantCarte, msg.Clef, msg.DonneesChiffrees);
     }
 
     private void OnMouvementCarte(MessageMouvementCarte msg)

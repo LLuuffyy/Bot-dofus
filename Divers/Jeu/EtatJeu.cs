@@ -2,6 +2,8 @@ using System;
 using BotDofus.Divers.Cartes;
 using BotDofus.Divers.Combats;
 using BotDofus.Divers.Jeu.Personnage;
+using BotDofus.Utilitaires.Crypto;
+using BotDofus.Utilitaires.Journaux;
 
 namespace BotDofus.Divers.Jeu;
 
@@ -18,12 +20,34 @@ public sealed class EtatJeu
 
     public event EventHandler<Carte>? CarteChangee;
 
-    public void ChangerCarte(int identifiant, string? clefDecryption = null)
+    public void ChangerCarte(int identifiant, string? clefDecryption = null, string? donneesChiffrees = null)
     {
-        CarteCourante = new Carte(identifiant);
+        var carte = new Carte(identifiant);
+        CarteCourante = carte;
         Personnage.CarteCourante = identifiant;
-        CarteChangee?.Invoke(this, CarteCourante);
-        // TODO : décoder la clef pour peupler les types de cellules via AppliquerMouvements.
-        _ = clefDecryption; // placeholder
+
+        // Décodage du terrain réel : déchiffre la data GDM puis applique les types cellules.
+        if (!string.IsNullOrEmpty(donneesChiffrees) && !string.IsNullOrEmpty(clefDecryption))
+        {
+            try
+            {
+                var clair = DechiffreurCarte.Dechiffrer(donneesChiffrees, clefDecryption);
+                if (!string.IsNullOrEmpty(clair))
+                {
+                    var n = DecompresseurMapData.Appliquer(carte, clair);
+                    Journaliseur.Info($"[CARTE] {identifiant} : terrain décodé ({n}/{carte.Cellules.Length} cellules)");
+                }
+                else
+                {
+                    Journaliseur.Avertir($"[CARTE] {identifiant} : déchiffrement vide (clef={clefDecryption})");
+                }
+            }
+            catch (Exception ex)
+            {
+                Journaliseur.Avertir($"[CARTE] {identifiant} : échec décodage terrain ({ex.Message})");
+            }
+        }
+
+        CarteChangee?.Invoke(this, carte);
     }
 }
