@@ -19,6 +19,18 @@ namespace BotDofus.Utilitaires.Crypto;
 /// </summary>
 public static class DechiffreurCarte
 {
+    public static string DechiffrerDonneesMap(string donneesMapChiffrees, string clefServeurHex)
+    {
+        if (string.IsNullOrEmpty(donneesMapChiffrees) || string.IsNullOrEmpty(clefServeurHex))
+            return string.Empty;
+
+        var clef = PreparerClef(clefServeurHex);
+        if (string.IsNullOrEmpty(clef)) return string.Empty;
+
+        var checksum = Checksum(clef) * 2;
+        return DechiffrerHex(donneesMapChiffrees, clef, checksum);
+    }
+
     public static string Dechiffrer(string donneesChiffrees, string dateVersion)
     {
         if (string.IsNullOrEmpty(donneesChiffrees) || string.IsNullOrEmpty(dateVersion))
@@ -51,6 +63,60 @@ public static class DechiffreurCarte
         catch
         {
             return sb.ToString();
+        }
+    }
+
+    private static string PreparerClef(string clefHex)
+    {
+        if ((clefHex.Length & 1) != 0) return string.Empty;
+
+        var sb = new StringBuilder(clefHex.Length / 2);
+        for (int i = 0; i < clefHex.Length; i += 2)
+        {
+            var hex = HexDeux(clefHex, i);
+            if (hex < 0) return string.Empty;
+            sb.Append((char)hex);
+        }
+
+        return UnescapeFlash(sb.ToString());
+    }
+
+    private static int Checksum(string s)
+    {
+        var somme = 0;
+        for (int i = 0; i < s.Length; i++)
+        {
+            somme += s[i] % 16;
+        }
+        return somme % 16;
+    }
+
+    private static string DechiffrerHex(string donneesHex, string clef, int decalage)
+    {
+        if ((donneesHex.Length & 1) != 0 || clef.Length == 0) return string.Empty;
+
+        var sb = new StringBuilder(donneesHex.Length / 2);
+        int n = donneesHex.Length / 2;
+        for (int i = 0; i < n; i++)
+        {
+            int hexVal = HexDeux(donneesHex, i * 2);
+            if (hexVal < 0) return string.Empty;
+            int keyVal = clef[(i + decalage) % clef.Length];
+            sb.Append((char)(hexVal ^ keyVal));
+        }
+
+        return UnescapeFlash(sb.ToString());
+    }
+
+    private static string UnescapeFlash(string texte)
+    {
+        try
+        {
+            return HttpUtility.UrlDecode(texte) ?? texte;
+        }
+        catch
+        {
+            return texte;
         }
     }
 

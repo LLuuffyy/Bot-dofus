@@ -371,11 +371,15 @@ public partial class VueMapViewer : UserControl
     private Brush CouleurCellule(Cellule cell)
     {
         if (_celluleSelectionnee == cell.Identifiant) return new SolidColorBrush(Color.FromRgb(0x3A, 0x42, 0x55));
-        if (cell.Type == TypesCellule.Obstacle) return new SolidColorBrush(Color.FromRgb(40, 40, 40));
         if (cell.Type == TypesCellule.Transition) return new SolidColorBrush(Color.FromRgb(255, 152, 0));
-        if (cell.EstInteractif) return new SolidColorBrush(Color.FromRgb(120, 90, 50));
-        if (cell.LayerNiveau > 0) return new SolidColorBrush(Color.FromRgb((byte)(60 + cell.LayerNiveau * 8), 90, 60));
-        return new SolidColorBrush(Color.FromRgb(245, 245, 245));
+        if (cell.EstInteractif) return new SolidColorBrush(Color.FromRgb(118, 94, 58));
+        if (cell.Type == TypesCellule.Obstacle) return new SolidColorBrush(Color.FromRgb(38, 43, 51));
+        if (cell.Type == TypesCellule.LignDeVueSeule) return new SolidColorBrush(Color.FromRgb(72, 82, 96));
+
+        var relief = Math.Clamp((int)cell.LayerNiveau, 0, 12) * 7;
+        var pente = Math.Clamp((int)cell.LayerSlope, 0, 8) * 4;
+        var baseGris = (byte)Math.Clamp(96 + relief - pente, 64, 174);
+        return new SolidColorBrush(Color.FromRgb(baseGris, (byte)Math.Clamp(baseGris + 4, 0, 190), (byte)Math.Clamp(baseGris + 14, 0, 205)));
     }
 
     private void Poly_MouseEnter(object sender, MouseEventArgs e)

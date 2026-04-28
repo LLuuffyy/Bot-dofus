@@ -20,18 +20,21 @@ public sealed class EtatJeu
 
     public event EventHandler<Carte>? CarteChangee;
 
-    public void ChangerCarte(int identifiant, string? clefDecryption = null, string? donneesChiffrees = null)
+    public void ChangerCarte(int identifiant, string? dateVersion = null, string? clefCarte = null)
     {
         var carte = new Carte(identifiant);
         CarteCourante = carte;
         Personnage.CarteCourante = identifiant;
 
         // Décodage du terrain réel : déchiffre la data GDM puis applique les types cellules.
-        if (!string.IsNullOrEmpty(donneesChiffrees) && !string.IsNullOrEmpty(clefDecryption))
+        if (!string.IsNullOrEmpty(dateVersion) && !string.IsNullOrEmpty(clefCarte))
         {
             try
             {
-                var clair = DechiffreurCarte.Dechiffrer(donneesChiffrees, clefDecryption);
+                var mapDataChiffree = ChargeurMapLocale.ChargerMapData(identifiant, dateVersion);
+                var clair = !string.IsNullOrEmpty(mapDataChiffree)
+                    ? DechiffreurCarte.DechiffrerDonneesMap(mapDataChiffree, clefCarte)
+                    : DechiffreurCarte.Dechiffrer(clefCarte, dateVersion);
                 if (!string.IsNullOrEmpty(clair))
                 {
                     var n = DecompresseurMapData.Appliquer(carte, clair);
@@ -39,7 +42,7 @@ public sealed class EtatJeu
                 }
                 else
                 {
-                    Journaliseur.Avertir($"[CARTE] {identifiant} : déchiffrement vide (clef={clefDecryption})");
+                    Journaliseur.Avertir($"[CARTE] {identifiant} : dechiffrement vide (date={dateVersion})");
                 }
             }
             catch (Exception ex)

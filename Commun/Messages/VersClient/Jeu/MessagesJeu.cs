@@ -22,10 +22,11 @@ public sealed class MessageDonneesCarte : MessageDofus, IMessageVersClient
 
     public int IdentifiantCarte { get; private set; }
     public string DateVersion { get; private set; } = string.Empty;
-    public string DonneesChiffrees { get; private set; } = string.Empty;
+    public string ClefCarte { get; private set; } = string.Empty;
 
-    /// <summary>Alias de <see cref="DateVersion"/> pour rétro-compat.</summary>
-    public string Clef => DateVersion;
+    /// <summary>Alias de <see cref="ClefCarte"/> pour retro-compat.</summary>
+    public string Clef => ClefCarte;
+    public string DonneesChiffrees => ClefCarte;
 
     public override void Desserialiser(string charge)
     {
@@ -35,7 +36,7 @@ public sealed class MessageDonneesCarte : MessageDofus, IMessageVersClient
         var parts = bloc.Split('|');
         if (parts.Length > 0 && int.TryParse(parts[0], out var id)) IdentifiantCarte = id;
         if (parts.Length > 1) DateVersion = parts[1];
-        if (parts.Length > 2) DonneesChiffrees = parts[2];
+        if (parts.Length > 2) ClefCarte = parts[2];
     }
 }
 
