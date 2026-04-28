@@ -18,9 +18,13 @@ public sealed class Combat
 
     public List<Combattant> Allies { get; } = new();
     public List<Combattant> Ennemis { get; } = new();
+    public List<int> PositionsEquipe1 { get; } = new();
+    public List<int> PositionsEquipe2 { get; } = new();
+    public int EquipePlacement { get; private set; } = -1;
 
     public event EventHandler<EtatCombat>? EtatChange;
     public event EventHandler<int>? TourChange;
+    public event EventHandler? PositionsChangees;
 
     public void Demarrer()
     {
@@ -39,13 +43,28 @@ public sealed class Combat
         TourChange?.Invoke(this, identifiantCombattant);
     }
 
+    public void DefinirPositionsPlacement(IEnumerable<int> equipe1, IEnumerable<int> equipe2, int equipeCourante)
+    {
+        PositionsEquipe1.Clear();
+        PositionsEquipe1.AddRange(equipe1);
+        PositionsEquipe2.Clear();
+        PositionsEquipe2.AddRange(equipe2);
+        EquipePlacement = equipeCourante;
+        ChangerEtat(EtatCombat.Placement);
+        PositionsChangees?.Invoke(this, EventArgs.Empty);
+    }
+
     public void Reinitialiser()
     {
         Allies.Clear();
         Ennemis.Clear();
+        PositionsEquipe1.Clear();
+        PositionsEquipe2.Clear();
+        EquipePlacement = -1;
         NumeroTour = 0;
         IdentifiantCombattantActuel = 0;
         ChangerEtat(EtatCombat.Inactif);
+        PositionsChangees?.Invoke(this, EventArgs.Empty);
     }
 
     public bool EstMonTour => IdentifiantCombattantActuel == IdentifiantAllie

@@ -62,7 +62,10 @@ public partial class VueMapViewer : UserControl
         if (!contenu.StartsWith("GM", StringComparison.Ordinal)
             && !contenu.StartsWith("GDM", StringComparison.Ordinal)
             && !contenu.StartsWith("GDK", StringComparison.Ordinal)
-            && !contenu.StartsWith("GDF", StringComparison.Ordinal))
+            && !contenu.StartsWith("GDF", StringComparison.Ordinal)
+            && !contenu.StartsWith("GP", StringComparison.Ordinal)
+            && !contenu.StartsWith("GS", StringComparison.Ordinal)
+            && !contenu.StartsWith("GE", StringComparison.Ordinal))
         {
             return;
         }
@@ -108,6 +111,7 @@ public partial class VueMapViewer : UserControl
         CanvasMap.Children.Clear();
         _cellulesPolygons.Clear();
         DessinerGrille(carte);
+        DessinerCellulesPlacement(carte);
         if (ChkAfficherTransitions.IsChecked == true) DessinerTransitions(carte);
         if (ChkAfficherEntites.IsChecked == true) DessinerEntites(carte);
         DessinerJoueur();
@@ -226,6 +230,36 @@ public partial class VueMapViewer : UserControl
             Canvas.SetZIndex(txt, 5);
             CanvasMap.Children.Add(txt);
         }
+    }
+
+    private void DessinerCellulesPlacement(Carte carte)
+    {
+        var combat = _contexte?.EtatJeu.Combat;
+        if (combat == null) return;
+        if (combat.PositionsEquipe1.Count == 0 && combat.PositionsEquipe2.Count == 0) return;
+
+        foreach (var id in combat.PositionsEquipe1)
+        {
+            var cell = carte.Obtenir(id);
+            if (cell == null) continue;
+            DessinerOverlayCellule(cell, Color.FromArgb(210, 32, 82, 255), Color.FromRgb(15, 48, 190));
+        }
+
+        foreach (var id in combat.PositionsEquipe2)
+        {
+            var cell = carte.Obtenir(id);
+            if (cell == null) continue;
+            DessinerOverlayCellule(cell, Color.FromArgb(210, 255, 38, 38), Color.FromRgb(176, 20, 20));
+        }
+    }
+
+    private void DessinerOverlayCellule(Cellule cell, Color fill, Color stroke)
+    {
+        var poly = CreerPolygoneCellule(cell, new SolidColorBrush(fill), 1.5);
+        poly.Stroke = new SolidColorBrush(stroke);
+        poly.IsHitTestVisible = false;
+        Canvas.SetZIndex(poly, 6);
+        CanvasMap.Children.Add(poly);
     }
 
     private Polygon CreerPolygoneCellule(Cellule cell, Brush fill, double strokeThickness)

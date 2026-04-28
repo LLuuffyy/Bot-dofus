@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using BotDofus.Commun.Reseau;
+using BotDofus.Utilitaires.Crypto;
 
 namespace BotDofus.Commun.Messages.VersClient.Jeu;
 
@@ -59,15 +60,42 @@ public sealed class MessagePositionsCombat : MessageDofus, IMessageVersClient
     public override string Prefixe => "GP";
     public override DirectionPaquet Direction => DirectionPaquet.VersClient;
     public IReadOnlyList<int> PositionsDisponibles { get; private set; } = Array.Empty<int>();
+    public IReadOnlyList<int> PositionsEquipe1 { get; private set; } = Array.Empty<int>();
+    public IReadOnlyList<int> PositionsEquipe2 { get; private set; } = Array.Empty<int>();
+    public int EquipeCourante { get; private set; } = -1;
+
     public override void Desserialiser(string charge)
     {
         Charge = charge;
-        var liste = new List<int>();
-        foreach (var s in charge.Split(','))
+        var bloc = charge.StartsWith('|') ? charge[1..] : charge;
+        var parts = bloc.Split('|');
+        if (parts.Length >= 2)
         {
-            if (int.TryParse(s, out var c)) liste.Add(c);
+            PositionsEquipe1 = DecoderCellules(parts[0]);
+            PositionsEquipe2 = DecoderCellules(parts[1]);
+            if (parts.Length > 2 && int.TryParse(parts[2], out var equipe)) EquipeCourante = equipe;
+            PositionsDisponibles = EquipeCourante == 1 ? PositionsEquipe2 : PositionsEquipe1;
+            return;
         }
+
+        var liste = new List<int>();
+        foreach (var s in bloc.Split(','))
+            if (int.TryParse(s, out var c)) liste.Add(c);
         PositionsDisponibles = liste;
+    }
+
+    private static IReadOnlyList<int> DecoderCellules(string encoded)
+    {
+        if (string.IsNullOrEmpty(encoded)) return Array.Empty<int>();
+        var liste = new List<int>(encoded.Length / 2);
+        for (int i = 0; i + 1 < encoded.Length; i += 2)
+        {
+            var a = HashCarte.IndexCar(encoded[i]);
+            var b = HashCarte.IndexCar(encoded[i + 1]);
+            if (a < 0 || b < 0) continue;
+            liste.Add((a << 6) + b);
+        }
+        return liste;
     }
 }
 

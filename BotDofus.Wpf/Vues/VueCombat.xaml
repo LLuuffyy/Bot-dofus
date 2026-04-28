@@ -45,7 +45,10 @@
         </Style>
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  PanningMode="VerticalOnly"
+                  Padding="12">
         <StackPanel>
             <!-- ===== ÉTAT COMBAT LIVE ===== -->
             <Border Style="{StaticResource SectionBorderStyle}">

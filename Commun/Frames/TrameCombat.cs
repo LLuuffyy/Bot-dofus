@@ -43,6 +43,7 @@ public sealed class TrameCombat : TrameBase
     private async void OnPositions(MessagePositionsCombat msg)
     {
         if (msg.PositionsDisponibles.Count == 0) return;
+        _combat.DefinirPositionsPlacement(msg.PositionsEquipe1, msg.PositionsEquipe2, msg.EquipeCourante);
         var caseChoisie = msg.PositionsDisponibles[0];
         Journaliseur.Info($"Placement sur la case {caseChoisie}");
         try

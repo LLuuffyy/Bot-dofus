@@ -47,6 +47,7 @@ public sealed class TrameJeu : TrameBase
         Ecouter<MessageObjetQuantite>(OnObjetQuantite);
         Ecouter<MessageObjetPoids>(msg => _etat.Personnage.ActualiserPoids(msg.PoidsActuel, msg.PoidsMax));
         Ecouter<MessageMouvementCarte>(OnMouvementCarte);
+        Ecouter<MessagePositionsCombat>(OnPositionsCombat);
         Ecouter<MessageChatMessage>(OnChatMessage);
         Ecouter<MessageChatServeur>(msg => Journaliseur.Info($"[SERVEUR] {msg.Texte}"));
 
@@ -124,6 +125,13 @@ public sealed class TrameJeu : TrameBase
     {
         Journaliseur.Info($"Changement de carte : #{msg.IdentifiantCarte}");
         _etat.ChangerCarte(msg.IdentifiantCarte, msg.DateVersion, msg.ClefCarte);
+    }
+
+    private void OnPositionsCombat(MessagePositionsCombat msg)
+    {
+        _etat.Combat.DefinirPositionsPlacement(msg.PositionsEquipe1, msg.PositionsEquipe2, msg.EquipeCourante);
+        _compte.ChangerEtat(EtatsCompte.EnCombat);
+        Journaliseur.Info($"[COMBAT] Placement : equipe 1={msg.PositionsEquipe1.Count}, equipe 2={msg.PositionsEquipe2.Count}, equipe={msg.EquipeCourante}");
     }
 
     private void OnMouvementCarte(MessageMouvementCarte msg)
