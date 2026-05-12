@@ -28,6 +28,11 @@ public partial class MainWindow : Window
     // Migration Aqua : on patche maintenant config.xml via PatcheurConfigXml qui se
     // restaure tout seul dans son finally. Plus de PatcheurCoreSwf / GestionnaireHosts
     // (gardés dans le repo pour référence Hystoria, voir Utilitaires/Hystoria/).
+    //
+    // Backup défensif : si l'SWF du client tombe quand même sur l'API distante,
+    // on a un netsh portproxy au niveau noyau qui redirige 141.94.99.2:7781 → 127.0.0.1:7781.
+    // Nettoyé dans OnClosed.
+    private BotDofus.Utilitaires.Aqua.RedirecteurPortProxy? _redirecteurPortProxy;
 
     public MainWindow()
     {
@@ -268,6 +273,21 @@ public partial class MainWindow : Window
                 portLocal: 7781,
                 cheminConfig: configXmlPath);
 
+            // Ceinture-et-bretelles : on tente aussi un netsh portproxy au cas où le SWF
+            // ignorerait notre <connserver> et retomberait sur l'API runtime ankama_acc
+            // (qui résoudrait à 141.94.99.2). Cette règle système redirige tout trafic
+            // sortant Dofus → 141.94.99.2:7781 vers 127.0.0.1:7781.
+            // Si admin manquant : non-bloquant, on log un warning et on continue.
+            _redirecteurPortProxy ??= new BotDofus.Utilitaires.Aqua.RedirecteurPortProxy(
+                ipDistante: "141.94.99.2", portDistant: 7781, portLocal: 7781);
+            try { _redirecteurPortProxy.Ajouter(); }
+            catch (Exception ex)
+            {
+                Journaliseur.Avertir($"[AQUA] netsh portproxy non installé ({ex.Message}). " +
+                                     $"Tu peux le lancer en admin manuellement, OU compter sur le patch config.xml seul.");
+                _redirecteurPortProxy = null;
+            }
+
             // Workflow async : Patcher() → lancer Dofus.exe → attente → Restaurer().
             // L'await ici libère le thread UI pendant la fenêtre de 15s.
             await patcheur.LancerClientAsync(cheminClientOriginal);
@@ -321,6 +341,10 @@ public partial class MainWindow : Window
 
     private void NettoyerPatchEtHosts()
     {
+        // Retire la règle netsh portproxy si elle est en place.
+        try { _redirecteurPortProxy?.Dispose(); _redirecteurPortProxy = null; }
+        catch (Exception ex) { Journaliseur.Avertir($"Retrait portproxy : {ex.Message}"); }
+
         // Migration Aqua : le PatcheurConfigXml restaure config.xml dans son propre finally
         // (cf. LancerClientAsync). Si pour une raison X le bot a planté entre Patcher()
         // et la restauration, on tente une dernière passe défensive ici en relisant
