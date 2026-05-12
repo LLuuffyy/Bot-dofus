@@ -309,10 +309,35 @@ public sealed class SessionProxy : IDisposable
         }
     }
 
+    private static readonly string[] PrefixesDiagnostic =
+    {
+        "HC", "Af", "AH", "AT", "AYK", "AL", "Ad", "Ax", "As", "ASK", "AA", "AB", "AG",
+        "GS", "GE", "GDM", "GJ", "GP", "GT", "GC"
+    };
+
     private void EmettrePaquet(string contenu, DirectionPaquet direction)
     {
         var paquet = new PaquetBrut(direction, contenu);
         Journaliseur.Trace(paquet.ToString());
+
+        // Log Info pour les paquets de bootstrap de session (HC challenge, file d'attente,
+        // liste serveurs, redirect AYK, sélection perso, etc.) — c'est ce qu'on veut voir
+        // immédiatement dans la console quand on diagnostique une connexion qui marche/pas.
+        // Les paquets de gameplay (GM, BS, Im...) ne sont PAS loggés ici (Vue Sniffer s'en charge).
+        if (contenu.Length >= 2)
+        {
+            foreach (var prefixe in PrefixesDiagnostic)
+            {
+                if (contenu.StartsWith(prefixe, StringComparison.Ordinal))
+                {
+                    var flèche = direction == DirectionPaquet.VersClient ? "S→C" : "C→S";
+                    var charge = contenu.Length > 60 ? contenu[..60] + "…" : contenu;
+                    Journaliseur.Info($"[PKT {flèche}] {charge}");
+                    break;
+                }
+            }
+        }
+
         PaquetRecu?.Invoke(this, new EvenementPaquetRecu(paquet));
     }
 
