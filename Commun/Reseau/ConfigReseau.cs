@@ -32,8 +32,12 @@ public sealed class ConfigReseau
     /// <summary>Port du serveur de jeu distant.</summary>
     public int PortJeuDistant { get; set; } = 5562;
 
-    /// <summary>Adresse d'écoute locale du proxy MITM (les deux listeners).</summary>
-    public string AdresseEcouteLocale { get; set; } = "0.0.0.0";
+    /// <summary>
+    /// Adresse d'écoute locale du proxy MITM.
+    /// Volontairement <c>127.0.0.1</c> et pas <c>0.0.0.0</c> : seul Dofus.exe local
+    /// peut atteindre le proxy → on ne s'expose pas sur le LAN (anti-détection / hygiène).
+    /// </summary>
+    public string AdresseEcouteLocale { get; set; } = "127.0.0.1";
 
     /// <summary>
     /// Port local du listener routant vers le serveur d'auth.

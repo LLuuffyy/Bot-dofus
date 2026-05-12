@@ -51,7 +51,7 @@ public sealed class ContexteCompte : IDisposable
     /// SANS activer la moindre trame d'automatisation. Idéal pour capturer
     /// du trafic réel sans risquer d'envoyer des paquets invalides au serveur.
     /// </summary>
-    public bool ModePassif { get; set; }
+    public bool ModePassif { get; set; } = true;
 
     public event EventHandler<SessionProxy>? SessionAttachee;
     public event EventHandler<SessionProxy>? SessionJeuAttachee;
