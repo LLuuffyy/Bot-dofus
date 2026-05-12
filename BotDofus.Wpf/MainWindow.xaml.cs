@@ -25,10 +25,9 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _timerRafraichissement;
     private readonly ConfigWpf _configWpf;
 
-    // Patch SWF + entrée hosts : on garde l'état pour pouvoir nettoyer à la fermeture.
-    private PatcheurCoreSwf? _patcheurSwf;
-    private string? _cheminCoreSwfPatche;
-    private GestionnaireHosts? _gestionnaireHosts;
+    // Migration Aqua : on patche maintenant config.xml via PatcheurConfigXml qui se
+    // restaure tout seul dans son finally. Plus de PatcheurCoreSwf / GestionnaireHosts
+    // (gardés dans le repo pour référence Hystoria, voir Utilitaires/Hystoria/).
 
     public MainWindow()
     {
@@ -217,7 +216,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void BtnLancerJeu_Click(object sender, RoutedEventArgs e)
+    private async void BtnLancerJeu_Click(object sender, RoutedEventArgs e)
     {
         var contexte = _contexteSelectionne ?? Comptes.FirstOrDefault()?.Contexte;
         if (contexte == null)
@@ -235,6 +234,9 @@ public partial class MainWindow : Window
 
             // Le ModePassif est piloté par le ChkModePassif (checkbox du header) — pas de hardcoding ici.
             contexte.ModePassif = ChkModePassif?.IsChecked == true;
+
+            // Démarre les listeners AVANT de patcher le config, sinon le client se connecte
+            // à 127.0.0.1:7781 et trouve port fermé → kick instantané.
             contexte.DemarrerProxy();
 
             var cheminClientOriginal = ObtenirCheminClientDofus();
@@ -245,23 +247,30 @@ public partial class MainWindow : Window
 
             FermerClientsDofusExistants(cheminClientOriginal);
 
-            // Patcher core.swf in-place : remplace l'IP serveur par "dofusproxy.bot"
-            // et garde un backup core_original.swf à côté pour pouvoir restaurer à la fermeture.
-            var cheminCoreSwf = Path.Combine(
-                Path.GetDirectoryName(cheminClientOriginal)!,
-                "modules", "core.swf");
-            _patcheurSwf ??= new PatcheurCoreSwf();
-            _patcheurSwf.Patcher(cheminCoreSwf);
-            _cheminCoreSwfPatche = cheminCoreSwf;
+            // === MIGRATION AQUA ===
+            // On ne patche plus core.swf : le client Aqua lit son IP serveur depuis
+            // config.xml (élément <conf>/<connexionServers>/<connserver>).
+            // PatcheurConfigXml injecte le bloc, lance Dofus.exe, attend 15s pour
+            // que Flash ait lu, puis restaure le config original.
+            var configXmlPath = BotDofus.Utilitaires.Aqua.PatcheurConfigXml.CheminConfigDefaut;
+            if (!File.Exists(configXmlPath))
+            {
+                // Si le user n'a pas le launcher Bubble, on lance Dofus.exe tel quel
+                // (en supposant qu'il l'a redirigé autrement, ex. Synfus en parallèle).
+                Journaliseur.Avertir($"[AQUA] config.xml introuvable ({configXmlPath}) — lancement direct sans patch");
+                var lanceurDirect = new LanceurDofus(cheminClientOriginal);
+                lanceurDirect.Lancer();
+                return;
+            }
 
-            // Ajouter l'entrée hosts : 127.0.0.1 dofusproxy.bot. Idempotent.
-            _gestionnaireHosts ??= new GestionnaireHosts(PatcheurCoreSwf.HostnameProxy);
-            _gestionnaireHosts.Ajouter();
+            var patcheur = new BotDofus.Utilitaires.Aqua.PatcheurConfigXml(
+                ipLocale: "127.0.0.1",
+                portLocal: 7781,
+                cheminConfig: configXmlPath);
 
-            // Lancer Dofus.exe directement (bypass du launcher Hystoria Electron) :
-            // le client résoudra dofusproxy.bot via hosts → 127.0.0.1 → notre proxy.
-            var lanceur = new LanceurDofus(cheminClientOriginal);
-            lanceur.Lancer();
+            // Workflow async : Patcher() → lancer Dofus.exe → attente → Restaurer().
+            // L'await ici libère le thread UI pendant la fenêtre de 15s.
+            await patcheur.LancerClientAsync(cheminClientOriginal);
         }
         catch (Exception ex)
         {
@@ -312,19 +321,27 @@ public partial class MainWindow : Window
 
     private void NettoyerPatchEtHosts()
     {
-        // Restaure core.swf depuis le backup : l'utilisateur retrouve son client Hystoria intact.
-        if (_patcheurSwf != null && _cheminCoreSwfPatche != null)
+        // Migration Aqua : le PatcheurConfigXml restaure config.xml dans son propre finally
+        // (cf. LancerClientAsync). Si pour une raison X le bot a planté entre Patcher()
+        // et la restauration, on tente une dernière passe défensive ici en relisant
+        // config.xml et en virant tout <connexionServers> traînant.
+        try
         {
-            try { _patcheurSwf.Restaurer(_cheminCoreSwfPatche); }
-            catch (Exception ex) { Journaliseur.Avertir($"Restauration core.swf : {ex.Message}"); }
-            finally { _cheminCoreSwfPatche = null; }
-        }
+            var chemin = BotDofus.Utilitaires.Aqua.PatcheurConfigXml.CheminConfigDefaut;
+            if (!File.Exists(chemin)) return;
 
-        // Retire l'entrée dofusproxy.bot du fichier hosts.
-        if (_gestionnaireHosts != null)
+            var doc = System.Xml.Linq.XDocument.Load(chemin);
+            var blocs = doc.Root?.Element("conf")?.Elements("connexionServers").ToList();
+            if (blocs != null && blocs.Count > 0)
+            {
+                foreach (var b in blocs) b.Remove();
+                File.WriteAllText(chemin, doc.ToString());
+                Journaliseur.Info("[AQUA-PATCH] config.xml nettoyé au shutdown (résidu détecté)");
+            }
+        }
+        catch (Exception ex)
         {
-            try { _gestionnaireHosts.Retirer(); }
-            catch (Exception ex) { Journaliseur.Avertir($"Retrait hosts : {ex.Message}"); }
+            Journaliseur.Avertir($"Nettoyage config.xml : {ex.Message}");
         }
     }
 
@@ -450,6 +467,10 @@ public partial class MainWindow : Window
             candidats.Add(_configWpf.CheminClientDofus);
         }
 
+        // Aqua (Bubble launcher) — cible courante
+        candidats.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Bubble", "Aqua", "Dofus.exe"));
+        // Anciennes cibles (Hystoria) gardées en fallback si jamais
         candidats.Add(@"C:\Users\touki\AppData\Local\Hystoria\Dofus\resources\app\retroclient\Dofus.exe");
         candidats.Add(@"C:\Users\touki\Desktop\SynFus_Hystoria_v1.1.7\Dofus.exe");
 

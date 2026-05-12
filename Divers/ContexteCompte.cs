@@ -57,8 +57,12 @@ public sealed class ContexteCompte : IDisposable
     public event EventHandler<SessionProxy>? SessionJeuAttachee;
     public event EventHandler<EvenementPaquetRecu>? PaquetRecu;
 
+    // AYK Hystoria : "AYK<ip>:<port>;<ticket>"
+    // AYK Aqua     : "AYKaqua.play-astra.net:5562;<ticket>"  → hostname accepté en plus de l'IP
+    // Le groupe <hote> capture l'un OU l'autre ; la résolution DNS éventuelle est faite à
+    // l'ouverture du proxy jeu sortant.
     private static readonly Regex RegexAyk = new(
-        @"^AYK(?<ip>\d{1,3}(?:\.\d{1,3}){3}):(?<port>\d+);(?<ticket>.+)$",
+        @"^AYK(?<hote>[A-Za-z0-9.\-_]+):(?<port>\d+);(?<ticket>.+)$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     private readonly ConfigReseau _configReseau;
@@ -218,16 +222,19 @@ public sealed class ContexteCompte : IDisposable
             return null;
         }
 
-        var ipJeu = match.Groups["ip"].Value;
+        var hoteJeu = match.Groups["hote"].Value;
         var portJeu = int.Parse(match.Groups["port"].Value);
         var ticket = match.Groups["ticket"].Value;
 
-        Journaliseur.Info($"[ORCH] AYK intercepte : serveur jeu reel = {ipJeu}:{portJeu}, ticket={ticket}");
-        DemarrerProxyJeu(ipJeu, portJeu);
+        Journaliseur.Info($"[ORCH] AYK intercepte : serveur jeu reel = {hoteJeu}:{portJeu}, ticket={ticket}");
+        // hoteJeu peut être un hostname (Aqua : aqua.play-astra.net) ou une IP (Hystoria).
+        // La résolution DNS est faite par ProxyReseau quand il ouvre la socket sortante,
+        // donc on peut transmettre la chaîne telle quelle.
+        DemarrerProxyJeu(hoteJeu, portJeu);
 
         var aykLocal = $"AYK127.0.0.1:{_configReseau.PortEcouteJeuLocal};{ticket}";
         Journaliseur.Info($"[ORCH] AYK reecrit -> {aykLocal}");
-        Journaliseur.Info($"[CONTEXTE] AYK redirige : serveur jeu reel {ipJeu}:{portJeu} -> proxy local 127.0.0.1:{_configReseau.PortEcouteJeuLocal}");
+        Journaliseur.Info($"[CONTEXTE] AYK redirige : serveur jeu reel {hoteJeu}:{portJeu} -> proxy local 127.0.0.1:{_configReseau.PortEcouteJeuLocal}");
         return aykLocal;
     }
 
