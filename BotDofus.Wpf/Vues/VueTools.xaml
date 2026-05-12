@@ -182,19 +182,19 @@
                         <Button Click="BtnInstallerHosts_Click"
                                 Style="{StaticResource TopNavButtonStyle}"
                                 Margin="0,0,4,4"
-                                ToolTip="Ajouter dofusproxy.xxx → 127.0.0.1 dans le fichier hosts (admin requis)">
+                                ToolTip="Injecte &lt;connexionServers&gt; dans config.xml Aqua (force le client à se connecter à 127.0.0.1:7781). Normalement fait automatiquement par Lancer jeu.">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="Plus" Width="14" Height="14" Margin="0,0,4,0"/>
-                                <TextBlock Text="Installer hosts"/>
+                                <TextBlock Text="Patcher config.xml"/>
                             </StackPanel>
                         </Button>
                         <Button Click="BtnRetirerHosts_Click"
                                 Style="{StaticResource TopNavButtonStyle}"
                                 Margin="4,0,0,4"
-                                ToolTip="Retirer l'entrée du fichier hosts (admin requis)">
+                                ToolTip="Retire tout résidu &lt;connexionServers&gt; du config.xml Aqua (utile si le bot a crashé).">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="Minus" Width="14" Height="14" Margin="0,0,4,0"/>
-                                <TextBlock Text="Retirer hosts"/>
+                                <TextBlock Text="Nettoyer config.xml"/>
                             </StackPanel>
                         </Button>
                     </UniformGrid>

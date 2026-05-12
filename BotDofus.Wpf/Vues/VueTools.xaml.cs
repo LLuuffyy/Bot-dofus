@@ -36,44 +36,40 @@ public partial class VueTools : UserControl
     {
         Diagnostics.Clear();
 
-        // 1. Hosts file
+        // 1. Client Aqua installé (Bubble launcher)
         try
         {
-            var hosts = new GestionnaireHosts(PatcheurCoreSwf.HostnameProxy);
-            var installe = hosts.EstInstalle();
-            Diagnostics.Add(new DiagnosticVm(installe, "Hosts file",
-                installe ? $"{PatcheurCoreSwf.HostnameProxy} → 127.0.0.1" : "Entrée absente — lancer en admin"));
+            var configXml = BotDofus.Utilitaires.Aqua.PatcheurConfigXml.CheminConfigDefaut;
+            var dofusExe = BotDofus.Utilitaires.Aqua.PatcheurConfigXml.CheminExecutableDefaut;
+            var installe = File.Exists(configXml) && File.Exists(dofusExe);
+            Diagnostics.Add(new DiagnosticVm(installe, "Client Aqua",
+                installe ? "Bubble/Aqua trouvé" : "Bubble/Aqua introuvable — installer le launcher"));
         }
         catch (Exception ex)
         {
-            Diagnostics.Add(DiagnosticVm.Erreur("Hosts file", ex.Message));
+            Diagnostics.Add(DiagnosticVm.Erreur("Client Aqua", ex.Message));
         }
 
-        // 2. SWF patché
+        // 2. config.xml : patché ou clean ?
         try
         {
-            var racineHystoria = TrouverCoreSwf();
-            if (racineHystoria == null)
-            {
-                Diagnostics.Add(DiagnosticVm.Erreur("Core.swf", "Client Hystoria introuvable"));
-            }
-            else
-            {
-                var patcheur = new PatcheurCoreSwf();
-                var patche = patcheur.EstPatche(racineHystoria);
-                Diagnostics.Add(new DiagnosticVm(patche, "Core.swf",
-                    patche ? "Backup core_original.swf présent" : "Pas encore patché"));
-            }
+            var patcheur = new BotDofus.Utilitaires.Aqua.PatcheurConfigXml();
+            var actuellementPatche = patcheur.EstActuellementPatche();
+            // "Patché" en runtime = anormal entre 2 sessions (devrait être restauré).
+            // On affiche vert = clean (état normal), orange = résidu détecté.
+            Diagnostics.Add(new DiagnosticVm(!actuellementPatche, "config.xml",
+                actuellementPatche ? "RÉSIDU détecté (bot crashé ?) — sera nettoyé au quit"
+                                   : "Clean (sera patché au Lancer jeu)"));
         }
         catch (Exception ex)
         {
-            Diagnostics.Add(DiagnosticVm.Erreur("Core.swf", ex.Message));
+            Diagnostics.Add(DiagnosticVm.Erreur("config.xml", ex.Message));
         }
 
         // 3-5. Ports d'écoute (ports TCP en LISTEN local)
         var ports = IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners();
-        AjouterPortDiagnostic(ports, 450, "Auth proxy 450", "Port d'écoute auth Hystoria");
-        AjouterPortDiagnostic(ports, 5556, "Game proxy 5556", "Port d'écoute jeu (créé après login)");
+        AjouterPortDiagnostic(ports, 7781, "Auth proxy 7781", "Port d'écoute auth Aqua");
+        AjouterPortDiagnostic(ports, 5562, "Game proxy 5562", "Port d'écoute jeu (créé après login)");
         AjouterPortDiagnostic(ports, 843, "Flash policy 843", "Server policy pour Flash");
 
         // 6. Bases de données
@@ -92,19 +88,6 @@ public partial class VueTools : UserControl
         }
     }
 
-    private static string? TrouverCoreSwf()
-    {
-        // Cherche le core.swf du client Hystoria dans des emplacements connus.
-        var candidats = new[]
-        {
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                @"Hystoria\Dofus\resources\app\retroclient\modules\core.swf"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                @"Hystoria\Dofus\resources\app\retroclient\modules\core.swf"),
-        };
-        return candidats.FirstOrDefault(File.Exists);
-    }
-
     private void AjouterPortDiagnostic(System.Net.IPEndPoint[] ports, int port, string libelle, string description)
     {
         var ouvert = ports.Any(p => p.Port == port);
@@ -113,10 +96,12 @@ public partial class VueTools : UserControl
 
     private void BtnInstallerHosts_Click(object sender, RoutedEventArgs e)
     {
+        // Bouton repurposé Aqua : patche config.xml manuellement (pour debug).
         try
         {
-            new GestionnaireHosts(PatcheurCoreSwf.HostnameProxy).Ajouter();
-            TxtDerniereAction.Text = "Hosts file modifié — entrée installée.";
+            var p = new BotDofus.Utilitaires.Aqua.PatcheurConfigXml(portLocal: 7781);
+            p.Patcher();
+            TxtDerniereAction.Text = "config.xml patché manuellement — proxy doit écouter sur 127.0.0.1:7781.";
             RafraichirDiagnostic();
         }
         catch (UnauthorizedAccessException)
@@ -126,26 +111,38 @@ public partial class VueTools : UserControl
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Erreur : {ex.Message}", "Hosts", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"Erreur : {ex.Message}", "Patch config.xml", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
     private void BtnRetirerHosts_Click(object sender, RoutedEventArgs e)
     {
+        // Bouton repurposé Aqua : nettoie tout résidu <connexionServers> dans config.xml.
         try
         {
-            new GestionnaireHosts(PatcheurCoreSwf.HostnameProxy).Retirer();
-            TxtDerniereAction.Text = "Hosts file nettoyé.";
+            var chemin = BotDofus.Utilitaires.Aqua.PatcheurConfigXml.CheminConfigDefaut;
+            if (!File.Exists(chemin))
+            {
+                TxtDerniereAction.Text = "config.xml Aqua introuvable.";
+                return;
+            }
+            var doc = System.Xml.Linq.XDocument.Load(chemin);
+            var blocs = doc.Root?.Element("conf")?.Elements("connexionServers").ToList();
+            if (blocs is { Count: > 0 })
+            {
+                foreach (var b in blocs) b.Remove();
+                File.WriteAllText(chemin, doc.ToString());
+                TxtDerniereAction.Text = $"config.xml nettoyé ({blocs.Count} bloc(s) retiré(s)).";
+            }
+            else
+            {
+                TxtDerniereAction.Text = "config.xml déjà clean.";
+            }
             RafraichirDiagnostic();
-        }
-        catch (UnauthorizedAccessException)
-        {
-            MessageBox.Show("Lancer Luffy-bot.exe en tant qu'administrateur pour modifier le fichier hosts.",
-                "Permissions insuffisantes", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Erreur : {ex.Message}", "Hosts", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"Erreur : {ex.Message}", "Restaurer config.xml", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
