@@ -486,15 +486,25 @@ public partial class MainWindow : Window
     private string ObtenirCheminClientDofus()
     {
         var candidats = new List<string>();
-        if (!string.IsNullOrWhiteSpace(_configWpf.CheminClientDofus))
+
+        // PRIORITÉ ABSOLUE : Aqua (Bubble launcher) — la cible courante post-migration.
+        // On ne consulte le chemin mémorisé qu'EN DERNIER pour éviter une régression silencieuse
+        // depuis une ancienne config Hystoria sauvegardée dans config-wpf.json.
+        var aquaDefaut = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Bubble", "Aqua", "Dofus.exe");
+        candidats.Add(aquaDefaut);
+
+        // Chemin mémorisé d'une session précédente — accepté SAUF s'il pointe vers Hystoria
+        // (auto-migration : on évite de retomber sur l'ancien serveur disparu).
+        if (!string.IsNullOrWhiteSpace(_configWpf.CheminClientDofus)
+            && !_configWpf.CheminClientDofus.Contains("Hystoria", StringComparison.OrdinalIgnoreCase)
+            && !_configWpf.CheminClientDofus.Contains("SynFus", StringComparison.OrdinalIgnoreCase))
         {
             candidats.Add(_configWpf.CheminClientDofus);
         }
 
-        // Aqua (Bubble launcher) — cible courante
-        candidats.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Bubble", "Aqua", "Dofus.exe"));
-        // Anciennes cibles (Hystoria) gardées en fallback si jamais
+        // Anciennes cibles Hystoria gardées en dernier secours.
         candidats.Add(@"C:\Users\touki\AppData\Local\Hystoria\Dofus\resources\app\retroclient\Dofus.exe");
         candidats.Add(@"C:\Users\touki\Desktop\SynFus_Hystoria_v1.1.7\Dofus.exe");
 
