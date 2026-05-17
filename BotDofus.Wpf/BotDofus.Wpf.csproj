@@ -27,4 +27,16 @@
     <PackageReference Include="MaterialDesignColors" Version="3.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Binaires natifs WinDivert (driver kernel + dll) copiés À PLAT à côté de
+         Luffy-bot.exe. Le .targets du package les met dans des sous-dossiers x64\
+         et ne se propage pas via ProjectReference → on les vendorise et copie ici. -->
+    <None Include="..\native\WinDivert.dll" Link="WinDivert.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\native\WinDivert64.sys" Link="WinDivert64.sys">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
