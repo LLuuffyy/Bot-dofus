@@ -162,7 +162,79 @@ public partial class VueTools : UserControl
         _contexte = contexte;
         contexte.PaquetRecu += OnPaquetRecu;
         Rafraichir();
+        RafraichirRegles();
     }
+
+    // ----------------------------------------------------------------
+    // Interception (Phase 2)
+    // ----------------------------------------------------------------
+
+    private void RafraichirRegles()
+    {
+        if (LstRegles == null) return;
+        LstRegles.Items.Clear();
+        if (_contexte == null) return;
+        foreach (var r in _contexte.Interception.Regles)
+        {
+            var dir = r.Direction?.ToString() ?? "2 sens";
+            var pref = string.IsNullOrEmpty(r.Prefixe) ? "*" : r.Prefixe;
+            LstRegles.Items.Add($"{(r.Active ? "●" : "○")} {r.Nom}  [{pref} · {dir}]  ×{r.NombreApplications}");
+        }
+        if (LstRegles.Items.Count == 0) LstRegles.Items.Add("(aucune règle)");
+    }
+
+    private void ChkInterceptActif_Toggle(object sender, RoutedEventArgs e)
+    {
+        if (_contexte == null) return;
+        _contexte.Interception.Active = ChkInterceptActif.IsChecked == true;
+        TxtDerniereAction.Text = $"Interception {( _contexte.Interception.Active ? "ACTIVE" : "OFF (kill-switch)")}";
+    }
+
+    private void BtnPresetObserve_Click(object sender, RoutedEventArgs e)
+    {
+        if (_contexte == null) { TxtDerniereAction.Text = "Aucun compte."; return; }
+        _contexte.Interception.Ajouter(new BotDofus.Divers.Interception.RegleInterception
+        {
+            Nom = "observe-G",
+            Prefixe = "G",
+            Transformateur = (c, d) =>
+            {
+                BotDofus.Utilitaires.Journaux.Journaliseur.Info(
+                    $"[OBS {(d == BotDofus.Commun.Reseau.DirectionPaquet.VersServeur ? "C2S" : "S2C")}] {c}");
+                return BotDofus.Divers.Interception.ResultatInterception.Laisser;
+            }
+        });
+        RafraichirRegles();
+        TxtDerniereAction.Text = "Preset 'observe-G' ajouté (log tous les paquets jeu).";
+    }
+
+    private void BtnPresetDropPing_Click(object sender, RoutedEventArgs e)
+    {
+        if (_contexte == null) { TxtDerniereAction.Text = "Aucun compte."; return; }
+        var prefixe = TxtPaquetBrut?.Text?.Trim();
+        if (string.IsNullOrWhiteSpace(prefixe))
+        {
+            TxtDerniereAction.Text = "Tape un préfixe dans 'PAQUET BRUT' d'abord (ex: ping).";
+            return;
+        }
+        _contexte.Interception.Ajouter(new BotDofus.Divers.Interception.RegleInterception
+        {
+            Nom = $"drop-{prefixe}",
+            Prefixe = prefixe,
+            Transformateur = (_, _) => BotDofus.Divers.Interception.ResultatInterception.Supprimer,
+        });
+        RafraichirRegles();
+        TxtDerniereAction.Text = $"Preset 'drop-{prefixe}' ajouté (supprime les paquets {prefixe}*).";
+    }
+
+    private void BtnInterceptVider_Click(object sender, RoutedEventArgs e)
+    {
+        _contexte?.Interception.Vider();
+        RafraichirRegles();
+        TxtDerniereAction.Text = "Toutes les règles d'interception retirées.";
+    }
+
+    private void BtnInterceptRafraichir_Click(object sender, RoutedEventArgs e) => RafraichirRegles();
 
     private void OnPaquetRecu(object? sender, EvenementPaquetRecu e)
     {
