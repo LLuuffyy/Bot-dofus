@@ -149,11 +149,11 @@ public partial class MainWindow : Window
 
         var actuel = _contexteSelectionne.Compte.ServeurPrefere > 0
             ? _contexteSelectionne.Compte.ServeurPrefere.ToString()
-            : "601";
+            : "2";
 
-        // Hystoria n'a qu'un serveur (id=601). Dialog WPF custom, pas le VB InputBox qui rend mal.
+        // Aqua = serveur id 2 (vu dans le AH : "AH2;1;10;1|..."). Dialog WPF custom.
         var saisie = SaisieDialog.Demander(this, "Choix serveur",
-            $"ID du serveur préféré pour {_contexteSelectionne.Compte.Identifiant}\n(Hystoria = 601) :", actuel);
+            $"ID du serveur préféré pour {_contexteSelectionne.Compte.Identifiant}\n(Aqua = 2) :", actuel);
 
         if (string.IsNullOrWhiteSpace(saisie)) return;
         if (!int.TryParse(saisie, out var idServeur) || idServeur <= 0)
@@ -304,7 +304,7 @@ public partial class MainWindow : Window
         {
             _contexteSelectionne?.ArreterProxy();
             NettoyerPatchEtHosts();
-            Journaliseur.Info("[UI] Deconnexion demandee : proxy arrete, core.swf/hosts nettoyes");
+            Journaliseur.Info("[UI] Deconnexion demandee : proxy arrete, config.xml/portproxy nettoyes");
             RafraichirStatsHeader();
         }
         catch (Exception ex)
