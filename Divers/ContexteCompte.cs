@@ -121,16 +121,15 @@ public sealed class ContexteCompte : IDisposable
         Api.LierSession(session);
         InstallerInterceptionAyk(session);
 
-        if (ModePassif)
-        {
-            Journaliseur.Info($"Contexte {Compte.Identifiant} : session attachée en MODE PASSIF (relais pur, aucune trame active)");
-        }
-        else
-        {
-            // Démarre sur l'état d'authentification
-            Trames.RemplacerTrame(new TrameAuthentification(Repartiteur, Compte, session));
-            Journaliseur.Info($"Contexte {Compte.Identifiant} : session attachée, TrameAuthentification activée");
-        }
+        // IMPORTANT (modèle MITM-avec-vrai-client Abrak) : le VRAI client Dofus
+        // fait l'authentification. Le bot ne DOIT JAMAIS installer
+        // TrameAuthentification, même en mode actif : il injecterait ses propres
+        // paquets d'auth en parallèle du client → handshake corrompu, le serveur
+        // répond AlEv1.48.0 (« Connexion refusée : code v »). Le mode actif
+        // n'active QUE l'humaniseur + l'autorisation d'injection (cf. ModePassif),
+        // jamais le self-login. La session auth reste en simple observation.
+        Journaliseur.Info($"Contexte {Compte.Identifiant} : session auth attachée (observation — auth gérée par le client)"
+            + (ModePassif ? " [PASSIF]" : " [ACTIF : injection autorisée, humaniseur ON]"));
 
         SessionAttachee?.Invoke(this, session);
     }
@@ -140,14 +139,12 @@ public sealed class ContexteCompte : IDisposable
         SessionJeuActive = session;
         Api.LierSession(session);
 
-        if (ModePassif)
-        {
-            Trames.RemplacerTrame(new TrameJeu(Repartiteur, Compte, EtatJeu, session));
-        }
-        else
-        {
-            Trames.RemplacerTrame(new TrameSelectionPersonnage(Repartiteur, Compte, session, Compte.PersonnagePrefere));
-        }
+        // TOUJOURS TrameJeu (observation + parseurs combat/entités), que l'on
+        // soit passif ou actif : le client réel gère sélection perso/serveur.
+        // TrameSelectionPersonnage injecterait des paquets de sélection en
+        // doublon du client → kick. Le mode actif change seulement l'humaniseur
+        // et l'autorisation d'injection (boutons UI / IA), pas la trame.
+        Trames.RemplacerTrame(new TrameJeu(Repartiteur, Compte, EtatJeu, session));
 
         // Détecteur staff branché sur la session jeu (pour observer les paquets Im).
         DetecteurStaff.LierSession(session);
@@ -189,18 +186,10 @@ public sealed class ContexteCompte : IDisposable
 
     private void OnEtatCompteChange(object? sender, Enums.EtatsCompte etat)
     {
-        if (ModePassif)
-        {
-            return;
-        }
-
-        if (etat == Enums.EtatsCompte.SelectionServeur && SessionAuthActive != null &&
-            Trames.TrameActive is not TrameSelectionServeur)
-        {
-            Trames.RemplacerTrame(new TrameSelectionServeur(Repartiteur, Compte, SessionAuthActive, Compte.ServeurPrefere));
-            return;
-        }
-
+        // Modèle MITM-avec-client : on ne swappe JAMAIS vers des trames qui
+        // injectent (TrameSelectionServeur/Authentification) — le vrai client
+        // pilote login/sélection. On garantit juste TrameJeu (observation +
+        // parseurs combat) sur la session jeu, en passif comme en actif.
         if (etat == Enums.EtatsCompte.EnJeu && SessionJeuActive != null &&
             Trames.TrameActive is not TrameJeu)
         {
