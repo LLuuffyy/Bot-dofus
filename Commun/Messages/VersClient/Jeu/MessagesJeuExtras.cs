@@ -129,15 +129,29 @@ public sealed class MessageTourCombatAbrak : MessageDofus, IMessageVersClient
     public override DirectionPaquet Direction => DirectionPaquet.VersClient;
     public int IdentifiantCombattant { get; private set; }
     public int NumeroTour { get; private set; }
+    /// <summary>false pour les paquets GTSX (liste de sorts) qui partagent le
+    /// préfixe "GTS" mais ne sont PAS un changement de tour.</summary>
+    public bool EstTour { get; private set; }
 
     public override void Desserialiser(string charge)
     {
         Charge = charge;
+        // GTSX… = sorts d'un combattant, PAS un tour → on ignore.
+        if (charge.StartsWith("X", StringComparison.Ordinal))
+        {
+            EstTour = false;
+            return;
+        }
         var p = charge.Split('|');
-        int.TryParse(p.ElementAtOrDefault(0), out var cid);
+        if (!int.TryParse(p.ElementAtOrDefault(0), out var cid))
+        {
+            EstTour = false;
+            return;
+        }
         IdentifiantCombattant = cid;
         int.TryParse(p.ElementAtOrDefault(2), out var nt);
         NumeroTour = nt;
+        EstTour = true;
     }
 }
 

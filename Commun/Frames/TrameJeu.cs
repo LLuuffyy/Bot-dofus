@@ -97,6 +97,7 @@ public sealed class TrameJeu : TrameBase
         Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageCombattantsAbrak>(OnCombattantsAbrak);
         Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageTourCombatAbrak>(msg =>
         {
+            if (!msg.EstTour) return; // GTSX (sorts) — pas un tour
             _etat.Combat.IdentifiantAllie = _etat.Personnage.Identifiant;
             _etat.Combat.PassageEnCombat();
             _etat.Combat.NouveauTour(msg.IdentifiantCombattant);
