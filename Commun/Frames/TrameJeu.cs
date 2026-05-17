@@ -62,6 +62,11 @@ public sealed class TrameJeu : TrameBase
         Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageFinCombat>(_ =>
         {
             _etat.Combat.Reinitialiser();
+            // Purge les combattants affichés sur la grille (sinon ils
+            // restent collés après le combat — l'overworld n'a pas d'entités
+            // en clair de toute façon).
+            _etat.CarteCourante?.Entites.Clear();
+            _etat.CarteCourante?.SignalerRechargee();
             _compte.ChangerEtat(EtatsCompte.EnJeu);
             Journaliseur.Info("[COMBAT] Combat terminé");
         });
@@ -126,6 +131,35 @@ public sealed class TrameJeu : TrameBase
             existant.PVMax = c.PvMax;
             existant.EstMort = !c.Vivant;
         }
+
+        // Affichage sur la GRILLE Carte : en combat, GTM donne les cellules
+        // (en clair) — on peuple carte.Entites pour que les combattants
+        // s'affichent enfin sur la map (overworld reste chiffré, mais le
+        // combat NON). Monstres = id < 0, joueurs = id > 0.
+        var carte = _etat.CarteCourante;
+        if (carte != null)
+        {
+            foreach (var c in msg.Combattants)
+            {
+                if (!c.Vivant) { carte.Entites.Remove(c.Id); continue; }
+                if (c.Cellule <= 0) continue;
+                if (c.Id < 0)
+                    carte.Entites[c.Id] = new EntiteMonstre
+                    {
+                        Identifiant = c.Id, CellulePosition = c.Cellule,
+                        Nom = $"Monstre {c.Id}", NiveauGroupe = 0
+                    };
+                else
+                    carte.Entites[c.Id] = new EntiteJoueur
+                    {
+                        Identifiant = c.Id, CellulePosition = c.Cellule,
+                        Nom = c.Id == _etat.Personnage.Identifiant ? _etat.Personnage.Nom : $"Joueur {c.Id}"
+                    };
+            }
+            carte.SignalerRechargee();
+        }
+
+        _etat.Combat.SignalerCombattantsMaj();
 
         int vivants = msg.Combattants.Count(x => x.Vivant);
         Journaliseur.Info(

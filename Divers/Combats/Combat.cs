@@ -67,6 +67,12 @@ public sealed class Combat
         PositionsChangees?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>
+    /// À appeler après mise à jour des combattants (parseur GTM Abrak) pour
+    /// rafraîchir les vues (onglet Combat, grille Carte) sans changement d'état.
+    /// </summary>
+    public void SignalerCombattantsMaj() => PositionsChangees?.Invoke(this, EventArgs.Empty);
+
     public bool EstMonTour => IdentifiantCombattantActuel == IdentifiantAllie
                             && Etat == EtatCombat.EnCours;
 
