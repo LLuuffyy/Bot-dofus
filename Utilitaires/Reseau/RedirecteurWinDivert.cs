@@ -88,6 +88,10 @@ public sealed class RedirecteurWinDivert : IDisposable
         using var packet = new WinDivertPacket();
         using var addr = new WinDivertAddress();
 
+        int diag = 0;          // nb de paquets loggués en détail
+        int errRecv = 0;       // nb d'erreurs Recv loggées
+        long recus = 0;
+
         while (_actif && _divert != null)
         {
             int len;
@@ -95,29 +99,34 @@ public sealed class RedirecteurWinDivert : IDisposable
             {
                 len = _divert.Recv(packet, addr);
             }
-            catch (Exception)
+            catch (Exception exr)
             {
                 if (!_actif) break;
+                if (errRecv++ < 3)
+                    Journaliseur.Avertir($"[WD] Recv erreur ({exr.GetType().Name}): {exr.Message}");
+                Thread.Sleep(5);
                 continue;
             }
 
+            recus++;
             try
             {
                 var res = packet.GetParseResult();
                 if (res.IPV4Header == null || res.TcpHeader == null)
                 {
+                    if (diag < 20) Journaliseur.Info($"[WD] #{recus} non-IPv4/TCP, relayé tel quel");
                     _divert.Send(packet, addr);
                     continue;
                 }
 
                 var ip = res.IPV4Header;
+                var tcp = res.TcpHeader;
                 bool sortant = addr.Flags.HasFlag(WinDivertAddressFlag.Outbound);
+                var avant = $"{ip->SrcAddr}:{tcp->SrcPort} → {ip->DstAddr}:{tcp->DstPort}";
 
                 IPAddress nouvelleDst;
                 if (sortant)
                 {
-                    // Client → serveur réel : on mémorise l'IP réelle du client et on
-                    // bascule en loopback pur vers notre proxy local.
                     _ipClient ??= ip->SrcAddr;
                     ip->SrcAddr = Loopback;
                     ip->DstAddr = Loopback;
@@ -125,33 +134,34 @@ public sealed class RedirecteurWinDivert : IDisposable
                 }
                 else
                 {
-                    // Réponse proxy(127.0.0.1) → client : la pile TCP du client a
-                    // appelé connect(51.89.153.20) → elle n'accepte la réponse que
-                    // si elle vient de cette IP. On restaure src=serveur, dst=client.
                     ip->SrcAddr = _ipServeurAddr;
                     ip->DstAddr = _ipClient ?? ip->DstAddr;
                     nouvelleDst = _ipClient ?? ip->DstAddr;
                 }
 
-                // WinDivertRouter recalcule IfIdx + flags Outbound/Loopback pour la
-                // nouvelle destination → c'est CE point qui rend le loopback fiable
-                // (vs WinDivert 1.4 qui échouait en "serveur introuvable").
-                try
-                {
-                    new WinDivertRouter(nouvelleDst).ApplyToAddress(addr);
-                }
-                catch { /* route introuvable : on tente l'envoi tel quel */ }
+                bool routerOk = true;
+                try { new WinDivertRouter(nouvelleDst).ApplyToAddress(addr); }
+                catch (Exception exrt) { routerOk = false; if (diag < 20) Journaliseur.Avertir($"[WD] Router KO ({exrt.Message})"); }
 
                 packet.CalcChecksums(addr, ChecksumsFlag.All);
-                _divert.Send(packet, addr);
+                int envoye = _divert.Send(packet, addr);
+
+                if (diag++ < 20)
+                {
+                    Journaliseur.Info($"[WD] #{recus} {(sortant ? "OUT" : "IN ")} {avant} " +
+                        $"→ {ip->SrcAddr}:{tcp->SrcPort}→{ip->DstAddr}:{tcp->DstPort} " +
+                        $"routeur={(routerOk ? "ok" : "KO")} envoyé={envoye}o");
+                }
                 PaquetsRediriges++;
             }
             catch (Exception ex)
             {
-                Journaliseur.Avertir($"[WD] Paquet ignoré : {ex.Message}");
+                if (diag < 20) Journaliseur.Avertir($"[WD] Paquet #{recus} ignoré : {ex.GetType().Name} {ex.Message}");
                 try { _divert.Send(packet, addr); } catch { }
             }
         }
+
+        Journaliseur.Info($"[WD] Boucle terminée ({recus} reçus, {PaquetsRediriges} redirigés).");
     }
 
     public void Arreter()
