@@ -27,6 +27,11 @@ public sealed class TrameJeu : TrameBase
     private readonly EtatJeu _etat;
     private readonly SessionProxy _session;
 
+    // Anti-spam logs : acteurs déjà annoncés, et dernier état de combat loggué.
+    private readonly System.Collections.Generic.HashSet<int> _acteursVus = new();
+    private int _dernierNbVivants = -1;
+    private int _dernierNbCombattants = -1;
+
     public TrameJeu(Repartiteur repartiteur, Compte compte, EtatJeu etat, SessionProxy session)
         : base(repartiteur)
     {
@@ -62,6 +67,8 @@ public sealed class TrameJeu : TrameBase
         Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageFinCombat>(_ =>
         {
             _etat.Combat.Reinitialiser();
+            _dernierNbVivants = -1;
+            _dernierNbCombattants = -1;
             // Purge les combattants affichés sur la grille (sinon ils
             // restent collés après le combat — l'overworld n'a pas d'entités
             // en clair de toute façon).
@@ -84,12 +91,13 @@ public sealed class TrameJeu : TrameBase
         Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageActeurAbrak>(msg =>
         {
             foreach (var a in msg.Spawns)
-                Journaliseur.Info($"[ENT] acteur Abrak vu : « {a.Nom} » niv {a.Niveau} (#{a.Id})");
+                if (_acteursVus.Add(a.Id)) // 1 ligne par acteur (anti-spam NLK/Nx)
+                    Journaliseur.Info($"[ENT] acteur Abrak vu : « {a.Nom} » niv {a.Niveau} (#{a.Id})");
             foreach (var id in msg.Despawns)
-                Journaliseur.Info($"[ENT] acteur Abrak parti : #{id}");
+                Journaliseur.Debogue($"[ENT] acteur Abrak parti : #{id}");
         });
         Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageActeurAbrakRetrait>(msg =>
-            Journaliseur.Info($"[ENT] acteur Abrak parti : #{msg.Identifiant}"));
+            Journaliseur.Debogue($"[ENT] acteur Abrak parti : #{msg.Identifiant}"));
 
         // === COMBAT ABRAK EN CLAIR : positions des combattants ===
         // GTM = liste combattants+cellules ; GTS = à qui le tour. C'est ICI
@@ -165,10 +173,17 @@ public sealed class TrameJeu : TrameBase
         _etat.Combat.SignalerCombattantsMaj();
 
         int vivants = msg.Combattants.Count(x => x.Vivant);
-        Journaliseur.Info(
-            $"[COMBAT] {msg.Combattants.Count} combattant(s) ({vivants} vivants) — "
-            + $"alliés={_etat.Combat.Allies.Count} ennemis={_etat.Combat.Ennemis.Count} "
-            + $"| cellules: {string.Join(",", msg.Combattants.Select(x => $"#{x.Id}@{x.Cellule}"))}");
+        // Anti-spam : GTM arrive à CHAQUE tour avec souvent la même compo.
+        // On ne loggue le détail que si la composition change (mort, arrivée).
+        if (vivants != _dernierNbVivants || msg.Combattants.Count != _dernierNbCombattants)
+        {
+            _dernierNbVivants = vivants;
+            _dernierNbCombattants = msg.Combattants.Count;
+            Journaliseur.Info(
+                $"[COMBAT] {msg.Combattants.Count} combattant(s) ({vivants} vivants) — "
+                + $"alliés={_etat.Combat.Allies.Count} ennemis={_etat.Combat.Ennemis.Count} "
+                + $"| cellules: {string.Join(",", msg.Combattants.Select(x => $"#{x.Id}@{x.Cellule}"))}");
+        }
     }
 
     private void OnSelectionPersonnage(MessageSelectionPersonnage msg)
