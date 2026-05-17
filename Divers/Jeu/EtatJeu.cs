@@ -22,23 +22,34 @@ public sealed class EtatJeu
 
     public void ChangerCarte(int identifiant, string? dateVersion = null, string? clefCarte = null)
     {
-        var carte = new Carte(identifiant);
-        CarteCourante = carte;
+        Carte carte;
         Personnage.CarteCourante = identifiant;
 
-        // Décodage du terrain réel : déchiffre la data GDM puis applique les types cellules.
+        // Décodage du terrain réel : on lit d'ABORD les dimensions (width/height)
+        // dans le SWF, on déchiffre, puis on alloue la carte à la BONNE taille
+        // avec la BONNE largeur (sinon id→(x,y) est faux → carte « rien à voir »).
         if (!string.IsNullOrEmpty(dateVersion) && !string.IsNullOrEmpty(clefCarte))
         {
             try
             {
-                var mapDataChiffree = ChargeurMapLocale.ChargerMapData(identifiant, dateVersion);
-                var clair = !string.IsNullOrEmpty(mapDataChiffree)
-                    ? DechiffreurCarte.DechiffrerDonneesMap(mapDataChiffree, clefCarte)
+                var infos = ChargeurMapLocale.ChargerInfos(identifiant, dateVersion);
+                var clair = !string.IsNullOrEmpty(infos.MapData)
+                    ? DechiffreurCarte.DechiffrerDonneesMap(infos.MapData, clefCarte)
                     : DechiffreurCarte.Dechiffrer(clefCarte, dateVersion);
+
+                int nbCells = !string.IsNullOrEmpty(clair)
+                    ? clair.Length / 10
+                    : Carte.NombreCellules(infos.Largeur, infos.Hauteur);
+
+                carte = new Carte(identifiant, infos.Largeur, infos.Hauteur, nbCells);
+                CarteCourante = carte;
+
                 if (!string.IsNullOrEmpty(clair))
                 {
                     var n = DecompresseurMapData.Appliquer(carte, clair);
-                    Journaliseur.Info($"[CARTE] {identifiant} : terrain décodé ({n}/{carte.Cellules.Length} cellules)");
+                    Journaliseur.Info(
+                        $"[CARTE] {identifiant} : terrain décodé ({n}/{carte.Cellules.Length} cellules, " +
+                        $"{carte.Largeur}×{carte.Hauteur})");
                 }
                 else
                 {
@@ -48,7 +59,14 @@ public sealed class EtatJeu
             catch (Exception ex)
             {
                 Journaliseur.Avertir($"[CARTE] {identifiant} : échec décodage terrain ({ex.Message})");
+                carte = new Carte(identifiant);
+                CarteCourante = carte;
             }
+        }
+        else
+        {
+            carte = new Carte(identifiant);
+            CarteCourante = carte;
         }
 
         CarteChangee?.Invoke(this, carte);

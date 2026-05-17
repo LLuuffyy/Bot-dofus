@@ -11,13 +11,17 @@ namespace BotDofus.Divers.Cartes;
 /// </summary>
 public sealed class Carte
 {
-    public const int LargeurParDefaut = 14;
-    public const int HauteurParDefaut = 20;
-    public const int NombreCellulesParDefaut = 560;
+    // Carte Dofus 1.29 standard : 15 large × 17 haut. Le nombre de cellules
+    // d'une carte vaut W·H + (W-1)·(H-1) → 15·17 + 14·16 = 479 (et NON 560).
+    public const int LargeurParDefaut = 15;
+    public const int HauteurParDefaut = 17;
+    public static int NombreCellules(int largeur, int hauteur)
+        => largeur * hauteur + (largeur - 1) * (hauteur - 1);
+    public const int NombreCellulesParDefaut = 479;
 
     public int Identifiant { get; }
-    public int Largeur { get; set; } = LargeurParDefaut;
-    public int Hauteur { get; set; } = HauteurParDefaut;
+    public int Largeur { get; set; }
+    public int Hauteur { get; set; }
     public Cellule[] Cellules { get; }
     public Dictionary<int, Entite> Entites { get; } = new();
 
@@ -25,13 +29,27 @@ public sealed class Carte
 
     public event EventHandler? Rechargee;
 
-    public Carte(int identifiant, int nombreCellules = NombreCellulesParDefaut)
+    public Carte(int identifiant)
+        : this(identifiant, LargeurParDefaut, HauteurParDefaut, NombreCellulesParDefaut)
+    {
+    }
+
+    /// <summary>
+    /// Construit une carte avec ses dimensions RÉELLES (lues dans le SWF).
+    /// <paramref name="largeur"/> pilote la conversion id → (x,y) de chaque
+    /// cellule : une largeur fausse décale toute la géométrie.
+    /// </summary>
+    public Carte(int identifiant, int largeur, int hauteur, int nombreCellules)
     {
         Identifiant = identifiant;
+        Largeur = largeur > 0 ? largeur : LargeurParDefaut;
+        Hauteur = hauteur > 0 ? hauteur : HauteurParDefaut;
+        if (nombreCellules <= 0) nombreCellules = NombreCellules(Largeur, Hauteur);
+
         Cellules = new Cellule[nombreCellules];
         for (int i = 0; i < nombreCellules; i++)
         {
-            Cellules[i] = new Cellule(i, TypesCellule.Marchable);
+            Cellules[i] = new Cellule(i, TypesCellule.Marchable, Largeur);
         }
 
         MarquerBordsCommeTransitions();
