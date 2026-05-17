@@ -27,6 +27,24 @@ public partial class App : Application
         };
     }
 
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        // Mode CLI de validation parsers : Luffy-bot.exe --testparsers
+        // Affiche le résultat dans une MessageBox + console puis quitte.
+        // Réutilisable pour démontrer la maîtrise du protocole en soutenance.
+        if (e.Args.Contains("--testparsers"))
+        {
+            var rapport = BotDofus.Commun.Messages.ValidateurParsers.ExecuterTout();
+            try { Console.WriteLine(rapport); } catch { }
+            MessageBox.Show(rapport, "Luffy-bot — Validation parsers Aqua 1.39",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            Shutdown(0);
+            return;
+        }
+
+        base.OnStartup(e);
+    }
+
     private static void AfficherCrash(string titre, Exception? ex)
     {
         // Walk la chaîne InnerException pour voir la vraie cause sous une

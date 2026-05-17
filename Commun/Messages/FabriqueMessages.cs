@@ -108,6 +108,7 @@ public static class FabriqueMessages
         EnregistrerVersClient<VersClient.Authentification.MessageCommunaute>("AV");
         EnregistrerVersClient<VersClient.Authentification.MessageQuestion>("AQ");
         EnregistrerVersClient<VersClient.Authentification.MessageListeServeurs>("AxK");
+        EnregistrerVersClient<VersClient.Authentification.MessageServeursDisponibles>("AH");
         EnregistrerVersClient<VersClient.Authentification.MessageHoteChiffre>("AYK");
         EnregistrerVersClient<VersClient.Authentification.MessageTicket>("ATK");
         EnregistrerVersClient<VersClient.Authentification.MessageListePersonnages>("ALK");

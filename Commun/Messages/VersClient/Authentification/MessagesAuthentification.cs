@@ -112,6 +112,41 @@ public sealed class MessageListeServeurs : MessageDofus, IMessageVersClient
 }
 
 /// <summary>
+/// AH : liste des serveurs présentée au login (Dofus Retro 1.39 / Aqua).
+/// Format observé : <c>AH&lt;id&gt;;&lt;etat&gt;;&lt;completion&gt;;&lt;selectionnable&gt;|...</c>
+/// (ex. <c>AH2;1;10;1|4;0;10;0|100;0;10;0</c> — serveur 2 (Aqua) en ligne et sélectionnable).
+/// </summary>
+public sealed class MessageServeursDisponibles : MessageDofus, IMessageVersClient
+{
+    public override string Prefixe => "AH";
+    public override DirectionPaquet Direction => DirectionPaquet.VersClient;
+    public IReadOnlyList<InfoServeurAccueil> Serveurs { get; private set; } = Array.Empty<InfoServeurAccueil>();
+
+    public override void Desserialiser(string charge)
+    {
+        Charge = charge;
+        var liste = new List<InfoServeurAccueil>();
+        foreach (var bloc in charge.Split('|', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var p = bloc.Split(';');
+            if (p.Length < 2) continue;
+            int.TryParse(p[0], out var id);
+            int.TryParse(p[1], out var etat);
+            int completion = p.Length > 2 && int.TryParse(p[2], out var c) ? c : 0;
+            bool selectionnable = p.Length > 3 && p[3] == "1";
+            liste.Add(new InfoServeurAccueil(id, etat, completion, selectionnable));
+        }
+        Serveurs = liste;
+    }
+
+    public readonly record struct InfoServeurAccueil(
+        int Identifiant, int EtatBrut, int Completion, bool Selectionnable)
+    {
+        public bool EnLigne => EtatBrut == 1;
+    }
+}
+
+/// <summary>
 /// AYK : redirect vers le serveur de jeu après login validé.
 /// Format observé sur Hystoria : <c>AYK&lt;ip&gt;:&lt;port&gt;;&lt;ticket&gt;</c>
 /// (ex. <c>AYK162.19.127.155:5555;7504</c>) — IP en clair, pas de cryptedIp/Port.

@@ -338,7 +338,17 @@ public sealed class SessionProxy : IDisposable
             }
         }
 
-        PaquetRecu?.Invoke(this, new EvenementPaquetRecu(paquet));
+        // Défensif : un handler (parser, vue UI, script Lua) qui throw ne doit JAMAIS
+        // tuer la boucle relai — sinon la session Dofus est coupée pour un simple bug
+        // d'affichage. On isole chaque invocation.
+        try
+        {
+            PaquetRecu?.Invoke(this, new EvenementPaquetRecu(paquet));
+        }
+        catch (Exception ex)
+        {
+            Journaliseur.Avertir($"[RELAI] Handler PaquetRecu a levé {ex.GetType().Name} (ignoré) : {ex.Message}");
+        }
     }
 
     private string ChiffrerSiNecessaire(string message, DirectionPaquet direction)
