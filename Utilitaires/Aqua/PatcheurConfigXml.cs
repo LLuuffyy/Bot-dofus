@@ -46,7 +46,10 @@ public sealed class PatcheurConfigXml
     public int PortLocal { get; }
 
     /// <summary>Délai d'attente avant restauration du fichier (le client doit avoir lu).</summary>
-    public TimeSpan DelaiRestoreApresLancement { get; set; } = TimeSpan.FromSeconds(15);
+    // Le launcher Abrak (Electron + Chromium + Flash) est lent à booter : il peut
+    // mettre 30-50s avant de lire config.xml. Si on restaure trop tôt, il lit la
+    // version d'origine et se connecte au vrai serveur. 60s = marge confortable.
+    public TimeSpan DelaiRestoreApresLancement { get; set; } = TimeSpan.FromSeconds(60);
 
     public PatcheurConfigXml(string ipLocale = "127.0.0.1", int portLocal = 1303, string? cheminConfig = null)
     {
