@@ -137,7 +137,17 @@ public sealed class TrameJeu : TrameBase
     private void OnMouvementCarte(MessageMouvementCarte msg)
     {
         var carte = _etat.CarteCourante;
-        if (carte == null) return;
+        if (carte == null)
+        {
+            Journaliseur.Avertir($"[ENT] GM reçu mais CarteCourante==null (entrées={msg.Entrees.Count}) — entités perdues");
+            return;
+        }
+
+        // Diagnostic Abrak : GM brut + nb d'entrées parsées. Permet de voir si le
+        // format match le parseur (cellule;type;...;id;nom;...).
+        var brut = msg.Charge ?? string.Empty;
+        Journaliseur.Info(
+            $"[ENT] GM {msg.Entrees.Count} entrée(s) | brut={(brut.Length > 180 ? brut[..180] + "…" : brut)}");
 
         foreach (var entree in msg.Entrees)
         {
@@ -213,6 +223,13 @@ public sealed class TrameJeu : TrameBase
                 };
             }
         }
+
+        int nbJ = carte.Entites.Values.Count(e => e is EntiteJoueur);
+        int nbM = carte.Entites.Values.Count(e => e is EntiteMonstre);
+        int nbP = carte.Entites.Values.Count(e => e is EntitePNJ);
+        Journaliseur.Info(
+            $"[ENT] carte #{carte.Identifiant} → {carte.Entites.Count} entité(s) " +
+            $"(J={nbJ} M={nbM} P={nbP}), perso cell={_etat.Personnage.CellulePosition?.ToString() ?? "?"}");
     }
 
     private void OnInfoMessage(MessageInfoMessage msg)
