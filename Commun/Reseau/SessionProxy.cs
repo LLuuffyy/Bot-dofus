@@ -312,7 +312,7 @@ public sealed class SessionProxy : IDisposable
     private static readonly string[] PrefixesDiagnostic =
     {
         "HC", "Af", "AH", "AT", "AYK", "AL", "Ad", "Ax", "As", "ASK", "AA", "AB", "AG",
-        "GS", "GE", "GDM", "GJ", "GP", "GT", "GC"
+        "GS", "GE", "GDM", "GJ", "GP", "GT", "GC", "GM"
     };
 
     private void EmettrePaquet(string contenu, DirectionPaquet direction)

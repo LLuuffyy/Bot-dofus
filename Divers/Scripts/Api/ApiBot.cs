@@ -40,6 +40,21 @@ public sealed class ApiBot
     /// <summary>Lie l'API à la session MITM active (appelée quand le client se connecte).</summary>
     public void LierSession(SessionProxy session) => _session = session;
 
+    /// <summary>
+    /// Point d'envoi UNIQUE pour TOUT paquet initié par le bot. Passe
+    /// systématiquement par la garde anti-burst <see cref="Humaniseur"/> :
+    /// en mode passif elle ne fait rien, en mode actif elle impose un délai
+    /// humain (jitter) entre deux actions → pas de pattern métronomique
+    /// détectable côté serveur. C'EST le point de furtivité de l'examen :
+    /// aucune méthode ne doit envoyer au serveur en court-circuitant ceci.
+    /// </summary>
+    private async Task EnvoyerHumaniseAsync(string paquet, CancellationToken ct)
+    {
+        if (_session is null || string.IsNullOrWhiteSpace(paquet)) return;
+        await Humaniseur.RespecterCadenceAsync(ct).ConfigureAwait(false);
+        await _session.EnvoyerAuServeurAsync(paquet, ct).ConfigureAwait(false);
+    }
+
     /// <summary>Déplace le personnage vers une carte adjacente (si une direction est donnée).</summary>
     public async Task SeDeplacerVersCarteAsync(string idCarte, string? direction, CancellationToken ct)
     {
@@ -90,7 +105,7 @@ public sealed class ApiBot
 
         string paquet = Pathfinder.PaquetDeplacement(chemin);
         Journaliseur.Info($"API.SeDeplacerVersCellule : chemin {chemin.Count} cellules, packet={paquet[..Math.Min(paquet.Length, 60)]}...");
-        await _session.EnvoyerAuServeurAsync(paquet, ct).ConfigureAwait(false);
+        await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
         return true;
     }
 
@@ -100,14 +115,13 @@ public sealed class ApiBot
         if (_session is null) return;
         Journaliseur.Debogue($"API.ParlerAuPNJ #{idPNJ}");
 
-        await _session.EnvoyerAuServeurAsync(new MessageDialogueDebuter { IdentifiantPNJ = idPNJ }.Serialiser(), ct).ConfigureAwait(false);
+        await EnvoyerHumaniseAsync(new MessageDialogueDebuter { IdentifiantPNJ = idPNJ }.Serialiser(), ct).ConfigureAwait(false);
 
         if (reponses is null) return;
         foreach (var reponse in reponses)
         {
-            await Task.Delay(400, ct).ConfigureAwait(false);
             var choix = reponse == -1 ? 1 : reponse;
-            await _session.EnvoyerAuServeurAsync(new MessageDialogueReponse { IdentifiantReponse = choix }.Serialiser(), ct).ConfigureAwait(false);
+            await EnvoyerHumaniseAsync(new MessageDialogueReponse { IdentifiantReponse = choix }.Serialiser(), ct).ConfigureAwait(false);
         }
     }
 
@@ -133,8 +147,7 @@ public sealed class ApiBot
     /// <summary>Envoie un message sur un canal de chat.</summary>
     public async Task EnvoyerMessageAsync(string canal, string texte, CancellationToken ct = default)
     {
-        if (_session is null) return;
-        await _session.EnvoyerAuServeurAsync(new MessageChatEnvoyer
+        await EnvoyerHumaniseAsync(new MessageChatEnvoyer
         {
             Canal = canal,
             Texte = texte
@@ -148,26 +161,20 @@ public sealed class ApiBot
     /// <summary>Envoie un paquet brut au serveur depuis les outils UI / scripts.</summary>
     public async Task EnvoyerPaquetBrutAsync(string paquet, CancellationToken ct = default)
     {
-        if (_session is null || string.IsNullOrWhiteSpace(paquet)) return;
-        // Garde anti-burst : si le bot injecte tout seul (mode actif), on espace
-        // les envois de manière humaine pour ne pas produire de pattern détectable.
-        await Humaniseur.RespecterCadenceAsync(ct).ConfigureAwait(false);
-        await _session.EnvoyerAuServeurAsync(paquet.Trim(), ct).ConfigureAwait(false);
+        await EnvoyerHumaniseAsync(paquet.Trim(), ct).ConfigureAwait(false);
     }
 
     /// <summary>Fin de tour en combat.</summary>
     public async Task FinirTourAsync(CancellationToken ct = default)
     {
-        if (_session is null) return;
-        await _session.EnvoyerAuServeurAsync(new MessageJeuFinirTour().Serialiser(), ct).ConfigureAwait(false);
+        await EnvoyerHumaniseAsync(new MessageJeuFinirTour().Serialiser(), ct).ConfigureAwait(false);
     }
 
     /// <summary>Placement initial en combat.</summary>
     public async Task SePlacerEnCombatAsync(int celluleDepart, CancellationToken ct = default)
     {
-        if (_session is null) return;
-        await _session.EnvoyerAuServeurAsync(new MessageJeuPosition { CaseDepart = celluleDepart }.Serialiser(), ct).ConfigureAwait(false);
-        await _session.EnvoyerAuServeurAsync(new MessageJeuPret { Pret = true }.Serialiser(), ct).ConfigureAwait(false);
+        await EnvoyerHumaniseAsync(new MessageJeuPosition { CaseDepart = celluleDepart }.Serialiser(), ct).ConfigureAwait(false);
+        await EnvoyerHumaniseAsync(new MessageJeuPret { Pret = true }.Serialiser(), ct).ConfigureAwait(false);
     }
 
     /// <summary>Récupère le pseudo du personnage actif (exposable aux scripts Lua).</summary>
