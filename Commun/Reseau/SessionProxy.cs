@@ -315,10 +315,28 @@ public sealed class SessionProxy : IDisposable
         "GS", "GE", "GDM", "GJ", "GP", "GT", "GC", "GM"
     };
 
+    // Diagnostic Abrak : on logge UNE SEULE FOIS chaque type de paquet vu
+    // (préfixe), dans chaque sens. Révèle tout le vocabulaire réseau réel
+    // d'Abrak (dont LE paquet qui porte les entités/acteurs map) sans spam.
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte> _vocabVu = new();
+
     private void EmettrePaquet(string contenu, DirectionPaquet direction)
     {
         var paquet = new PaquetBrut(direction, contenu);
         Journaliseur.Trace(paquet.ToString());
+
+        if (contenu.Length >= 2)
+        {
+            // Clé = sens + préfixe 3 chars (ou 2 si plus court).
+            var pfx = contenu.Length >= 3 ? contenu[..3] : contenu[..2];
+            var cle = (direction == DirectionPaquet.VersClient ? "S>" : "C>") + pfx;
+            if (_vocabVu.TryAdd(cle, 1))
+            {
+                var fleche = direction == DirectionPaquet.VersClient ? "S→C" : "C→S";
+                var apercu = contenu.Length > 120 ? contenu[..120] + "…" : contenu;
+                Journaliseur.Info($"[VOCAB {fleche}] {apercu}");
+            }
+        }
 
         // Log Info pour les paquets de bootstrap de session (HC challenge, file d'attente,
         // liste serveurs, redirect AYK, sélection perso, etc.) — c'est ce qu'on veut voir
