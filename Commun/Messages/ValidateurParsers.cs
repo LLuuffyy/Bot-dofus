@@ -177,6 +177,48 @@ public static class ValidateurParsers
         Check("find/replace passthrough", r6 == null, $"résultat='{r6 ?? "null"}'");
 
         sb.AppendLine($"=== {ok}/{total} tests interception OK ===");
+
+        sb.AppendLine();
+        sb.AppendLine(ValiderHumaniseur());
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Valide la garde anti-burst (Phase 3) : inactif = 0 délai ; actif = espacement
+    /// minimum respecté entre deux actions consécutives.
+    /// </summary>
+    private static string ValiderHumaniseur()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("=== Validation humaniseur anti-burst (Phase 3) ===");
+        int ok = 0, total = 0;
+        void Check(string n, bool c, string d) { total++; if (c) ok++; sb.AppendLine($"  [{(c ? "OK  " : "FAIL")}] {n} → {d}"); }
+
+        var h = new BotDofus.Divers.Securite.HumaniseurActions
+        {
+            Actif = false,
+            PlancherMs = 100,
+            Cadence = new BotDofus.Divers.Securite.Plage(100, 100),
+        };
+
+        // Inactif : deux appels consécutifs ne doivent imposer aucun délai.
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        h.RespecterCadenceAsync().GetAwaiter().GetResult();
+        h.RespecterCadenceAsync().GetAwaiter().GetResult();
+        sw.Stop();
+        Check("inactif = 0 délai", sw.ElapsedMilliseconds < 50, $"{sw.ElapsedMilliseconds}ms (attendu <50)");
+
+        // Actif : le 2e appel doit attendre ~100ms (plancher/cadence).
+        h.Actif = true;
+        h.Reinitialiser();
+        sw.Restart();
+        h.RespecterCadenceAsync().GetAwaiter().GetResult(); // 1er : pas d'attente (derniereAction=MinValue → écoulé énorme)
+        h.RespecterCadenceAsync().GetAwaiter().GetResult(); // 2e : doit attendre la cadence
+        sw.Stop();
+        Check("actif = espacement imposé", sw.ElapsedMilliseconds >= 90, $"{sw.ElapsedMilliseconds}ms (attendu >=90)");
+        Check("compteur délais", h.DelaisImposes >= 1, $"DelaisImposes={h.DelaisImposes}");
+
+        sb.AppendLine($"=== {ok}/{total} tests humaniseur OK ===");
         return sb.ToString();
     }
 }

@@ -47,12 +47,26 @@ public sealed class ContexteCompte : IDisposable
     /// </summary>
     public string? LoginCapture { get; private set; }
 
+    private bool _modePassif = true;
+
     /// <summary>
     /// En mode passif, le proxy se contente de relayer/journaliser les octets
     /// SANS activer la moindre trame d'automatisation. Idéal pour capturer
     /// du trafic réel sans risquer d'envoyer des paquets invalides au serveur.
+    ///
+    /// Le passage en mode ACTIF (passif=false) active automatiquement la garde
+    /// anti-burst de l'humaniseur : tout paquet injecté par le bot sera espacé
+    /// de manière humaine (Phase 3, anti-détection cadence).
     /// </summary>
-    public bool ModePassif { get; set; } = true;
+    public bool ModePassif
+    {
+        get => _modePassif;
+        set
+        {
+            _modePassif = value;
+            Api.Humaniseur.Actif = !value;
+        }
+    }
 
     public event EventHandler<SessionProxy>? SessionAttachee;
     public event EventHandler<SessionProxy>? SessionJeuAttachee;

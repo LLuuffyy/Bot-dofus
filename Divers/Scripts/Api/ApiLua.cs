@@ -364,4 +364,23 @@ public sealed class ApiLua
     {
         if (_interception != null) _interception.Active = actif;
     }
+
+    // ---------------------------------------------------------------
+    // Humaniseur anti-burst (Phase 3) — cadence des actions autonomes
+    // ---------------------------------------------------------------
+
+    /// <summary>Active/désactive la garde anti-burst (espacement humain des envois bot).</summary>
+    public void humaniseur_actif(bool actif) => _api.Humaniseur.Actif = actif;
+
+    /// <summary>Règle la plage de cadence humaine (ms) entre deux actions bot.</summary>
+    public void humaniseur_cadence(int minMs, int maxMs)
+        => _api.Humaniseur.Cadence = new BotDofus.Divers.Securite.Plage(
+            Math.Max(0, minMs), Math.Max(minMs, maxMs));
+
+    /// <summary>Attend explicitement le respect de la cadence (à appeler avant une action critique).</summary>
+    public void humaniseur_attendre()
+        => _api.Humaniseur.RespecterCadenceAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+    /// <summary>Nombre de délais anti-burst imposés depuis le début (métrique).</summary>
+    public long humaniseur_delais() => _api.Humaniseur.DelaisImposes;
 }

@@ -25,6 +25,12 @@ public sealed class ApiBot
     private readonly EtatJeu _etat;
     private SessionProxy? _session;
 
+    /// <summary>
+    /// Garde anti-burst (Phase 3) : impose un espacement humain entre les paquets
+    /// que le BOT envoie de son propre chef. Désactivé par défaut (mode passif).
+    /// </summary>
+    public BotDofus.Divers.Securite.HumaniseurActions Humaniseur { get; } = new();
+
     public ApiBot(Compte compte, EtatJeu etat)
     {
         _compte = compte;
@@ -139,10 +145,13 @@ public sealed class ApiBot
     public Task EnvoyerTravelAsync(int x, int y, CancellationToken ct = default)
         => EnvoyerMessageAsync("*", $".travel {x},{y}", ct);
 
-    /// <summary>Envoie un paquet brut au serveur depuis les outils UI.</summary>
+    /// <summary>Envoie un paquet brut au serveur depuis les outils UI / scripts.</summary>
     public async Task EnvoyerPaquetBrutAsync(string paquet, CancellationToken ct = default)
     {
         if (_session is null || string.IsNullOrWhiteSpace(paquet)) return;
+        // Garde anti-burst : si le bot injecte tout seul (mode actif), on espace
+        // les envois de manière humaine pour ne pas produire de pattern détectable.
+        await Humaniseur.RespecterCadenceAsync(ct).ConfigureAwait(false);
         await _session.EnvoyerAuServeurAsync(paquet.Trim(), ct).ConfigureAwait(false);
     }
 
