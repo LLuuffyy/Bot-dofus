@@ -29,10 +29,13 @@ public partial class MainWindow : Window
     // restaure tout seul dans son finally. Plus de PatcheurCoreSwf / GestionnaireHosts
     // (gardés dans le repo pour référence Hystoria, voir Utilitaires/Hystoria/).
     //
-    // Backup défensif : si l'SWF du client tombe quand même sur l'API distante,
-    // on a un netsh portproxy au niveau noyau qui redirige 141.94.99.2:7781 → 127.0.0.1:7781.
-    // Nettoyé dans OnClosed.
-    private BotDofus.Utilitaires.Aqua.RedirecteurPortProxy? _redirecteurPortProxy;
+    // Note : netsh portproxy retiré du flux (architecturalement inefficace pour
+    // rediriger une connexion SORTANTE vers une IP distante — il ne fait que du
+    // listener inbound local). La redirection Abrak repose sur le patch config.xml.
+
+    // PatcheurConfigXml gardé en champ : config.xml reste patché tant que le bot
+    // tourne (launcher Abrak lent) ; restauré sur Déconnexion / OnClosed.
+    private BotDofus.Utilitaires.Aqua.PatcheurConfigXml? _patcheurConfig;
 
     public MainWindow()
     {
@@ -268,28 +271,16 @@ public partial class MainWindow : Window
                 return;
             }
 
-            var patcheur = new BotDofus.Utilitaires.Aqua.PatcheurConfigXml(
+            // Restaure un éventuel patch résiduel d'un lancement précédent.
+            _patcheurConfig?.RestaurerDiffere();
+            _patcheurConfig = new BotDofus.Utilitaires.Aqua.PatcheurConfigXml(
                 ipLocale: "127.0.0.1",
                 portLocal: 1303,
                 cheminConfig: configXmlPath);
 
-            // Ceinture-et-bretelles : netsh portproxy au cas où le client retombe
-            // sur l'IP serveur fixe. Abrak = 51.89.153.20:1303 (auth, TCP brut).
-            // Redirige tout trafic sortant Dofus → 51.89.153.20:1303 vers 127.0.0.1:1303.
-            // Si admin manquant : non-bloquant, on log un warning et on continue.
-            _redirecteurPortProxy ??= new BotDofus.Utilitaires.Aqua.RedirecteurPortProxy(
-                ipDistante: "51.89.153.20", portDistant: 1303, portLocal: 1303);
-            try { _redirecteurPortProxy.Ajouter(); }
-            catch (Exception ex)
-            {
-                Journaliseur.Avertir($"[AQUA] netsh portproxy non installé ({ex.Message}). " +
-                                     $"Tu peux le lancer en admin manuellement, OU compter sur le patch config.xml seul.");
-                _redirecteurPortProxy = null;
-            }
-
-            // Workflow async : Patcher() → lancer Dofus.exe → attente → Restaurer().
-            // L'await ici libère le thread UI pendant la fenêtre de 15s.
-            await patcheur.LancerClientAsync(cheminClientOriginal);
+            // Workflow : Patcher() → lancer le client. PAS de restore sur timer
+            // (launcher Abrak lent). config.xml reste patché jusqu'à Déconnexion.
+            await _patcheurConfig.LancerClientAsync(cheminClientOriginal);
         }
         catch (Exception ex)
         {
@@ -340,14 +331,13 @@ public partial class MainWindow : Window
 
     private void NettoyerPatchEtHosts()
     {
-        // Retire la règle netsh portproxy si elle est en place.
-        try { _redirecteurPortProxy?.Dispose(); _redirecteurPortProxy = null; }
-        catch (Exception ex) { Journaliseur.Avertir($"Retrait portproxy : {ex.Message}"); }
+        // Restaure le config.xml patché (workflow sans timer : on restaure ICI,
+        // à la déconnexion / fermeture, pas sur un délai).
+        try { _patcheurConfig?.RestaurerDiffere(); }
+        catch (Exception ex) { Journaliseur.Avertir($"Restore config.xml : {ex.Message}"); }
 
-        // Migration Aqua : le PatcheurConfigXml restaure config.xml dans son propre finally
-        // (cf. LancerClientAsync). Si pour une raison X le bot a planté entre Patcher()
-        // et la restauration, on tente une dernière passe défensive ici en relisant
-        // config.xml et en virant tout <connexionServers> traînant.
+        // Passe défensive : si le bot a planté en laissant un <connexionServers>
+        // résiduel dans config.xml, on le vire.
         try
         {
             var chemin = BotDofus.Utilitaires.Aqua.PatcheurConfigXml.CheminConfigDefaut;

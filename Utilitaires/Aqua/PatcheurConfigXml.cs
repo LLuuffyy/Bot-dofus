@@ -111,36 +111,42 @@ public sealed class PatcheurConfigXml
         }
     }
 
+    /// <summary>Contenu config.xml d'origine, conservé pour restauration différée.</summary>
+    public string? ContenuOriginal { get; private set; }
+
     /// <summary>
-    /// Workflow complet : patche le XML, lance Dofus.exe, attend
-    /// <see cref="DelaiRestoreApresLancement"/>, puis restaure.
-    /// Le proxy MITM doit déjà écouter sur <see cref="IpLocale"/>:<see cref="PortLocal"/>
-    /// AVANT que le client ne se connecte.
+    /// Workflow : patche le XML, lance le client. NE RESTAURE PAS sur timer
+    /// (le launcher Electron Abrak est lent et peut lire config.xml tardivement —
+    /// un restore prématuré le ferait connecter au vrai serveur).
+    /// La restauration se fait via <see cref="RestaurerDiffere"/> à la déconnexion
+    /// ou fermeture du bot. <see cref="ContenuOriginal"/> garde la sauvegarde.
     /// </summary>
-    public async Task LancerClientAsync(string? cheminExe = null, CancellationToken ct = default)
+    public Task LancerClientAsync(string? cheminExe = null, CancellationToken ct = default)
     {
         cheminExe ??= CheminExecutableDefaut;
         if (!File.Exists(cheminExe))
         {
-            throw new FileNotFoundException($"Dofus.exe Aqua introuvable : {cheminExe}");
+            throw new FileNotFoundException($"Client Abrak introuvable : {cheminExe}");
         }
 
-        var original = Patcher();
-        try
+        ContenuOriginal = Patcher();
+        var psi = new System.Diagnostics.ProcessStartInfo(cheminExe)
         {
-            var psi = new System.Diagnostics.ProcessStartInfo(cheminExe)
-            {
-                UseShellExecute = true,
-                WorkingDirectory = Path.GetDirectoryName(cheminExe)!,
-            };
-            using var proc = System.Diagnostics.Process.Start(psi);
-            Journaliseur.Info($"[AQUA-PATCH] Dofus.exe lancé (PID={proc?.Id ?? -1})");
+            UseShellExecute = true,
+            WorkingDirectory = Path.GetDirectoryName(cheminExe)!,
+        };
+        var proc = System.Diagnostics.Process.Start(psi);
+        Journaliseur.Info($"[AQUA-PATCH] Client lancé (PID={proc?.Id ?? -1}) — config.xml RESTE patché jusqu'à déconnexion");
+        return Task.CompletedTask;
+    }
 
-            await Task.Delay(DelaiRestoreApresLancement, ct).ConfigureAwait(false);
-        }
-        finally
+    /// <summary>Restaure le config.xml d'origine s'il a été patché. Idempotent.</summary>
+    public void RestaurerDiffere()
+    {
+        if (ContenuOriginal != null)
         {
-            Restaurer(original);
+            Restaurer(ContenuOriginal);
+            ContenuOriginal = null;
         }
     }
 
