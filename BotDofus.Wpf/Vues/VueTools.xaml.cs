@@ -236,6 +236,37 @@ public partial class VueTools : UserControl
 
     private void BtnInterceptRafraichir_Click(object sender, RoutedEventArgs e) => RafraichirRegles();
 
+    private void BtnAjouterRegleReplace_Click(object sender, RoutedEventArgs e)
+    {
+        if (_contexte == null) { TxtDerniereAction.Text = "Aucun compte."; return; }
+        var prefixe = TxtReglePrefixe?.Text?.Trim() ?? "";
+        var chercher = TxtRegleChercher?.Text ?? "";
+        var remplacer = TxtRegleRemplacer?.Text ?? "";
+        if (string.IsNullOrEmpty(chercher))
+        {
+            TxtDerniereAction.Text = "Renseigne au moins le champ 'chercher'.";
+            return;
+        }
+
+        _contexte.Interception.Ajouter(new BotDofus.Divers.Interception.RegleInterception
+        {
+            Nom = $"replace[{(string.IsNullOrEmpty(prefixe) ? "*" : prefixe)}] {chercher}→{remplacer}",
+            Prefixe = prefixe,
+            Transformateur = (contenu, _) =>
+            {
+                if (!contenu.Contains(chercher, StringComparison.Ordinal))
+                    return BotDofus.Divers.Interception.ResultatInterception.Laisser;
+                var modifie = contenu.Replace(chercher, remplacer);
+                return modifie == contenu
+                    ? BotDofus.Divers.Interception.ResultatInterception.Laisser
+                    : BotDofus.Divers.Interception.ResultatInterception.Remplacer(modifie);
+            }
+        });
+        RafraichirRegles();
+        TxtDerniereAction.Text = $"Règle find/replace ajoutée : '{chercher}' → '{remplacer}'" +
+                                 (string.IsNullOrEmpty(prefixe) ? "" : $" (préfixe {prefixe})");
+    }
+
     private void OnPaquetRecu(object? sender, EvenementPaquetRecu e)
     {
         var contenu = e.Paquet.Contenu;

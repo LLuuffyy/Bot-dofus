@@ -156,6 +156,26 @@ public static class ValidateurParsers
         var r4 = g.Appliquer("pingXYZ", DirectionPaquet.VersServeur);
         Check("kill-switch global", r4 == null, $"résultat='{r4 ?? "null"}'");
 
+        // Règle find/replace (modif furtive démontrable type "réécrire un chat").
+        g.Active = true;
+        g.Vider();
+        g.Ajouter(new BotDofus.Divers.Interception.RegleInterception
+        {
+            Nom = "replace-chat",
+            Prefixe = "BM",
+            Transformateur = (c, _) =>
+            {
+                if (!c.Contains("bonjour", StringComparison.Ordinal))
+                    return BotDofus.Divers.Interception.ResultatInterception.Laisser;
+                return BotDofus.Divers.Interception.ResultatInterception.Remplacer(
+                    c.Replace("bonjour", "salut"));
+            }
+        });
+        var r5 = g.Appliquer("BM*bonjour tout le monde", DirectionPaquet.VersServeur);
+        Check("find/replace chat", r5 == "BM*salut tout le monde", $"résultat='{r5 ?? "null"}'");
+        var r6 = g.Appliquer("BM*rien à voir", DirectionPaquet.VersServeur);
+        Check("find/replace passthrough", r6 == null, $"résultat='{r6 ?? "null"}'");
+
         sb.AppendLine($"=== {ok}/{total} tests interception OK ===");
         return sb.ToString();
     }

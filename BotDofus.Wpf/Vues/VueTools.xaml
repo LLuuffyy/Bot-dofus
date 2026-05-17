@@ -167,7 +167,7 @@
                             <TextBlock Text="Observer G*"/>
                         </Button>
                         <Button Click="BtnPresetDropPing_Click" Style="{StaticResource TopNavButtonStyle}" Margin="4,0,0,4"
-                                ToolTip="Exemple : supprime un préfixe au choix">
+                                ToolTip="Supprime les paquets du préfixe saisi dans PAQUET BRUT">
                             <TextBlock Text="Drop préfixe"/>
                         </Button>
                         <Button Click="BtnInterceptVider_Click" Style="{StaticResource TopNavButtonStyle}" Margin="0,4,4,0"
@@ -178,6 +178,27 @@
                             <TextBlock Text="Rafraîchir"/>
                         </Button>
                     </UniformGrid>
+
+                    <!-- Règle find/replace : modif furtive démontrable (ex: réécrire un chat) -->
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="60"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="TxtReglePrefixe" Grid.Column="0" Margin="0,0,4,0"
+                                 materialDesign:HintAssist.Hint="préf"/>
+                        <TextBox x:Name="TxtRegleChercher" Grid.Column="1" Margin="0,0,4,0"
+                                 materialDesign:HintAssist.Hint="chercher"/>
+                        <TextBox x:Name="TxtRegleRemplacer" Grid.Column="2" Margin="0,0,4,0"
+                                 materialDesign:HintAssist.Hint="remplacer"/>
+                        <Button Grid.Column="3" Click="BtnAjouterRegleReplace_Click"
+                                Style="{StaticResource AccentNavButtonStyle}"
+                                ToolTip="Ajoute une règle find→replace sur les paquets du préfixe (modif furtive inline)">
+                            <materialDesign:PackIcon Kind="Plus" Width="14" Height="14"/>
+                        </Button>
+                    </Grid>
 
                     <ListBox x:Name="LstRegles"
                              MaxHeight="140"
