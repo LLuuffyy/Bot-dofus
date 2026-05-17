@@ -72,6 +72,19 @@ public sealed class TrameJeu : TrameBase
         });
 
         Ecouter<MessagePingMoyen>(_ => { /* silence ping */ });
+
+        // Abrak v1.48 : acteurs map = famille N* (identité en clair, position
+        // chiffrée). On loggue l'identité (nom/niveau) — exploitable pour la
+        // détection de joueurs/staff même sans cellule.
+        Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageActeurAbrak>(msg =>
+        {
+            foreach (var a in msg.Spawns)
+                Journaliseur.Info($"[ENT] acteur Abrak vu : « {a.Nom} » niv {a.Niveau} (#{a.Id})");
+            foreach (var id in msg.Despawns)
+                Journaliseur.Info($"[ENT] acteur Abrak parti : #{id}");
+        });
+        Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageActeurAbrakRetrait>(msg =>
+            Journaliseur.Info($"[ENT] acteur Abrak parti : #{msg.Identifiant}"));
     }
 
     private void OnSelectionPersonnage(MessageSelectionPersonnage msg)

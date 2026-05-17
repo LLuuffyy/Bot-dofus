@@ -137,6 +137,9 @@ public static class FabriqueMessages
         EnregistrerVersClient<VersClient.Jeu.MessagePret>("GR");
         EnregistrerVersClient<VersClient.Jeu.MessageCreationJeu>("GC");
         EnregistrerVersClient<VersClient.Jeu.MessageMouvementCarte>("GM");
+        // Abrak v1.48 : acteurs map via la famille N* (identité only, position chiffrée).
+        EnregistrerVersClient<VersClient.Jeu.MessageActeurAbrak>("NL");
+        EnregistrerVersClient<VersClient.Jeu.MessageActeurAbrakRetrait>("Nx");
         EnregistrerVersClient<VersClient.Jeu.MessageNombreCombats>("fC");
 
         // --- VersClient : Info ---
