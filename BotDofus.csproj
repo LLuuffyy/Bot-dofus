@@ -60,9 +60,10 @@
   <ItemGroup>
     <!-- Moteur Lua pur C# (pas de dépendance native, contrairement à NLua) -->
     <PackageReference Include="MoonSharp" Version="2.0.0" />
+    <PackageReference Include="Native.WinDivert" Version="2.2.2" />
     <!-- Lecture/écriture de App.config depuis .NET 8 (absent par défaut hors .NET Framework) -->
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
-    <PackageReference Include="WinDivertSharp" Version="1.4.3.3" />
+    <PackageReference Include="WindivertDotnet" Version="1.1.2" />
     <!-- System.Text.Json inclus dans .NET 8 -->
   </ItemGroup>
 
