@@ -31,15 +31,15 @@ namespace BotDofus.Utilitaires.Aqua;
 /// </summary>
 public sealed class PatcheurConfigXml
 {
-    /// <summary>Chemin par défaut du <c>config.xml</c> Aqua (instance Bubble).</summary>
+    /// <summary>Chemin par défaut du <c>config.xml</c> Abrak (launcher Electron, Roaming).</summary>
     public static readonly string CheminConfigDefaut = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "Bubble", "Aqua", "config.xml");
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "Abrak Launcher", "Abrak", "Retro", "resources", "app", "retroclient", "config.xml");
 
-    /// <summary>Chemin par défaut du <c>Dofus.exe</c> Aqua.</summary>
+    /// <summary>Chemin par défaut de l'exécutable Abrak (retroclient).</summary>
     public static readonly string CheminExecutableDefaut = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "Bubble", "Aqua", "Dofus.exe");
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "Abrak Launcher", "Abrak", "Retro", "resources", "app", "retroclient", "Abrak.exe");
 
     public string CheminConfig { get; }
     public string IpLocale { get; }
@@ -48,7 +48,7 @@ public sealed class PatcheurConfigXml
     /// <summary>Délai d'attente avant restauration du fichier (le client doit avoir lu).</summary>
     public TimeSpan DelaiRestoreApresLancement { get; set; } = TimeSpan.FromSeconds(15);
 
-    public PatcheurConfigXml(string ipLocale = "127.0.0.1", int portLocal = 7781, string? cheminConfig = null)
+    public PatcheurConfigXml(string ipLocale = "127.0.0.1", int portLocal = 1303, string? cheminConfig = null)
     {
         IpLocale = ipLocale;
         PortLocal = portLocal;

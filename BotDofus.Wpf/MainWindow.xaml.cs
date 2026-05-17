@@ -270,16 +270,15 @@ public partial class MainWindow : Window
 
             var patcheur = new BotDofus.Utilitaires.Aqua.PatcheurConfigXml(
                 ipLocale: "127.0.0.1",
-                portLocal: 7781,
+                portLocal: 1303,
                 cheminConfig: configXmlPath);
 
-            // Ceinture-et-bretelles : on tente aussi un netsh portproxy au cas où le SWF
-            // ignorerait notre <connserver> et retomberait sur l'API runtime ankama_acc
-            // (qui résoudrait à 141.94.99.2). Cette règle système redirige tout trafic
-            // sortant Dofus → 141.94.99.2:7781 vers 127.0.0.1:7781.
+            // Ceinture-et-bretelles : netsh portproxy au cas où le client retombe
+            // sur l'IP serveur fixe. Abrak = 51.89.153.20:1303 (auth, TCP brut).
+            // Redirige tout trafic sortant Dofus → 51.89.153.20:1303 vers 127.0.0.1:1303.
             // Si admin manquant : non-bloquant, on log un warning et on continue.
             _redirecteurPortProxy ??= new BotDofus.Utilitaires.Aqua.RedirecteurPortProxy(
-                ipDistante: "141.94.99.2", portDistant: 7781, portLocal: 7781);
+                ipDistante: "51.89.153.20", portDistant: 1303, portLocal: 1303);
             try { _redirecteurPortProxy.Ajouter(); }
             catch (Exception ex)
             {
@@ -446,13 +445,13 @@ public partial class MainWindow : Window
         sb.AppendLine("LUFFY-BOT — RÉFÉRENCE RAPIDE");
         sb.AppendLine("════════════════════════════════════════════");
         sb.AppendLine();
-        sb.AppendLine("CIBLE : Aqua (play-astra.net) — Dofus Retro 1.39.6");
-        sb.AppendLine("  Auth : 141.94.99.2:7781");
-        sb.AppendLine("  Jeu  : aqua.play-astra.net:5562 (via AYK)");
+        sb.AppendLine("CIBLE : Abrak (abrak.fr) — Dofus Retro, TCP brut");
+        sb.AppendLine("  Auth : 51.89.153.20:1303");
+        sb.AppendLine("  Jeu  : 51.89.153.20:1304");
         sb.AppendLine();
         sb.AppendLine("FLUX :");
         sb.AppendLine("  Lancer jeu → patch config.xml + netsh portproxy");
-        sb.AppendLine("  → Dofus.exe → proxy MITM 127.0.0.1:7781 → serveur");
+        sb.AppendLine("  → Abrak.exe → proxy MITM 127.0.0.1:1303 → serveur");
         sb.AppendLine("  → restore config.xml (furtif, hash inchangé)");
         sb.AppendLine();
         sb.AppendLine("ONGLETS :");
@@ -648,26 +647,26 @@ public partial class MainWindow : Window
     {
         var candidats = new List<string>();
 
-        // PRIORITÉ ABSOLUE : Aqua (Bubble launcher) — la cible courante post-migration.
-        // On ne consulte le chemin mémorisé qu'EN DERNIER pour éviter une régression silencieuse
-        // depuis une ancienne config Hystoria sauvegardée dans config-wpf.json.
-        var aquaDefaut = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Bubble", "Aqua", "Dofus.exe");
-        candidats.Add(aquaDefaut);
+        // PRIORITÉ ABSOLUE : Abrak (launcher Electron, Roaming) — cible courante.
+        // On ne consulte le chemin mémorisé qu'EN DERNIER pour éviter une régression
+        // silencieuse depuis une ancienne config Aqua/Hystoria (config-wpf.json).
+        var abrakDefaut = BotDofus.Utilitaires.Aqua.PatcheurConfigXml.CheminExecutableDefaut;
+        candidats.Add(abrakDefaut);
 
-        // Chemin mémorisé d'une session précédente — accepté SAUF s'il pointe vers Hystoria
-        // (auto-migration : on évite de retomber sur l'ancien serveur disparu).
+        // Chemin mémorisé d'une session précédente — accepté SAUF s'il pointe vers
+        // un ancien serveur (Hystoria / SynFus / Aqua-Bubble) → auto-migration Abrak.
         if (!string.IsNullOrWhiteSpace(_configWpf.CheminClientDofus)
             && !_configWpf.CheminClientDofus.Contains("Hystoria", StringComparison.OrdinalIgnoreCase)
-            && !_configWpf.CheminClientDofus.Contains("SynFus", StringComparison.OrdinalIgnoreCase))
+            && !_configWpf.CheminClientDofus.Contains("SynFus", StringComparison.OrdinalIgnoreCase)
+            && !_configWpf.CheminClientDofus.Contains(@"Bubble\Aqua", StringComparison.OrdinalIgnoreCase))
         {
             candidats.Add(_configWpf.CheminClientDofus);
         }
 
-        // Anciennes cibles Hystoria gardées en dernier secours.
+        // Anciennes cibles gardées en dernier secours.
+        candidats.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Bubble", "Aqua", "Dofus.exe"));
         candidats.Add(@"C:\Users\touki\AppData\Local\Hystoria\Dofus\resources\app\retroclient\Dofus.exe");
-        candidats.Add(@"C:\Users\touki\Desktop\SynFus_Hystoria_v1.1.7\Dofus.exe");
 
         var trouve = candidats.FirstOrDefault(File.Exists);
         if (!string.IsNullOrWhiteSpace(trouve))
