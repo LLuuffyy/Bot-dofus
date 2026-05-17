@@ -35,12 +35,15 @@ public sealed class ApiLua
     private readonly ApiBot _api;
     private readonly EtatJeu _etat;
     private readonly ConfigCombat _configCombat;
+    private readonly BotDofus.Divers.Interception.GestionnaireInterception? _interception;
 
-    public ApiLua(ApiBot api, EtatJeu etat, ConfigCombat configCombat)
+    public ApiLua(ApiBot api, EtatJeu etat, ConfigCombat configCombat,
+        BotDofus.Divers.Interception.GestionnaireInterception? interception = null)
     {
         _api = api;
         _etat = etat;
         _configCombat = configCombat;
+        _interception = interception;
     }
 
     // ---------------------------------------------------------------
@@ -308,5 +311,57 @@ public sealed class ApiLua
             if (obj.IdTemplate == templateId) total += obj.Quantite;
         }
         return total;
+    }
+
+    // ---------------------------------------------------------------
+    // Interception furtive (Phase 2) — modif inline du flux client réel
+    // ---------------------------------------------------------------
+
+    /// <summary>
+    /// Ajoute une règle d'interception. La fonction Lua reçoit (contenu, sens) où
+    /// sens = "C2S" (client→serveur) ou "S2C" (serveur→client), et retourne :
+    ///   nil / le contenu inchangé → laisser passer
+    ///   ""                         → supprimer le paquet
+    ///   une autre string           → remplacer le paquet
+    ///
+    /// Lua :
+    ///   bot.intercepter("test", "GA", function(p, sens)
+    ///     bot.log("vu "..sens.." "..p)
+    ///     return nil
+    ///   end)
+    /// </summary>
+    public void intercepter(string nom, string prefixe, MoonSharp.Interpreter.Closure fn)
+    {
+        if (_interception == null) { avertir("Interception indisponible (pas de session)"); return; }
+
+        _interception.Ajouter(new BotDofus.Divers.Interception.RegleInterception
+        {
+            Nom = nom,
+            Prefixe = prefixe ?? string.Empty,
+            Transformateur = (contenu, dir) =>
+            {
+                var sens = dir == BotDofus.Commun.Reseau.DirectionPaquet.VersServeur ? "C2S" : "S2C";
+                var ret = fn.Call(contenu, sens);
+                if (ret == null || ret.IsNil() || ret.Type == MoonSharp.Interpreter.DataType.Void)
+                    return BotDofus.Divers.Interception.ResultatInterception.Laisser;
+                var s = ret.CastToString();
+                if (s == null) return BotDofus.Divers.Interception.ResultatInterception.Laisser;
+                if (s.Length == 0) return BotDofus.Divers.Interception.ResultatInterception.Supprimer;
+                if (s == contenu) return BotDofus.Divers.Interception.ResultatInterception.Laisser;
+                return BotDofus.Divers.Interception.ResultatInterception.Remplacer(s);
+            }
+        });
+    }
+
+    /// <summary>Retire une règle d'interception par son nom.</summary>
+    public void intercepter_retirer(string nom) => _interception?.Retirer(nom);
+
+    /// <summary>Retire toutes les règles d'interception.</summary>
+    public void intercepter_vider() => _interception?.Vider();
+
+    /// <summary>Active/désactive globalement l'interception (kill-switch).</summary>
+    public void intercepter_actif(bool actif)
+    {
+        if (_interception != null) _interception.Active = actif;
     }
 }

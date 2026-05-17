@@ -34,6 +34,7 @@ public sealed class ContexteCompte : IDisposable
     public ConfigCombat ConfigCombat { get; }
     public BotDofus.Divers.Securite.DetecteurStaff DetecteurStaff { get; }
     public StatsSession Stats { get; } = new();
+    public BotDofus.Divers.Interception.GestionnaireInterception Interception { get; } = new();
 
     public SessionProxy? SessionAuthActive { get; private set; }
     public SessionProxy? SessionJeuActive { get; private set; }
@@ -77,7 +78,7 @@ public sealed class ContexteCompte : IDisposable
         EtatJeu = new EtatJeu();
         Api = new ApiBot(compte, EtatJeu);
         ConfigCombat = ConfigCombat.Charger(Path.Combine("peleas", $"{compte.Identifiant}.json"));
-        ApiLua = new ApiLua(Api, EtatJeu, ConfigCombat);
+        ApiLua = new ApiLua(Api, EtatJeu, ConfigCombat, Interception);
         Scripts = new GestionnaireScripts(compte, Api);
         Lua = new MoteurLuaInteractif(ApiLua);
 
@@ -197,14 +198,37 @@ public sealed class ContexteCompte : IDisposable
         var modificateurExistant = session.ModificateurPaquet;
         session.ModificateurPaquet = (paquet, direction) =>
         {
+            // 1. Chaîne précédente éventuelle (compat)
             var modifie = modificateurExistant?.Invoke(paquet, direction);
             var aTraiter = modifie ?? paquet;
             if (aTraiter.Length == 0)
             {
-                return aTraiter;
+                return aTraiter; // déjà supprimé en amont
             }
 
-            return IntercepterAyk(aTraiter, direction);
+            // 2. Règles d'interception scriptables (Phase 2 : intercept-and-modify).
+            //    S'exécute AVANT l'AYK pour pouvoir modifier n'importe quel paquet.
+            var modifInterception = Interception.Appliquer(aTraiter, direction);
+            if (modifInterception != null)
+            {
+                if (modifInterception.Length == 0)
+                {
+                    return string.Empty; // règle a supprimé le paquet
+                }
+                aTraiter = modifInterception;
+            }
+
+            // 3. Réécriture AYK (redirige le serveur jeu vers notre proxy local).
+            var ayk = IntercepterAyk(aTraiter, direction);
+            if (ayk != null)
+            {
+                return ayk; // c'était un AYK : version réécrite prioritaire
+            }
+
+            // 4. Pas un AYK : on préserve la modif d'interception/chaîne si elle a eu lieu.
+            if (modifInterception != null) return modifInterception;
+            if (modifie != null) return modifie;
+            return null; // vraiment inchangé
         };
     }
 

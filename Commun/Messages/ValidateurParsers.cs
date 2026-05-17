@@ -96,6 +96,67 @@ public static class ValidateurParsers
             if (reussi) ok++;
         }
         sortie.AppendLine($"=== {ok}/{cas.Count} parsers validés ===");
+
+        sortie.AppendLine();
+        sortie.AppendLine(ValiderInterception());
         return sortie.ToString();
+    }
+
+    /// <summary>
+    /// Valide le moteur intercept-and-modify (Phase 2) sans session live :
+    /// on simule des paquets et on vérifie remplacement / suppression / passthrough.
+    /// </summary>
+    private static string ValiderInterception()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("=== Validation moteur d'interception (Phase 2) ===");
+        var g = new BotDofus.Divers.Interception.GestionnaireInterception();
+        int ok = 0, total = 0;
+
+        void Check(string nom, bool cond, string detail)
+        {
+            total++;
+            if (cond) ok++;
+            sb.AppendLine($"  [{(cond ? "OK  " : "FAIL")}] {nom} → {detail}");
+        }
+
+        // Règle 1 : remplacer la destination d'un déplacement GA (one-shot).
+        g.Ajouter(new BotDofus.Divers.Interception.RegleInterception
+        {
+            Nom = "redir-deplacement",
+            Prefixe = "GA",
+            Direction = DirectionPaquet.VersServeur,
+            MaxApplications = 1,
+            Transformateur = (c, _) =>
+                BotDofus.Divers.Interception.ResultatInterception.Remplacer(c + "MOD"),
+        });
+
+        var r1 = g.Appliquer("GA0011;abc", DirectionPaquet.VersServeur);
+        Check("remplacement GA", r1 == "GA0011;abcMOD", $"résultat='{r1}'");
+
+        var r1b = g.Appliquer("GA0011;abc", DirectionPaquet.VersServeur);
+        Check("one-shot (2e fois inchangé)", r1b == null, $"résultat='{r1b ?? "null"}'");
+
+        // Règle 2 : supprimer les pings clients "ping".
+        g.Ajouter(new BotDofus.Divers.Interception.RegleInterception
+        {
+            Nom = "drop-ping",
+            Prefixe = "ping",
+            Transformateur = (_, _) => BotDofus.Divers.Interception.ResultatInterception.Supprimer,
+        });
+        var r2 = g.Appliquer("pingXYZ", DirectionPaquet.VersServeur);
+        Check("suppression ping", r2 == string.Empty, $"résultat='{(r2 == string.Empty ? "<vide>" : r2 ?? "null")}'");
+
+        // Passthrough : un paquet non concerné n'est pas touché.
+        var r3 = g.Appliquer("As500", DirectionPaquet.VersClient);
+        Check("passthrough As", r3 == null, $"résultat='{r3 ?? "null"}'");
+
+        // Kill-switch : Active=false → plus aucune règle.
+        g.Active = false;
+        var r4 = g.Appliquer("pingXYZ", DirectionPaquet.VersServeur);
+        Check("kill-switch global", r4 == null, $"résultat='{r4 ?? "null"}'");
+
+        sb.AppendLine($"=== {ok}/{total} tests interception OK ===");
+        return sb.ToString();
     }
 }
