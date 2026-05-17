@@ -398,6 +398,93 @@ public partial class MainWindow : Window
         foreach (var vm in Comptes) vm.Refresh();
 
         TxtProxyButton.Text = _contexteSelectionne.Proxy.EnEcoute ? "Stop proxy" : "Proxy";
+        if (TxtQuotaComptes != null) TxtQuotaComptes.Text = $"{Comptes.Count}/200";
+    }
+
+    // ----------------------------------------------------------------
+    // Navigation header (style MoonBot — boutons fonctionnels)
+    // ----------------------------------------------------------------
+
+    private void SelectionnerOnglet(string header)
+    {
+        foreach (var item in TabsContent.Items)
+        {
+            if (item is System.Windows.Controls.TabItem t && (t.Header as string) == header)
+            {
+                TabsContent.SelectedItem = t;
+                return;
+            }
+        }
+    }
+
+    private void BtnParametres_Click(object sender, RoutedEventArgs e) => SelectionnerOnglet("Config");
+
+    private void BtnAdmin_Click(object sender, RoutedEventArgs e) => SelectionnerOnglet("Tools");
+
+    private void BtnDeconnecterTout_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            foreach (var vm in Comptes)
+            {
+                try { vm.Contexte.ArreterProxy(); } catch { }
+            }
+            NettoyerPatchEtHosts();
+            Journaliseur.Info($"[UI] Déconnexion globale : {Comptes.Count} compte(s) arrêté(s)");
+            RafraichirStatsHeader();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Déconnexion globale incomplète : {ex.Message}", "Déconnexion",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void BtnDocs_Click(object sender, RoutedEventArgs e)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("LUFFY-BOT — RÉFÉRENCE RAPIDE");
+        sb.AppendLine("════════════════════════════════════════════");
+        sb.AppendLine();
+        sb.AppendLine("CIBLE : Aqua (play-astra.net) — Dofus Retro 1.39.6");
+        sb.AppendLine("  Auth : 141.94.99.2:7781");
+        sb.AppendLine("  Jeu  : aqua.play-astra.net:5562 (via AYK)");
+        sb.AppendLine();
+        sb.AppendLine("FLUX :");
+        sb.AppendLine("  Lancer jeu → patch config.xml + netsh portproxy");
+        sb.AppendLine("  → Dofus.exe → proxy MITM 127.0.0.1:7781 → serveur");
+        sb.AppendLine("  → restore config.xml (furtif, hash inchangé)");
+        sb.AppendLine();
+        sb.AppendLine("ONGLETS :");
+        sb.AppendLine("  Chat       : console + stats session");
+        sb.AppendLine("  Personnage : stats + sorts appris");
+        sb.AppendLine("  Combat     : config IA sorts + contrôle manuel");
+        sb.AppendLine("  Carte      : terrain décodé (GDM)");
+        sb.AppendLine("  Sniffer    : tous les paquets bruts");
+        sb.AppendLine("  Tools      : chat, diagnostic, INTERCEPTION (Phase 2)");
+        sb.AppendLine("  Scripts    : éditeur Lua + auto-script");
+        sb.AppendLine();
+        sb.AppendLine("INTERCEPTION FURTIVE (Phase 2) — API Lua :");
+        sb.AppendLine("  bot.intercepter(nom, prefixe, fn)  fn(p,sens)->nil/\"\"/str");
+        sb.AppendLine("  bot.intercepter_retirer(nom)");
+        sb.AppendLine("  bot.intercepter_vider()");
+        sb.AppendLine("  bot.intercepter_actif(bool)  -- kill-switch");
+        sb.AppendLine();
+        sb.AppendLine("API LUA (extrait) :");
+        sb.AppendLine("  bot.vie() bot.pa() bot.pm() bot.kamas()");
+        sb.AppendLine("  bot.carte() bot.position() bot.est_en_combat()");
+        sb.AppendLine("  bot.deplacer(cell) bot.dire(canal,txt) bot.travel(x,y)");
+        sb.AppendLine("  bot.config_combat_ajouter_sort_nom(nom,prio,cible)");
+        sb.AppendLine();
+        sb.AppendLine("SÉCURITÉ :");
+        sb.AppendLine("  Mode passif coché = observe seulement (0 paquet injecté)");
+        sb.AppendLine("  DetecteurStaff = pause auto si modo détecté");
+        sb.AppendLine("  ConfigDelais = délais humanisés (Vue Config)");
+        sb.AppendLine();
+        sb.AppendLine("CLI : --testparsers (valide les parsers Aqua), --smoke");
+
+        MessageBox.Show(sb.ToString(), "Luffy-bot — Documentation",
+            MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private void ChargerComptesSauvegardes()
