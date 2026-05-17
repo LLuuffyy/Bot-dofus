@@ -51,9 +51,15 @@ public static class DecompresseurMapData
             bits[i] = (byte)(idx < 0 ? 0 : idx);
         }
 
-        int typeCode = (bits[2] & 0b0011_1000) >> 3;        // 3 bits
+        // 'movement' Dofus 1.29 (0..7) : ce N'EST PAS un enum de type de cellule.
+        // C'est le poids de déplacement / walkabilité : movement == 0 → infranchissable,
+        // movement != 0 → marchable. Les téléports et interactifs viennent des sprites
+        // de layer (cf. EstCelluleTeleport / hasInteractive), PAS de ce champ. L'ancien
+        // mapping (1→Interactif, 2→Transition) classait à tort des cellules d'herbe
+        // normales en transition/interactif → carte « rien à voir » avec le client.
+        int movement = (bits[2] & 0b0011_1000) >> 3;        // 3 bits
         bool active = (bits[0] & 0b0010_0000) != 0;         // bit 5 oct[0]
-        bool lineOfSight = (bits[0] & 0b0000_0001) == 0;    // bit 0 oct[0] inversé
+        bool lineOfSight = (bits[0] & 0b0000_0001) != 0;    // bit 0 oct[0] (Ankama : LOS si bit=1)
         bool hasInteractive = (bits[7] & 0b0000_0010) != 0; // bit 1 oct[7]
 
         short layerObjet2 = (short)(((bits[0] & 0b0000_0010) << 12)
@@ -67,19 +73,12 @@ public static class DecompresseurMapData
         byte niveau = (byte)(bits[1] & 0b0000_1111);
         byte slope = (byte)((bits[4] & 0b0011_1100) >> 2);
 
-        // Mapping CellTypes Dofus → TypesCellule
-        TypesCellule type = typeCode switch
-        {
-            0 => TypesCellule.Obstacle,            // NOT_WALKABLE
-            1 => TypesCellule.Interactif,          // INTERACTIVE_OBJECT
-            2 => TypesCellule.Transition,          // TELEPORT_CELL
-            4 => TypesCellule.Marchable,           // WALKABLE
-            6 or 7 => TypesCellule.Marchable,      // PATH_1, PATH_2
-            _ => TypesCellule.Marchable,
-        };
-
-        // Si non active, force à obstacle (cellule désactivée par le serveur).
-        if (!active) type = TypesCellule.Obstacle;
+        // Walkabilité Dofus 1.29 : movement == 0 OU cellule inactive → obstacle ;
+        // sinon marchable. La spécialisation Zaap/Transition/Interactif est appliquée
+        // ensuite à partir des sprites de layer (plus fiable que ce champ).
+        TypesCellule type = (movement == 0 || !active)
+            ? TypesCellule.Obstacle
+            : TypesCellule.Marchable;
 
         cellule.Type = type;
         cellule.LayerNiveau = niveau;

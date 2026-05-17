@@ -56,14 +56,7 @@ public static class DechiffreurCarte
             sb.Append((char)(hexVal ^ keyVal));
         }
 
-        try
-        {
-            return HttpUtility.UrlDecode(sb.ToString()) ?? sb.ToString();
-        }
-        catch
-        {
-            return sb.ToString();
-        }
+        return UnescapeFlash(sb.ToString());
     }
 
     private static string PreparerClef(string clefHex)
@@ -108,16 +101,68 @@ public static class DechiffreurCarte
         return UnescapeFlash(sb.ToString());
     }
 
+    /// <summary>
+    /// Réimplémentation EXACTE de la fonction <c>unescape()</c> d'ActionScript/Flash
+    /// (et NON <see cref="HttpUtility.UrlDecode"/>, qui n'est PAS équivalent) :
+    ///
+    ///   • <c>%XX</c> → 1 seul caractère = l'octet de valeur 0xXX (Latin-1, par octet).
+    ///     .NET UrlDecode combine au contraire les <c>%XX</c> en UTF-8 multi-octets,
+    ///     ce qui FUSIONNE 2-3 octets en 1 char et RACCOURCIT la chaîne (symptôme
+    ///     observé : 479/560 cellules au lieu de 560, carte « rien à voir »).
+    ///   • <c>%uXXXX</c> → 1 caractère Unicode (rare, pas dans les data carte mais géré).
+    ///   • <c>+</c> est laissé TEL QUEL (UrlDecode le transforme en espace → corrompt
+    ///     la clé binaire et les data déchiffrées).
+    ///   • tout autre caractère est recopié verbatim.
+    ///
+    /// La clé (<see cref="PreparerClef"/>) et les data déchiffrées sont du binaire
+    /// brut (octets 0-255) : seule la sémantique Flash par octet donne le bon
+    /// résultat. Réf. Ankama Map.prepareKey / DecryptMapData.
+    /// </summary>
     private static string UnescapeFlash(string texte)
     {
-        try
+        if (string.IsNullOrEmpty(texte)) return texte;
+
+        var sb = new StringBuilder(texte.Length);
+        for (int i = 0; i < texte.Length; i++)
         {
-            return HttpUtility.UrlDecode(texte) ?? texte;
+            char c = texte[i];
+            if (c != '%')
+            {
+                sb.Append(c);
+                continue;
+            }
+
+            // %uXXXX (séquence Unicode Flash)
+            if (i + 5 < texte.Length && (texte[i + 1] == 'u' || texte[i + 1] == 'U'))
+            {
+                int h3 = HexChar(texte[i + 2]), h2 = HexChar(texte[i + 3]);
+                int h1 = HexChar(texte[i + 4]), h0 = HexChar(texte[i + 5]);
+                if (h3 >= 0 && h2 >= 0 && h1 >= 0 && h0 >= 0)
+                {
+                    sb.Append((char)((h3 << 12) | (h2 << 8) | (h1 << 4) | h0));
+                    i += 5;
+                    continue;
+                }
+            }
+
+            // %XX (octet brut Latin-1)
+            if (i + 2 < texte.Length)
+            {
+                int hi = HexChar(texte[i + 1]);
+                int lo = HexChar(texte[i + 2]);
+                if (hi >= 0 && lo >= 0)
+                {
+                    sb.Append((char)((hi << 4) | lo));
+                    i += 2;
+                    continue;
+                }
+            }
+
+            // '%' isolé ou séquence invalide : recopié verbatim (comportement Flash).
+            sb.Append(c);
         }
-        catch
-        {
-            return texte;
-        }
+
+        return sb.ToString();
     }
 
     private static int HexDeux(string s, int offset)
