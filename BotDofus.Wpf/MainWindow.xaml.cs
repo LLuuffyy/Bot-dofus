@@ -493,12 +493,24 @@ public partial class MainWindow : Window
         if (comptes.Count == 0)
         {
             var cheminAccountsBot = TrouverAccountsBot();
-            if (!string.IsNullOrWhiteSpace(cheminAccountsBot))
+            // On n'importe QUE si accounts.bot existe ET n'est pas vide. Un fichier
+            // vide (état "tout supprimé") ne doit pas déclencher d'erreur d'import.
+            if (!string.IsNullOrWhiteSpace(cheminAccountsBot)
+                && File.Exists(cheminAccountsBot)
+                && new FileInfo(cheminAccountsBot).Length > 4)
             {
-                comptes = ImportateurAccountsBot.Importer(cheminAccountsBot);
-                if (comptes.Count > 0)
+                try
                 {
-                    FichierComptes.Sauvegarder(comptes);
+                    comptes = ImportateurAccountsBot.Importer(cheminAccountsBot);
+                    if (comptes.Count > 0)
+                    {
+                        FichierComptes.Sauvegarder(comptes);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Journaliseur.Avertir($"[COMPTES] Import accounts.bot ignoré : {ex.Message}");
+                    comptes = new System.Collections.Generic.List<EntreeCompte>();
                 }
             }
         }
@@ -542,6 +554,68 @@ public partial class MainWindow : Window
         var vm = new CompteVm(contexte);
         Comptes.Add(vm);
         return vm;
+    }
+
+    private void BtnSupprimerCompte_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button b || b.Tag is not CompteVm vm) return;
+
+        var rep = MessageBox.Show(
+            $"Supprimer le compte « {vm.Contexte.Compte.Identifiant} » ?",
+            "Supprimer compte", MessageBoxButton.YesNo, MessageBoxImage.Question);
+        if (rep != MessageBoxResult.Yes) return;
+
+        try { vm.Contexte.ArreterProxy(); } catch { }
+        try { vm.Contexte.Dispose(); } catch { }
+
+        Comptes.Remove(vm);
+        if (ReferenceEquals(_contexteSelectionne, vm.Contexte)) _contexteSelectionne = null;
+
+        SauvegarderComptes();
+        Journaliseur.Info($"[UI] Compte supprimé : {vm.Contexte.Compte.Identifiant}");
+
+        if (Comptes.Count > 0) LstComptes.SelectedIndex = 0;
+        RafraichirStatsHeader();
+    }
+
+    private void BtnSupprimerTousComptes_Click(object sender, RoutedEventArgs e)
+    {
+        var rep = MessageBox.Show(
+            $"Supprimer TOUS les comptes ({Comptes.Count}) et repartir de zéro ?\n" +
+            "comptes.json et accounts.bot seront vidés.",
+            "Tout supprimer", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (rep != MessageBoxResult.Yes) return;
+
+        foreach (var vm in Comptes.ToList())
+        {
+            try { vm.Contexte.ArreterProxy(); } catch { }
+            try { vm.Contexte.Dispose(); } catch { }
+        }
+        Comptes.Clear();
+        _contexteSelectionne = null;
+
+        // Vide les deux sources de persistance pour éviter tout réimport au prochain lancement.
+        try
+        {
+            FichierComptes.Sauvegarder(new System.Collections.Generic.List<EntreeCompte>());
+            foreach (var chemin in new[]
+            {
+                Path.Combine(AppContext.BaseDirectory, "accounts.bot"),
+                Path.Combine(Environment.CurrentDirectory, "accounts.bot"),
+            })
+            {
+                if (File.Exists(chemin)) File.WriteAllText(chemin, string.Empty);
+            }
+        }
+        catch (Exception ex)
+        {
+            Journaliseur.Avertir($"[UI] Nettoyage persistance comptes : {ex.Message}");
+        }
+
+        Journaliseur.Info("[UI] Tous les comptes supprimés (liste + comptes.json + accounts.bot vidés)");
+        RafraichirStatsHeader();
+        MessageBox.Show("Tous les comptes ont été supprimés. Tu peux repartir propre avec « + ».",
+            "Tout supprimer", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private void SauvegarderComptes()

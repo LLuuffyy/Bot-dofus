@@ -223,6 +223,20 @@
                                             <TextBlock Text="Démarrer compte" />
                                         </StackPanel>
                                     </Button>
+                                    <Button x:Name="BtnSupprimerTousComptes"
+                                            Click="BtnSupprimerTousComptes_Click"
+                                            Margin="8,0,0,0"
+                                            ToolTip="Supprime TOUS les comptes (remet à zéro la liste + comptes.json + accounts.bot)"
+                                            Background="#4A2C31"
+                                            Foreground="#F0808A"
+                                            BorderBrush="#6B3D45"
+                                            BorderThickness="1"
+                                            Style="{StaticResource TopNavButtonStyle}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="TrashCanOutline" Width="14" Height="14" Margin="0,0,6,0" />
+                                            <TextBlock Text="Tout supprimer" />
+                                        </StackPanel>
+                                    </Button>
                                 </StackPanel>
                             </StackPanel>
 
@@ -234,6 +248,7 @@
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto" />
                                                     <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <Grid Width="40" Height="40" Margin="0,2,12,0">
                                                     <Ellipse Fill="#4A2E22" />
@@ -257,6 +272,18 @@
                                                                FontSize="11"
                                                                Foreground="{Binding StatusBrush}" />
                                                 </StackPanel>
+                                                <Button Grid.Column="2"
+                                                        Click="BtnSupprimerCompte_Click"
+                                                        Tag="{Binding}"
+                                                        Background="Transparent"
+                                                        BorderBrush="Transparent"
+                                                        Foreground="#F0808A"
+                                                        Padding="6"
+                                                        VerticalAlignment="Center"
+                                                        Cursor="Hand"
+                                                        ToolTip="Supprimer ce compte">
+                                                    <materialDesign:PackIcon Kind="TrashCanOutline" Width="16" Height="16" />
+                                                </Button>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
