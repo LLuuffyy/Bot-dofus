@@ -130,6 +130,8 @@ public sealed class TrameJeu : TrameBase
             existant.CellulePosition = c.Cellule;
             existant.PV = c.Pv;
             existant.PVMax = c.PvMax;
+            existant.PA = c.Pa;
+            existant.PM = c.Pm;
             existant.EstMort = !c.Vivant;
         }
 

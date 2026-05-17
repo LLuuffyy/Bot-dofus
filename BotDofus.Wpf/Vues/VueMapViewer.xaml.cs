@@ -59,7 +59,11 @@ public partial class VueMapViewer : UserControl
     private void OnPaquet(object? sender, EvenementPaquetRecu e)
     {
         var contenu = e.Paquet.Contenu;
+        // GT* (GTM combattants+cellules, GTS tour, GTF/GTR) : indispensable
+        // pour rafraîchir la grille PENDANT le combat — les positions des
+        // combattants Abrak arrivent par GTM (préfixe "GT", PAS "GM").
         if (!contenu.StartsWith("GM", StringComparison.Ordinal)
+            && !contenu.StartsWith("GT", StringComparison.Ordinal)
             && !contenu.StartsWith("GDM", StringComparison.Ordinal)
             && !contenu.StartsWith("GDK", StringComparison.Ordinal)
             && !contenu.StartsWith("GDF", StringComparison.Ordinal)

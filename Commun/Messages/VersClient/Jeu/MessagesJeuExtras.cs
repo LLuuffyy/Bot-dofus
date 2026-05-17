@@ -78,10 +78,10 @@ public sealed class MessageActeurAbrakRetrait : MessageDofus, IMessageVersClient
 
 /// <summary>
 /// GTM (Abrak) : liste des COMBATTANTS avec leur cellule. EN CLAIR (le combat
-/// n'est pas dans le canal chiffré). Format observé, combattants séparés par '|' :
-/// <c>id;alive;life;f3;f4;CELL;;maxlife</c> — ex.
-/// <c>401781;0;75;6;3;241;;75</c> (vivant, cellule 241, 75/75 PV),
-/// <c>-1;0;18;3;2;236;;18</c> (monstre, cellule 236),
+/// n'est pas dans le canal chiffré). Format réel (validé sur capture live),
+/// combattants séparés par '|' : <c>id;vivant;PV;PA;PM;CELLULE;;PVMax</c> — ex.
+/// <c>401781;0;80;6;3;54;;80</c> (vivant, 80/80 PV, 6 PA, 3 PM, cellule 54),
+/// <c>-1;0;12;4;3;414;;12</c> (monstre cellule 414, 4 PA 3 PM),
 /// <c>-1;1</c> (forme courte = combattant mort).
 ///
 /// Heuristique d'équipe (PvM Incarnam) : id &lt; 0 = monstre/ennemi,
@@ -93,7 +93,7 @@ public sealed class MessageCombattantsAbrak : MessageDofus, IMessageVersClient
     public override string Prefixe => "GTM";
     public override DirectionPaquet Direction => DirectionPaquet.VersClient;
 
-    public readonly record struct Combattant(int Id, bool Vivant, int Cellule, int Pv, int PvMax);
+    public readonly record struct Combattant(int Id, bool Vivant, int Cellule, int Pv, int PvMax, int Pa, int Pm);
     public List<Combattant> Combattants { get; } = new();
 
     public override void Desserialiser(string charge)
@@ -106,14 +106,16 @@ public sealed class MessageCombattantsAbrak : MessageDofus, IMessageVersClient
 
             // Forme courte "id;1" = mort. f[1] == "0" => vivant.
             bool vivant = f[1] == "0";
-            int cell = 0, pv = 0, pvMax = 0;
+            int cell = 0, pv = 0, pvMax = 0, pa = 0, pm = 0;
             if (f.Length >= 8)
             {
                 int.TryParse(f[2], out pv);
+                int.TryParse(f[3], out pa);   // PA (ex. 6)
+                int.TryParse(f[4], out pm);   // PM (ex. 3)
                 int.TryParse(f[5], out cell);
                 int.TryParse(f[7], out pvMax);
             }
-            Combattants.Add(new Combattant(id, vivant, cell, pv, pvMax));
+            Combattants.Add(new Combattant(id, vivant, cell, pv, pvMax, pa, pm));
         }
     }
 }
