@@ -130,8 +130,26 @@ public sealed class ProxyReseau : IDisposable
         try
         {
             connexionServeur = new TcpClient();
+            if (_config.PortSourceMarqueur > 0)
+            {
+                // Mode WinDivert : on lie la socket sortante à un port source fixe
+                // pour que le redirecteur exclue NOTRE connexion du filtre (anti-boucle).
+                try
+                {
+                    connexionServeur.Client.SetSocketOption(
+                        System.Net.Sockets.SocketOptionLevel.Socket,
+                        System.Net.Sockets.SocketOptionName.ReuseAddress, true);
+                    connexionServeur.Client.Bind(
+                        new System.Net.IPEndPoint(System.Net.IPAddress.Any, _config.PortSourceMarqueur));
+                }
+                catch (Exception exBind)
+                {
+                    Journaliseur.Avertir($"[WD] Bind port marqueur {_config.PortSourceMarqueur} échoué : {exBind.Message}");
+                }
+            }
             await connexionServeur.ConnectAsync(_config.HoteDistant, _config.PortDistant, ct).ConfigureAwait(false);
-            Journaliseur.Info($"Connexion sortante établie vers {_config.HoteDistant}:{_config.PortDistant}");
+            Journaliseur.Info($"Connexion sortante établie vers {_config.HoteDistant}:{_config.PortDistant}"
+                + (_config.PortSourceMarqueur > 0 ? $" (src marqueur :{_config.PortSourceMarqueur})" : ""));
 
             var session = new SessionProxy(clientDofus, connexionServeur, _config);
             session.PaquetRecu += (_, ev) => PaquetRecu?.Invoke(this, ev);

@@ -52,6 +52,14 @@ public sealed class ConfigReseau
     /// </summary>
     public int PortEcouteJeuLocal { get; set; } = 1304;
 
+    /// <summary>
+    /// Port source local fixe pour la connexion SORTANTE du proxy vers le vrai serveur.
+    /// 0 = port éphémère normal. Utilisé en mode WinDivert : le redirecteur exclut
+    /// ce port source du filtre pour ne PAS réintercepter la connexion du proxy
+    /// lui-même (sinon boucle infinie). Voir RedirecteurWinDivert.
+    /// </summary>
+    public int PortSourceMarqueur { get; set; } = 50303;
+
     /// <summary>Délai maximum d'attente d'octets avant considérer la connexion zombie (ms).</summary>
     public int DelaiLectureMs { get; set; } = 30_000;
 

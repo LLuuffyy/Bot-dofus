@@ -33,9 +33,8 @@ public partial class MainWindow : Window
     // rediriger une connexion SORTANTE vers une IP distante — il ne fait que du
     // listener inbound local). La redirection Abrak repose sur le patch config.xml.
 
-    // PatcheurConfigXml gardé en champ : config.xml reste patché tant que le bot
-    // tourne (launcher Abrak lent) ; restauré sur Déconnexion / OnClosed.
-    private BotDofus.Utilitaires.Aqua.PatcheurConfigXml? _patcheurConfig;
+    // Redirecteur WinDivert (Abrak) : interception packet-level, fermé sur OnClosed.
+    private BotDofus.Utilitaires.Reseau.RedirecteurWinDivert? _redirecteurWd;
 
     public MainWindow()
     {
@@ -224,7 +223,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private async void BtnLancerJeu_Click(object sender, RoutedEventArgs e)
+    private void BtnLancerJeu_Click(object sender, RoutedEventArgs e)
     {
         var contexte = _contexteSelectionne ?? Comptes.FirstOrDefault()?.Contexte;
         if (contexte == null)
@@ -255,32 +254,31 @@ public partial class MainWindow : Window
 
             FermerClientsDofusExistants(cheminClientOriginal);
 
-            // === MIGRATION AQUA ===
-            // On ne patche plus core.swf : le client Aqua lit son IP serveur depuis
-            // config.xml (élément <conf>/<connexionServers>/<connserver>).
-            // PatcheurConfigXml injecte le bloc, lance Dofus.exe, attend 15s pour
-            // que Flash ait lu, puis restaure le config original.
-            var configXmlPath = BotDofus.Utilitaires.Aqua.PatcheurConfigXml.CheminConfigDefaut;
-            if (!File.Exists(configXmlPath))
+            // === REDIRECTION ABRAK = WinDivert (packet-level) ===
+            // Le config.xml patch est PROUVÉ inefficace pour Abrak (client se connecte
+            // direct à l'IP serveur, ignorée du config). Seule méthode fiable : WinDivert
+            // intercepte les paquets sortants vers 51.89.153.20:1303/1304 et les
+            // redirige sur notre proxy local 127.0.0.1 (anti-boucle via port marqueur).
+            try
             {
-                // Si le user n'a pas le launcher Bubble, on lance Dofus.exe tel quel
-                // (en supposant qu'il l'a redirigé autrement, ex. Synfus en parallèle).
-                Journaliseur.Avertir($"[AQUA] config.xml introuvable ({configXmlPath}) — lancement direct sans patch");
-                var lanceurDirect = new LanceurDofus(cheminClientOriginal);
-                lanceurDirect.Lancer();
+                _redirecteurWd ??= new BotDofus.Utilitaires.Reseau.RedirecteurWinDivert(
+                    ipServeur: "51.89.153.20", portAuth: 1303, portJeu: 1304, portMarqueur: 50303);
+                if (!_redirecteurWd.Actif) _redirecteurWd.Demarrer();
+                Journaliseur.Info("[WD] Interception WinDivert active — lance le jeu, ça sera redirigé.");
+            }
+            catch (Exception exWd)
+            {
+                MessageBox.Show(
+                    $"WinDivert n'a pas pu démarrer :\n{exWd.Message}\n\n" +
+                    $"→ Lance Luffy-bot en ADMINISTRATEUR (le driver réseau l'exige).",
+                    "WinDivert", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            // Restaure un éventuel patch résiduel d'un lancement précédent.
-            _patcheurConfig?.RestaurerDiffere();
-            _patcheurConfig = new BotDofus.Utilitaires.Aqua.PatcheurConfigXml(
-                ipLocale: "127.0.0.1",
-                portLocal: 1303,
-                cheminConfig: configXmlPath);
-
-            // Workflow : Patcher() → lancer le client. PAS de restore sur timer
-            // (launcher Abrak lent). config.xml reste patché jusqu'à Déconnexion.
-            await _patcheurConfig.LancerClientAsync(cheminClientOriginal);
+            // On lance le client Abrak normalement : WinDivert capte la connexion
+            // quelle que soit la façon dont le client trouve son serveur.
+            var lanceur = new LanceurDofus(cheminClientOriginal);
+            lanceur.Lancer();
         }
         catch (Exception ex)
         {
@@ -331,10 +329,10 @@ public partial class MainWindow : Window
 
     private void NettoyerPatchEtHosts()
     {
-        // Restaure le config.xml patché (workflow sans timer : on restaure ICI,
-        // à la déconnexion / fermeture, pas sur un délai).
-        try { _patcheurConfig?.RestaurerDiffere(); }
-        catch (Exception ex) { Journaliseur.Avertir($"Restore config.xml : {ex.Message}"); }
+        // Arrête l'interception WinDivert (libère le driver / restaure le trafic normal).
+        try { _redirecteurWd?.Dispose(); _redirecteurWd = null; }
+        catch (Exception ex) { Journaliseur.Avertir($"Arrêt WinDivert : {ex.Message}"); }
+
 
         // Passe défensive : si le bot a planté en laissant un <connexionServers>
         // résiduel dans config.xml, on le vire.
