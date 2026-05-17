@@ -31,6 +31,7 @@ public sealed class RedirecteurWinDivert : IDisposable
     private readonly int _port2;
     private readonly int _portMarqueur;
     private readonly IPAddress _ipLocale = IPAddress.Parse("127.0.0.1");
+    private readonly IPAddress _ipServeur1;
 
     private IntPtr _handle = IntPtr.Zero;
     private Thread? _boucle;
@@ -43,6 +44,7 @@ public sealed class RedirecteurWinDivert : IDisposable
     public RedirecteurWinDivert(string ipServeur, int portAuth, int portJeu, int portMarqueur)
     {
         _ipServeur = ipServeur;
+        _ipServeur1 = IPAddress.Parse(ipServeur);
         _port1 = portAuth;
         _port2 = portJeu;
         _portMarqueur = portMarqueur;
@@ -109,17 +111,31 @@ public sealed class RedirecteurWinDivert : IDisposable
 
                 if (addr.Direction == WinDivertDirection.Outbound)
                 {
-                    // Client → serveur réel : mémorise l'IP client puis bascule en loopback.
+                    // Client → serveur réel (51.89.153.20). On mémorise l'IP réelle
+                    // du client puis on bascule le paquet en loopback pur (127↔127)
+                    // ET on l'injecte comme ENTRANT : sinon Windows le renvoie vers
+                    // la carte réseau et il n'atteint jamais notre proxy local
+                    // ("serveur introuvable"). C'est LE point critique du redirect.
                     _ipClient ??= ip->SrcAddr;
                     ip->SrcAddr = _ipLocale;
                     ip->DstAddr = _ipLocale;
+                    addr.Direction = WinDivertDirection.Inbound;
+                    addr.Loopback = true;
                 }
-                else // Inbound : proxy(127.0.0.1) → client
+                else
                 {
-                    ip->SrcAddr = IPAddress.Parse(_ipServeur);
+                    // Réponse du proxy (127.0.0.1:1303/1304) → client. Le client a
+                    // appelé connect(51.89.153.20:1303) : sa pile TCP n'accepte la
+                    // réponse que si elle vient de 51.89.153.20. On restaure donc
+                    // src=serveur, dst=IP réelle client, et on injecte ENTRANT
+                    // (paquet "venant du réseau" pour la socket cliente).
+                    ip->SrcAddr = _ipServeur1;
                     ip->DstAddr = _ipClient ?? ip->DstAddr;
+                    addr.Direction = WinDivertDirection.Inbound;
+                    addr.Loopback = false;
                 }
 
+                addr.Impostor = false;
                 WinDivert.WinDivertHelperCalcChecksums(buffer, readLen, ref addr,
                     WinDivertChecksumHelperParam.All);
                 WinDivert.WinDivertSend(_handle, buffer, readLen, ref addr);
