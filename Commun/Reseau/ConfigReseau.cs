@@ -60,6 +60,15 @@ public sealed class ConfigReseau
     /// </summary>
     public int PortSourceMarqueur { get; set; } = 50303;
 
+    /// <summary>
+    /// Port source marqueur DÉDIÉ au proxy JEU (port 1304). Doit être différent de
+    /// <see cref="PortSourceMarqueur"/> : les deux proxies (auth + jeu) ouvrent
+    /// chacun une connexion sortante vers 51.89.153.20 et WinDivert doit exclure
+    /// les DEUX du filtre, sinon il réintercepte la connexion du proxy jeu (boucle)
+    /// OU les deux sockets se disputent le même port 50303 (bind conflict).
+    /// </summary>
+    public int PortSourceMarqueurJeu { get; set; } = 50304;
+
     /// <summary>Délai maximum d'attente d'octets avant considérer la connexion zombie (ms).</summary>
     public int DelaiLectureMs { get; set; } = 30_000;
 

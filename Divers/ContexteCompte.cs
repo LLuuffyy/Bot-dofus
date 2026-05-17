@@ -277,6 +277,20 @@ public sealed class ContexteCompte : IDisposable
         return aykLocal;
     }
 
+    /// <summary>
+    /// Démarre le proxy JEU SANS attendre l'AYK. Indispensable pour Abrak/WinDivert :
+    /// le client ferme la connexion auth après la sélection serveur (comportement
+    /// Dofus normal) puis ouvre une connexion NEUVE vers le serveur de jeu
+    /// (51.89.153.20:1304). WinDivert la redirige sur 127.0.0.1:1304 — mais si rien
+    /// n'écoute encore là (proxy jeu démarré seulement à l'interception AYK, qui
+    /// arrive trop tard ou dans un format Abrak non parsé), le client affiche
+    /// « serveur introuvable ». On pré-démarre donc le listener jeu dès le lancement.
+    /// </summary>
+    public void DemarrerProxyJeuEager()
+    {
+        DemarrerProxyJeu(_configReseau.HoteJeuDistant, _configReseau.PortJeuDistant);
+    }
+
     private void DemarrerProxyJeu(string hoteDistant, int portDistant)
     {
         if (ProxyJeu?.EnEcoute == true)
@@ -293,6 +307,10 @@ public sealed class ContexteCompte : IDisposable
             AdresseEcouteLocale = "0.0.0.0",
             PortEcouteLocal = _configReseau.PortEcouteJeuLocal,
             PortEcouteJeuLocal = _configReseau.PortEcouteJeuLocal,
+            // Marqueur DÉDIÉ jeu (50304) : la connexion sortante du proxy jeu vers
+            // 51.89.153.20:1304 doit être exclue du filtre WinDivert avec un port
+            // DIFFÉRENT de celui du proxy auth (50303) — sinon bind conflict + boucle.
+            PortSourceMarqueur = _configReseau.PortSourceMarqueurJeu,
             DelaiLectureMs = _configReseau.DelaiLectureMs,
             TailleTamponOctets = _configReseau.TailleTamponOctets
         };

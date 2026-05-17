@@ -262,9 +262,17 @@ public partial class MainWindow : Window
             try
             {
                 _redirecteurWd ??= new BotDofus.Utilitaires.Reseau.RedirecteurWinDivert(
-                    ipServeur: "51.89.153.20", portAuth: 1303, portJeu: 1304, portMarqueur: 50303);
+                    ipServeur: "51.89.153.20", portAuth: 1303, portJeu: 1304,
+                    portMarqueur: 50303, portMarqueurJeu: 50304);
                 if (!_redirecteurWd.Actif) _redirecteurWd.Demarrer();
                 Journaliseur.Info("[WD] Interception WinDivert active — lance le jeu, ça sera redirigé.");
+
+                // Pré-démarre le proxy JEU (1304) tout de suite. Le client Abrak ferme
+                // la connexion auth après la sélection serveur puis ouvre une connexion
+                // NEUVE vers 51.89.153.20:1304 que WinDivert redirige sur 127.0.0.1:1304.
+                // Sans listener déjà en place là → « serveur introuvable ».
+                contexte.DemarrerProxyJeuEager();
+                Journaliseur.Info("[WD] Proxy jeu pré-démarré sur 1304 (anti « serveur introuvable » post-sélection).");
             }
             catch (Exception exWd)
             {

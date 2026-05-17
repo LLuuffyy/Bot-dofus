@@ -34,6 +34,7 @@ public sealed class RedirecteurWinDivert : IDisposable
     private readonly int _port1;
     private readonly int _port2;
     private readonly int _portMarqueur;
+    private readonly int _portMarqueurJeu;
     private static readonly IPAddress Loopback = IPAddress.Loopback;
 
     private WinDivert? _divert;
@@ -44,13 +45,14 @@ public sealed class RedirecteurWinDivert : IDisposable
     public bool Actif => _actif;
     public long PaquetsRediriges { get; private set; }
 
-    public RedirecteurWinDivert(string ipServeur, int portAuth, int portJeu, int portMarqueur)
+    public RedirecteurWinDivert(string ipServeur, int portAuth, int portJeu, int portMarqueur, int portMarqueurJeu)
     {
         _ipServeur = ipServeur;
         _ipServeurAddr = IPAddress.Parse(ipServeur);
         _port1 = portAuth;
         _port2 = portJeu;
         _portMarqueur = portMarqueur;
+        _portMarqueurJeu = portMarqueurJeu;
     }
 
     public void Demarrer()
@@ -60,7 +62,8 @@ public sealed class RedirecteurWinDivert : IDisposable
         var filtre =
             $"tcp and (" +
             $"(outbound and ip.DstAddr == {_ipServeur} and " +
-            $"(tcp.DstPort == {_port1} or tcp.DstPort == {_port2}) and tcp.SrcPort != {_portMarqueur}) " +
+            $"(tcp.DstPort == {_port1} or tcp.DstPort == {_port2}) " +
+            $"and tcp.SrcPort != {_portMarqueur} and tcp.SrcPort != {_portMarqueurJeu}) " +
             $"or " +
             $"(ip.SrcAddr == 127.0.0.1 and (tcp.SrcPort == {_port1} or tcp.SrcPort == {_port2}))" +
             $")";
@@ -80,7 +83,7 @@ public sealed class RedirecteurWinDivert : IDisposable
         _boucle = new Thread(BoucleInterception) { IsBackground = true, Name = "WinDivert-Redir" };
         _boucle.Start();
         Journaliseur.Info($"[WD] Redirecteur actif (WinDivert 2.2) : {_ipServeur}:{_port1}/{_port2} " +
-                          $"→ 127.0.0.1 (port marqueur exclu : {_portMarqueur})");
+                          $"→ 127.0.0.1 (ports marqueurs exclus : {_portMarqueur} auth / {_portMarqueurJeu} jeu)");
     }
 
     private unsafe void BoucleInterception()
