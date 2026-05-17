@@ -134,6 +134,16 @@ public partial class VueDashboard : UserControl
 
         if (TxtStatModifies != null)
             TxtStatModifies.Text = s.PaquetsModifies.ToString("N0");
+
+        if (TxtStatAntiBurst != null)
+        {
+            var h = _contexte.Api.Humaniseur;
+            TxtStatAntiBurst.Text = h.Actif ? $"{h.DelaisImposes:N0} délais" : "OFF (passif)";
+            TxtStatAntiBurst.Foreground = h.Actif
+                ? System.Windows.Media.Brushes.Orange
+                : new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(0x7B, 0xD3, 0x89));
+        }
     }
 
     private static string FormaterOctets(long o)

@@ -85,6 +85,7 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Margin="6,0">
@@ -115,6 +116,11 @@
                     <TextBlock Text="Paquets modifiés" Style="{StaticResource MutedTextStyle}"/>
                     <TextBlock x:Name="TxtStatModifies" Text="0" FontFamily="Consolas" FontSize="16" FontWeight="SemiBold" Foreground="#FF7AB8" Margin="0,4,0,0"
                                ToolTip="Paquets modifiés/supprimés par le moteur d'interception (furtivité Phase 2)"/>
+                </StackPanel>
+                <StackPanel Grid.Column="7" Margin="6,0">
+                    <TextBlock Text="Anti-burst" Style="{StaticResource MutedTextStyle}"/>
+                    <TextBlock x:Name="TxtStatAntiBurst" Text="OFF" FontFamily="Consolas" FontSize="16" FontWeight="SemiBold" Foreground="#7BD389" Margin="0,4,0,0"
+                               ToolTip="Délais humains imposés aux injections autonomes (Phase 3). OFF en mode passif."/>
                 </StackPanel>
             </Grid>
         </Border>
