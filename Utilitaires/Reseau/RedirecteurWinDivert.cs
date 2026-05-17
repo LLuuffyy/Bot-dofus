@@ -121,22 +121,35 @@ public sealed class RedirecteurWinDivert : IDisposable
 
                 var ip = res.IPV4Header;
                 var tcp = res.TcpHeader;
-                bool sortant = addr.Flags.HasFlag(WinDivertAddressFlag.Outbound);
                 var avant = $"{ip->SrcAddr}:{tcp->SrcPort} → {ip->DstAddr}:{tcp->DstPort}";
 
+                // DÉCISION PAR ADRESSE IP (pas par le flag Outbound : sur loopback
+                // Windows, la réponse du proxy est aussi marquée Outbound, ce qui
+                // cassait tout). Le filtre garantit que seuls 2 types arrivent :
+                //   A) →51.89.153.20 = client → notre proxy  (rewrite vers loopback)
+                //   B) src 127.0.0.1 = réponse proxy → client (rewrite vers serveur)
+                bool versProxy = ip->DstAddr.Equals(_ipServeurAddr);
+                bool versClient = !versProxy && ip->SrcAddr.Equals(Loopback);
+
                 IPAddress nouvelleDst;
-                if (sortant)
+                if (versProxy)
                 {
-                    _ipClient ??= ip->SrcAddr;
+                    _ipClient ??= ip->SrcAddr;       // IP réelle du client (192.168.x.x)
                     ip->SrcAddr = Loopback;
                     ip->DstAddr = Loopback;
                     nouvelleDst = Loopback;
                 }
-                else
+                else if (versClient)
                 {
-                    ip->SrcAddr = _ipServeurAddr;
+                    ip->SrcAddr = _ipServeurAddr;    // la pile cliente attend 51.89.153.20
                     ip->DstAddr = _ipClient ?? ip->DstAddr;
                     nouvelleDst = _ipClient ?? ip->DstAddr;
+                }
+                else
+                {
+                    // Ne nous concerne pas → relayer tel quel sans toucher.
+                    _divert.Send(packet, addr);
+                    continue;
                 }
 
                 bool routerOk = true;
@@ -148,7 +161,7 @@ public sealed class RedirecteurWinDivert : IDisposable
 
                 if (diag++ < 20)
                 {
-                    Journaliseur.Info($"[WD] #{recus} {(sortant ? "OUT" : "IN ")} {avant} " +
+                    Journaliseur.Info($"[WD] #{recus} {(versProxy ? "C→P" : "P→C")} {avant} " +
                         $"→ {ip->SrcAddr}:{tcp->SrcPort}→{ip->DstAddr}:{tcp->DstPort} " +
                         $"routeur={(routerOk ? "ok" : "KO")} envoyé={envoye}o");
                 }
