@@ -113,6 +113,45 @@ public sealed class ContexteCompte : IDisposable
         };
         EtatJeu.Combat.EtatChange += (_, etat) => Stats.NotifierEtatCombat(etat);
         Interception.PaquetModifie += (_, __) => Stats.NotifierInterception();
+
+        // === IA COMBAT — ADVISORY ===
+        // Le combat Abrak est lu en clair (GTM/GTS → positions, PA/PM, tours),
+        // mais les ACTIONS de combat passent par le canal CHIFFRÉ anti-tamper
+        // d'Abrak : on ne peut pas les injecter. À chaque fois que c'est le
+        // tour du perso, on calcule néanmoins l'action OPTIMALE avec le moteur
+        // d'IA sur l'état réel et on la JOURNALISE. Démontre que le bot
+        // comprend et décide le combat (la seule limite est la défense
+        // cryptographique du serveur, pas l'intelligence du bot).
+        EtatJeu.Combat.TourChange += (_, idCombattant) =>
+        {
+            if (idCombattant != EtatJeu.Personnage.Identifiant) return;
+            if (EtatJeu.Combat.Etat != BotDofus.Divers.Combats.Enums.EtatCombat.EnCours) return;
+            try
+            {
+                var decideur = new DecideurCombat(ConfigCombat.Strategie, ConfigCombat.Regles);
+                var action = decideur.Decider(EtatJeu.Combat);
+                string desc = action switch
+                {
+                    ActionCombat.LancerSort s => $"lancer sort {s.IdSort} → cellule {s.CelluleCible}",
+                    ActionCombat.SeDeplacer d => $"se déplacer → cellule {d.CelluleCible}",
+                    ActionCombat.UtiliserObjet o => $"utiliser objet {o.IdObjet}",
+                    _ => "passer le tour"
+                };
+                int ennemisVivants = 0;
+                foreach (var e in EtatJeu.Combat.Ennemis) if (!e.EstMort) ennemisVivants++;
+                Journaliseur.Info(
+                    $"[IA] Mon tour → action calculée : {desc} "
+                    + $"(stratégie {ConfigCombat.Strategie}, {ennemisVivants} ennemi(s) vivant(s), "
+                    + $"{ConfigCombat.Regles.Count} règle(s) de sort)");
+                Journaliseur.Info(
+                    "[IA] Injection de l'action BLOQUÉE par le chiffrement anti-tamper Abrak "
+                    + "(canal '-') — décision affichée à titre démonstratif.");
+            }
+            catch (Exception ex)
+            {
+                Journaliseur.Avertir($"[IA] Échec calcul décision : {ex.Message}");
+            }
+        };
     }
 
     private void OnSessionDemarree(object? sender, SessionProxy session)
