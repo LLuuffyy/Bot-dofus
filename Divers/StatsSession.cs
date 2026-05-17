@@ -25,6 +25,9 @@ public sealed class StatsSession
     public int CombatsTotaux { get; private set; }
     public int CombatsEnCours { get; private set; }
 
+    /// <summary>Nb de paquets modifiés/supprimés par le moteur d'interception (métrique furtivité).</summary>
+    public long PaquetsModifies { get; private set; }
+
     public long KamasInitiaux { get; private set; }
     public long KamasCourants { get; private set; }
     public long XpInitiale { get; private set; }
@@ -61,6 +64,12 @@ public sealed class StatsSession
             PaquetsEnvoyes++;
             OctetsEnvoyes += taille;
         }
+        Change?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void NotifierInterception()
+    {
+        PaquetsModifies++;
         Change?.Invoke(this, EventArgs.Empty);
     }
 

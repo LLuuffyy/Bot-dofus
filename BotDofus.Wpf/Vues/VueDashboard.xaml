@@ -84,6 +84,7 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Margin="6,0">
@@ -109,6 +110,11 @@
                 <StackPanel Grid.Column="5" Margin="6,0">
                     <TextBlock Text="XP gagnée" Style="{StaticResource MutedTextStyle}"/>
                     <TextBlock x:Name="TxtStatXp" Text="+0" FontFamily="Consolas" FontSize="16" FontWeight="SemiBold" Foreground="#7BD389" Margin="0,4,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="6" Margin="6,0">
+                    <TextBlock Text="Paquets modifiés" Style="{StaticResource MutedTextStyle}"/>
+                    <TextBlock x:Name="TxtStatModifies" Text="0" FontFamily="Consolas" FontSize="16" FontWeight="SemiBold" Foreground="#FF7AB8" Margin="0,4,0,0"
+                               ToolTip="Paquets modifiés/supprimés par le moteur d'interception (furtivité Phase 2)"/>
                 </StackPanel>
             </Grid>
         </Border>

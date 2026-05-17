@@ -98,6 +98,7 @@ public sealed class ContexteCompte : IDisposable
             Stats.NotifierXp(EtatJeu.Personnage.XpActuelle);
         };
         EtatJeu.Combat.EtatChange += (_, etat) => Stats.NotifierEtatCombat(etat);
+        Interception.PaquetModifie += (_, __) => Stats.NotifierInterception();
     }
 
     private void OnSessionDemarree(object? sender, SessionProxy session)

@@ -131,6 +131,9 @@ public partial class VueDashboard : UserControl
 
         if (TxtStatXp != null)
             TxtStatXp.Text = (s.XpGagnee >= 0 ? "+" : "") + s.XpGagnee.ToString("N0");
+
+        if (TxtStatModifies != null)
+            TxtStatModifies.Text = s.PaquetsModifies.ToString("N0");
     }
 
     private static string FormaterOctets(long o)
