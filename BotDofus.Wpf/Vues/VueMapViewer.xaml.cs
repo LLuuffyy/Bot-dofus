@@ -21,6 +21,7 @@ public partial class VueMapViewer : UserControl
 {
     private ContexteCompte? _contexte;
     private ContexteCompte? _contexteLie;
+    private BotDofus.Utilitaires.Auto.CalibrationClic? _calibration;
     public ObservableCollection<string> EntitesAffichees { get; } = new();
 
     private double _largeurCellule = 32;
@@ -455,8 +456,27 @@ public partial class VueMapViewer : UserControl
             return;
         }
 
-        try { await _contexte.Api.SeDeplacerVersCelluleAsync(cible); }
-        catch (Exception ex) { MessageBox.Show($"Deplacement echoue : {ex.Message}", "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning); }
+        // Abrak chiffre les actions de jeu (canal '-' anti-tamper) → on NE peut
+        // PAS injecter le paquet de déplacement. La seule voie : piloter le VRAI
+        // client (clic synthétique). Le client Flash calcule et envoie lui-même
+        // le paquet chiffré → déplacement réel en jeu (et si on clique une
+        // cellule de transition / un soleil, ça change de map en jeu aussi).
+        try
+        {
+            _calibration ??= BotDofus.Utilitaires.Auto.CalibrationClic.Charger();
+            bool ok = await System.Threading.Tasks.Task.Run(() =>
+                BotDofus.Utilitaires.Auto.PiloteClientDofus.CliquerCellule(
+                    _celluleHover!.X, _celluleHover!.Y, _calibration));
+            if (!ok)
+                MessageBox.Show(
+                    "Fenêtre Dofus introuvable (le client est-il lancé ?).",
+                    "Pilote client", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Pilotage client échoué : {ex.Message}", "Erreur",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     private void Entity_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
@@ -503,9 +523,17 @@ public partial class VueMapViewer : UserControl
             AjouterBoutonMenu($"Copier .travel {infoMap.X},{infoMap.Y}", () => Clipboard.SetText($".travel {infoMap.X},{infoMap.Y}"));
         }
 
-        if (cell.Type == TypesCellule.Transition && _contexte != null)
+        if (_contexte != null)
         {
-            AjouterBoutonMenu($"Aller cellule {cell.Identifiant}", async () => await _contexte.Api.SeDeplacerVersCelluleAsync(cell.Identifiant));
+            var libelle = cell.Type == TypesCellule.Transition
+                ? $"Aller (transition) cellule {cell.Identifiant}"
+                : $"Aller cellule {cell.Identifiant}";
+            AjouterBoutonMenu(libelle, async () =>
+            {
+                _calibration ??= BotDofus.Utilitaires.Auto.CalibrationClic.Charger();
+                await System.Threading.Tasks.Task.Run(() =>
+                    BotDofus.Utilitaires.Auto.PiloteClientDofus.CliquerCellule(cell.X, cell.Y, _calibration));
+            });
         }
 
         AjouterBoutonMenu("Fermer", () => { });
