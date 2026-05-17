@@ -140,6 +140,10 @@ public static class FabriqueMessages
         // Abrak v1.48 : acteurs map via la famille N* (identité only, position chiffrée).
         EnregistrerVersClient<VersClient.Jeu.MessageActeurAbrak>("NL");
         EnregistrerVersClient<VersClient.Jeu.MessageActeurAbrakRetrait>("Nx");
+        // Abrak combat EN CLAIR : GTM = combattants+cellules, GTS = à qui le tour.
+        // 3 chars → prioritaires sur le "GT" générique.
+        EnregistrerVersClient<VersClient.Jeu.MessageCombattantsAbrak>("GTM");
+        EnregistrerVersClient<VersClient.Jeu.MessageTourCombatAbrak>("GTS");
         EnregistrerVersClient<VersClient.Jeu.MessageNombreCombats>("fC");
 
         // --- VersClient : Info ---

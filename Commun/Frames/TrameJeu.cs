@@ -85,6 +85,53 @@ public sealed class TrameJeu : TrameBase
         });
         Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageActeurAbrakRetrait>(msg =>
             Journaliseur.Info($"[ENT] acteur Abrak parti : #{msg.Identifiant}"));
+
+        // === COMBAT ABRAK EN CLAIR : positions des combattants ===
+        // GTM = liste combattants+cellules ; GTS = à qui le tour. C'est ICI
+        // qu'on récupère enfin les entités positionnées (pour l'IA combat).
+        Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageCombattantsAbrak>(OnCombattantsAbrak);
+        Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageTourCombatAbrak>(msg =>
+        {
+            _etat.Combat.IdentifiantAllie = _etat.Personnage.Identifiant;
+            _etat.Combat.PassageEnCombat();
+            _etat.Combat.NouveauTour(msg.IdentifiantCombattant);
+            _compte.ChangerEtat(EtatsCompte.EnCombat);
+            Journaliseur.Info($"[COMBAT] Tour de #{msg.IdentifiantCombattant} (tour {msg.NumeroTour})"
+                + (msg.IdentifiantCombattant == _etat.Personnage.Identifiant ? " ← MOI" : ""));
+        });
+    }
+
+    private void OnCombattantsAbrak(BotDofus.Commun.Messages.VersClient.Jeu.MessageCombattantsAbrak msg)
+    {
+        if (msg.Combattants.Count == 0) return;
+
+        _etat.Combat.IdentifiantAllie = _etat.Personnage.Identifiant;
+
+        foreach (var c in msg.Combattants)
+        {
+            // Heuristique PvM Incarnam : id < 0 = monstre/ennemi, id > 0 = joueur/allié.
+            bool ennemi = c.Id < 0;
+            var liste = ennemi ? _etat.Combat.Ennemis : _etat.Combat.Allies;
+
+            var existant = liste.FirstOrDefault(x => x.Identifiant == c.Id);
+            if (existant == null)
+            {
+                existant = ennemi
+                    ? new BotDofus.Divers.Combats.Combattants.CombattantMonstre { Identifiant = c.Id, Equipe = 1 }
+                    : new BotDofus.Divers.Combats.Combattants.CombattantAllie { Identifiant = c.Id, Equipe = 0 };
+                liste.Add(existant);
+            }
+            existant.CellulePosition = c.Cellule;
+            existant.PV = c.Pv;
+            existant.PVMax = c.PvMax;
+            existant.EstMort = !c.Vivant;
+        }
+
+        int vivants = msg.Combattants.Count(x => x.Vivant);
+        Journaliseur.Info(
+            $"[COMBAT] {msg.Combattants.Count} combattant(s) ({vivants} vivants) — "
+            + $"alliés={_etat.Combat.Allies.Count} ennemis={_etat.Combat.Ennemis.Count} "
+            + $"| cellules: {string.Join(",", msg.Combattants.Select(x => $"#{x.Id}@{x.Cellule}"))}");
     }
 
     private void OnSelectionPersonnage(MessageSelectionPersonnage msg)

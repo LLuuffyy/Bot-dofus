@@ -76,6 +76,71 @@ public sealed class MessageActeurAbrakRetrait : MessageDofus, IMessageVersClient
     }
 }
 
+/// <summary>
+/// GTM (Abrak) : liste des COMBATTANTS avec leur cellule. EN CLAIR (le combat
+/// n'est pas dans le canal chiffré). Format observé, combattants séparés par '|' :
+/// <c>id;alive;life;f3;f4;CELL;;maxlife</c> — ex.
+/// <c>401781;0;75;6;3;241;;75</c> (vivant, cellule 241, 75/75 PV),
+/// <c>-1;0;18;3;2;236;;18</c> (monstre, cellule 236),
+/// <c>-1;1</c> (forme courte = combattant mort).
+///
+/// Heuristique d'équipe (PvM Incarnam) : id &lt; 0 = monstre/ennemi,
+/// id &gt; 0 = joueur/allié. C'est CE paquet qui donne enfin les positions
+/// des entités pour l'IA combat.
+/// </summary>
+public sealed class MessageCombattantsAbrak : MessageDofus, IMessageVersClient
+{
+    public override string Prefixe => "GTM";
+    public override DirectionPaquet Direction => DirectionPaquet.VersClient;
+
+    public readonly record struct Combattant(int Id, bool Vivant, int Cellule, int Pv, int PvMax);
+    public List<Combattant> Combattants { get; } = new();
+
+    public override void Desserialiser(string charge)
+    {
+        Charge = charge;
+        foreach (var bloc in charge.Split('|', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var f = bloc.Split(';');
+            if (f.Length < 2 || !int.TryParse(f[0], out var id)) continue;
+
+            // Forme courte "id;1" = mort. f[1] == "0" => vivant.
+            bool vivant = f[1] == "0";
+            int cell = 0, pv = 0, pvMax = 0;
+            if (f.Length >= 8)
+            {
+                int.TryParse(f[2], out pv);
+                int.TryParse(f[5], out cell);
+                int.TryParse(f[7], out pvMax);
+            }
+            Combattants.Add(new Combattant(id, vivant, cell, pv, pvMax));
+        }
+    }
+}
+
+/// <summary>
+/// GTS (Abrak) : « c'est le tour de &lt;id&gt; ». Format <c>id|timer|numTour</c>
+/// (ex. <c>GTS401770|45000|1</c>). Remplace le GT vanilla (id nu) que le
+/// parseur générique ne savait pas lire pour Abrak.
+/// </summary>
+public sealed class MessageTourCombatAbrak : MessageDofus, IMessageVersClient
+{
+    public override string Prefixe => "GTS";
+    public override DirectionPaquet Direction => DirectionPaquet.VersClient;
+    public int IdentifiantCombattant { get; private set; }
+    public int NumeroTour { get; private set; }
+
+    public override void Desserialiser(string charge)
+    {
+        Charge = charge;
+        var p = charge.Split('|');
+        int.TryParse(p.ElementAtOrDefault(0), out var cid);
+        IdentifiantCombattant = cid;
+        int.TryParse(p.ElementAtOrDefault(2), out var nt);
+        NumeroTour = nt;
+    }
+}
+
 /// <summary>fC : nombre de combats actifs sur la carte courante.</summary>
 public sealed class MessageNombreCombats : MessageDofus, IMessageVersClient
 {
