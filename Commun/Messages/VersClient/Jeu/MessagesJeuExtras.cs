@@ -221,9 +221,16 @@ public sealed class MessageMouvementCarte : MessageDofus, IMessageVersClient
         foreach (var bloc in blocs)
         {
             if (bloc.Length == 0) continue;
+            // Le PRÉFIXE est le discriminant fiable du type d'entité :
+            //   '+' = acteur (joueur si id>0, PNJ si id<0)
+            //   '~' = GROUPE DE MONSTRES (toujours — jamais un joueur/PNJ)
+            //   '-' = despawn   '=' = update
+            // Avant : '~' était mappé sur Spawn comme '+' → monstres/PNJ
+            // confondus (heuristique fragile en aval). Désormais distinct.
             var operation = bloc[0] switch
             {
                 '+' => OperationGM.Spawn,
+                '~' => OperationGM.MonstreGroupe,
                 '-' => OperationGM.Despawn,
                 '=' => OperationGM.Update,
                 _ => OperationGM.Spawn
@@ -254,7 +261,12 @@ public sealed class MessageMouvementCarte : MessageDofus, IMessageVersClient
 /// <summary>Type d'événement porté par un sous-bloc de <see cref="MessageMouvementCarte"/>.</summary>
 public enum OperationGM
 {
+    /// <summary>Préfixe '+' : acteur (joueur si id&gt;0, PNJ si id&lt;0).</summary>
     Spawn,
+    /// <summary>Préfixe '~' : groupe de monstres (jamais joueur/PNJ).</summary>
+    MonstreGroupe,
+    /// <summary>Préfixe '-' : disparition.</summary>
     Despawn,
+    /// <summary>Préfixe '=' : mise à jour.</summary>
     Update
 }

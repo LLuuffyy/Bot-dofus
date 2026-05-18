@@ -285,65 +285,24 @@ public sealed class TrameJeu : TrameBase
                 continue;
             }
 
-            // champs[1] = DIRECTION du sprite (0..7), PAS le type d'entité :
-            // l'ancien code branchait dessus → monstres face 3/4 vus comme
-            // « joueurs », et monstres face 2/5/6/7 droppés (0 branche). Le
-            // VRAI discriminant Dofus Retro = le SIGNE de l'id :
-            //   id > 0  → vrai joueur (id de compte, ex. 401855 + pseudo)
-            //   id <= 0 → sprite serveur (monstre / groupe / PNJ)
             var idEntite = ParserInt(champs, 3);
             var champ4 = champs.ElementAtOrDefault(4) ?? string.Empty;
-            bool champ4Numerique = champ4.Length > 0
-                && champ4.All(c => char.IsDigit(c) || c == ',' || c == '-');
 
-            // ---- Vrai joueur : id positif + pseudo (non numérique) ----
-            if (idEntite > 0 && champ4.Length > 0 && !champ4Numerique)
-            {
-                if (idEntite == _etat.Personnage.Identifiant
-                    || champ4 == _etat.Personnage.Nom)
-                {
-                    _etat.Personnage.CellulePosition = cellule;
-                    continue;
-                }
+            // === CLASSIFICATION PILOTÉE PAR LE PRÉFIXE GM (fiable) ===
+            // '~' (OperationGM.MonstreGroupe) = TOUJOURS un groupe de monstres.
+            // '+'/'=' = acteur : id>0 → joueur (pseudo) ; id<0 → PNJ (sprite
+            // serveur avec couleurs + id PNJ en fin de trame). Fini l'ancienne
+            // heuristique look≥3000 qui prenait des PNJ pour des monstres
+            // (ex. +220;1;0;-6;857;…;6363b3;ffe926;d1cdad;…;9089 = PNJ #9089).
 
-                carte.Entites[idEntite] = new EntiteJoueur
-                {
-                    Identifiant = idEntite,
-                    CellulePosition = cellule,
-                    Nom = champ4,
-                    Niveau = ParserNiveau(champs.ElementAtOrDefault(6)),
-                    Sexe = ParserInt(champs, 5)
-                };
-                continue;
-            }
-
-            // ---- Sprite serveur (id ≤ 0) : monstre/groupe ou PNJ ----
-            // Clé unique : l'id (négatif, distinct par sprite) ; fallback cellule.
+            // ---- Groupe de monstres ('~') ----
+            if (entree.Operation == OperationGM.MonstreGroupe)
             {
                 var gabarits = champ4.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                if (gabarits.Length == 0) continue;
                 var idGabarit = ParserInt(gabarits.ElementAtOrDefault(0));
                 var id = idEntite != 0 ? idEntite : -Math.Abs(cellule + 1);
 
-                // PNJ : le « look » (champ [6] avant '^') ≥ 3000 (ex. PNJ
-                // Incarnam 9059/9035) ; monstres ~30..1700. Validé live.
-                int look = ParserInt((champs.ElementAtOrDefault(6) ?? "").Split('^', ',')[0]);
-                if (look >= 3000 && gabarits.Length <= 1)
-                {
-                    var npc = Divers.Donnees.BaseDonnees.Instance.Npc(idGabarit);
-                    carte.Entites[id] = new EntitePNJ
-                    {
-                        Identifiant = id,
-                        CellulePosition = cellule,
-                        IdGabarit = idGabarit,
-                        Nom = !string.IsNullOrWhiteSpace(npc?.Nom) ? npc!.Nom : $"PNJ #{idGabarit}"
-                    };
-                    continue;
-                }
-
-                if (gabarits.Length == 0) continue; // rien d'exploitable
-
-                // Groupe de monstres : niveau = somme (= affichage Dofus),
-                // nom = liste. champs[6] = gfx/scale, PAS le niveau.
                 int niveauGroupe = 0;
                 var noms = new System.Collections.Generic.List<string>();
                 foreach (var g in gabarits)
@@ -363,6 +322,54 @@ public sealed class TrameJeu : TrameBase
                     NiveauGroupe = niveauGroupe,
                     TailleGroupe = Math.Max(1, gabarits.Length),
                     Nom = noms.Count > 0 ? string.Join(", ", noms) : NomMonstre(idGabarit)
+                };
+                continue;
+            }
+
+            // ---- Acteur ('+' / '=') : joueur (id>0) ou PNJ (id<0) ----
+            bool champ4Numerique = champ4.Length > 0
+                && champ4.All(c => char.IsDigit(c) || c == ',' || c == '-');
+
+            if (idEntite > 0)
+            {
+                // Joueur (id de compte + pseudo non numérique).
+                if (idEntite == _etat.Personnage.Identifiant
+                    || champ4 == _etat.Personnage.Nom)
+                {
+                    _etat.Personnage.CellulePosition = cellule;
+                    continue;
+                }
+                carte.Entites[idEntite] = new EntiteJoueur
+                {
+                    Identifiant = idEntite,
+                    CellulePosition = cellule,
+                    Nom = champ4Numerique || champ4.Length == 0 ? $"Joueur {idEntite}" : champ4,
+                    Niveau = ParserNiveau(champs.ElementAtOrDefault(6)),
+                    Sexe = ParserInt(champs, 5)
+                };
+                continue;
+            }
+
+            // id < 0 et préfixe '+' → PNJ. L'id PNJ (pour nom/dialogue) est
+            // le DERNIER champ numérique de la trame (ex. …;;9089), pas le
+            // gfx champ[4]. Fallback : gfx.
+            {
+                var id = idEntite != 0 ? idEntite : -Math.Abs(cellule + 1);
+                int idPnj = 0;
+                for (int k = champs.Length - 1; k >= 5 && idPnj == 0; k--)
+                {
+                    var brutK = (champs[k] ?? "").Split('^', ',')[0];
+                    if (int.TryParse(brutK, out var vK) && vK > 0) idPnj = vK;
+                }
+                if (idPnj == 0) idPnj = ParserInt(champ4.Split(',', StringSplitOptions.RemoveEmptyEntries).ElementAtOrDefault(0));
+
+                var npc = Divers.Donnees.BaseDonnees.Instance.Npc(idPnj);
+                carte.Entites[id] = new EntitePNJ
+                {
+                    Identifiant = id,
+                    CellulePosition = cellule,
+                    IdGabarit = idPnj,
+                    Nom = !string.IsNullOrWhiteSpace(npc?.Nom) ? npc!.Nom : $"PNJ #{idPnj}"
                 };
             }
         }
