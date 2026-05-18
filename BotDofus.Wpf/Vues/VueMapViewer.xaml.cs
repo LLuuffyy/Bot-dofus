@@ -386,8 +386,10 @@ public partial class VueMapViewer : UserControl
             if (couleur is SolidColorBrush sc)
             {
                 bool bloc = !cell.EstMarchable || cell.Type == TypesCellule.Obstacle;
+                // Murs HAUTS et bien marqués (demande utilisateur) : grosse
+                // extrusion pour les obstacles, fine dalle pour le sol.
                 double prof = bloc
-                    ? _hauteurCellule * 1.6 + Math.Clamp((int)cell.LayerNiveau, 0, 12) * 1.4
+                    ? _hauteurCellule * 2.9 + Math.Clamp((int)cell.LayerNiveau, 0, 12) * 1.8
                     : 3 + Math.Clamp((int)cell.LayerNiveau, 0, 12) * 1.1;
 
                 // Sommets du losange (tuile du dessus).
@@ -404,7 +406,7 @@ public partial class VueMapViewer : UserControl
                         new Point(pB.X, pB.Y + prof),
                         new Point(pG.X, pG.Y + prof),
                     },
-                    Fill = new SolidColorBrush(AssombrirCouleur(sc.Color, bloc ? 0.55 : 0.78)),
+                    Fill = new SolidColorBrush(AssombrirCouleur(sc.Color, bloc ? 0.64 : 0.78)),
                     IsHitTestVisible = false,
                 };
                 // Face DROITE (bas→droite, descendue de prof) — plus sombre.
@@ -416,7 +418,7 @@ public partial class VueMapViewer : UserControl
                         new Point(pD.X, pD.Y + prof),
                         new Point(pB.X, pB.Y + prof),
                     },
-                    Fill = new SolidColorBrush(AssombrirCouleur(sc.Color, bloc ? 0.34 : 0.60)),
+                    Fill = new SolidColorBrush(AssombrirCouleur(sc.Color, bloc ? 0.28 : 0.60)),
                     IsHitTestVisible = false,
                 };
                 Canvas.SetZIndex(faceG, 1);
