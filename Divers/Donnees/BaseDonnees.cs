@@ -30,6 +30,74 @@ public sealed class BaseDonnees
     public InfoNpc? Npc(int id) => Npcs.TryGetValue(id, out var v) ? v : null;
     public InfoMap? Map(int id) => Maps.TryGetValue(id, out var v) ? v : null;
     public string? Skill(int id) => Skills.TryGetValue(id, out var v) ? v : null;
+    public InfoInteractif? Interactif(int id) => Interactifs.TryGetValue(id, out var v) ? v : null;
+
+    private static string? _dossierData;
+    private static readonly object _verrouInteractifs = new();
+
+    /// <summary>
+    /// Famille de métier déduite du nom du skill de récolte (le serveur ne
+    /// nous donne QUE le skill, pas l'espèce exacte de la ressource). Tolère
+    /// les accents mojibakés du JSON skills (« P�cher »).
+    /// </summary>
+    public static string FamilleRessource(string? skillNom)
+    {
+        var s = (skillNom ?? "").ToLowerInvariant();
+        if (s.StartsWith("coup")) return "Bois";
+        if (s.StartsWith("fauch")) return "Céréale";
+        if (s.StartsWith("cueill")) return "Plante";
+        if (s.StartsWith("p") && s.Contains("ch")) return "Poisson";   // P�cher / Pêcher
+        if (s.Contains("extra") || s.Contains("pioch") || s.Contains("min")) return "Minerai";
+        return "Ressource";
+    }
+
+    /// <summary>
+    /// Apprend dynamiquement le couple <c>gfxId d'objet interactif → skill de
+    /// récolte</c> à partir d'un GA500 réel observé (manuel OU bot), puis
+    /// persiste dans <c>interactiveobjects_hystoria.json</c> pour les sessions
+    /// suivantes. C'est ainsi qu'on remplit petit à petit la base d'objets
+    /// interactifs (le JSON Hystoria livré est vide).
+    /// </summary>
+    public void ApprendreInteractif(int gfxId, int skillId)
+    {
+        if (gfxId <= 0 || skillId <= 0) return;
+        lock (_verrouInteractifs)
+        {
+            if (Interactifs.TryGetValue(gfxId, out var dejala)
+                && dejala.IdSkill == skillId
+                && !string.IsNullOrEmpty(dejala.Nom))
+                return; // déjà connu, rien à faire
+
+            var skillNom = Skill(skillId);
+            var famille = FamilleRessource(skillNom);
+            var io = new InfoInteractif
+            {
+                Identifiant = gfxId,
+                IdSkill = skillId,
+                Nom = skillNom != null ? $"{famille} ({skillNom})" : $"{famille} (skill {skillId})"
+            };
+            Interactifs[gfxId] = io;
+            Journaliseur.Info($"[BDD] Interactif APPRIS : gfx #{gfxId} → {io.Nom} (skill {skillId}).");
+            PersisterInteractifs();
+        }
+    }
+
+    private void PersisterInteractifs()
+    {
+        try
+        {
+            var dossier = _dossierData
+                ?? Path.Combine(AppContext.BaseDirectory, "Resources", "data");
+            Directory.CreateDirectory(dossier);
+            var fichier = Path.Combine(dossier, "interactiveobjects_hystoria.json");
+            var dict = Interactifs.ToDictionary(
+                kv => kv.Key.ToString(),
+                kv => (object)new { n = kv.Value.Nom, skill = kv.Value.IdSkill });
+            File.WriteAllText(fichier,
+                JsonSerializer.Serialize(dict, new JsonSerializerOptions { WriteIndented = true }));
+        }
+        catch (Exception ex) { Journaliseur.Avertir($"[BDD] persist interactifs : {ex.Message}"); }
+    }
 
     public IEnumerable<InfoItem> ChercherItem(string motCle)
         => Items.Values.Where(i => i.Nom.Contains(motCle, StringComparison.OrdinalIgnoreCase));
@@ -44,6 +112,7 @@ public sealed class BaseDonnees
     {
         var bdd = new BaseDonnees();
         var dossier = Path.Combine(AppContext.BaseDirectory, "Resources", "data");
+        _dossierData = dossier;
 
         ChargerItems(bdd, dossier);
         ChargerMonstres(bdd, dossier);

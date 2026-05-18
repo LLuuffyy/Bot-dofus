@@ -436,7 +436,15 @@ public partial class VueMapViewer : UserControl
         _celluleHover = cell;
         poly.Stroke = Brushes.Orange;
         poly.StrokeThickness = 2;
-        TxtTooltip.Text = $"Cell #{cell.Identifiant}  ({cell.X}, {cell.Y})\nType : {cell.Type}\nNiveau : {cell.LayerNiveau}  Slope : {cell.LayerSlope}";
+        var txt = $"Cell #{cell.Identifiant}  ({cell.X}, {cell.Y})\nType : {cell.Type}\nNiveau : {cell.LayerNiveau}  Slope : {cell.LayerSlope}";
+        if (cell.IdInteractif >= 0)
+        {
+            var io = BaseDonnees.Instance.Interactif(cell.IdInteractif);
+            txt += io != null && !string.IsNullOrEmpty(io.Nom)
+                ? $"\n🌿 {io.Nom} (gfx #{cell.IdInteractif}, skill {io.IdSkill})"
+                : $"\n🌿 Interactif gfx #{cell.IdInteractif} (récolte-le pour l'identifier)";
+        }
+        TxtTooltip.Text = txt;
         TooltipBorder.Visibility = Visibility.Visible;
     }
 
@@ -535,17 +543,21 @@ public partial class VueMapViewer : UserControl
             AjouterBoutonMenu(libelle, async () =>
                 await _contexte.Api.SeDeplacerVersCelluleAsync(cell.Identifiant));
 
-            // Récolte : cellule avec élément interactif (vert). Approche +
-            // capture du paquet de récolte (format à confirmer sur 1er test
-            // manuel : clic ressource dans Dofus.exe → proxy loggue le clair).
+            // Récolte : cellule avec élément interactif (vert). Le nom/skill
+            // viennent de la BDD interactifs auto-apprise (GA500 capturés).
             if (cell.IdInteractif >= 0)
             {
-                AjouterBoutonMenu($"🌿 Récolter ici (objet #{cell.IdInteractif})", async () =>
+                var ioRec = BaseDonnees.Instance.Interactif(cell.IdInteractif);
+                var libelleRec = ioRec != null && !string.IsNullOrEmpty(ioRec.Nom)
+                    ? $"{ioRec.Nom} (#{cell.IdInteractif})"
+                    : $"objet #{cell.IdInteractif}";
+                int skillRec = ioRec != null && ioRec.IdSkill > 0 ? ioRec.IdSkill : 45;
+                AjouterBoutonMenu($"🌿 Récolter : {libelleRec}", async () =>
                 {
                     if (_contexte == null) return;
                     BotDofus.Utilitaires.Journaux.Journaliseur.Info(
-                        $"[UI] Récolter cellule {cell.Identifiant} objet interactif #{cell.IdInteractif} (approche).");
-                    await _contexte.Api.RecolterAsync(cell.Identifiant, cell.IdInteractif);
+                        $"[UI] Récolter cellule {cell.Identifiant} : {libelleRec} skill {skillRec}.");
+                    await _contexte.Api.RecolterAsync(cell.Identifiant, cell.IdInteractif, skillRec);
                 });
             }
         }

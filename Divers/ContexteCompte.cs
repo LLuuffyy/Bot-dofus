@@ -448,6 +448,33 @@ public sealed class ContexteCompte : IDisposable
             }
         }
 
+        // Auto-apprentissage des objets interactifs : tout GA500<cell>;<skill>
+        // C→S (récolte manuelle OU bot) nous révèle le skill d'une ressource.
+        // On résout la cellule → gfx interactif sur la carte courante et on
+        // mémorise/persiste le couple (gfx → skill) dans la BDD interactifs.
+        if (e.Paquet.Direction == DirectionPaquet.VersServeur
+            && e.Paquet.Contenu.StartsWith("GA500", System.StringComparison.Ordinal))
+        {
+            try
+            {
+                var corps = e.Paquet.Contenu.Substring(5);
+                var bouts = corps.Split(';');
+                if (bouts.Length >= 2
+                    && int.TryParse(bouts[0], out var celluleRec)
+                    && int.TryParse(bouts[1], out var skillRec))
+                {
+                    var cell = EtatJeu.CarteCourante?.Obtenir(celluleRec);
+                    if (cell != null && cell.IdInteractif > 0)
+                        Donnees.BaseDonnees.Instance.ApprendreInteractif(cell.IdInteractif, skillRec);
+                    else
+                        Journaliseur.Info(
+                            $"[BDD] GA500 cell {celluleRec};skill {skillRec} : pas d'IdInteractif "
+                            + "résolu sur la carte courante (objet non décodé).");
+                }
+            }
+            catch (Exception ex) { Journaliseur.Avertir($"[BDD] apprentissage GA500 : {ex.Message}"); }
+        }
+
         Stats.NotifierPaquet(e);
         Repartiteur.TraiterPaquet(e.Paquet);
         PaquetRecu?.Invoke(this, e);
