@@ -114,15 +114,39 @@ public sealed class ContexteCompte : IDisposable
         EtatJeu.Combat.EtatChange += (_, etat) => Stats.NotifierEtatCombat(etat);
         Interception.PaquetModifie += (_, __) => Stats.NotifierInterception();
 
-        // === IA COMBAT — ADVISORY ===
-        // Le combat Abrak est lu en clair (GTM/GTS → positions, PA/PM, tours),
-        // mais les ACTIONS de combat passent par le canal CHIFFRÉ anti-tamper
-        // d'Abrak : on ne peut pas les injecter. À chaque fois que c'est le
-        // tour du perso, on calcule néanmoins l'action OPTIMALE avec le moteur
-        // d'IA sur l'état réel et on la JOURNALISE. Démontre que le bot
-        // comprend et décide le combat (la seule limite est la défense
-        // cryptographique du serveur, pas l'intelligence du bot).
-        EtatJeu.Combat.TourChange += (_, idCombattant) =>
+        // === AUTO-COMBAT (injection cleartext, contourne le Shield) ===
+        // Découverte clé : GR1 (Prêt) et GT (fin de tour) sont en CLAIR côté
+        // Abrak (≠ canal chiffré '-' qui ne porte que déplacements/sorts).
+        // Formats confirmés par le bot de réf. dyshay (≈ SynFus). Stratégie
+        // auto-farm fiable : GR1 au placement → passer chaque tour (GT) →
+        // les alliés leech tuent → loot. Aucun pixel, aucun Shield.
+        //
+        // Placement : on est "Prêt" automatiquement (1 seule fois / combat).
+        EtatJeu.Combat.EtatChange += async (_, etat) =>
+        {
+            if (ModePassif) return;
+            if (etat == BotDofus.Divers.Combats.Enums.EtatCombat.Placement && !_combatPretEnvoye)
+            {
+                _combatPretEnvoye = true;
+                try
+                {
+                    await System.Threading.Tasks.Task.Delay(1400);
+                    await Api.EnvoyerPaquetBrutAsync("GR1");
+                    Journaliseur.Info("[AUTO-COMBAT] Prêt envoyé (GR1).");
+                }
+                catch (Exception ex) { Journaliseur.Avertir($"[AUTO-COMBAT] GR1 : {ex.Message}"); }
+            }
+            else if (etat == BotDofus.Divers.Combats.Enums.EtatCombat.Inactif)
+            {
+                _combatPretEnvoye = false;
+            }
+        };
+
+        // Mon tour : l'IA calcule l'action (démontre l'intelligence sur l'état
+        // réel déchiffré) PUIS on passe le tour en clair (GT). Le déplacement/
+        // sort exact passe par le canal chiffré (Shield) — non injectable —
+        // mais passer suffit : les 8 alliés leech tuent le groupe.
+        EtatJeu.Combat.TourChange += async (_, idCombattant) =>
         {
             if (idCombattant != EtatJeu.Personnage.Identifiant) return;
             if (EtatJeu.Combat.Etat != BotDofus.Divers.Combats.Enums.EtatCombat.EnCours) return;
@@ -130,29 +154,34 @@ public sealed class ContexteCompte : IDisposable
             {
                 var decideur = new DecideurCombat(ConfigCombat.Strategie, ConfigCombat.Regles);
                 var action = decideur.Decider(EtatJeu.Combat);
-                string desc = action switch
-                {
-                    ActionCombat.LancerSort s => $"lancer sort {s.IdSort} → cellule {s.CelluleCible}",
-                    ActionCombat.SeDeplacer d => $"se déplacer → cellule {d.CelluleCible}",
-                    ActionCombat.UtiliserObjet o => $"utiliser objet {o.IdObjet}",
-                    _ => "passer le tour"
-                };
                 int ennemisVivants = 0;
                 foreach (var e in EtatJeu.Combat.Ennemis) if (!e.EstMort) ennemisVivants++;
+                string desc = action switch
+                {
+                    ActionCombat.LancerSort s => $"sort {s.IdSort}→cell {s.CelluleCible}",
+                    ActionCombat.SeDeplacer d => $"déplacement→cell {d.CelluleCible}",
+                    ActionCombat.UtiliserObjet o => $"objet {o.IdObjet}",
+                    _ => "passer"
+                };
                 Journaliseur.Info(
-                    $"[IA] Mon tour → action calculée : {desc} "
-                    + $"(stratégie {ConfigCombat.Strategie}, {ennemisVivants} ennemi(s) vivant(s), "
-                    + $"{ConfigCombat.Regles.Count} règle(s) de sort)");
-                Journaliseur.Info(
-                    "[IA] Injection de l'action BLOQUÉE par le chiffrement anti-tamper Abrak "
-                    + "(canal '-') — décision affichée à titre démonstratif.");
+                    $"[IA] Mon tour → {desc} ({ennemisVivants} ennemi(s) vivant(s)). "
+                    + "Action de jeu chiffrée (Shield) → on passe le tour ; alliés leech tuent.");
+
+                if (!ModePassif)
+                {
+                    await System.Threading.Tasks.Task.Delay(900);
+                    await Api.EnvoyerPaquetBrutAsync("GT");
+                    Journaliseur.Info("[AUTO-COMBAT] Tour passé (GT).");
+                }
             }
             catch (Exception ex)
             {
-                Journaliseur.Avertir($"[IA] Échec calcul décision : {ex.Message}");
+                Journaliseur.Avertir($"[AUTO-COMBAT] tour : {ex.Message}");
             }
         };
     }
+
+    private bool _combatPretEnvoye;
 
     private void OnSessionDemarree(object? sender, SessionProxy session)
     {
