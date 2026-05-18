@@ -566,15 +566,15 @@ public partial class VueMapViewer : UserControl
                 FontSize = 11,
                 Margin = new Thickness(8, 2, 0, 2)
             });
-            // Interaction directe (mode autonome OU MITM) : engage CE groupe.
-            // Format RÉEL capturé du vrai client : GA907<cell>;<idGroupe>.
-            var paquetGA = $"GA907{ent.CellulePosition};{ent.Identifiant}";
-            AjouterBoutonMenu($"⚔ Combattre ce groupe ({paquetGA})", async () =>
+            // Combattre CE groupe : approche (GA001+GKK0) PUIS GA907. Le
+            // GA907 seul (de loin) est ignoré par le serveur — il FAUT
+            // marcher au contact d'abord (même flux que le farm).
+            AjouterBoutonMenu($"⚔ Combattre ce groupe (#{ent.Identifiant} cell {ent.CellulePosition})", async () =>
             {
                 if (_contexte == null) return;
                 BotDofus.Utilitaires.Journaux.Journaliseur.Info(
-                    $"[UI] Engager combat groupe #{ent.Identifiant} « {ent.Nom} » → {paquetGA}.");
-                await _contexte.Api.EnvoyerPaquetBrutAsync(paquetGA);
+                    $"[UI] Combattre groupe #{ent.Identifiant} « {ent.Nom} » cell {ent.CellulePosition} (approche+GA907).");
+                await _contexte.Api.EngagerGroupeAsync(ent.CellulePosition, ent.Identifiant);
             });
         }
 

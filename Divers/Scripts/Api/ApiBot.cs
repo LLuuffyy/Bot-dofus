@@ -173,6 +173,21 @@ public sealed class ApiBot
         finally { _verrouDeplacement.Release(); }
     }
 
+    /// <summary>
+    /// Engage UN groupe précis (clic carte « Combattre ce groupe ») : on
+    /// APPROCHE d'abord (GA001+GKK0, arreterDevant) PUIS GA907&lt;cell&gt;;&lt;id&gt;.
+    /// GA907 de loin est ignoré par le serveur (prouvé) → l'approche est
+    /// indispensable, comme dans le farm. Réutilisable depuis l'UI carte.
+    /// </summary>
+    public async Task EngagerGroupeAsync(int cellule, int idGroupe, CancellationToken ct = default)
+    {
+        Journaliseur.Info($"[UI] Approche + engage groupe #{idGroupe} cell {cellule}");
+        await SeDeplacerVersCelluleAsync(cellule, ct, arreterDevant: true).ConfigureAwait(false);
+        await Task.Delay(500, ct).ConfigureAwait(false);
+        if (_etat.Combat.Etat == EtatCombat.Inactif)
+            await EnvoyerHumaniseAsync($"GA907{cellule};{idGroupe}", ct).ConfigureAwait(false);
+    }
+
     /// <summary>Ouvre un dialogue avec un PNJ, puis enchaîne les réponses indiquées.</summary>
     public async Task ParlerAuPNJAsync(int idPNJ, IReadOnlyList<int>? reponses, CancellationToken ct)
     {
