@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BotDofus.Commun.Messages.VersServeur.Chat;
@@ -7,6 +8,8 @@ using BotDofus.Commun.Messages.VersServeur.Dialogue;
 using BotDofus.Commun.Messages.VersServeur.Jeu;
 using BotDofus.Commun.Reseau;
 using BotDofus.Divers.Cartes.Deplacement;
+using BotDofus.Divers.Cartes.Entites;
+using BotDofus.Divers.Combats.Enums;
 using BotDofus.Divers.Jeu;
 using BotDofus.Utilitaires.Journaux;
 
@@ -134,14 +137,94 @@ public sealed class ApiBot
         }
     }
 
-    /// <summary>Tente d'engager un combat sur la carte courante (monstre le plus proche).</summary>
-    public async Task EngagerCombatAsync(CancellationToken ct)
+    /// <summary>Groupe de monstres le plus proche du perso sur la carte courante.</summary>
+    public EntiteMonstre? MonstreLePlusProche()
     {
-        if (_session is null) return;
-        Journaliseur.Debogue("API.EngagerCombat");
-        // TODO : repérer le groupe de monstres le plus proche via EtatJeu.CarteCourante.Entites,
-        //        puis émettre GC avec cible.
-        await Task.Delay(300, ct).ConfigureAwait(false);
+        var carte = _etat.CarteCourante;
+        if (carte == null) return null;
+        int moi = _etat.Personnage.CellulePosition ?? 0;
+        return carte.Entites.Values.OfType<EntiteMonstre>()
+            .OrderBy(m => Math.Abs(m.CellulePosition - moi))
+            .FirstOrDefault();
+    }
+
+    /// <summary>
+    /// Engage le groupe de monstres le plus proche : <c>GA902&lt;idGroupe&gt;</c>
+    /// (format confirmé bot réf dyshay + whitelist core.swf → chiffré '-').
+    /// </summary>
+    public async Task<bool> EngagerCombatAsync(CancellationToken ct)
+    {
+        var cible = MonstreLePlusProche();
+        if (cible == null) { Journaliseur.Info("[FARM] aucun monstre sur la carte."); return false; }
+        Journaliseur.Info(
+            $"[FARM] cible groupe #{cible.Identifiant} « {cible.Nom} » cell {cible.CellulePosition} → GA902");
+        await EnvoyerHumaniseAsync("GA902" + cible.Identifiant, ct).ConfigureAwait(false);
+        return true;
+    }
+
+    private CancellationTokenSource? _farmCts;
+    public bool FarmActif => _farmCts is { IsCancellationRequested: false };
+
+    /// <summary>Démarre la boucle de farm autonome (idempotent).</summary>
+    public void LancerFarmAuto()
+    {
+        if (FarmActif) return;
+        _farmCts = new CancellationTokenSource();
+        _ = BoucleFarmAsync(_farmCts.Token);
+    }
+
+    public void ArreterFarmAuto()
+    {
+        _farmCts?.Cancel();
+        _farmCts = null;
+        Journaliseur.Info("[FARM] arrêt demandé.");
+    }
+
+    /// <summary>
+    /// Boucle de farm : hors combat → cible le mob le plus proche, s'en
+    /// approche (déplacement chiffré GA001) puis engage (GA902). En combat,
+    /// l'auto-combat (GR1/GT, ContexteCompte) prend le relais. Loot auto
+    /// (serveur). Tout passe par le client autonome (clair/chiffré whitelist).
+    /// </summary>
+    private async Task BoucleFarmAsync(CancellationToken ct)
+    {
+        Journaliseur.Info("[FARM] boucle autonome DÉMARRÉE.");
+        while (!ct.IsCancellationRequested)
+        {
+            try
+            {
+                if (_etat.Combat.Etat != EtatCombat.Inactif)
+                {
+                    await Task.Delay(2000, ct).ConfigureAwait(false);
+                    continue;
+                }
+
+                var mob = MonstreLePlusProche();
+                if (mob == null)
+                {
+                    Journaliseur.Info("[FARM] pas de monstre — attente (carte vide / repop).");
+                    await Task.Delay(5000, ct).ConfigureAwait(false);
+                    continue;
+                }
+
+                // S'approcher : le serveur engage souvent au contact ; sinon
+                // on force avec GA902.
+                await SeDeplacerVersCelluleAsync(mob.CellulePosition, ct).ConfigureAwait(false);
+                await Task.Delay(1800, ct).ConfigureAwait(false);
+
+                if (_etat.Combat.Etat == EtatCombat.Inactif)
+                    await EngagerCombatAsync(ct).ConfigureAwait(false);
+
+                await Task.Delay(3000, ct).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) { break; }
+            catch (Exception ex)
+            {
+                Journaliseur.Avertir($"[FARM] {ex.Message}");
+                try { await Task.Delay(3000, ct).ConfigureAwait(false); } catch { break; }
+            }
+        }
+        Journaliseur.Info("[FARM] boucle autonome ARRÊTÉE.");
     }
 
     /// <summary>Ouvre un dialogue avec le banquier / phénix le plus proche et dépose selon les règles.</summary>

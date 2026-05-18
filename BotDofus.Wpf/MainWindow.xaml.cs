@@ -245,6 +245,29 @@ public partial class MainWindow : Window
         }
     }
 
+    private void BtnFarmAuto_Click(object sender, RoutedEventArgs e)
+    {
+        var ctx = _contexteSelectionne ?? Comptes.FirstOrDefault()?.Contexte;
+        if (ctx == null)
+        {
+            MessageBox.Show("Sélectionne un compte d'abord.", "Farm Auto",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+        if (ctx.Api.FarmActif)
+        {
+            ctx.Api.ArreterFarmAuto();
+            TxtFarmAuto.Text = "Farm Auto";
+            Journaliseur.Info("[FARM] désactivé (clic).");
+        }
+        else
+        {
+            ctx.Api.LancerFarmAuto();
+            TxtFarmAuto.Text = "Farm ON";
+            Journaliseur.Info("[FARM] activé (clic) — cible/approche/engage/combat/loot en boucle.");
+        }
+    }
+
     private void LstComptes_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (LstComptes.SelectedItem is CompteVm vm)
