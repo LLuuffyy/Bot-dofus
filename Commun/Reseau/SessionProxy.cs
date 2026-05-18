@@ -50,6 +50,17 @@ public sealed class SessionProxy : IDisposable
     private const int ObsBrutCsMax = 30;
     private bool _aiCapture;
 
+    // === Proxy RE-CHIFFRANT C→S (modèle SynFus) ===
+    // Le proxy devient SEUL maître de la rotation « - » côté serveur : il
+    // déchiffre chaque paquet « - » du client puis le RE-CHIFFRE avec son
+    // propre compteur avant relai, injection comprise. Le serveur ne voit
+    // donc qu'UNE séquence continue → plus de désync → on peut injecter
+    // (clic map / farm) avec le Dofus.exe ouvert en parallèle, exactement
+    // comme SynFus. _idxCs<0 = pas encore amorcé (on s'aligne sur l'index
+    // du 1er paquet client pour rester identique tant qu'on n'injecte pas).
+    private readonly object _verrouCs = new();
+    private int _idxCs = -1;
+
     public event EventHandler<EvenementPaquetRecu>? PaquetRecu;
     public event EventHandler? SessionTerminee;
 
@@ -100,26 +111,68 @@ public sealed class SessionProxy : IDisposable
 
     public async Task EnvoyerAuServeurAsync(string message, CancellationToken ct = default)
     {
-        // Paquet whitelisté Abrak (GA déplacement/sorts/dialogue) en mode
-        // MITM : on NE PEUT PAS l'injecter. Le vrai client tourne son propre
-        // compteur de rotation '-' (idx +1/paquet) que le SERVEUR valide ;
-        // injecter avec notre index désynchronise → kick (prouvé : déco 37ms
-        // après chaque injection chiffrée). L'injection de gameplay exige le
-        // mode CLIENT AUTONOME (émetteur unique, pas de désync). On bloque
-        // proprement plutôt que de déconnecter le joueur.
+        // Modèle SynFus : le proxy est SEUL maître de la rotation « - »
+        // côté serveur (il re-chiffre tout le flux C→S, cf. relai plus bas).
+        // L'injection prend donc simplement le PROCHAIN index du compteur
+        // proxy → aucune désync, même avec le Dofus.exe ouvert en parallèle.
         if (BotDofus.Commun.Reseau.ClientAutonomeAbrak.DoitEtreChiffre(message)
             && _canalAbrak.PretAuDechiffrement)
         {
-            Journaliseur.Avertir(
-                $"[INJ] '{message}' NON injecté en mode MITM (désync rotation '-' "
-                + "= déco serveur). L'injection déplacement/combat exige le mode "
-                + "« Client Auto » (émetteur unique). En MITM : joue via la fenêtre Dofus.");
+            bool ok = EnvoyerCsVersServeur(message, null);
+            Journaliseur.Debogue(ok
+                ? $"[INJ ->SRV '-' réenc] {message}"
+                : $"[INJ ->SRV '-' réenc] ÉCHEC '{message}'");
             return;
         }
 
         var octets = EncoderPaquet(ChiffrerSiNecessaire(message, DirectionPaquet.VersServeur));
         await _coteServeur.GetStream().WriteAsync(octets, ct).ConfigureAwait(false);
         Journaliseur.Debogue($"[INJ ->SRV] {message}");
+    }
+
+    /// <summary>
+    /// Émetteur UNIQUE et SÉRIALISÉ du canal « - » vers le serveur (modèle
+    /// SynFus). Tous les paquets « - » C→S — relayés (re-chiffrés depuis le
+    /// client) comme injectés — passent ici sous verrou : le compteur de
+    /// rotation reste strictement monotone et les écritures wire sont
+    /// atomiques → le serveur ne voit qu'une séquence cohérente.
+    /// <paramref name="idxClientObserve"/> = index lu dans l'en-tête du
+    /// paquet client (sert UNIQUEMENT à amorcer le compteur sur la 1re
+    /// trame, pour rester bit-compatible tant qu'on n'a pas injecté).
+    /// </summary>
+    private bool EnvoyerCsVersServeur(string clair, int? idxClientObserve)
+    {
+        lock (_verrouCs)
+        {
+            int n = Math.Max(2, _canalAbrak.NombreCles);
+            if (_idxCs < 0)
+                _idxCs = (idxClientObserve is >= 1 and <= 15) ? idxClientObserve.Value : 1;
+            else
+            {
+                _idxCs++;
+                if (_idxCs > n - 1) _idxCs = 1;
+            }
+
+            var chiffre = _canalAbrak.Chiffrer(clair, _idxCs);
+            if (chiffre is null)
+            {
+                Journaliseur.Avertir($"[REENC C→S] échec chiffrement idx={_idxCs} "
+                    + $"clair='{clair[..Math.Min(clair.Length, 24)]}'");
+                return false;
+            }
+
+            try
+            {
+                var octets = Encoding.UTF8.GetBytes(chiffre + "\n\0");
+                _coteServeur.GetStream().Write(octets, 0, octets.Length);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Journaliseur.Avertir($"[REENC C→S] écriture KO : {ex.GetType().Name}");
+                return false;
+            }
+        }
     }
 
     public async Task EnvoyerAuClientAsync(string message, CancellationToken ct = default)
@@ -342,8 +395,28 @@ public sealed class SessionProxy : IDisposable
                     var p = sous.Trim('\r', '\0');
                     if (p.Length >= 2) EmettrePaquet(p, direction);
                 }
+
+                // === Modèle SynFus : RE-CHIFFRAGE C→S ===
+                // On ne relaie SURTOUT PAS l'original du client : le proxy
+                // re-chiffre le clair avec SON compteur (émetteur unique).
+                // 1re trame → on amorce le compteur sur l'index du client
+                // (séquence bit-identique tant qu'on n'injecte pas) ; ensuite
+                // chaque trame (client re-chiffrée OU injectée) avance le
+                // compteur du proxy → le serveur ne voit qu'une séquence
+                // continue, donc l'injection ne désync plus (Dofus.exe ouvert).
+                if (direction == DirectionPaquet.VersServeur)
+                {
+                    int idxClient = HexValCar(brut[1]);
+                    EnvoyerCsVersServeur(clairAbrak, idxClient);
+                    return null; // déjà envoyé, re-chiffré, par l'émetteur unique
+                }
             }
-            // Relais inchangé : le vrai client/serveur reçoit l'original chiffré.
+            else if (direction == DirectionPaquet.VersServeur)
+            {
+                Journaliseur.Avertir("[REENC C→S] déchiffrement KO, relais brut "
+                    + $"(risque désync) : {brut[..Math.Min(brut.Length, 16)]}");
+            }
+            // S→C (« - » serveur→client) ou échec déchiffrement : relais inchangé.
             return brut;
         }
 
