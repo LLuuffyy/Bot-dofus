@@ -48,6 +48,7 @@ public sealed class ClientAutonomeAbrak : IDisposable
     private readonly StringBuilder _tampon = new();
 
     private string _cleHc = string.Empty;
+    private string _aksIdentity = string.Empty;
     private string _gameTicket = string.Empty;
     private bool _phaseJeu;
     private bool _avEnvoye;
@@ -75,6 +76,17 @@ public sealed class ClientAutonomeAbrak : IDisposable
         _login = login;
         _motDePasse = motDePasse;
         _idServeur = idServeur;
+
+        // aks_identity capturé d'un login réel via le proxy (valeur stable
+        // machine/compte). Indispensable : le serveur gate la version dessus.
+        try
+        {
+            var f = System.IO.Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory, "aks_identity.txt");
+            if (System.IO.File.Exists(f))
+                _aksIdentity = System.IO.File.ReadAllText(f).Trim();
+        }
+        catch { /* pas grave : on tentera sans, le log le dira */ }
     }
 
     /// <summary>Crypt_Password classique Dofus : "#1" + 2 chars/octet via clé HC.</summary>
@@ -168,7 +180,18 @@ public sealed class ClientAutonomeAbrak : IDisposable
             if (p.StartsWith("HC", StringComparison.Ordinal))
             {
                 _cleHc = p.Substring(2);
-                Etat?.Invoke("[AUTO] HC reçu → envoi version + identifiants.");
+                // core.swf onRegionalVersion : sendIdentity() PUIS setVersion().
+                // Le serveur gate la version sur aks_identity (Electron). On
+                // rejoue l'identité capturée du vrai client (valeur STABLE).
+                if (!string.IsNullOrEmpty(_aksIdentity))
+                {
+                    Etat?.Invoke($"[AUTO] HC reçu → Ai (identity rejouée, {_aksIdentity.Length} c.) + version + login.");
+                    await EnvoyerClairAsync("Ai" + _aksIdentity).ConfigureAwait(false);
+                }
+                else
+                {
+                    Etat?.Invoke("[AUTO] HC reçu → PAS d'aks_identity capturée (fais 1 login via « Lancer jeu » d'abord). Tentative sans Ai…");
+                }
                 await EnvoyerClairAsync("1.48.0").ConfigureAwait(false);
                 await EnvoyerClairAsync(_login + "\n" + CrypterMotDePasse(_motDePasse, _cleHc)).ConfigureAwait(false);
                 await EnvoyerClairAsync("Af").ConfigureAwait(false);
@@ -232,10 +255,11 @@ public sealed class ClientAutonomeAbrak : IDisposable
         }
         if (p.StartsWith("AV0", StringComparison.Ordinal))
         {
-            // On REPLIQUE le client sauf "Ai" (aks_identity Electron, non
-            // générable hors client officiel) : test décisif = le serveur
-            // tolère-t-il l'absence d'Ai ?
+            // Réplique exacte du client officiel sur le serveur de jeu :
+            // Agfr → Ai(identity rejouée) → 1.48.0 → AL → Af.
             await EnvoyerClairAsync("Agfr").ConfigureAwait(false);
+            if (!string.IsNullOrEmpty(_aksIdentity))
+                await EnvoyerClairAsync("Ai" + _aksIdentity).ConfigureAwait(false);
             await EnvoyerClairAsync("1.48.0").ConfigureAwait(false);
             await EnvoyerClairAsync("AL").ConfigureAwait(false);
             await EnvoyerClairAsync("Af").ConfigureAwait(false);

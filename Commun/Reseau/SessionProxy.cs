@@ -48,6 +48,7 @@ public sealed class SessionProxy : IDisposable
     private const int ObsClientMinusMax = 12;
     private int _obsBrutCs;
     private const int ObsBrutCsMax = 30;
+    private bool _aiCapture;
 
     public event EventHandler<EvenementPaquetRecu>? PaquetRecu;
     public event EventHandler? SessionTerminee;
@@ -215,6 +216,26 @@ public sealed class SessionProxy : IDisposable
 
     private string? TraiterPaquet(string brut, DirectionPaquet direction)
     {
+        // === Capture aks_identity (Ai) du vrai client → persistée pour le
+        // client autonome. La valeur est STABLE (fingerprint machine/compte,
+        // identique à chaque session) donc rejouable hors client officiel. ===
+        if (direction == DirectionPaquet.VersServeur
+            && brut.StartsWith("Ai", StringComparison.Ordinal)
+            && brut.Length > 40 && !_aiCapture)
+        {
+            _aiCapture = true;
+            try
+            {
+                var chemin = System.IO.Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory, "aks_identity.txt");
+                System.IO.File.WriteAllText(chemin, brut.Substring(2));
+                Journaliseur.Info(
+                    $"[AUTO] aks_identity capturé ({brut.Length - 2} c.) → {chemin}. "
+                    + "Le client autonome pourra l'utiliser pour s'auth sans Shield.");
+            }
+            catch (Exception ex) { Journaliseur.Avertir($"[AUTO] Sauvegarde Ai : {ex.Message}"); }
+        }
+
         // === Tâche #6 : trace BRUTE de TOUT paquet C→S (30 premiers) ===
         // Décisif : que voit-on quand le client bouge ? un '-' ? du binaire
         // Shield (0xF9) ? rien (paquet hors-proxy) ? Ça tranche la faisabilité
