@@ -238,11 +238,18 @@ public sealed class ApiBot
         await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
     }
 
-    /// <summary>Choisit une réponse dans le dialogue PNJ en cours : <c>DR&lt;idReponse&gt;</c>.</summary>
-    public async Task RepondreDialogueAsync(int idReponse, CancellationToken ct = default)
+    /// <summary>
+    /// Choisit une réponse dans le dialogue PNJ. FORMAT RÉEL capturé du vrai
+    /// client (log 15:28:19) : <c>DR&lt;questionId&gt;|&lt;idReponse&gt;</c>
+    /// (ex. <c>DR3731|3352</c>). L'ancien <c>DR&lt;idReponse&gt;</c> (sans la
+    /// question) était ignoré du serveur → « impossible de cliquer / le
+    /// dialogue n'avance pas ».
+    /// </summary>
+    public async Task RepondreDialogueAsync(int questionId, int idReponse, CancellationToken ct = default)
     {
-        Journaliseur.Info($"[UI] Réponse dialogue → DR{idReponse}");
-        await EnvoyerHumaniseAsync($"DR{idReponse}", ct).ConfigureAwait(false);
+        var paquet = questionId > 0 ? $"DR{questionId}|{idReponse}" : $"DR{idReponse}";
+        Journaliseur.Info($"[UI] Réponse dialogue → {paquet}");
+        await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
     }
 
     /// <summary>Quitte le dialogue PNJ en cours : <c>DV</c>.</summary>

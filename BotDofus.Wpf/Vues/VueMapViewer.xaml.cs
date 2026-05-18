@@ -58,6 +58,7 @@ public partial class VueMapViewer : UserControl
     }
 
     private int _dialoguePnjId;
+    private int _dialogueQuestionId;
     private string _dernierDialogue = "";
 
     private void OnPaquet(object? sender, EvenementPaquetRecu e)
@@ -128,6 +129,8 @@ public partial class VueMapViewer : UserControl
             {
                 PanneauDialogue.Visibility = Visibility.Collapsed;
                 DialogueReponses.Children.Clear();
+                _dialogueQuestionId = 0;
+                _dernierDialogue = "";
                 return;
             }
 
@@ -138,6 +141,7 @@ public partial class VueMapViewer : UserControl
                 var parts = corps.Split('|');
                 var gauche = parts[0].Split(';');
                 int.TryParse(gauche[0], out var qid);
+                _dialogueQuestionId = qid;
                 var bdd = BaseDonnees.Instance;
                 var texte = bdd.DialogueQ(qid) ?? $"(dialogue #{qid})";
                 // Substitution best-effort des #N par les paramètres.
@@ -164,7 +168,10 @@ public partial class VueMapViewer : UserControl
                         btn.Click += async (_, __) =>
                         {
                             if (_contexte == null) return;
-                            await _contexte.Api.RepondreDialogueAsync((int)btn.Tag);
+                            // Le serveur attend DR<questionId>|<replyId>.
+                            _dernierDialogue = "";
+                            await _contexte.Api.RepondreDialogueAsync(
+                                _dialogueQuestionId, (int)btn.Tag);
                         };
                         DialogueReponses.Children.Add(btn);
                     }
@@ -185,7 +192,10 @@ public partial class VueMapViewer : UserControl
     {
         if (_contexte == null) return;
         if (int.TryParse(TxtDialogueReponseId.Text?.Trim(), out var rid))
-            await _contexte.Api.RepondreDialogueAsync(rid);
+        {
+            _dernierDialogue = "";
+            await _contexte.Api.RepondreDialogueAsync(_dialogueQuestionId, rid);
+        }
     }
 
     private async void BtnDialogueQuitter_Click(object sender, RoutedEventArgs e)
