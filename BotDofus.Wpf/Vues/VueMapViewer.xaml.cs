@@ -379,31 +379,50 @@ public partial class VueMapViewer : UserControl
 
             var couleur = CouleurCellule(cell);
 
-            // VOLUME 3D : on dessine d'abord les faces latérales (extrusion
-            // vers le bas) dans un ton plus sombre → effet de tuile en relief
-            // comme SynFus. Les obstacles sont plus « hauts » que le sol.
+            // VOLUME 3D : cube isométrique. On dessine deux faces latérales
+            // (gauche éclairée, droite dans l'ombre) sous la tuile losange →
+            // vrai relief « cube » comme SynFus. Les obstacles sont de hautes
+            // murailles ; le sol garde une fine épaisseur + relief d'altitude.
             if (couleur is SolidColorBrush sc)
             {
                 bool bloc = !cell.EstMarchable || cell.Type == TypesCellule.Obstacle;
-                double prof = bloc ? 13 : 5
-                    + Math.Clamp((int)cell.LayerNiveau, 0, 10) * 0.6;
-                var cote = AssombrirCouleur(sc.Color, bloc ? 0.42 : 0.62);
-                var face = new Polygon
+                double prof = bloc
+                    ? _hauteurCellule * 1.6 + Math.Clamp((int)cell.LayerNiveau, 0, 12) * 1.4
+                    : 3 + Math.Clamp((int)cell.LayerNiveau, 0, 12) * 1.1;
+
+                // Sommets du losange (tuile du dessus).
+                var pG = new Point(cx - _largeurCellule, cy + _hauteurCellule); // gauche
+                var pB = new Point(cx, cy + _hauteurCellule * 2);               // bas
+                var pD = new Point(cx + _largeurCellule, cy + _hauteurCellule); // droite
+
+                // Face GAUCHE (gauche→bas, descendue de prof) — plus claire.
+                var faceG = new Polygon
                 {
                     Points = new PointCollection
                     {
-                        new Point(cx - _largeurCellule, cy + _hauteurCellule),
-                        new Point(cx, cy + _hauteurCellule * 2),
-                        new Point(cx + _largeurCellule, cy + _hauteurCellule),
-                        new Point(cx + _largeurCellule, cy + _hauteurCellule + prof),
-                        new Point(cx, cy + _hauteurCellule * 2 + prof),
-                        new Point(cx - _largeurCellule, cy + _hauteurCellule + prof),
+                        pG, pB,
+                        new Point(pB.X, pB.Y + prof),
+                        new Point(pG.X, pG.Y + prof),
                     },
-                    Fill = new SolidColorBrush(cote),
+                    Fill = new SolidColorBrush(AssombrirCouleur(sc.Color, bloc ? 0.55 : 0.78)),
                     IsHitTestVisible = false,
                 };
-                Canvas.SetZIndex(face, 1);
-                CanvasMap.Children.Add(face);
+                // Face DROITE (bas→droite, descendue de prof) — plus sombre.
+                var faceD = new Polygon
+                {
+                    Points = new PointCollection
+                    {
+                        pB, pD,
+                        new Point(pD.X, pD.Y + prof),
+                        new Point(pB.X, pB.Y + prof),
+                    },
+                    Fill = new SolidColorBrush(AssombrirCouleur(sc.Color, bloc ? 0.34 : 0.60)),
+                    IsHitTestVisible = false,
+                };
+                Canvas.SetZIndex(faceG, 1);
+                Canvas.SetZIndex(faceD, 1);
+                CanvasMap.Children.Add(faceG);
+                CanvasMap.Children.Add(faceD);
             }
 
             var poly = CreerPolygoneCellule(cell, couleur, 0.8);

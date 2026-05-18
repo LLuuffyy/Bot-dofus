@@ -353,20 +353,32 @@ public sealed class TrameJeu : TrameBase
                 continue;
             }
 
-            // id < 0 et préfixe '+' → PNJ. L'id PNJ (pour nom/dialogue) est
-            // le DERNIER champ numérique de la trame (ex. …;;9089), pas le
-            // gfx champ[4]. Fallback : gfx.
+            // id < 0 et préfixe '+' → PNJ. L'id PNJ (template, pour nom/dialogue)
+            // est le modèle en champ[4] (ex. +220;1;0;-6;857;… → 857 = « Posteur
+            // Nhin »), PAS le dernier champ (9089 = id contextuel, jamais en BDD).
+            // Le format Hystoria n'étant pas garanti, on est ROBUSTE : on teste
+            // champ[4] puis les autres champs numériques et on retient le PREMIER
+            // qui correspond à un vrai PNJ connu de la base.
             {
                 var id = idEntite != 0 ? idEntite : -Math.Abs(cellule + 1);
-                int idPnj = 0;
-                for (int k = champs.Length - 1; k >= 5 && idPnj == 0; k--)
-                {
-                    var brutK = (champs[k] ?? "").Split('^', ',')[0];
-                    if (int.TryParse(brutK, out var vK) && vK > 0) idPnj = vK;
-                }
-                if (idPnj == 0) idPnj = ParserInt(champ4.Split(',', StringSplitOptions.RemoveEmptyEntries).ElementAtOrDefault(0));
+                var bdd = Divers.Donnees.BaseDonnees.Instance;
 
-                var npc = Divers.Donnees.BaseDonnees.Instance.Npc(idPnj);
+                // Candidats par ordre de priorité : champ[4] (modèle) d'abord,
+                // puis les champs 5..fin (du début vers la fin).
+                var candidats = new System.Collections.Generic.List<int>();
+                void Ajouter(string? brut)
+                {
+                    var t = (brut ?? "").Split('^', ',')[0];
+                    if (int.TryParse(t, out var v) && v > 0 && !candidats.Contains(v))
+                        candidats.Add(v);
+                }
+                Ajouter(champ4);
+                for (int k = 5; k < champs.Length; k++) Ajouter(champs[k]);
+
+                int idPnj = candidats.FirstOrDefault(c => bdd.Npc(c) != null);
+                if (idPnj == 0) idPnj = candidats.FirstOrDefault(); // rien en BDD : on garde au moins le modèle
+
+                var npc = bdd.Npc(idPnj);
                 carte.Entites[id] = new EntitePNJ
                 {
                     Identifiant = id,
