@@ -67,6 +67,21 @@ public sealed class CanalAbrak
         _calibre = false;
         _baseCalibree = -1;
         Journaliseur.Info($"[CRYPT] Clés réseau AK enregistrées : {_clesPreparees.Length} clé(s) — canal '-' prêt.");
+
+        // Self-test injection : Chiffrer puis Dechiffrer doit redonner le
+        // clair. Prouve que notre chiffrement C→S est l'inverse exact du
+        // déchiffrement S→C → un paquet qu'on forge sera accepté serveur.
+        try
+        {
+            _calibre = true; _baseCalibree = 0;     // calibration prouvée
+            const string test = "GA0011test";
+            var c = Chiffrer(test, 1);
+            var r = c != null ? Dechiffrer(c) : null;
+            Journaliseur.Info(r == test
+                ? "[CRYPT] Self-test injection OK : Chiffrer⇄Dechiffrer round-trip validé (C→S forgeable)."
+                : $"[CRYPT] Self-test injection ÉCHEC : '{test}' → '{c}' → '{r}' (à investiguer).");
+        }
+        catch (Exception ex) { Journaliseur.Avertir($"[CRYPT] Self-test : {ex.Message}"); }
     }
 
     public void Reset()
@@ -91,7 +106,12 @@ public sealed class CanalAbrak
         int idx = HexVal(paquet[1]);
         char cks = char.ToUpperInvariant(paquet[2]);
         if (idx < 0) return paquet;
-        var donnees = paquet.Substring(3);
+        // IMPORTANT : on retire tout caractère de contrôle traînant
+        // (\0 \r \n) avant le hex. Sans ça le payload C→S avait une
+        // longueur impaire → DechiffrerHex échouait (faux « déchiffrable=
+        // NON » alors que le cipher C→S est IDENTIQUE au S→C — prouvé :
+        // -268980→"BD", -5D5A883E82→"GKK0", delta clé 0, offset cks*2).
+        var donnees = paquet.Substring(3).TrimEnd('\0', '\r', '\n', ' ');
 
         // Mapping auto-calibré : base = décalage entre l'index du frame et
         // l'indice dans _clesPreparees. On essaie 0 et -1 (cas observés) puis
