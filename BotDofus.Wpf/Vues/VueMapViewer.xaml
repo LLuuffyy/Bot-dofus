@@ -55,12 +55,12 @@
             </Border>
 
             <!-- Canvas iso interactif -->
-            <Border Background="#1A1A1A" ClipToBounds="True">
+            <Border Background="#FFF4F5F7" ClipToBounds="True">
                 <Grid>
                     <ScrollViewer x:Name="ScrollerMap"
                                   HorizontalScrollBarVisibility="Auto"
                                   VerticalScrollBarVisibility="Auto"
-                                  Background="#1A1A1A">
+                                  Background="#FFF4F5F7">
                         <Canvas x:Name="CanvasMap" Background="Transparent"
                                 MouseWheel="CanvasMap_MouseWheel"
                                 MouseLeftButtonDown="CanvasMap_MouseLeftButtonDown"

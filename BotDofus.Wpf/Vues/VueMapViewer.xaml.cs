@@ -393,7 +393,7 @@ public partial class VueMapViewer : UserControl
             var txt = new TextBlock
             {
                 Text = cell.Identifiant.ToString(),
-                Foreground = Brushes.White,
+                Foreground = new SolidColorBrush(Color.FromRgb(0x6A, 0x6E, 0x76)),
                 FontSize = 8,
                 IsHitTestVisible = false,
             };
@@ -422,7 +422,7 @@ public partial class VueMapViewer : UserControl
             var txt = new TextBlock
             {
                 Text = cell.Identifiant.ToString(),
-                Foreground = Brushes.White,
+                Foreground = new SolidColorBrush(Color.FromRgb(0x55, 0x59, 0x60)),
                 FontSize = 10,
                 FontWeight = FontWeights.Bold,
                 IsHitTestVisible = false,
@@ -477,7 +477,7 @@ public partial class VueMapViewer : UserControl
                 new Point(cx - _largeurCellule, cy + _hauteurCellule),
             },
             Fill = fill,
-            Stroke = new SolidColorBrush(Color.FromRgb(30, 30, 30)),
+            Stroke = new SolidColorBrush(Color.FromRgb(0xC6, 0xC8, 0xCC)),
             StrokeThickness = strokeThickness,
             Tag = cell,
             Cursor = Cursors.Hand,
@@ -494,25 +494,25 @@ public partial class VueMapViewer : UserControl
 
             var couleur = ent switch
             {
-                EntiteMonstre => Color.FromRgb(220, 60, 60),
-                EntitePNJ => Color.FromRgb(80, 180, 220),
-                EntiteJoueur => Color.FromRgb(80, 200, 80),
-                _ => Color.FromRgb(160, 160, 160)
+                EntiteMonstre => Color.FromRgb(0x9E, 0x2B, 0x2B),  // rouge sombre SynFus
+                EntitePNJ => Color.FromRgb(0x3F, 0xA9, 0xC9),
+                EntiteJoueur => Color.FromRgb(0x3C, 0xB0, 0x55),
+                _ => Color.FromRgb(0x8A, 0x8A, 0x8A)
             };
 
             var ellipse = new Ellipse
             {
-                Width = 18,
-                Height = 18,
+                Width = 16,
+                Height = 16,
                 Fill = new SolidColorBrush(couleur),
                 Stroke = Brushes.White,
-                StrokeThickness = 1,
+                StrokeThickness = 1.5,
                 Tag = ent,
                 Cursor = Cursors.Hand,
             };
             ellipse.MouseRightButtonDown += Entity_MouseRightButtonDown;
-            Canvas.SetLeft(ellipse, cx - 9);
-            Canvas.SetTop(ellipse, cy + _hauteurCellule - 9);
+            Canvas.SetLeft(ellipse, cx - 8);
+            Canvas.SetTop(ellipse, cy + _hauteurCellule - 8);
             Canvas.SetZIndex(ellipse, 10);
             CanvasMap.Children.Add(ellipse);
         }
@@ -525,47 +525,26 @@ public partial class VueMapViewer : UserControl
         if (cell == null) return;
         var (cx, cy) = ProjeterIso(cell.X, cell.Y);
 
-        // Highlight la cellule courante (losange vert clair sous le joueur).
+        // Léger surlignage bleu pâle de la case courante (discret, propre).
         if (_cellulesPolygons.TryGetValue(cell.Identifiant, out var poly))
         {
-            poly.Fill = new SolidColorBrush(Color.FromRgb(0x65, 0xC5, 0x6F));
-            poly.Stroke = new SolidColorBrush(Color.FromRgb(0x2E, 0xCC, 0x71));
-            poly.StrokeThickness = 2;
+            poly.Fill = new SolidColorBrush(Color.FromRgb(0xBB, 0xD3, 0xFF));
+            poly.Stroke = new SolidColorBrush(Color.FromRgb(0x2D, 0x6C, 0xDF));
+            poly.StrokeThickness = 1.4;
             Canvas.SetZIndex(poly, 4);
         }
 
-        // Marker bleu : ellipse + halo qui pulse pour la visibilité.
-        var halo = new Ellipse
-        {
-            Width = 36, Height = 36,
-            Stroke = new SolidColorBrush(Color.FromArgb(180, 33, 150, 243)),
-            StrokeThickness = 2,
-            IsHitTestVisible = false,
-        };
-        Canvas.SetLeft(halo, cx - 18);
-        Canvas.SetTop(halo, cy + _hauteurCellule - 18);
-        Canvas.SetZIndex(halo, 19);
-        CanvasMap.Children.Add(halo);
-
-        var anim = new System.Windows.Media.Animation.DoubleAnimation
-        {
-            From = 0.2, To = 1.0,
-            Duration = TimeSpan.FromSeconds(1),
-            AutoReverse = true,
-            RepeatBehavior = System.Windows.Media.Animation.RepeatBehavior.Forever
-        };
-        halo.BeginAnimation(UIElement.OpacityProperty, anim);
-
+        // Pion joueur : disque bleu net (style SynFus), sans halo pulsant.
         var marker = new Ellipse
         {
-            Width = 22, Height = 22,
-            Fill = new SolidColorBrush(Color.FromRgb(33, 150, 243)),
+            Width = 18, Height = 18,
+            Fill = new SolidColorBrush(Color.FromRgb(0x2D, 0x6C, 0xDF)),
             Stroke = Brushes.White,
             StrokeThickness = 2,
             IsHitTestVisible = false,
         };
-        Canvas.SetLeft(marker, cx - 11);
-        Canvas.SetTop(marker, cy + _hauteurCellule - 11);
+        Canvas.SetLeft(marker, cx - 9);
+        Canvas.SetTop(marker, cy + _hauteurCellule - 9);
         Canvas.SetZIndex(marker, 20);
         CanvasMap.Children.Add(marker);
 
@@ -606,8 +585,9 @@ public partial class VueMapViewer : UserControl
 
     private Brush CouleurCellule(Cellule cell)
     {
-        if (_celluleSelectionnee == cell.Identifiant) return new SolidColorBrush(Color.FromRgb(0x3A, 0x42, 0x55));
-        if (cell.Type == TypesCellule.Transition) return new SolidColorBrush(Color.FromRgb(255, 152, 0));
+        // Palette claire façon SynFus : cases blanches, blocs gris foncés.
+        if (_celluleSelectionnee == cell.Identifiant) return new SolidColorBrush(Color.FromRgb(0xC8, 0xDA, 0xFF));
+        if (cell.Type == TypesCellule.Transition) return new SolidColorBrush(Color.FromRgb(0xF2, 0xA3, 0x3C));
         // Élément interactif / récoltable :
         //  - épuisé (GDF) → vert très terne
         //  - skill connu de ce perso → vert vif (récoltable)
@@ -617,26 +597,28 @@ public partial class VueMapViewer : UserControl
         if (cell.IdInteractif >= 0)
         {
             if (!cell.RessourceDisponible)
-                return new SolidColorBrush(Color.FromRgb(70, 96, 78));
+                return new SolidColorBrush(Color.FromRgb(0xCF, 0xE3, 0xD4)); // épuisée (pâle)
 
             var ioMap = BaseDonnees.Instance.Interactif(cell.IdInteractif);
             var skillsPerso = _contexte?.EtatJeu.Personnage.SkillsConnus;
             if (ioMap is { IdSkill: > 0 } && skillsPerso is { Count: > 0 })
             {
                 return new SolidColorBrush(skillsPerso.Contains(ioMap.IdSkill)
-                    ? Color.FromRgb(46, 204, 113)   // récoltable par toi
-                    : Color.FromRgb(176, 122, 40)); // métier/niveau insuffisant
+                    ? Color.FromRgb(0x5B, 0xCB, 0x7A)   // récoltable par toi
+                    : Color.FromRgb(0xE0, 0xB2, 0x4C)); // métier/niveau insuffisant
             }
-            return new SolidColorBrush(Color.FromRgb(46, 204, 113));
+            return new SolidColorBrush(Color.FromRgb(0x5B, 0xCB, 0x7A));
         }
-        if (cell.EstInteractif) return new SolidColorBrush(Color.FromRgb(118, 94, 58));
-        if (cell.Type == TypesCellule.Obstacle) return new SolidColorBrush(Color.FromRgb(38, 43, 51));
-        if (cell.Type == TypesCellule.LignDeVueSeule) return new SolidColorBrush(Color.FromRgb(72, 82, 96));
+        if (cell.EstInteractif) return new SolidColorBrush(Color.FromRgb(0xD8, 0xC7, 0xA8));
+        // Obstacle / hors LoS = blocs gris foncés « surélevés » comme SynFus.
+        if (cell.Type == TypesCellule.Obstacle) return new SolidColorBrush(Color.FromRgb(0x3C, 0x42, 0x4B));
+        if (cell.Type == TypesCellule.LignDeVueSeule) return new SolidColorBrush(Color.FromRgb(0xC6, 0xCA, 0xD0));
+        if (!cell.EstMarchable) return new SolidColorBrush(Color.FromRgb(0x3C, 0x42, 0x4B));
 
-        var relief = Math.Clamp((int)cell.LayerNiveau, 0, 12) * 7;
-        var pente = Math.Clamp((int)cell.LayerSlope, 0, 8) * 4;
-        var baseGris = (byte)Math.Clamp(96 + relief - pente, 64, 174);
-        return new SolidColorBrush(Color.FromRgb(baseGris, (byte)Math.Clamp(baseGris + 4, 0, 190), (byte)Math.Clamp(baseGris + 14, 0, 205)));
+        // Marchable : blanc cassé, très léger relief selon l'altitude.
+        var relief = Math.Clamp((int)cell.LayerNiveau, 0, 12) * 2;
+        var g = (byte)Math.Clamp(246 - relief, 226, 248);
+        return new SolidColorBrush(Color.FromRgb(g, g, (byte)Math.Clamp(g - 2, 224, 246)));
     }
 
     private void Poly_MouseEnter(object sender, MouseEventArgs e)
@@ -668,7 +650,7 @@ public partial class VueMapViewer : UserControl
     {
         if (sender is Polygon poly)
         {
-            poly.Stroke = new SolidColorBrush(Color.FromRgb(30, 30, 30));
+            poly.Stroke = new SolidColorBrush(Color.FromRgb(0xC6, 0xC8, 0xCC));
             poly.StrokeThickness = 0.5;
         }
         _celluleHover = null;
