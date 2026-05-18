@@ -19,7 +19,7 @@
                               Checked="ChkAfficherIds_Changed" Unchecked="ChkAfficherIds_Changed" Margin="0,0,16,0"/>
                     <CheckBox x:Name="ChkAfficherTransitions" Content="Transitions" IsChecked="True"
                               Checked="ChkAfficherIds_Changed" Unchecked="ChkAfficherIds_Changed" Margin="0,0,16,0"/>
-                    <CheckBox x:Name="ChkDeplacerAuClic" Content="Deplacer au clic" IsChecked="False"
+                    <CheckBox x:Name="ChkDeplacerAuClic" Content="Deplacer au clic" IsChecked="True"
                               ToolTip="Quand actif, clic gauche sur une cellule envoie un deplacement direct"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">

@@ -123,6 +123,21 @@ public sealed class ApiBot
         string paquet = Pathfinder.PaquetDeplacement(chemin);
         Journaliseur.Info($"API.SeDeplacerVersCellule : chemin {chemin.Count} cellules, packet={paquet[..Math.Min(paquet.Length, 60)]}...");
         await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
+
+        // CONFIRMATION FIN DE DÉPLACEMENT — décisif. Le vrai client envoie
+        // « GKK0 » ~1-1,5 s après chaque GA001 (fin d'animation de marche).
+        // Le serveur considère le perso « en marche » tant qu'il ne l'a pas
+        // reçu et IGNORE toute action suivante (GA902 combat, etc.) → sans
+        // ça, en injection, le perso bouge côté serveur mais rien ne se
+        // passe ensuite en jeu. Durée ≈ nb de cases × ~300 ms (vitesse course
+        // Dofus Retro), bornée. Cf. capture live : GA001df_ → +1,0 s → GKK0.
+        int dureeMarcheMs = Math.Clamp((chemin.Count - 1) * 300, 350, 6000);
+        await Task.Delay(dureeMarcheMs, ct).ConfigureAwait(false);
+        await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
+        // Position locale = arrivée (le GA0 serveur la confirme aussi, mais on
+        // évite que la prochaine itération du farm pathfind depuis l'ancienne).
+        _etat.Personnage.CellulePosition = chemin[^1].Identifiant;
+        Journaliseur.Info($"API.SeDeplacerVersCellule : GKK0 envoyé (marche {dureeMarcheMs} ms) → cell {chemin[^1].Identifiant}");
         return true;
     }
 
