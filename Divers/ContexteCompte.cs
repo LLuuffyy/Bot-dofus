@@ -131,6 +131,17 @@ public sealed class ContexteCompte : IDisposable
                 try
                 {
                     await System.Threading.Tasks.Task.Delay(1400);
+                    // Garde anti-reconnexion-mid-combat : si on rejoint un combat
+                    // DÉJÀ en cours (le serveur rejoue le placement puis enchaîne
+                    // direct sur GS/GTS tour N), l'état n'est plus Placement après
+                    // le délai → surtout PAS de GR1 (sinon désync, abandon forcé).
+                    if (EtatJeu.Combat.Etat != BotDofus.Divers.Combats.Enums.EtatCombat.Placement)
+                    {
+                        Journaliseur.Info(
+                            "[AUTO-COMBAT] Reconnexion en combat déjà engagé "
+                            + $"(état={EtatJeu.Combat.Etat}) → GR1 NON envoyé (anti-désync).");
+                        return;
+                    }
                     await Api.EnvoyerPaquetBrutAsync("GR1");
                     Journaliseur.Info("[AUTO-COMBAT] Prêt envoyé (GR1).");
                 }
