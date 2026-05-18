@@ -430,7 +430,11 @@
                             </Grid>
                         </Border>
 
-                        <Border Grid.Row="1"
+                        <!-- Row 2 = '*' : hauteur CONTRAINTE → la console (TextBox
+                             dans VueDashboard) obtient un viewport fixe et scrolle
+                             enfin (molette/scrollbar natifs). En Row 1 (Auto) le
+                             TextBox grandissait à l'infini = aucun scroll possible. -->
+                        <Border Grid.Row="2"
                                 Margin="0,14,0,0"
                                 Background="Transparent"
                                 BorderBrush="{StaticResource BorderSoftBrush}"
