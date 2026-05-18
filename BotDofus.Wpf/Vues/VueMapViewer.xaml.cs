@@ -938,6 +938,15 @@ public partial class VueMapViewer : UserControl
     private void ChkAfficherIds_Changed(object sender, RoutedEventArgs e) => Rafraichir();
 
     private readonly BotDofus.Divers.Scripts.EnregistreurTrajet _recTrajet = new();
+    private FenetreRoadCreator? _roadFenetre;
+    private EventHandler<BotDofus.Divers.Cartes.Carte>? _roadCarteHandler;
+
+    private (int id, string coords) MapCourante()
+    {
+        int id = _contexte?.EtatJeu.Personnage.CarteCourante ?? 0;
+        var m = BaseDonnees.Instance.Map(id);
+        return (id, m != null ? $"{m.X},{m.Y}" : id.ToString());
+    }
 
     private void BtnRecTrajet_Click(object sender, RoutedEventArgs e)
     {
@@ -949,19 +958,39 @@ public partial class VueMapViewer : UserControl
         }
         if (!_recTrajet.EnCours)
         {
-            _recTrajet.Demarrer(_contexte);
+            _recTrajet.Demarrer();
             BtnRecTrajet.Content = "■ STOP trajet";
             BtnRecTrajet.Foreground = new SolidColorBrush(Color.FromRgb(0x4C, 0xC2, 0x7A));
+
+            _roadFenetre = new FenetreRoadCreator { Owner = Window.GetWindow(this) };
+            _roadFenetre.Validee += (_, ligne) => _recTrajet.AjouterLigne(ligne);
+            var (id, co) = MapCourante();
+            _roadFenetre.Preparer(id, co);
+
+            // À chaque changement de carte, on repropose la fenêtre.
+            _roadCarteHandler = (_, __) => Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (_roadFenetre == null) return;
+                var (mid, mco) = MapCourante();
+                _roadFenetre.Preparer(mid, mco);
+            }));
+            _contexte.EtatJeu.CarteChangee += _roadCarteHandler;
         }
         else
         {
+            if (_roadCarteHandler != null && _contexte != null)
+                _contexte.EtatJeu.CarteChangee -= _roadCarteHandler;
+            _roadCarteHandler = null;
+            _roadFenetre?.FermerVraiment();
+            _roadFenetre = null;
+
             var chemin = _recTrajet.Arreter();
             BtnRecTrajet.Content = "● REC trajet";
             BtnRecTrajet.Foreground = new SolidColorBrush(Color.FromRgb(0xE0, 0x50, 0x50));
             MessageBox.Show(
                 chemin != null
                     ? $"Trajet enregistré :\n{chemin}\n\nCharge-le dans l'onglet Scripts pour le rejouer."
-                    : "Aucun trajet enregistré (pas de changement de carte).",
+                    : "Aucun waypoint enregistré.",
                 "RoadCreator", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }

@@ -103,10 +103,11 @@ public sealed class MoteurLuaInteractif : IDisposable
                 _script.DoString(code);
                 // Script au format AnkaBot (définit move()/bank()/phenix()) :
                 // on pilote la route. Sinon script libre déjà exécuté ci-dessus.
-                var moveFn = _script.Globals.Get("move");
-                if (moveFn.Type == DataType.Function)
+                // move() (AnkaBot) ou mouvement() (SynFus) → moteur de route.
+                if (_script.Globals.Get("move").Type == DataType.Function
+                    || _script.Globals.Get("mouvement").Type == DataType.Function)
                 {
-                    Journaliseur.Info("[ANKA] Script de route détecté → moteur AnkaBot");
+                    Journaliseur.Info("[ANKA] Script de route détecté → moteur de trajet");
                     ExecuterRoute();
                 }
                 Journaliseur.Info($"[LUA] Script terminé normalement : {Path.GetFileName(_chemin)}");
@@ -152,11 +153,11 @@ public sealed class MoteurLuaInteractif : IDisposable
                     && _script!.Globals.Get("phenix").Type == DataType.Function)
                 { SuivreUnTour("phenix", rnd, ct); continue; }
 
-                if (anka.Inventory.podsP() >= 98
-                    && _script!.Globals.Get("bank").Type == DataType.Function)
-                { SuivreUnTour("bank", rnd, ct); continue; }
+                var fnBanque = NomFn("bank", "banque");
+                if (anka.Inventory.podsP() >= 98 && fnBanque != null)
+                { SuivreUnTour(fnBanque, rnd, ct); continue; }
 
-                SuivreUnTour("move", rnd, ct);
+                SuivreUnTour(NomFn("move", "mouvement") ?? "move", rnd, ct);
             }
             catch (OperationCanceledException) { break; }
             catch (Exception ex)
@@ -167,21 +168,33 @@ public sealed class MoteurLuaInteractif : IDisposable
         }
     }
 
+    /// <summary>1re fonction globale existante parmi les alias donnés.</summary>
+    private string? NomFn(params string[] alias)
+    {
+        foreach (var a in alias)
+            if (_script!.Globals.Get(a).Type == DataType.Function) return a;
+        return null;
+    }
+
     private void SuivreUnTour(string fn, Random rnd, CancellationToken ct)
     {
         var res = _script!.Call(_script.Globals.Get(fn));
         if (res.Type != DataType.Table) { Pause(2000, ct); return; }
 
-        var coords = _api.Anka.Map.currentMap();           // "x,y"
+        var coords = _api.Anka.Map.currentMap();          // "x,y"
+        var mapId = _api.Anka.Map.currentMapId().ToString();
         DynValue? ligne = null;
         foreach (var p in res.Table.Pairs)
         {
             if (p.Value.Type != DataType.Table) continue;
-            if (p.Value.Table.Get("map").CastToString() == coords) { ligne = p.Value; break; }
+            // SynFus utilise map="<idMap>" (ex. "9127"), AnkaBot map="x,y" :
+            // on accepte les deux.
+            var m = p.Value.Table.Get("map").CastToString();
+            if (m == coords || m == mapId) { ligne = p.Value; break; }
         }
         if (ligne == null)
         {
-            Journaliseur.Info($"[ANKA] carte {coords} non prévue dans {fn}() — attente");
+            Journaliseur.Info($"[ANKA] carte {coords} (id {mapId}) non prévue dans {fn}() — attente");
             Pause(3000, ct);
             return;
         }
@@ -226,6 +239,32 @@ public sealed class MoteurLuaInteractif : IDisposable
             int avant = anka.Map.currentMapId();
             anka.Map.door(dcell);
             AttendreChangementCarte(avant, ct);
+        }
+        // 3b) PNJ : npc = <idPnj>, answers = { r1, r2, ... }  (format SynFus)
+        var npcV = row.Get("npc");
+        if (npcV.Type == DataType.Number)
+        {
+            int idPnj = (int)npcV.Number;
+            anka.Npc.npc(idPnj);
+            Pause(900, ct);
+            var ans = row.Get("answers");
+            if (ans.Type == DataType.Table)
+                foreach (var ap in ans.Table.Pairs)
+                {
+                    if (ct.IsCancellationRequested) return;
+                    if (ap.Value.Type != DataType.Number) continue;
+                    int rep = (int)ap.Value.Number;
+                    // -1 = première réponse disponible (convention SynFus)
+                    if (rep == -1)
+                    {
+                        var ids = anka.Npc.getRepliesId();
+                        if (ids.Length > 0) rep = (int)ids.Get(1).Number;
+                        else { anka.Npc.leave(); break; }
+                    }
+                    anka.Npc.reply(rep);
+                    Pause(900, ct);
+                }
+            else anka.Npc.leave();
         }
         // 4) custom / lockedCustom
         var custom = row.Get("custom");
