@@ -566,6 +566,15 @@ public partial class VueMapViewer : UserControl
                 FontSize = 11,
                 Margin = new Thickness(8, 2, 0, 2)
             });
+            // Interaction directe (mode autonome = pas de fenêtre Dofus, OU
+            // mode MITM) : engage CE groupe via GA902 (chiffré '-' auto).
+            AjouterBoutonMenu($"⚔ Combattre ce groupe (GA902{ent.Identifiant})", async () =>
+            {
+                if (_contexte == null) return;
+                BotDofus.Utilitaires.Journaux.Journaliseur.Info(
+                    $"[UI] Engager combat groupe #{ent.Identifiant} « {ent.Nom} » (GA902).");
+                await _contexte.Api.EnvoyerPaquetBrutAsync($"GA902{ent.Identifiant}");
+            });
         }
 
         if (ent is EntitePNJ)
