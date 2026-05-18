@@ -24,6 +24,12 @@ public sealed class BaseDonnees
     public Dictionary<int, string> Skills { get; } = new();
     public Dictionary<int, InfoInteractif> Interactifs { get; } = new();
     public Dictionary<int, string> Dialogues { get; } = new();
+    public Dictionary<int, string> DialoguesReponse { get; } = new();
+
+    /// <summary>Texte de la question/réplique PNJ (dialogs_fr.json champ « q »).</summary>
+    public string? DialogueQ(int id) => Dialogues.TryGetValue(id, out var v) ? v : null;
+    /// <summary>Texte d'une réponse possible (dialogs_fr.json champ « a »).</summary>
+    public string? DialogueA(int id) => DialoguesReponse.TryGetValue(id, out var v) ? v : null;
 
     public InfoItem? Item(int id) => Items.TryGetValue(id, out var v) ? v : null;
     public InfoMonstre? Monstre(int id) => Monstres.TryGetValue(id, out var v) ? v : null;
@@ -355,8 +361,19 @@ public sealed class BaseDonnees
             foreach (var prop in doc.RootElement.EnumerateObject())
             {
                 if (!int.TryParse(prop.Name, out var id)) continue;
-                if (prop.Value.ValueKind == JsonValueKind.String)
-                    bdd.Dialogues[id] = prop.Value.GetString() ?? "";
+                var v = prop.Value;
+                if (v.ValueKind == JsonValueKind.String)
+                {
+                    bdd.Dialogues[id] = v.GetString() ?? "";
+                }
+                else if (v.ValueKind == JsonValueKind.Object)
+                {
+                    // Format Hystoria : { "q": "texte du PNJ", "a": "texte réponse" }
+                    if (v.TryGetProperty("q", out var q) && q.ValueKind == JsonValueKind.String)
+                        bdd.Dialogues[id] = q.GetString() ?? "";
+                    if (v.TryGetProperty("a", out var a) && a.ValueKind == JsonValueKind.String)
+                        bdd.DialoguesReponse[id] = a.GetString() ?? "";
+                }
             }
         }
         catch (Exception ex) { Journaliseur.Avertir($"[BDD] dialogues : {ex.Message}"); }

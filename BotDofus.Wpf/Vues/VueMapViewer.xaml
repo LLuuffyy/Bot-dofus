@@ -125,6 +125,32 @@
                             <StackPanel x:Name="MenuContextuelContenu" MinWidth="240"/>
                         </ScrollViewer>
                     </Border>
+
+                    <!-- Panneau de dialogue PNJ -->
+                    <Border x:Name="PanneauDialogue" Background="#F01E1E1E" BorderBrush="#FF50B4DC"
+                            BorderThickness="2" CornerRadius="6" Padding="14" Visibility="Collapsed"
+                            HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,16,0,0"
+                            MaxWidth="540">
+                        <StackPanel>
+                            <DockPanel>
+                                <TextBlock x:Name="TxtDialoguePnj" Text="PNJ" FontWeight="Bold"
+                                           Foreground="#FF50B4DC" FontSize="13" VerticalAlignment="Center"/>
+                                <Button x:Name="BtnDialogueQuitter" Content="✕ Quitter"
+                                        DockPanel.Dock="Right" HorizontalAlignment="Right"
+                                        Padding="8,2" Click="BtnDialogueQuitter_Click"/>
+                            </DockPanel>
+                            <TextBlock x:Name="TxtDialogueTexte" Foreground="White" TextWrapping="Wrap"
+                                       Margin="0,8,0,8" FontSize="12"/>
+                            <StackPanel x:Name="DialogueReponses"/>
+                            <DockPanel Margin="0,8,0,0">
+                                <Button x:Name="BtnDialogueRepondre" Content="Répondre"
+                                        DockPanel.Dock="Right" Margin="8,0,0,0" Padding="8,2"
+                                        Click="BtnDialogueRepondre_Click"/>
+                                <TextBox x:Name="TxtDialogueReponseId"
+                                         materialDesign:HintAssist.Hint="id réponse (fallback)"/>
+                            </DockPanel>
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </Border>
         </DockPanel>

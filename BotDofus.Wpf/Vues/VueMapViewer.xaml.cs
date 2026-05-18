@@ -57,9 +57,21 @@ public partial class VueMapViewer : UserControl
         Rafraichir();
     }
 
+    private int _dialoguePnjId;
+
     private void OnPaquet(object? sender, EvenementPaquetRecu e)
     {
         var contenu = e.Paquet.Contenu;
+
+        // --- Dialogue PNJ (serveur → client) : DCK / DQ / DV ---
+        if (e.Paquet.Direction == BotDofus.Commun.Reseau.DirectionPaquet.VersClient
+            && contenu.Length >= 2 && contenu[0] == 'D' && char.IsUpper(contenu[1]))
+        {
+            var c = contenu;
+            Dispatcher.BeginInvoke(new Action(() => TraiterDialogue(c)),
+                System.Windows.Threading.DispatcherPriority.Background);
+            return;
+        }
         // GT* (GTM combattants+cellules, GTS tour, GTF/GTR) : indispensable
         // pour rafraîchir la grille PENDANT le combat — les positions des
         // combattants Abrak arrivent par GTM (préfixe "GT", PAS "GM").
@@ -77,6 +89,104 @@ public partial class VueMapViewer : UserControl
         }
 
         Dispatcher.BeginInvoke(new Action(Rafraichir), System.Windows.Threading.DispatcherPriority.Background);
+    }
+
+    /// <summary>
+    /// Affiche le dialogue PNJ. Paquets serveur :
+    ///  - <c>DCK&lt;npc&gt;,&lt;char&gt;</c> : dialogue ouvert.
+    ///  - <c>DQ&lt;qid&gt;[;p1;p2…][|r1;r2…]</c> : message du PNJ (+ réponses).
+    ///  - <c>DV</c> : fin du dialogue.
+    /// Le texte vient de dialogs_fr.json (champ « q » / « a »).
+    /// </summary>
+    private void TraiterDialogue(string contenu)
+    {
+        try
+        {
+            if (contenu.StartsWith("DCK", StringComparison.Ordinal))
+            {
+                var corps = contenu[3..];
+                var npc = corps.Split(',', ';')[0];
+                int.TryParse(npc, out _dialoguePnjId);
+                var nom = _dialoguePnjId != 0
+                    ? BaseDonnees.Instance.Npc(System.Math.Abs(_dialoguePnjId))?.Nom
+                    : null;
+                TxtDialoguePnj.Text = !string.IsNullOrWhiteSpace(nom)
+                    ? $"💬 {nom} (PNJ #{_dialoguePnjId})"
+                    : $"💬 PNJ #{_dialoguePnjId}";
+                TxtDialogueTexte.Text = "(en attente du PNJ…)";
+                DialogueReponses.Children.Clear();
+                PanneauDialogue.Visibility = Visibility.Visible;
+                return;
+            }
+
+            if (contenu.StartsWith("DV", StringComparison.Ordinal))
+            {
+                PanneauDialogue.Visibility = Visibility.Collapsed;
+                DialogueReponses.Children.Clear();
+                return;
+            }
+
+            if (contenu.StartsWith("DQ", StringComparison.Ordinal))
+            {
+                var corps = contenu[2..];
+                // Sépare message (gauche) et réponses (droite) : <q>[;params]|<r1;r2…>
+                var parts = corps.Split('|');
+                var gauche = parts[0].Split(';');
+                int.TryParse(gauche[0], out var qid);
+                var bdd = BaseDonnees.Instance;
+                var texte = bdd.DialogueQ(qid) ?? $"(dialogue #{qid})";
+                // Substitution best-effort des #N par les paramètres.
+                for (int i = 1; i < gauche.Length; i++)
+                    texte = texte.Replace($"#{i}", gauche[i]);
+                TxtDialogueTexte.Text = texte;
+
+                DialogueReponses.Children.Clear();
+                if (parts.Length > 1)
+                {
+                    foreach (var r in parts[1].Split(';', ',',
+                                 StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        if (!int.TryParse(r, out var rid)) continue;
+                        var libelle = bdd.DialogueA(rid) ?? $"Réponse #{rid}";
+                        var btn = new System.Windows.Controls.Button
+                        {
+                            Content = libelle,
+                            Margin = new Thickness(0, 2, 0, 2),
+                            Padding = new Thickness(8, 4, 8, 4),
+                            HorizontalContentAlignment = System.Windows.HorizontalAlignment.Left,
+                            Tag = rid
+                        };
+                        btn.Click += async (_, __) =>
+                        {
+                            if (_contexte == null) return;
+                            await _contexte.Api.RepondreDialogueAsync((int)btn.Tag);
+                        };
+                        DialogueReponses.Children.Add(btn);
+                    }
+                }
+                BotDofus.Utilitaires.Journaux.Journaliseur.Info(
+                    $"[DIALOGUE] PNJ #{_dialoguePnjId} q={qid} brut='{contenu}'");
+                PanneauDialogue.Visibility = Visibility.Visible;
+            }
+        }
+        catch (Exception ex)
+        {
+            BotDofus.Utilitaires.Journaux.Journaliseur.Avertir(
+                $"[DIALOGUE] parse '{contenu}' : {ex.Message}");
+        }
+    }
+
+    private async void BtnDialogueRepondre_Click(object sender, RoutedEventArgs e)
+    {
+        if (_contexte == null) return;
+        if (int.TryParse(TxtDialogueReponseId.Text?.Trim(), out var rid))
+            await _contexte.Api.RepondreDialogueAsync(rid);
+    }
+
+    private async void BtnDialogueQuitter_Click(object sender, RoutedEventArgs e)
+    {
+        PanneauDialogue.Visibility = Visibility.Collapsed;
+        if (_contexte != null) await _contexte.Api.QuitterDialogueAsync();
     }
 
     private void Rafraichir()

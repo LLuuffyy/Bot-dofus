@@ -224,18 +224,32 @@ public sealed class ApiBot
     }
 
     /// <summary>
-    /// Parle à un PNJ depuis la carte : envoie DIRECTEMENT DC&lt;idPnj&gt;
-    /// (canal « - » re-chiffré). Contrairement au combat/récolte, le dialogue
-    /// PNJ Dofus Retro N'EXIGE PAS la proximité : le serveur accepte DC depuis
-    /// n'importe où (confirmé en capture : DC-1 → serveur DCK-1,0). On NE
-    /// déplace donc PAS le perso — l'ancien code faisait un Pathfinder qui,
-    /// la cellule du PNJ étant marchable, amenait le perso PILE SUR la case du
-    /// PNJ (bug remonté : « ça va sur la case du pnj »).
+    /// Parle à un PNJ depuis la carte. FORMAT RÉEL capturé du vrai client
+    /// (log 15:05:41) : <c>DC&lt;idPerso&gt;,&lt;idPnj&gt;</c> (ex.
+    /// <c>DC401770,-6</c>). L'ancien <c>DC&lt;idPnj&gt;</c> recevait bien
+    /// <c>DCK</c> mais le serveur n'envoyait JAMAIS la question (<c>DQ</c>)
+    /// car la requête était mal formée → « le pnj ça fonctionne pas ».
+    /// Pas de déplacement (le dialogue Retro n'exige pas la proximité).
     /// </summary>
     public async Task ParlerPnjAsync(int cellule, int idPnj, CancellationToken ct = default)
     {
-        Journaliseur.Info($"[UI] Parler PNJ #{idPnj} (cell {cellule}) → DC{idPnj} (sans déplacement)");
-        await EnvoyerHumaniseAsync($"DC{idPnj}", ct).ConfigureAwait(false);
+        var paquet = $"DC{_etat.Personnage.Identifiant},{idPnj}";
+        Journaliseur.Info($"[UI] Parler PNJ #{idPnj} (cell {cellule}) → {paquet}");
+        await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>Choisit une réponse dans le dialogue PNJ en cours : <c>DR&lt;idReponse&gt;</c>.</summary>
+    public async Task RepondreDialogueAsync(int idReponse, CancellationToken ct = default)
+    {
+        Journaliseur.Info($"[UI] Réponse dialogue → DR{idReponse}");
+        await EnvoyerHumaniseAsync($"DR{idReponse}", ct).ConfigureAwait(false);
+    }
+
+    /// <summary>Quitte le dialogue PNJ en cours : <c>DV</c>.</summary>
+    public async Task QuitterDialogueAsync(CancellationToken ct = default)
+    {
+        Journaliseur.Info("[UI] Quitter dialogue → DV");
+        await EnvoyerHumaniseAsync("DV", ct).ConfigureAwait(false);
     }
 
     /// <summary>

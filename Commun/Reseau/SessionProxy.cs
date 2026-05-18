@@ -614,10 +614,15 @@ public sealed class SessionProxy : IDisposable
             // Clé = sens + préfixe 3 chars (ou 2 si plus court).
             var pfx = contenu.Length >= 3 ? contenu[..3] : contenu[..2];
             var cle = (direction == DirectionPaquet.VersClient ? "S>" : "C>") + pfx;
-            if (_vocabVu.TryAdd(cle, 1))
+            // Les paquets de DIALOGUE PNJ (préfixe 'D' : DC/DCK/DQ/DR/DRK/DV…)
+            // sont loggués À CHAQUE FOIS (pas de dédup) : il faut voir TOUTE la
+            // séquence question/réponses pour reverse le protocole de dialogue.
+            bool estDialogue = contenu.Length >= 2 && contenu[0] == 'D'
+                && char.IsUpper(contenu[1]);
+            if (estDialogue || _vocabVu.TryAdd(cle, 1))
             {
                 var fleche = direction == DirectionPaquet.VersClient ? "S→C" : "C→S";
-                var apercu = contenu.Length > 120 ? contenu[..120] + "…" : contenu;
+                var apercu = contenu.Length > 240 ? contenu[..240] + "…" : contenu;
                 Journaliseur.Info($"[VOCAB {fleche}] {apercu}");
             }
         }
