@@ -42,6 +42,16 @@ public sealed class Personnage
     /// <summary>Sorts appris par le personnage. Clé = ID sort, valeur = niveau (SR/SM packets).</summary>
     public Dictionary<int, int> SortsAppris { get; } = new();
 
+    /// <summary>Caractéristiques (total affiché). Clé = statId Dofus (AB) :
+    /// 10=Vitalité 11=Sagesse 12=Force 13=Intelligence 14=Chance 15=Agilité.</summary>
+    public Dictionary<int, int> Caracteristiques { get; } = new();
+
+    public static readonly Dictionary<int, string> NomsCaracteristiques = new()
+    {
+        [10] = "Vitalité", [11] = "Sagesse", [12] = "Force",
+        [13] = "Intelligence", [14] = "Chance", [15] = "Agilité"
+    };
+
     public event EventHandler? Mis_A_Jour;
     public event EventHandler? InventaireChange;
     public event EventHandler? SortsChanges;

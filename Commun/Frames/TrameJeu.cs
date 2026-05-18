@@ -47,6 +47,12 @@ public sealed class TrameJeu : TrameBase
         Ecouter<MessageInfoVie>(OnInfoVie);
         Ecouter<MessageSelectionPersonnage>(OnSelectionPersonnage);
         Ecouter<MessageStats>(OnStats);
+        Ecouter<BotDofus.Commun.Messages.VersClient.Authentification.MessageListeSorts>(msg =>
+        {
+            foreach (var kv in msg.Sorts) _etat.Personnage.SortsAppris[kv.Key] = kv.Value;
+            Journaliseur.Info($"[SORTS] {msg.Sorts.Count} sort(s) scanné(s) : "
+                + string.Join(", ", msg.Sorts.Select(s => $"#{s.Key} niv{s.Value}")));
+        });
         Ecouter<MessageObjetAjout>(OnObjetAjout);
         Ecouter<MessageObjetRetrait>(OnObjetRetrait);
         Ecouter<MessageObjetQuantite>(OnObjetQuantite);
@@ -228,6 +234,7 @@ public sealed class TrameJeu : TrameBase
         perso.Kamas = msg.Kamas;
         perso.PointsCaracteristiques = msg.PointsCaracteristiques;
         perso.PointsSorts = msg.PointsSorts;
+        foreach (var kv in msg.Caracteristiques) perso.Caracteristiques[kv.Key] = kv.Value;
         perso.PA = msg.PA;
         perso.PM = msg.PM;
         perso.ActualiserVie(msg.Vie, msg.VieMax);

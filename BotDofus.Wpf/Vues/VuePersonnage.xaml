@@ -79,6 +79,27 @@
                     <TextBlock x:Name="TxtPosition" Text="Carte —" Margin="0,2"/>
 
                     <Separator Margin="0,16"/>
+                    <TextBlock Text="Caractéristiques" FontWeight="Bold" Margin="0,0,0,8"/>
+                    <UniformGrid Columns="3" Margin="0,0,0,6">
+                        <StackPanel Margin="2"><TextBlock Text="Vitalité" Opacity="0.7" FontSize="11"/><TextBlock x:Name="TxtVita" Text="—" FontWeight="Bold"/></StackPanel>
+                        <StackPanel Margin="2"><TextBlock Text="Sagesse" Opacity="0.7" FontSize="11"/><TextBlock x:Name="TxtSag" Text="—" FontWeight="Bold"/></StackPanel>
+                        <StackPanel Margin="2"><TextBlock Text="Force" Opacity="0.7" FontSize="11"/><TextBlock x:Name="TxtFor" Text="—" FontWeight="Bold"/></StackPanel>
+                        <StackPanel Margin="2"><TextBlock Text="Intelligence" Opacity="0.7" FontSize="11"/><TextBlock x:Name="TxtInt" Text="—" FontWeight="Bold"/></StackPanel>
+                        <StackPanel Margin="2"><TextBlock Text="Chance" Opacity="0.7" FontSize="11"/><TextBlock x:Name="TxtCha" Text="—" FontWeight="Bold"/></StackPanel>
+                        <StackPanel Margin="2"><TextBlock Text="Agilité" Opacity="0.7" FontSize="11"/><TextBlock x:Name="TxtAgi" Text="—" FontWeight="Bold"/></StackPanel>
+                    </UniformGrid>
+                    <TextBlock Text="Auto-distribuer le capital dans :" Opacity="0.7" FontSize="11" Margin="0,4,0,4"/>
+                    <WrapPanel>
+                        <Button Content="Vita"  Tag="10" Click="BtnAutoCarac_Click" Margin="0,0,6,6" Padding="8,3"/>
+                        <Button Content="Sag"   Tag="11" Click="BtnAutoCarac_Click" Margin="0,0,6,6" Padding="8,3"/>
+                        <Button Content="Force" Tag="12" Click="BtnAutoCarac_Click" Margin="0,0,6,6" Padding="8,3"/>
+                        <Button Content="Intel" Tag="13" Click="BtnAutoCarac_Click" Margin="0,0,6,6" Padding="8,3"/>
+                        <Button Content="Chance" Tag="14" Click="BtnAutoCarac_Click" Margin="0,0,6,6" Padding="8,3"/>
+                        <Button Content="Agi"   Tag="15" Click="BtnAutoCarac_Click" Margin="0,0,6,6" Padding="8,3"/>
+                        <Button Content="⬆ Monter tous les sorts" Click="BtnAutoSorts_Click" Margin="0,0,6,6" Padding="8,3"/>
+                    </WrapPanel>
+
+                    <Separator Margin="0,16"/>
                     <Grid Margin="0,0,0,8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>

@@ -303,6 +303,8 @@ public sealed class MessageStats : MessageDofus, IMessageVersClient
     public int EnergieMax { get; private set; }
     public int PA { get; private set; }
     public int PM { get; private set; }
+    /// <summary>Caracs (total) par statId AB : 10=Vita 11=Sag 12=For 13=Int 14=Cha 15=Agi.</summary>
+    public System.Collections.Generic.Dictionary<int, int> Caracteristiques { get; } = new();
     public override void Desserialiser(string charge)
     {
         Charge = charge;
@@ -345,6 +347,16 @@ public sealed class MessageStats : MessageDofus, IMessageVersClient
         //   blocs[10] = PM (ex: "3,1,0,0" → 4 PM total)
         PA = SommeStat(blocs, 9);
         PM = SommeStat(blocs, 10);
+
+        // Caracs Dofus 1.29 : après PA(9)/PM(10) viennent les 6 stats, chacune
+        // "base,equip,don,boost" (total = somme). Ordre observé live (Abrak) :
+        //   [11]=Vitalité [12]=Sagesse [13]=Force [14]=Intelligence
+        //   [15]=Chance   [16]=Agilité  → statId AB 10..15.
+        for (int s = 0; s < 6; s++)
+        {
+            int total = SommeStat(blocs, 11 + s);
+            Caracteristiques[10 + s] = total;
+        }
     }
 
     private static int SommeStat(string[] blocs, int index)
@@ -421,5 +433,37 @@ public sealed class MessageNouveauNiveau : MessageDofus, IMessageVersClient
         Charge = charge;
         int.TryParse(charge, out var n);
         NouveauNiveau = n;
+    }
+}
+
+/// <summary>
+/// SL : liste des sorts du personnage. Format :
+/// <c>SL&lt;idSort&gt;~&lt;niveau&gt;~&lt;position&gt;;…</c> (position -1 = pas
+/// sur la barre). Permet de scanner les sorts appris + leur niveau.
+/// </summary>
+public sealed class MessageListeSorts : MessageDofus, IMessageVersClient
+{
+    public override string Prefixe => "SL";
+    public override DirectionPaquet Direction => DirectionPaquet.VersClient;
+
+    /// <summary>idSort → niveau.</summary>
+    public Dictionary<int, int> Sorts { get; } = new();
+
+    public override void Desserialiser(string charge)
+    {
+        Charge = charge;
+        // Certains serveurs préfixent d'un 'K' (compression Abrak) : on saute
+        // tout caractère non-chiffre/'-' de tête avant la 1re entrée.
+        foreach (var entree in charge.Split(';', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var p = entree.Split('~');
+            if (p.Length < 2) continue;
+            var sid = new string(p[0].Where(c => char.IsDigit(c) || c == '-').ToArray());
+            if (int.TryParse(sid, out var idSort)
+                && int.TryParse(p[1], out var niveau) && idSort > 0)
+            {
+                Sorts[idSort] = niveau;
+            }
+        }
     }
 }

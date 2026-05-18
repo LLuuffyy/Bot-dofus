@@ -162,6 +162,61 @@ public sealed class ApiBot
         return true;
     }
 
+    // ===================== CARACS & SORTS ============================
+
+    /// <summary>Monte une caractéristique : <c>AB&lt;id&gt;;&lt;statId&gt;;&lt;n&gt;</c>
+    /// (clair, core.swf BonusStats). statId 10=Vita 11=Sag 12=For 13=Int
+    /// 14=Cha 15=Agi.</summary>
+    public async Task MonterCaracteristiqueAsync(int statId, int n = 1, CancellationToken ct = default)
+    {
+        if (_etat.Personnage.Identifiant == 0 || n <= 0) return;
+        Journaliseur.Info($"[STATS] AB stat {statId} +{n} (capital {_etat.Personnage.PointsCaracteristiques}).");
+        await EnvoyerHumaniseAsync($"AB{_etat.Personnage.Identifiant};{statId};{n}", ct).ConfigureAwait(false);
+    }
+
+    /// <summary>Monte un sort : <c>SB&lt;id&gt;;&lt;spellId&gt;</c>
+    /// (chiffré '-', core.swf Spells.as).</summary>
+    public async Task MonterSortAsync(int spellId, CancellationToken ct = default)
+    {
+        if (_etat.Personnage.Identifiant == 0) return;
+        Journaliseur.Info($"[SORTS] SB sort {spellId} (pts sorts {_etat.Personnage.PointsSorts}).");
+        await EnvoyerHumaniseAsync($"SB{_etat.Personnage.Identifiant};{spellId}", ct).ConfigureAwait(false);
+    }
+
+    /// <summary>Dépense TOUT le capital dans une stat (1 pt à la fois, le
+    /// serveur renvoie As → on s'arrête quand le capital est épuisé).</summary>
+    public async Task AutoDistribuerCaracteristiquesAsync(int statId, CancellationToken ct = default)
+    {
+        Journaliseur.Info($"[STATS] Auto-distribution capital → {BotDofus.Divers.Jeu.Personnage.Personnage.NomsCaracteristiques.GetValueOrDefault(statId, statId.ToString())}.");
+        int garde = 0;
+        while (!ct.IsCancellationRequested && _etat.Personnage.PointsCaracteristiques > 0 && garde++ < 500)
+        {
+            await MonterCaracteristiqueAsync(statId, 1, ct).ConfigureAwait(false);
+            await Task.Delay(450, ct).ConfigureAwait(false); // laisse le As revenir
+        }
+        Journaliseur.Info($"[STATS] Auto-distribution terminée (capital restant {_etat.Personnage.PointsCaracteristiques}).");
+    }
+
+    /// <summary>Monte tous les sorts connus tant qu'il reste des points de
+    /// sort (1 passe par sort, re-check via SL/As).</summary>
+    public async Task AutoMonterSortsAsync(CancellationToken ct = default)
+    {
+        Journaliseur.Info($"[SORTS] Auto-montée sorts (pts {_etat.Personnage.PointsSorts}).");
+        int garde = 0;
+        while (!ct.IsCancellationRequested && _etat.Personnage.PointsSorts > 0 && garde++ < 200)
+        {
+            var sorts = _etat.Personnage.SortsAppris.Keys.ToList();
+            if (sorts.Count == 0) break;
+            foreach (var sid in sorts)
+            {
+                if (ct.IsCancellationRequested || _etat.Personnage.PointsSorts <= 0) break;
+                await MonterSortAsync(sid, ct).ConfigureAwait(false);
+                await Task.Delay(450, ct).ConfigureAwait(false);
+            }
+        }
+        Journaliseur.Info($"[SORTS] Auto-montée terminée (pts restants {_etat.Personnage.PointsSorts}).");
+    }
+
     private CancellationTokenSource? _farmCts;
     public bool FarmActif => _farmCts is { IsCancellationRequested: false };
 

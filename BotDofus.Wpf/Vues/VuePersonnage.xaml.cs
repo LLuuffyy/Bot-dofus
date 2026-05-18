@@ -68,6 +68,13 @@ public partial class VuePersonnage : UserControl
         TxtPointsCaracs.Text = p.PointsCaracteristiques.ToString();
         TxtPointsSorts.Text = p.PointsSorts.ToString();
 
+        TxtVita.Text = p.Caracteristiques.GetValueOrDefault(10).ToString();
+        TxtSag.Text  = p.Caracteristiques.GetValueOrDefault(11).ToString();
+        TxtFor.Text  = p.Caracteristiques.GetValueOrDefault(12).ToString();
+        TxtInt.Text  = p.Caracteristiques.GetValueOrDefault(13).ToString();
+        TxtCha.Text  = p.Caracteristiques.GetValueOrDefault(14).ToString();
+        TxtAgi.Text  = p.Caracteristiques.GetValueOrDefault(15).ToString();
+
         TxtPosition.Text = p.CarteCourante.HasValue
             ? $"Carte {p.CarteCourante} · Cellule {p.CellulePosition?.ToString() ?? "—"}"
             : "Carte —";
@@ -89,6 +96,19 @@ public partial class VuePersonnage : UserControl
             });
         }
         TxtNbSorts.Text = $"{Sorts.Count} sort{(Sorts.Count > 1 ? "s" : "")}";
+    }
+
+    private async void BtnAutoCarac_Click(object sender, System.Windows.RoutedEventArgs e)
+    {
+        if (_contexte == null) return;
+        if (sender is Button b && b.Tag is string tag && int.TryParse(tag, out var statId))
+            await _contexte.Api.AutoDistribuerCaracteristiquesAsync(statId);
+    }
+
+    private async void BtnAutoSorts_Click(object sender, System.Windows.RoutedEventArgs e)
+    {
+        if (_contexte == null) return;
+        await _contexte.Api.AutoMonterSortsAsync();
     }
 
     private static (string Nom, string Abrev, Color Couleur) InfosClasse(int idClasse) => idClasse switch

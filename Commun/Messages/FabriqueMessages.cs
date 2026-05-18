@@ -115,6 +115,7 @@ public static class FabriqueMessages
         EnregistrerVersClient<VersClient.Authentification.MessageSelectionPersonnage>("ASK");
         EnregistrerVersClient<VersClient.Authentification.MessageRestrictions>("AR");
         EnregistrerVersClient<VersClient.Authentification.MessageStats>("As");
+        EnregistrerVersClient<VersClient.Authentification.MessageListeSorts>("SL");
         EnregistrerVersClient<VersClient.Authentification.MessageQueuePosition>("Af");
         EnregistrerVersClient<VersClient.Authentification.MessageNouveauNiveau>("ANK");
 
