@@ -22,6 +22,7 @@ public partial class MainWindow : Window
 {
     public ObservableCollection<CompteVm> Comptes { get; } = new();
     private ContexteCompte? _contexteSelectionne;
+    private ClientAutonomeAbrak? _clientAuto;
     private readonly DispatcherTimer _timerRafraichissement;
     private readonly ConfigWpf _configWpf;
 
@@ -168,6 +169,56 @@ public partial class MainWindow : Window
         _contexteSelectionne.Compte.ServeurPrefere = idServeur;
         SauvegarderComptes();
         Journaliseur.Info($"[CONFIG] Serveur préféré de {_contexteSelectionne.Compte.Identifiant} = #{idServeur}");
+    }
+
+    /// <summary>
+    /// TEST DÉCISIF (approche SynFus) : connecte un client socket AUTONOME
+    /// — sans lancer le client officiel, donc sans Shield. S'il atteint le
+    /// serveur de jeu et reçoit les clés AK, le farm autonome est viable.
+    /// </summary>
+    private async void BtnClientAuto_Click(object sender, RoutedEventArgs e)
+    {
+        var ctx = _contexteSelectionne ?? Comptes.FirstOrDefault()?.Contexte;
+        if (ctx == null)
+        {
+            MessageBox.Show("Sélectionne un compte d'abord.", "Client Auto",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(ctx.Compte.MotDePasse))
+        {
+            MessageBox.Show("Le compte n'a pas de mot de passe enregistré (requis pour l'auth autonome).",
+                "Client Auto", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            _clientAuto?.Dispose();
+            var cfg = new ConfigReseau();
+            int srv = ctx.Compte.ServeurPrefere > 0 ? ctx.Compte.ServeurPrefere : 5;
+            Journaliseur.Info(
+                $"[AUTO] Démarrage client autonome — {ctx.Compte.Identifiant} sur serveur #{srv} "
+                + $"({cfg.HoteDistant}:{cfg.PortDistant}→{cfg.PortJeuDistant}). AUCUN client officiel lancé.");
+
+            _clientAuto = new ClientAutonomeAbrak(
+                cfg.HoteDistant, cfg.PortDistant, cfg.PortJeuDistant,
+                ctx.Compte.Identifiant, ctx.Compte.MotDePasse, srv);
+
+            _clientAuto.Etat += s => Journaliseur.Info(s);
+            _clientAuto.PaquetClair += p => Journaliseur.Debogue($"[AUTO ←SRV] {p}");
+            _clientAuto.PretJeu += () => Journaliseur.Info(
+                "[AUTO] ✅ SUCCÈS : client autonome EN JEU sans Shield. "
+                + "L'approche SynFus fonctionne sur Abrak → farm autonome viable.");
+
+            await _clientAuto.DemarrerAsync();
+        }
+        catch (Exception ex)
+        {
+            Journaliseur.Avertir($"[AUTO] Échec : {ex.Message}");
+            MessageBox.Show($"Client Auto échoué : {ex.Message}", "Client Auto",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private void LstComptes_SelectionChanged(object sender, SelectionChangedEventArgs e)

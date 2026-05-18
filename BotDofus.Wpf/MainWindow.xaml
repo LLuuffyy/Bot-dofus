@@ -399,6 +399,20 @@
                                             <TextBlock Text="Lancer jeu" />
                                         </StackPanel>
                                     </Button>
+                                    <Button x:Name="BtnClientAuto"
+                                            Click="BtnClientAuto_Click"
+                                            Background="#2D4A2D"
+                                            Foreground="#7BD389"
+                                            BorderBrush="#42693F"
+                                            BorderThickness="1"
+                                            Style="{StaticResource TopNavButtonStyle}"
+                                            ToolTip="Test décisif : connecte un client socket AUTONOME (façon SynFus, sans client officiel = sans Shield). Doit atteindre le serveur de jeu et recevoir les clés AK."
+                                            Margin="0,0,10,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="RobotOutline" Width="14" Height="14" Margin="0,0,6,0" />
+                                            <TextBlock Text="Client Auto" />
+                                        </StackPanel>
+                                    </Button>
                                     <Button x:Name="BtnDeconnecter"
                                             Click="BtnDeconnecter_Click"
                                             Background="#4A2C31"
