@@ -192,6 +192,35 @@ public partial class FenetreRoadCreator : Window
         Hide();
     }
 
+    /// <summary>
+    /// Construit AUTOMATIQUEMENT la ligne de la carte qu'on vient de quitter
+    /// (sortie d'auberge / changement de map fait À LA MAIN) : on capture la
+    /// VRAIE cellule de sortie (celle où le perso était juste avant que la map
+    /// change) + l'état des cases Combat/Récolte + le PNJ éventuel. Aucune
+    /// saisie ni clic « Valider » nécessaire — façon SynFus.
+    /// </summary>
+    public EnregistreurTrajet.Ligne ConstruireLigneAuto(int mapId, string coords, int celluleSortie)
+    {
+        var l = new EnregistreurTrajet.Ligne
+        {
+            MapId = mapId,
+            Coords = coords,
+            Fight = ChkCombat.IsChecked == true,
+            Gather = ChkRecolte.IsChecked == true,
+        };
+        if (celluleSortie > 0) l.Cellule = celluleSortie;
+        if (_npcTemplate != 0)
+        {
+            l.Npc = _npcTemplate;
+            l.Answers.AddRange(_reponses);
+        }
+        // On consomme le PNJ/les réponses (déjà rattachés à cette carte).
+        _npcChoisi = 0;
+        _npcTemplate = 0;
+        _reponses.Clear();
+        return l;
+    }
+
     public void MajCompteur(int n)
         => TxtCompteur.Text = $"● REC — {n} waypoint{(n > 1 ? "s" : "")}";
 

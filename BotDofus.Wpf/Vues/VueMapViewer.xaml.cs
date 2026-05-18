@@ -987,6 +987,9 @@ public partial class VueMapViewer : UserControl
     private readonly BotDofus.Divers.Scripts.EnregistreurTrajet _recTrajet = new();
     private FenetreRoadCreator? _roadFenetre;
     private EventHandler<BotDofus.Divers.Cartes.Carte>? _roadCarteHandler;
+    private int _roadMapId;
+    private string _roadCoords = "?,?";
+    private bool _roadLigneDejaValidee;
 
     private (int id, string coords) MapCourante()
     {
@@ -1096,20 +1099,48 @@ public partial class VueMapViewer : UserControl
             {
                 _recTrajet.AjouterLigne(ligne);
                 _roadFenetre?.MajCompteur(_recTrajet.NbLignes);
+                _roadLigneDejaValidee = true; // évite le double-enregistrement
                 // Exécute l'action validée (comme SynFus) : le bot combat /
                 // récolte / se déplace tout seul, pas besoin de le faire à la main.
                 await ExecuterLigneRoadCreator(ligne);
             };
             var (id, co) = MapCourante();
+            _roadMapId = id;
+            _roadCoords = co;
+            _roadLigneDejaValidee = false;
             _roadFenetre.Preparer(id, co);
 
-            // À chaque changement de carte, on repropose la fenêtre.
-            _roadCarteHandler = (_, __) => Dispatcher.BeginInvoke(new Action(() =>
+            // À chaque changement de carte : on CAPTURE d'abord (SYNCHRONE, sur
+            // le thread réseau) la VRAIE cellule de sortie. CarteChangee est
+            // levé AVANT que le GM de la nouvelle carte mette à jour la
+            // position → Personnage.CellulePosition contient encore la case
+            // exacte où on a quitté la map (sortie d'auberge incluse). On
+            // enregistre automatiquement la ligne de la map quittée avec CETTE
+            // cellule, sauf si l'utilisateur a déjà cliqué « Valider ».
+            _roadCarteHandler = (_, __) =>
             {
-                if (_roadFenetre == null) return;
-                var (mid, mco) = MapCourante();
-                _roadFenetre.Preparer(mid, mco);
-            }));
+                int sortie = _contexte?.EtatJeu.Personnage.CellulePosition ?? 0;
+                int mapQuittee = _roadMapId;
+                string coordsQuittee = _roadCoords;
+                bool dejaValidee = _roadLigneDejaValidee;
+                _roadLigneDejaValidee = false;
+
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (_roadFenetre == null) return;
+                    if (!dejaValidee && mapQuittee != 0 && _recTrajet.EnCours)
+                    {
+                        var ligne = _roadFenetre.ConstruireLigneAuto(
+                            mapQuittee, coordsQuittee, sortie);
+                        _recTrajet.AjouterLigne(ligne);
+                        _roadFenetre.MajCompteur(_recTrajet.NbLignes);
+                    }
+                    var (mid, mco) = MapCourante();
+                    _roadMapId = mid;
+                    _roadCoords = mco;
+                    _roadFenetre.Preparer(mid, mco);
+                }));
+            };
             _contexte.EtatJeu.CarteChangee += _roadCarteHandler;
         }
         else
