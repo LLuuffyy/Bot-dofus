@@ -169,16 +169,19 @@ public sealed class ApiBot
     }
 
     /// <summary>
-    /// Engage le groupe de monstres le plus proche : <c>GA902&lt;idGroupe&gt;</c>
-    /// (format confirmé bot réf dyshay + whitelist core.swf → chiffré '-').
+    /// Engage le groupe de monstres le plus proche. Format RÉEL capturé du
+    /// vrai client (log 11:24:15, '-' déchiffré) : <c>GA907&lt;cellGroupe&gt;;&lt;idGroupe&gt;</c>
+    /// (ex. <c>GA907288;-78</c>). L'ancien <c>GA902&lt;id&gt;</c> était une
+    /// supposition fausse → serveur muet. Opcode 'GA' ⇒ chiffré '-'.
     /// </summary>
     public async Task<bool> EngagerCombatAsync(CancellationToken ct)
     {
         var cible = MonstreLePlusProche();
         if (cible == null) { Journaliseur.Info("[FARM] aucun monstre sur la carte."); return false; }
+        var paquet = $"GA907{cible.CellulePosition};{cible.Identifiant}";
         Journaliseur.Info(
-            $"[FARM] cible groupe #{cible.Identifiant} « {cible.Nom} » cell {cible.CellulePosition} → GA902");
-        await EnvoyerHumaniseAsync("GA902" + cible.Identifiant, ct).ConfigureAwait(false);
+            $"[FARM] cible groupe #{cible.Identifiant} « {cible.Nom} » cell {cible.CellulePosition} → {paquet}");
+        await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
         return true;
     }
 

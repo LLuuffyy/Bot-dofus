@@ -127,8 +127,16 @@ public sealed class SessionProxy : IDisposable
             return;
         }
 
+        // Injection CLAIRE (GR1/GT/Gt combat, GI…) : DOIT passer par le même
+        // verrou que le re-chiffrant, sinon écriture concurrente avec le relai
+        // sur le socket serveur → trame entrelacée → kick (cause de la déco
+        // constatée en combat quand l'auto-combat injecte GR1/GT). Écriture
+        // synchrone sous _verrouCs = atomique et sérialisée avec tout le C→S.
         var octets = EncoderPaquet(ChiffrerSiNecessaire(message, DirectionPaquet.VersServeur));
-        await _coteServeur.GetStream().WriteAsync(octets, ct).ConfigureAwait(false);
+        lock (_verrouCs)
+        {
+            _coteServeur.GetStream().Write(octets, 0, octets.Length);
+        }
         Journaliseur.Debogue($"[INJ ->SRV] {message}");
     }
 
@@ -242,7 +250,20 @@ public sealed class SessionProxy : IDisposable
                 if (sortie.Length > 0)
                 {
                     var octetsSortie = Encoding.UTF8.GetBytes(sortie.ToString());
-                    await fluxDestination.WriteAsync(octetsSortie, ct).ConfigureAwait(false);
+                    if (direction == DirectionPaquet.VersServeur)
+                    {
+                        // Sérialisé avec le re-chiffrant et l'injection : toute
+                        // écriture vers le socket serveur passe par _verrouCs,
+                        // sinon entrelacement de trames → kick.
+                        lock (_verrouCs)
+                        {
+                            fluxDestination.Write(octetsSortie, 0, octetsSortie.Length);
+                        }
+                    }
+                    else
+                    {
+                        await fluxDestination.WriteAsync(octetsSortie, ct).ConfigureAwait(false);
+                    }
                 }
             }
         }
