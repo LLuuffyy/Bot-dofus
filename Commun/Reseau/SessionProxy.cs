@@ -112,7 +112,12 @@ public sealed class SessionProxy : IDisposable
             _annulation.Token));
     }
 
-    public async Task EnvoyerAuServeurAsync(string message, CancellationToken ct = default)
+    /// <summary>
+    /// Envoie un paquet C→S. Retourne <c>false</c> si l'écriture a échoué
+    /// (socket fermée / session morte) : l'appelant (ApiBot) doit alors
+    /// stopper ses boucles auto au lieu de spammer dans un socket disposé.
+    /// </summary>
+    public async Task<bool> EnvoyerAuServeurAsync(string message, CancellationToken ct = default)
     {
         // Modèle SynFus : le proxy est SEUL maître de la rotation « - »
         // côté serveur (il re-chiffre tout le flux C→S, cf. relai plus bas).
@@ -125,7 +130,7 @@ public sealed class SessionProxy : IDisposable
             Journaliseur.Debogue(ok
                 ? $"[INJ ->SRV '-' réenc] {message}"
                 : $"[INJ ->SRV '-' réenc] ÉCHEC '{message}'");
-            return;
+            return ok;
         }
 
         // Injection CLAIRE (GR1/GT/Gt combat, GI…) : DOIT passer par le même
@@ -133,12 +138,23 @@ public sealed class SessionProxy : IDisposable
         // sur le socket serveur → trame entrelacée → kick (cause de la déco
         // constatée en combat quand l'auto-combat injecte GR1/GT). Écriture
         // synchrone sous _verrouCs = atomique et sérialisée avec tout le C→S.
-        var octets = EncoderPaquet(ChiffrerSiNecessaire(message, DirectionPaquet.VersServeur));
-        lock (_verrouCs)
+        try
         {
-            _coteServeur.GetStream().Write(octets, 0, octets.Length);
+            var octets = EncoderPaquet(ChiffrerSiNecessaire(message, DirectionPaquet.VersServeur));
+            lock (_verrouCs)
+            {
+                _coteServeur.GetStream().Write(octets, 0, octets.Length);
+            }
+            Journaliseur.Debogue($"[INJ ->SRV] {message}");
+            return true;
         }
-        Journaliseur.Debogue($"[INJ ->SRV] {message}");
+        catch (Exception ex) when (ex is ObjectDisposedException
+            or System.IO.IOException or System.Net.Sockets.SocketException
+            or InvalidOperationException)
+        {
+            Journaliseur.Debogue($"[INJ ->SRV] ÉCHEC '{message}' : {ex.GetType().Name}");
+            return false;
+        }
     }
 
     /// <summary>

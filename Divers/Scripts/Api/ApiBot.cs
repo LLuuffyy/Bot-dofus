@@ -76,7 +76,19 @@ public sealed class ApiBot
             if (_clientAuto is { EstConnecte: true })
                 await _clientAuto.EnvoyerAuServeurAsync(paquet, ct).ConfigureAwait(false);
             else if (_session is not null)
-                await _session.EnvoyerAuServeurAsync(paquet, ct).ConfigureAwait(false);
+            {
+                // false = écriture KO (socket disposé) : la session est morte
+                // mais l'exception est avalée plus bas → on coupe ICI sinon
+                // les boucles auto (récolte/road) spamment à l'infini.
+                bool ok = await _session.EnvoyerAuServeurAsync(paquet, ct).ConfigureAwait(false);
+                if (!ok)
+                {
+                    SessionMorte = true;
+                    Journaliseur.Avertir(
+                        "[RÉSEAU] envoi KO (session fermée) — actions auto stoppées. "
+                        + "Relance/relie une session.");
+                }
+            }
         }
         catch (OperationCanceledException) { /* arrêt normal */ }
         catch (Exception ex) when (ex is ObjectDisposedException
