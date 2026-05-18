@@ -456,25 +456,20 @@ public partial class VueMapViewer : UserControl
             return;
         }
 
-        // Abrak chiffre les actions de jeu (canal '-' anti-tamper) → on NE peut
-        // PAS injecter le paquet de déplacement. La seule voie : piloter le VRAI
-        // client (clic synthétique). Le client Flash calcule et envoie lui-même
-        // le paquet chiffré → déplacement réel en jeu (et si on clique une
-        // cellule de transition / un soleil, ça change de map en jeu aussi).
+        // Découverte (logs Abrak + bot réf. dyshay/SynFus) : les paquets de
+        // CONTRÔLE (GR1/GT) sont en CLAIR et injectables. On teste donc
+        // l'injection du déplacement map au format EXACT SynFus :
+        // "GA001" + chemin (dir+hash A*), via le canal cleartext humanisé —
+        // PAS de pixel. Si Abrak l'accepte → auto-déplacement/engage complet.
         try
         {
-            _calibration ??= BotDofus.Utilitaires.Auto.CalibrationClic.Charger();
-            bool ok = await System.Threading.Tasks.Task.Run(() =>
-                BotDofus.Utilitaires.Auto.PiloteClientDofus.CliquerCellule(
-                    _celluleHover!.X, _celluleHover!.Y, _calibration));
+            bool ok = await _contexte.Api.SeDeplacerVersCelluleAsync(cible);
             if (!ok)
-                MessageBox.Show(
-                    "Fenêtre Dofus introuvable (le client est-il lancé ?).",
-                    "Pilote client", MessageBoxButton.OK, MessageBoxImage.Warning);
+                BotDofus.Utilitaires.Journaux.Journaliseur.Avertir($"[MOVE] Pas de chemin vers {cible} (ou position perso inconnue).");
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Pilotage client échoué : {ex.Message}", "Erreur",
+            MessageBox.Show($"Déplacement échoué : {ex.Message}", "Erreur",
                 MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
@@ -529,11 +524,7 @@ public partial class VueMapViewer : UserControl
                 ? $"Aller (transition) cellule {cell.Identifiant}"
                 : $"Aller cellule {cell.Identifiant}";
             AjouterBoutonMenu(libelle, async () =>
-            {
-                _calibration ??= BotDofus.Utilitaires.Auto.CalibrationClic.Charger();
-                await System.Threading.Tasks.Task.Run(() =>
-                    BotDofus.Utilitaires.Auto.PiloteClientDofus.CliquerCellule(cell.X, cell.Y, _calibration));
-            });
+                await _contexte.Api.SeDeplacerVersCelluleAsync(cell.Identifiant));
         }
 
         AjouterBoutonMenu("Fermer", () => { });
