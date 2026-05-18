@@ -379,11 +379,11 @@
                                     </Button>
                                     <CheckBox x:Name="ChkModePassif"
                                               Content="Mode passif"
-                                              IsChecked="True"
+                                              IsChecked="False"
                                               Checked="ChkModePassif_Toggle"
                                               Unchecked="ChkModePassif_Toggle"
                                               VerticalAlignment="Center"
-                                              ToolTip="Coché : le bot observe seulement, le client Dofus gère l'auth (sûr). Décoché : le bot fait l'auth tout seul (mode actif)."
+                                              ToolTip="Décoché (défaut) : MODE ACTIF — humaniseur anti-burst ON, injection/IA autorisées (l'auth reste gérée par le client Dofus). Coché : observation pure (relais seul)."
                                               Margin="0,0,14,0" />
                                     <Button x:Name="BtnLancerJeu"
                                             Click="BtnLancerJeu_Click"
