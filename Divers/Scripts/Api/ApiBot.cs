@@ -7,6 +7,7 @@ using BotDofus.Commun.Messages.VersServeur.Chat;
 using BotDofus.Commun.Messages.VersServeur.Dialogue;
 using BotDofus.Commun.Messages.VersServeur.Jeu;
 using BotDofus.Commun.Reseau;
+using BotDofus.Divers.Cartes;
 using BotDofus.Divers.Cartes.Deplacement;
 using BotDofus.Divers.Cartes.Entites;
 using BotDofus.Divers.Combats.Enums;
@@ -264,7 +265,8 @@ public sealed class ApiBot
         var carte = _etat.CarteCourante;
         if (carte == null) { Journaliseur.Avertir("[MAP] pas de carte courante"); return false; }
         var transitions = carte.Cellules
-            .Where(c => c is { Type: BotDofus.Divers.Cartes.TypesCellule.Transition })
+            .OfType<Cellule>()
+            .Where(c => c.Type == BotDofus.Divers.Cartes.TypesCellule.Transition)
             .ToList();
         if (transitions.Count == 0)
         {
