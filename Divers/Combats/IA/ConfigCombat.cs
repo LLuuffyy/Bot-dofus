@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using BotDofus.Divers.Jeu.Personnage.Spells;
 using BotDofus.Utilitaires.Journaux;
 
 namespace BotDofus.Divers.Combats.IA;
@@ -66,6 +68,37 @@ public sealed class ConfigCombat
             Journaliseur.Avertir($"[CFG-COMBAT] Erreur chargement {cheminFichier} : {ex.Message}, config par défaut");
             return new ConfigCombat();
         }
+    }
+
+    /// <summary>
+    /// Génère une config de combat par défaut à partir des sorts OFFENSIFS
+    /// réellement appris par le perso (scan SL). Règle par sort : cible =
+    /// ennemi le plus proche, priorité = portée (les sorts longue portée
+    /// d'abord), portées/PA repris de la base. À utiliser plus tard pour
+    /// proposer une config auto dans l'UI — NON appliqué automatiquement.
+    /// </summary>
+    public static ConfigCombat GenererParDefaut(IEnumerable<int> sortsApprisIds)
+    {
+        var cfg = new ConfigCombat { Strategie = StrategieCombat.Agressif };
+        var offensifs = BaseSorts.Instance.SortsOffensifs(sortsApprisIds);
+        int prio = 100;
+        foreach (var s in offensifs)
+        {
+            cfg.Regles.Add(new RegleSort
+            {
+                IdSort = s.Identifiant,
+                Priorite = prio,
+                CoutPA = s.CoutPA,
+                PorteeMin = s.PorteeMin,
+                PorteeMax = s.PorteeMax <= 0 ? 1 : s.PorteeMax,
+                Cible = CibleSort.EnnemiPlusProche,
+            });
+            prio -= 5;
+        }
+        Journaliseur.Info(
+            $"[CFG-COMBAT] Auto-générée : {cfg.Regles.Count} règle(s) offensive(s) "
+            + $"depuis {sortsApprisIds.Count()} sort(s) appris.");
+        return cfg;
     }
 
     public void Sauvegarder(string cheminFichier)

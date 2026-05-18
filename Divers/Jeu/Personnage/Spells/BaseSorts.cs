@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using BotDofus.Utilitaires.Journaux;
 
@@ -110,8 +111,87 @@ public sealed class BaseSorts
             }
         }
 
+        // 3) Classification (catégorie) à partir du nom + description FR.
+        // Heuristique mots-clés Dofus Retro — l'ordre des tests EST la
+        // priorité de désambiguïsation (Invocation avant Soin avant Offensif…).
+        int nbOff = 0;
+        foreach (var s in bdd.Sorts.Values)
+        {
+            s.Categorie = ClasserSort(s.Nom, s.Description);
+            if (s.Categorie == CategorieSort.Offensif) nbOff++;
+        }
+        Journaliseur.Info($"[SORTS] Classification : {nbOff} offensifs / {bdd.Sorts.Count} sorts.");
+
         return bdd;
     }
+
+    private static CategorieSort ClasserSort(string nom, string desc)
+    {
+        string t = ((nom ?? "") + " || " + (desc ?? "")).ToLowerInvariant();
+        if (t.Length == 0) return CategorieSort.Utilitaire;
+
+        bool A(params string[] mots) => mots.Any(m => t.Contains(m));
+
+        // 1) Invocations (mot très discriminant)
+        if (A("invocation de", "invoque", "invocation d'", "invocation d\\'"))
+            return CategorieSort.Invocation;
+
+        // 2) Soin (rendre des PDV à un allié/soi)
+        if (A("rend des points de vie", "pdv rendus", "soigne", "soin ", "rend des pdv",
+               "régénère", "regenere", "points de vie rendus"))
+            return CategorieSort.Soin;
+
+        // 3) Offensif (dommages / vol de vie)
+        if (A("dommage", "dégât", "degat", "vole des points de vie", "vol de vie",
+               "occasionne des", "retire des points de vie", "perte de pdv",
+               "pdv (fixe)", "explose"))
+            return CategorieSort.Offensif;
+
+        // 4) Debuff (retire ressources / affaiblit l'ennemi)
+        if (A("retire des pa", "retire des pm", "vole #", "vole des pa", "vole des pm",
+               "réduit", "reduit", "affaibli", "malédiction", "malediction",
+               "diminue", "envoûte", "envoute", "poison", "immobilis", "entrave"))
+            return CategorieSort.Debuff;
+
+        // 5) Buff (armure / bonus / protection)
+        if (A("armure", "bonus", "augmente", "ajoute", "protège", "protege",
+               "dopage", "résistance", "resistance", "renforce", "boost",
+               "bouclier", "force ", "intelligence", "agilité", "chance"))
+            return CategorieSort.Buff;
+
+        // 6) Déplacement / positionnement
+        if (A("téléporte", "teleporte", "fait reculer", "fait avancer", "attire",
+               "saut", "bond", "échange les places", "echange les places", "recul"))
+            return CategorieSort.Deplacement;
+
+        return CategorieSort.Utilitaire;
+    }
+
+    /// <summary>
+    /// Sorts OFFENSIFS appris par le perso, triés du « meilleur attaquant »
+    /// au moins bon (heuristique : grande portée d'abord, puis PA décroissant
+    /// = sort le plus fort). Base d'une config de combat auto.
+    /// </summary>
+    public IReadOnlyList<InfoSort> SortsOffensifs(IEnumerable<int> idsAppris)
+        => idsAppris
+            .Select(Trouver)
+            .Where(s => s is { Categorie: CategorieSort.Offensif })
+            .Select(s => s!)
+            .OrderByDescending(s => s.PorteeMax)
+            .ThenByDescending(s => s.CoutPA)
+            .ToList();
+}
+
+/// <summary>Catégorie fonctionnelle d'un sort (déduite nom+description).</summary>
+public enum CategorieSort
+{
+    Offensif,
+    Soin,
+    Buff,
+    Debuff,
+    Invocation,
+    Deplacement,
+    Utilitaire
 }
 
 /// <summary>Métadonnées d'un sort Hystoria.</summary>
@@ -130,5 +210,8 @@ public sealed class InfoSort
     public int MaxParTour { get; set; }
     public int Cooldown { get; set; }
 
-    public override string ToString() => $"#{Identifiant} {Nom} (PA={CoutPA}, range={PorteeMin}-{PorteeMax})";
+    /// <summary>Catégorie déduite (Offensif/Soin/Buff/…), calculée au chargement.</summary>
+    public CategorieSort Categorie { get; set; } = CategorieSort.Utilitaire;
+
+    public override string ToString() => $"#{Identifiant} {Nom} ({Categorie}, PA={CoutPA}, range={PorteeMin}-{PorteeMax})";
 }
