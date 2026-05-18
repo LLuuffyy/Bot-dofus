@@ -7,10 +7,17 @@ namespace BotDofus.Commun.Messages.VersServeur.Dialogue;
 // Interactions avec les PNJ (ouvrir dialogue, choisir réponse, quitter).
 // =====================================================================
 
-/// <summary>DB : commencer un dialogue avec un PNJ (identifiant sur la carte).</summary>
+/// <summary>
+/// DC : commencer un dialogue avec un PNJ (identifiant du sprite sur la carte).
+/// Format exact Abrak (core.swf dofus.aks.Dialog.create) : <c>DC&lt;spriteId&gt;</c>.
+/// ATTENTION : la famille « D » est dans la whitelist chiffrée
+/// (Aks.prepareSendPacket → true) : ce paquet DOIT passer par le canal « - »
+/// chiffré pour être pris en compte côté serveur ; injecté en clair il est
+/// silencieusement ignoré.
+/// </summary>
 public sealed class MessageDialogueDebuter : MessageDofus, IMessageVersServeur
 {
-    public override string Prefixe => "DB";
+    public override string Prefixe => "DC";
     public override DirectionPaquet Direction => DirectionPaquet.VersServeur;
     public int IdentifiantPNJ { get; set; }
 

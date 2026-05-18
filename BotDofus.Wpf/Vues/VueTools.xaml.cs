@@ -323,7 +323,7 @@ public partial class VueTools : UserControl
                 Type = type,
                 Titre = $"{type} #{entite.Identifiant} {entite.Nom}",
                 Details = $"cell={entite.CellulePosition} {extra}".Trim(),
-                PaquetOuverture = entite is EntitePNJ ? $"DB{entite.Identifiant}" : null
+                PaquetOuverture = entite is EntitePNJ ? $"DC{entite.Identifiant}" : null
             });
         }
 

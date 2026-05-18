@@ -188,7 +188,7 @@ public static class FabriqueMessages
         EnregistrerVersServeur<VersServeur.Chat.MessageSmileyEnvoyer>("BS");
 
         // --- VersServeur : Dialogue ---
-        EnregistrerVersServeur<VersServeur.Dialogue.MessageDialogueDebuter>("DB");
+        EnregistrerVersServeur<VersServeur.Dialogue.MessageDialogueDebuter>("DC");
         EnregistrerVersServeur<VersServeur.Dialogue.MessageDialogueReponse>("DR");
         EnregistrerVersServeur<VersServeur.Dialogue.MessageDialogueQuitter>("DV");
     }
