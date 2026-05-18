@@ -312,8 +312,19 @@ public sealed class MoteurLuaInteractif : IDisposable
             var inner = path.Substring(po + 1, path.Length - po - 2);
             if (int.TryParse(inner, out var cellExit)) { _api.Anka.Map.moveToCell(cellExit); return; }
         }
-        // "364" → cellule déclencheuse directe
-        if (int.TryParse(path, out var cell)) { _api.Anka.Map.moveToCell(cell); return; }
+        // "364" → cellule déclencheuse directe. On attend que la position soit
+        // connue (sinon, juste après un changement de carte, le déplacement
+        // échoue « position perso inconnue ») puis on RÉESSAIE.
+        if (int.TryParse(path, out var cell))
+        {
+            AttendrePositionConnue(ct);
+            for (int essai = 0; essai < 4 && !ct.IsCancellationRequested; essai++)
+            {
+                if (_api.Anka.Map.moveToCell(cell)) return;
+                Pause(700, ct);
+            }
+            return;
+        }
         // "zaap(...)" / "zaapi(...)" / "havenbag" : non supportés
         if (path.StartsWith("zaap") || path.StartsWith("havenbag"))
         { Journaliseur.Avertir($"[ANKA] path '{path}' non supporté (ignoré)"); return; }
@@ -333,8 +344,26 @@ public sealed class MoteurLuaInteractif : IDisposable
     {
         for (int i = 0; i < 30 && !ct.IsCancellationRequested; i++)
         {
-            if (_api.Anka.Map.currentMapId() != mapIdAvant) return;
+            if (_api.Anka.Map.currentMapId() != mapIdAvant)
+            {
+                // Carte changée : on attend en plus que la position du perso
+                // soit connue, sinon l'action suivante (moveToCell/npc) part
+                // trop tôt et échoue « position perso inconnue ».
+                AttendrePositionConnue(ct);
+                return;
+            }
             Pause(300, ct);
+        }
+    }
+
+    /// <summary>Attend (≈6 s max) que la cellule du perso soit connue, p.ex.
+    /// juste après un GDM/GM de changement de carte.</summary>
+    private void AttendrePositionConnue(CancellationToken ct)
+    {
+        for (int i = 0; i < 24 && !ct.IsCancellationRequested; i++)
+        {
+            if (_api.Anka.Map.currentCell() >= 0) { Pause(250, ct); return; }
+            Pause(250, ct);
         }
     }
 

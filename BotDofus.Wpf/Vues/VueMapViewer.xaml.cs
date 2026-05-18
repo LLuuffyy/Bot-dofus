@@ -379,25 +379,19 @@ public partial class VueMapViewer : UserControl
 
             var couleur = CouleurCellule(cell);
 
-            // VOLUME 3D : cube isométrique. On dessine deux faces latérales
-            // (gauche éclairée, droite dans l'ombre) sous la tuile losange →
-            // vrai relief « cube » comme SynFus. Les obstacles sont de hautes
-            // murailles ; le sol garde une fine épaisseur + relief d'altitude.
+            // VOLUME 3D façon SynFus : PETITE épaisseur UNIFORME sous CHAQUE
+            // case (sol clair comme bloc sombre, même hauteur). Ce n'est pas
+            // une muraille — juste une fine tranche qui donne l'effet « dalle »
+            // propre et plat de SynFus. Deux faces (gauche claire / droite
+            // sombre) pour le relief.
             if (couleur is SolidColorBrush sc)
             {
-                bool bloc = !cell.EstMarchable || cell.Type == TypesCellule.Obstacle;
-                // Murs HAUTS et bien marqués (demande utilisateur) : grosse
-                // extrusion pour les obstacles, fine dalle pour le sol.
-                double prof = bloc
-                    ? _hauteurCellule * 2.9 + Math.Clamp((int)cell.LayerNiveau, 0, 12) * 1.8
-                    : 3 + Math.Clamp((int)cell.LayerNiveau, 0, 12) * 1.1;
+                const double prof = 7;   // épaisseur fixe, identique partout
 
-                // Sommets du losange (tuile du dessus).
                 var pG = new Point(cx - _largeurCellule, cy + _hauteurCellule); // gauche
                 var pB = new Point(cx, cy + _hauteurCellule * 2);               // bas
                 var pD = new Point(cx + _largeurCellule, cy + _hauteurCellule); // droite
 
-                // Face GAUCHE (gauche→bas, descendue de prof) — plus claire.
                 var faceG = new Polygon
                 {
                     Points = new PointCollection
@@ -406,10 +400,9 @@ public partial class VueMapViewer : UserControl
                         new Point(pB.X, pB.Y + prof),
                         new Point(pG.X, pG.Y + prof),
                     },
-                    Fill = new SolidColorBrush(AssombrirCouleur(sc.Color, bloc ? 0.64 : 0.78)),
+                    Fill = new SolidColorBrush(AssombrirCouleur(sc.Color, 0.80)),
                     IsHitTestVisible = false,
                 };
-                // Face DROITE (bas→droite, descendue de prof) — plus sombre.
                 var faceD = new Polygon
                 {
                     Points = new PointCollection
@@ -418,7 +411,7 @@ public partial class VueMapViewer : UserControl
                         new Point(pD.X, pD.Y + prof),
                         new Point(pB.X, pB.Y + prof),
                     },
-                    Fill = new SolidColorBrush(AssombrirCouleur(sc.Color, bloc ? 0.28 : 0.60)),
+                    Fill = new SolidColorBrush(AssombrirCouleur(sc.Color, 0.65)),
                     IsHitTestVisible = false,
                 };
                 Canvas.SetZIndex(faceG, 1);
@@ -671,14 +664,15 @@ public partial class VueMapViewer : UserControl
         }
         if (cell.EstInteractif) return new SolidColorBrush(Color.FromRgb(0xD8, 0xC7, 0xA8));
         // Obstacle / hors LoS = blocs gris foncés « surélevés » comme SynFus.
-        if (cell.Type == TypesCellule.Obstacle) return new SolidColorBrush(Color.FromRgb(0x39, 0x40, 0x4B));
-        if (cell.Type == TypesCellule.LignDeVueSeule) return new SolidColorBrush(Color.FromRgb(0x4A, 0x52, 0x5E));
-        if (!cell.EstMarchable) return new SolidColorBrush(Color.FromRgb(0x39, 0x40, 0x4B));
+        // Blocs gris foncé NEUTRE comme SynFus (≈ #3D3D3D, pas bleuté).
+        if (cell.Type == TypesCellule.Obstacle) return new SolidColorBrush(Color.FromRgb(0x3D, 0x3D, 0x3D));
+        if (cell.Type == TypesCellule.LignDeVueSeule) return new SolidColorBrush(Color.FromRgb(0x55, 0x55, 0x55));
+        if (!cell.EstMarchable) return new SolidColorBrush(Color.FromRgb(0x3D, 0x3D, 0x3D));
 
-        // Marchable : blanc cassé propre, léger relief selon l'altitude.
+        // Marchable : quasi-blanc neutre comme SynFus, très léger relief.
         var relief = Math.Clamp((int)cell.LayerNiveau, 0, 12) * 2;
-        var g = (byte)Math.Clamp(240 - relief, 218, 242);
-        return new SolidColorBrush(Color.FromRgb(g, g, (byte)Math.Clamp(g - 3, 214, 240)));
+        var g = (byte)Math.Clamp(250 - relief, 234, 250);
+        return new SolidColorBrush(Color.FromRgb(g, g, g));
     }
 
     private void Poly_MouseEnter(object sender, MouseEventArgs e)
