@@ -24,6 +24,7 @@ public partial class FenetreRoadCreator : Window
     private int _npcChoisi;        // id CONTEXTUEL (négatif) — pour le DC live
     private int _npcTemplate;      // id TEMPLATE (gabarit) — pour le script .lua
     private int _dernierMapPrepare = -1;
+    private string _dernierGa001 = "";   // dernier déplacement C→S fait à la main
     private readonly List<int> _reponses = new();
 
     public event EventHandler<EnregistreurTrajet.Ligne>? Validee;
@@ -63,6 +64,7 @@ public partial class FenetreRoadCreator : Window
             _npcChoisi = 0;
             _npcTemplate = 0;
             _reponses.Clear();
+            _dernierGa001 = ""; // nouveau terrain : on repart sans chemin brut
             BoxDialogue.Visibility = Visibility.Collapsed;
             TxtDlgEnregistre.Text = "";
         }
@@ -121,7 +123,15 @@ public partial class FenetreRoadCreator : Window
 
     private void OnPaquet(object? s, BotDofus.Commun.Reseau.EvenementPaquetRecu e)
     {
-        if (e.Paquet.Direction != BotDofus.Commun.Reseau.DirectionPaquet.VersClient) return;
+        // C→S : on mémorise le DERNIER déplacement GA001 fait à la main
+        // (chemin EXACT, serveur-valide) pour le rejouer fidèlement.
+        if (e.Paquet.Direction == BotDofus.Commun.Reseau.DirectionPaquet.VersServeur)
+        {
+            var cs = e.Paquet.Contenu;
+            if (cs.StartsWith("GA001", StringComparison.Ordinal) && cs.Length > 6)
+                _dernierGa001 = cs;
+            return;
+        }
         var c = e.Paquet.Contenu;
         if (c.Length < 2) return;
         // GM = (ré)apparition d'entités : les PNJ arrivent souvent APRÈS
@@ -232,16 +242,20 @@ public partial class FenetreRoadCreator : Window
             Fight = ChkCombat.IsChecked == true,
             Gather = ChkRecolte.IsChecked == true,
         };
-        if (celluleSortie > 0) l.Cellule = celluleSortie;
+        if (celluleSortie > 0) l.Cellule = celluleSortie; // fallback
+        // Chemin EXACT que tu viens de faire à la main → rejeu fidèle,
+        // serveur-valide (plus de rollback/pathfinder qui se trompe).
+        if (!string.IsNullOrEmpty(_dernierGa001)) l.CheminBrut = _dernierGa001;
         if (_npcTemplate != 0)
         {
             l.Npc = _npcTemplate;
             l.Answers.AddRange(_reponses);
         }
-        // On consomme le PNJ/les réponses (déjà rattachés à cette carte).
+        // On consomme le PNJ/les réponses/le chemin (rattachés à cette carte).
         _npcChoisi = 0;
         _npcTemplate = 0;
         _reponses.Clear();
+        _dernierGa001 = "";
         return l;
     }
 

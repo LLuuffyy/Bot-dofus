@@ -253,6 +253,31 @@ public sealed class ApiBot
     /// car la requête était mal formée → « le pnj ça fonctionne pas ».
     /// Pas de déplacement (le dialogue Retro n'exige pas la proximité).
     /// </summary>
+    /// <summary>
+    /// Rejoue VERBATIM un GA001 capturé à la main pendant l'enregistrement
+    /// (Road Creator). Le chemin est déjà encodé et a été accepté par le
+    /// serveur lors de la capture → pas de pathfinder, pas de rollback. On
+    /// reproduit la séquence du vrai client : GA001&lt;path&gt; puis, après la
+    /// marche, GKK0 (ack fin de déplacement).
+    /// </summary>
+    public async Task RejouerCheminBrutAsync(string ga001, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(ga001)
+            || !ga001.StartsWith("GA001", StringComparison.Ordinal))
+        {
+            Journaliseur.Avertir($"[ANKA] chemin brut invalide : '{ga001}'");
+            return;
+        }
+        // Durée de marche ≈ nb de pas (2 chars/pas après "GA001"), bornée.
+        int pas = Math.Max(1, (ga001.Length - 5) / 2);
+        int dureeMarcheMs = Math.Clamp(pas * 180, 250, 3000);
+        Journaliseur.Info($"[ANKA] Rejeu chemin brut « {ga001} » (~{pas} pas, {dureeMarcheMs} ms)");
+        await EnvoyerHumaniseAsync(ga001, ct).ConfigureAwait(false);
+        await Task.Delay(dureeMarcheMs, ct).ConfigureAwait(false);
+        await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
+        await Task.Delay(250, ct).ConfigureAwait(false);
+    }
+
     public async Task ParlerPnjAsync(int cellule, int idPnj, CancellationToken ct = default)
     {
         // Le DC du serveur attend l'id CONTEXTUEL (négatif, propre à la carte).

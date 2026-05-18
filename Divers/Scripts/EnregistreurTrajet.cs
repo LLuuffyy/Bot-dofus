@@ -24,6 +24,7 @@ public sealed class EnregistreurTrajet
         public string Direction = ""; // top/bottom/left/right (optionnel)
         public int Npc;              // dialogue PNJ (optionnel)
         public List<int> Answers = new();
+        public string CheminBrut = ""; // GA001 EXACT capturé à la main (rejeu fidèle)
     }
 
     private readonly List<Ligne> _lignes = new();
@@ -97,7 +98,11 @@ public sealed class EnregistreurTrajet
                 if (l.Answers.Count > 0)
                     sb2.Append($", answers = {{ {string.Join(", ", l.Answers)} }}");
             }
-            if (l.Cellule > 0) sb2.Append($", path = \"{l.Cellule}\"");
+            // Priorité : chemin BRUT capturé à la main (rejeu 100 % fidèle,
+            // serveur-valide) > cellule > direction.
+            if (!string.IsNullOrEmpty(l.CheminBrut))
+                sb2.Append($", path = \"raw:{l.CheminBrut}\"");
+            else if (l.Cellule > 0) sb2.Append($", path = \"{l.Cellule}\"");
             else if (!string.IsNullOrEmpty(l.Direction))
                 sb2.Append($", path = \"{l.Direction}\"");
             sb2.Append($" }},   -- [{l.Coords}]");

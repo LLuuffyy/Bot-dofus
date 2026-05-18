@@ -318,6 +318,15 @@ public sealed class MoteurLuaInteractif : IDisposable
             var choix = path.Split('|', StringSplitOptions.RemoveEmptyEntries);
             path = choix[rnd.Next(choix.Length)].Trim();
         }
+        // "raw:GA001…" → rejeu VERBATIM du déplacement capturé à la main
+        // (chemin déjà accepté par le serveur → zéro pathfinder, zéro
+        // rollback). Le plus fiable pour sortir d'auberge / changer de map.
+        if (path.StartsWith("raw:", StringComparison.OrdinalIgnoreCase))
+        {
+            AttendrePositionConnue(ct);
+            _api.Anka.Map.replayPath(path.Substring(4));
+            return;
+        }
         // "top(364)" / "left(12)" → on marche sur la cellule de sortie
         int po = path.IndexOf('(');
         if (po >= 0 && path.EndsWith(")"))
