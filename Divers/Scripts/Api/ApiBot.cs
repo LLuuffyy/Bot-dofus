@@ -284,6 +284,20 @@ public sealed class ApiBot
     /// </summary>
     public async Task RecolterAsync(int cellule, int idInteractif, int skillId = 45, CancellationToken ct = default)
     {
+        // SÉQUENCE RÉELLE capturée d'une récolte manuelle qui FONCTIONNE
+        // (log 14:43:51, ressource cell 211) :
+        //   GA001<chemin>        ← le client pathfind jusqu'à une case adjacente
+        //   GA500<cellObj>;<sk>  ← ENVOYÉ IMMÉDIATEMENT, collé au GA001
+        //   (serveur ACK déplacement)
+        //   GKK0                 ← ~0.7 s après, fin de déplacement
+        //   (serveur GA0 « 211,11800,201 » = résultat récolte, puis GDF/OQ/IQ)
+        // L'ancien code envoyait GA001 → attente → GKK0 → attente → GA500 :
+        // le GA500 arrivait trop tard, hors contexte d'interaction → serveur
+        // muet (« rien ne se passe depuis le bot »). On colle donc GA001+GA500
+        // exactement comme le combat direct (GA001+GA907).
+        var paquet = $"GA500{cellule};{skillId}";
+        int dureeMarche = 0;
+
         if (_etat.CarteCourante != null && _etat.Personnage.CellulePosition is int pc)
         {
             var dep = _etat.CarteCourante.Obtenir(pc);
@@ -295,17 +309,25 @@ public sealed class ApiBot
                 if (chemin is { Count: >= 2 })
                 {
                     await EnvoyerHumaniseAsync(Pathfinder.PaquetDeplacement(chemin), ct).ConfigureAwait(false);
-                    await Task.Delay(Math.Clamp((chemin.Count - 1) * 180, 250, 3000), ct).ConfigureAwait(false);
-                    await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
-                    await Task.Delay(300, ct).ConfigureAwait(false);
+                    dureeMarche = Math.Clamp((chemin.Count - 1) * 180, 250, 3000);
                 }
             }
         }
-        var paquet = $"GA500{cellule};{skillId}";
-        Journaliseur.Info($"[UI] Récolte cell {cellule} objet #{idInteractif} : envoi « {paquet} » "
-            + $"(skill {skillId}). Si la ressource n'est pas du blé, le skill diffère "
-            + "(Couper=bois, Cueillir=plantes, Pêcher=poisson) : surcharge skillId.");
+
+        Journaliseur.Info($"[UI] Récolte cell {cellule} objet #{idInteractif} : "
+            + $"GA001+« {paquet} » collés (skill {skillId}). Si la ressource n'est "
+            + "pas du blé, le skill diffère (Couper=bois, Cueillir=plantes, "
+            + "Pêcher=poisson) : surcharge skillId.");
+
+        // GA500 collé au GA001 (pas d'attente entre les deux).
         await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
+
+        // Puis on laisse marcher et on acquitte la fin de déplacement.
+        if (dureeMarche > 0)
+        {
+            await Task.Delay(dureeMarche, ct).ConfigureAwait(false);
+            await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
+        }
     }
 
     /// <summary>Ouvre un dialogue avec un PNJ, puis enchaîne les réponses indiquées.</summary>

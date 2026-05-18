@@ -49,6 +49,17 @@ public sealed class Cellule
     /// <summary>ID d'objet interactif sur cette cellule (-1 si aucun).</summary>
     public short IdInteractif { get; set; } = -1;
 
+    /// <summary>
+    /// Ressource interactive encore exploitable ? Mis à jour par les paquets
+    /// GDF (états des éléments interactifs) : passe à false quand la ressource
+    /// est récoltée/épuisée, true quand elle repousse. Permet à la carte de
+    /// « s'actualiser » (vert vif = dispo, terne = épuisé) en temps réel.
+    /// </summary>
+    public bool RessourceDisponible { get; set; } = true;
+
+    /// <summary>Dernier état brut reçu via GDF pour cette cellule (diagnostic).</summary>
+    public int EtatInteractif { get; set; }
+
     public bool EstMarchable => Type == TypesCellule.Marchable || Type == TypesCellule.Interactif;
     public bool EstInteractif => Type == TypesCellule.Interactif
                                || Type == TypesCellule.Zaap

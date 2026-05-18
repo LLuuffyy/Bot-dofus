@@ -43,6 +43,7 @@ public sealed class TrameJeu : TrameBase
     protected override void EnregistrerGestionnaires()
     {
         Ecouter<MessageDonneesCarte>(OnDonneesCarte);
+        Ecouter<MessageDonneesCarteFin>(OnElementsInteractifs);
         Ecouter<MessageInfoMessage>(OnInfoMessage);
         Ecouter<MessageInfoVie>(OnInfoVie);
         Ecouter<MessageSelectionPersonnage>(OnSelectionPersonnage);
@@ -439,6 +440,59 @@ public sealed class TrameJeu : TrameBase
                 ent.CellulePosition = cell;
                 carte.SignalerRechargee();
             }
+        }
+    }
+
+    /// <summary>
+    /// GDF : états des éléments interactifs de la carte. Deux usages :
+    ///  - au chargement : liste complète <c>cell;etat;dispo|cell;etat;dispo|…</c>
+    ///    (ex. <c>142;0;1|154;0;1|…</c>) — tout est dispo (3e champ=1).
+    ///  - en jeu : mise à jour ponctuelle (ex. <c>211;3;0</c> après récolte
+    ///    de la ressource cell 211 → 3e champ=0 = épuisée).
+    /// On répercute sur <see cref="Cellule.RessourceDisponible"/> et on
+    /// rafraîchit la carte : c'est ce qui faisait que « la carte ne
+    /// s'actualisait pas quand je récolte à la main ».
+    /// </summary>
+    private void OnElementsInteractifs(MessageDonneesCarteFin msg)
+    {
+        var carte = _etat.CarteCourante;
+        if (carte == null) { return; }
+
+        var charge = msg.Charge ?? string.Empty;
+        if (charge.Length == 0 || !charge.Contains(';'))
+        {
+            // GDF « vide » = simple fin de chargement → on rafraîchit.
+            carte.SignalerRechargee();
+            return;
+        }
+
+        int maj = 0;
+        foreach (var entree in charge.Split('|', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var champs = entree.Split(';');
+            if (champs.Length < 2) continue;
+            if (!int.TryParse(champs[0], out var idCell)) continue;
+
+            var cellule = carte.Obtenir(idCell);
+            if (cellule == null) continue;
+
+            int.TryParse(champs[1], out var etat);
+            // 3e champ = disponibilité (1 = exploitable, 0 = épuisée).
+            // Absent → on se rabat sur etat==0 = dispo.
+            bool dispo = champs.Length >= 3
+                ? champs[2].Trim() == "1"
+                : etat == 0;
+
+            cellule.EtatInteractif = etat;
+            cellule.RessourceDisponible = dispo;
+            maj++;
+        }
+
+        if (maj > 0)
+        {
+            Journaliseur.Info($"[GDF] {maj} élément(s) interactif(s) mis à jour "
+                + $"(carte #{carte.Identifiant}).");
+            carte.SignalerRechargee();
         }
     }
 
