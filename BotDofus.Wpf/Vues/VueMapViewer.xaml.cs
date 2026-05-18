@@ -95,9 +95,14 @@ public partial class VueMapViewer : UserControl
         }
 
         var info = BaseDonnees.Instance.Map(carte.Identifiant);
+        int nbInteract = carte.Cellules.Count(c => c is { IdInteractif: >= 0 });
+        int nbTransit = carte.Cellules.Count(c => c is { Type: TypesCellule.Transition });
         TxtMapId.Text = info != null
-            ? $"Carte : {carte.Identifiant} [{info.X},{info.Y}] ({carte.Cellules.Length} cells)"
-            : $"Carte : {carte.Identifiant} ({carte.Cellules.Length} cells)";
+            ? $"Carte : {carte.Identifiant} [{info.X},{info.Y}] ({carte.Cellules.Length} c., {nbInteract} interactifs, {nbTransit} transitions)"
+            : $"Carte : {carte.Identifiant} ({carte.Cellules.Length} c., {nbInteract} interactifs, {nbTransit} transitions)";
+        BotDofus.Utilitaires.Journaux.Journaliseur.Info(
+            $"[CARTE] #{carte.Identifiant} : {nbInteract} cellule(s) interactive(s)/récoltable(s), "
+            + $"{nbTransit} transition(s) (cases vertes = récolte, oranges = changement map).");
         var pos = _contexte.EtatJeu.Personnage.CellulePosition;
         TxtCellId.Text = $"Cellule : {pos?.ToString() ?? "-"}";
         var cellPerso = pos.HasValue ? carte.Obtenir(pos.Value) : null;
@@ -412,6 +417,9 @@ public partial class VueMapViewer : UserControl
     {
         if (_celluleSelectionnee == cell.Identifiant) return new SolidColorBrush(Color.FromRgb(0x3A, 0x42, 0x55));
         if (cell.Type == TypesCellule.Transition) return new SolidColorBrush(Color.FromRgb(255, 152, 0));
+        // Élément interactif / récoltable (arbre, minerai, blé… IdInteractif
+        // décodé du mapData) → vert vif, bien visible sur la carte.
+        if (cell.IdInteractif >= 0) return new SolidColorBrush(Color.FromRgb(46, 204, 113));
         if (cell.EstInteractif) return new SolidColorBrush(Color.FromRgb(118, 94, 58));
         if (cell.Type == TypesCellule.Obstacle) return new SolidColorBrush(Color.FromRgb(38, 43, 51));
         if (cell.Type == TypesCellule.LignDeVueSeule) return new SolidColorBrush(Color.FromRgb(72, 82, 96));
@@ -522,10 +530,24 @@ public partial class VueMapViewer : UserControl
         if (_contexte != null)
         {
             var libelle = cell.Type == TypesCellule.Transition
-                ? $"Aller (transition) cellule {cell.Identifiant}"
+                ? $"Aller (transition → change map) cellule {cell.Identifiant}"
                 : $"Aller cellule {cell.Identifiant}";
             AjouterBoutonMenu(libelle, async () =>
                 await _contexte.Api.SeDeplacerVersCelluleAsync(cell.Identifiant));
+
+            // Récolte : cellule avec élément interactif (vert). Approche +
+            // capture du paquet de récolte (format à confirmer sur 1er test
+            // manuel : clic ressource dans Dofus.exe → proxy loggue le clair).
+            if (cell.IdInteractif >= 0)
+            {
+                AjouterBoutonMenu($"🌿 Récolter ici (objet #{cell.IdInteractif})", async () =>
+                {
+                    if (_contexte == null) return;
+                    BotDofus.Utilitaires.Journaux.Journaliseur.Info(
+                        $"[UI] Récolter cellule {cell.Identifiant} objet interactif #{cell.IdInteractif} (approche).");
+                    await _contexte.Api.RecolterAsync(cell.Identifiant, cell.IdInteractif);
+                });
+            }
         }
 
         AjouterBoutonMenu("Fermer", () => { });

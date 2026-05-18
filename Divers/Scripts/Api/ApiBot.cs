@@ -252,6 +252,40 @@ public sealed class ApiBot
         await EnvoyerHumaniseAsync($"DC{idPnj}", ct).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Récolte un élément interactif (arbre, minerai, blé…) : approche au
+    /// contact puis envoie le paquet d'interaction. Le format exact n'a pas
+    /// encore été capturé (comme GA907/GA300 au début) → on approche et on
+    /// loggue clairement : un clic MANUEL sur la ressource dans Dofus.exe
+    /// fait apparaître le vrai paquet déchiffré ([OBS C→S '-']) qu'on
+    /// alignera ensuite. On tente quand même le format Retro courant
+    /// « GA + 502 + cellule » (inoffensif si faux : le serveur l'ignore).
+    /// </summary>
+    public async Task RecolterAsync(int cellule, int idInteractif, CancellationToken ct = default)
+    {
+        if (_etat.CarteCourante != null && _etat.Personnage.CellulePosition is int pc)
+        {
+            var dep = _etat.CarteCourante.Obtenir(pc);
+            var arr = _etat.CarteCourante.Obtenir(cellule);
+            if (dep != null && arr != null)
+            {
+                var chemin = Pathfinder.Trouver(_etat.CarteCourante, dep, arr,
+                    arreterDevant: true, distanceArret: 1);
+                if (chemin is { Count: >= 2 })
+                {
+                    await EnvoyerHumaniseAsync(Pathfinder.PaquetDeplacement(chemin), ct).ConfigureAwait(false);
+                    await Task.Delay(Math.Clamp((chemin.Count - 1) * 180, 250, 3000), ct).ConfigureAwait(false);
+                    await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
+                    await Task.Delay(300, ct).ConfigureAwait(false);
+                }
+            }
+        }
+        Journaliseur.Info($"[UI] Récolte cell {cellule} #{idInteractif} : tentative « GA502{cellule} ». "
+            + "Si rien : clique la ressource À LA MAIN dans Dofus.exe → le proxy loggue "
+            + "le vrai paquet ([OBS C→S '-']) et je l'aligne (méthode GA907).");
+        await EnvoyerHumaniseAsync($"GA502{cellule}", ct).ConfigureAwait(false);
+    }
+
     /// <summary>Ouvre un dialogue avec un PNJ, puis enchaîne les réponses indiquées.</summary>
     public async Task ParlerAuPNJAsync(int idPNJ, IReadOnlyList<int>? reponses, CancellationToken ct)
     {
