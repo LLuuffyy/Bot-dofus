@@ -321,17 +321,41 @@ public sealed class ApiBot
                     continue;
                 }
 
-                // S'approcher : on s'arrête À CÔTÉ du groupe (sa cellule est
-                // occupée → non marchable). Le serveur engage souvent au
-                // contact ; sinon on force avec GA902.
-                Journaliseur.Info($"[FARM] cible #{mob.Identifiant} « {mob.Nom} » cell {mob.CellulePosition} → approche");
-                await SeDeplacerVersCelluleAsync(mob.CellulePosition, ct, arreterDevant: true).ConfigureAwait(false);
-                await Task.Delay(1800, ct).ConfigureAwait(false);
+                // GA907 n'est accepté QUE si le perso est ADJACENT au groupe
+                // (prouvé live 11:48 : le vrai client envoie GA001 puis
+                // GA907<cell>;<id> une fois collé ; le bot spammait GA907 de
+                // loin → ignoré). On approche, on attend, on vérifie la
+                // distance RÉELLE (X/Y carte, position = serveur via GA0),
+                // puis seulement on engage. Max 4 tentatives d'approche.
+                int distance = DistanceCarte(_etat.Personnage.CellulePosition, mob.CellulePosition);
+                Journaliseur.Info($"[FARM] cible #{mob.Identifiant} « {mob.Nom} » cell {mob.CellulePosition} "
+                    + $"(perso {_etat.Personnage.CellulePosition}, dist {distance})");
 
-                if (_etat.Combat.Etat == EtatCombat.Inactif)
+                if (distance > 2)
+                {
+                    bool ok = await SeDeplacerVersCelluleAsync(mob.CellulePosition, ct, arreterDevant: true)
+                        .ConfigureAwait(false);
+                    // laisser GA0 (position serveur) se stabiliser avant de re-jauger
+                    await Task.Delay(1200, ct).ConfigureAwait(false);
+                    distance = DistanceCarte(_etat.Personnage.CellulePosition, mob.CellulePosition);
+                    if (!ok && distance > 2)
+                    {
+                        // pas de chemin / pas rapproché → on retentera la boucle
+                        await Task.Delay(800, ct).ConfigureAwait(false);
+                        continue;
+                    }
+                }
+
+                if (distance <= 2 && _etat.Combat.Etat == EtatCombat.Inactif)
+                {
+                    Journaliseur.Info($"[FARM] adjacent (dist {distance}) → engage GA907");
                     await EngagerCombatAsync(ct).ConfigureAwait(false);
-
-                await Task.Delay(3000, ct).ConfigureAwait(false);
+                    await Task.Delay(3500, ct).ConfigureAwait(false);
+                }
+                else
+                {
+                    await Task.Delay(800, ct).ConfigureAwait(false);
+                }
             }
             catch (OperationCanceledException) { break; }
             catch (Exception ex)
@@ -341,6 +365,21 @@ public sealed class ApiBot
             }
         }
         Journaliseur.Info("[FARM] boucle autonome ARRÊTÉE.");
+    }
+
+    /// <summary>
+    /// Distance Chebyshev RÉELLE entre 2 cellules via les coordonnées X/Y
+    /// décodées de la carte (≠ approximation id%14). Retourne 99 si la
+    /// carte/position est inconnue (force l'approche).
+    /// </summary>
+    private int DistanceCarte(int? cellA, int cellB)
+    {
+        var carte = _etat.CarteCourante;
+        if (carte == null || cellA == null) return 99;
+        var a = carte.Obtenir(cellA.Value);
+        var b = carte.Obtenir(cellB);
+        if (a == null || b == null) return 99;
+        return Math.Max(Math.Abs(a.X - b.X), Math.Abs(a.Y - b.Y));
     }
 
     /// <summary>Ouvre un dialogue avec le banquier / phénix le plus proche et dépose selon les règles.</summary>
