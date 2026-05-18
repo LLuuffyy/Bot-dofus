@@ -24,6 +24,7 @@ public sealed class ApiBot
     private readonly Compte _compte;
     private readonly EtatJeu _etat;
     private SessionProxy? _session;
+    private ClientAutonomeAbrak? _clientAuto;
 
     /// <summary>
     /// Garde anti-burst (Phase 3) : impose un espacement humain entre les paquets
@@ -40,6 +41,10 @@ public sealed class ApiBot
     /// <summary>Lie l'API à la session MITM active (appelée quand le client se connecte).</summary>
     public void LierSession(SessionProxy session) => _session = session;
 
+    /// <summary>Lie l'API au client AUTONOME (architecture SynFus, sans client
+    /// officiel). Prioritaire sur la session MITM si présent.</summary>
+    public void LierClientAutonome(ClientAutonomeAbrak? client) => _clientAuto = client;
+
     /// <summary>
     /// Point d'envoi UNIQUE pour TOUT paquet initié par le bot. Passe
     /// systématiquement par la garde anti-burst <see cref="Humaniseur"/> :
@@ -50,9 +55,13 @@ public sealed class ApiBot
     /// </summary>
     private async Task EnvoyerHumaniseAsync(string paquet, CancellationToken ct)
     {
-        if (_session is null || string.IsNullOrWhiteSpace(paquet)) return;
+        if (string.IsNullOrWhiteSpace(paquet)) return;
         await Humaniseur.RespecterCadenceAsync(ct).ConfigureAwait(false);
-        await _session.EnvoyerAuServeurAsync(paquet, ct).ConfigureAwait(false);
+        // Client autonome prioritaire (route clair/chiffré '-' via whitelist).
+        if (_clientAuto is { EstConnecte: true })
+            await _clientAuto.EnvoyerAuServeurAsync(paquet, ct).ConfigureAwait(false);
+        else if (_session is not null)
+            await _session.EnvoyerAuServeurAsync(paquet, ct).ConfigureAwait(false);
     }
 
     /// <summary>Déplace le personnage vers une carte adjacente (si une direction est donnée).</summary>

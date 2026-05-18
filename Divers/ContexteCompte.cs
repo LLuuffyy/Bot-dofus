@@ -422,6 +422,37 @@ public sealed class ContexteCompte : IDisposable
         PaquetRecu?.Invoke(this, e);
     }
 
+    /// <summary>
+    /// Branche un client AUTONOME (architecture SynFus, sans client officiel)
+    /// sur TOUT le cerveau existant : ses paquets déchiffrés alimentent
+    /// Repartiteur/TrameJeu → carte, entités, position, combat, IA — et l'API
+    /// envoie via lui (clair/chiffré '-' selon whitelist). C'est « SynFus mais
+    /// en mieux » : on réutilise le parsing/pathfinder/UI déjà construits.
+    /// </summary>
+    public void BrancherClientAutonome(ClientAutonomeAbrak client)
+    {
+        // TrameJeu en mode parsing (pas de SessionProxy : les envois passent
+        // par l'API → client autonome, pas par TrameJeu._session).
+        if (Trames.TrameActive is not TrameJeu)
+            Trames.RemplacerTrame(new TrameJeu(Repartiteur, Compte, EtatJeu, null!));
+
+        Api.LierClientAutonome(client);
+
+        client.PaquetClair += p =>
+        {
+            try
+            {
+                OnPaquetRecu(this, new EvenementPaquetRecu(
+                    new PaquetBrut(DirectionPaquet.VersClient, p)));
+            }
+            catch (Exception ex)
+            {
+                Journaliseur.Avertir($"[AUTO] parsing '{(p.Length > 12 ? p[..12] : p)}…' : {ex.Message}");
+            }
+        };
+        Journaliseur.Info("[AUTO] Client autonome branché sur le cerveau (parsing+API).");
+    }
+
     public void DemarrerProxy() => Proxy.DemarrerAsync();
 
     public void ArreterProxy()

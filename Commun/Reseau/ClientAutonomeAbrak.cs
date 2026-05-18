@@ -304,6 +304,53 @@ public sealed class ClientAutonomeAbrak : IDisposable
         catch (Exception ex) { Etat?.Invoke($"[AUTO] Échec bascule jeu : {ex.Message}"); }
     }
 
+    /// <summary>
+    /// Whitelist de chiffrement EXACTE de core.swf <c>Aks.prepareSendPacket</c>
+    /// (décompilée) : true = le paquet DOIT partir chiffré '-', false = clair.
+    /// C'est ce qui distingue GR1/GT (clair) de GA/déplacement (chiffré).
+    /// </summary>
+    public static bool DoitEtreChiffre(string p)
+    {
+        if (string.IsNullOrEmpty(p)) return false;
+        char c0 = p[0], c1 = p.Length > 1 ? p[1] : '\0';
+        switch (c0)
+        {
+            case 'A': return c1 is 'A' or 'D' or 'Z';
+            case 'N': return c1 is 'A' or 'R';
+            case 'W' or 'e' or 'O' or 'D' or 'F' or 'K' or 'z' or 'w' or 'S' or 'B':
+                return true;
+            case 'G': return c1 is 'A' or 'K' or 'M';
+            case 'E':
+                switch (c1)
+                {
+                    case 'V' or 'R' or 's' or 'A' or 'K' or 'P' or 'S' or 'B' or 'Q' or 'q' or 'w':
+                        return true;
+                    case 'M':
+                        if (p.Length > 2 && p[2] == 'O')
+                            return p.Substring(3).Split('|').Length <= 3;
+                        return true;
+                    case 'H':
+                        return p.Length > 2 && p[2] == 'B';
+                    default: return false;
+                }
+            default: return false;
+        }
+    }
+
+    /// <summary>
+    /// Point d'envoi unique côté API : route automatiquement en clair ou via
+    /// le canal '-' chiffré selon la whitelist. Aucun Shield (pas de client
+    /// officiel) → un paquet '-' qu'on forge est accepté tel quel.
+    /// </summary>
+    public async Task EnvoyerAuServeurAsync(string message, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(message)) return;
+        if (DoitEtreChiffre(message) && _canal.PretAuDechiffrement)
+            await EnvoyerChiffreAsync(message).ConfigureAwait(false);
+        else
+            await EnvoyerClairAsync(message).ConfigureAwait(false);
+    }
+
     /// <summary>Envoi en clair (paquets de contrôle : GR1, GT, Ak0, auth…).</summary>
     public async Task EnvoyerClairAsync(string message)
     {

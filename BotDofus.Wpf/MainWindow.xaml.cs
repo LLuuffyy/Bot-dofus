@@ -230,6 +230,11 @@ public partial class MainWindow : Window
                 "[AUTO] ✅ SUCCÈS : client autonome EN JEU sans Shield. "
                 + "L'approche SynFus fonctionne sur Abrak → farm autonome viable.");
 
+            // Branche le client sur tout le cerveau existant (parsing carte/
+            // entités/combat/IA + API d'envoi clair/chiffré). « SynFus mais
+            // en mieux » : on réutilise tout ce qui est déjà construit.
+            ctx.BrancherClientAutonome(_clientAuto);
+
             await _clientAuto.DemarrerAsync();
         }
         catch (Exception ex)
