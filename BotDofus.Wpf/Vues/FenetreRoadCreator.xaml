@@ -52,14 +52,28 @@
                 <TextBox x:Name="TxtCellule" Background="#FF2A313B" Foreground="White"
                          BorderBrush="#FF3A4452" Padding="6,4"/>
 
-                <TextBlock Text="PNJ — id, puis réponses (ex: -1,-1)" Foreground="#FF8C95A3"
+                <TextBlock Text="PNJ sur la carte" Foreground="#FF8C95A3"
                            Margin="2,12,0,3" FontSize="11"/>
                 <DockPanel>
-                    <TextBox x:Name="TxtNpc" Width="74" DockPanel.Dock="Left" Padding="6,4"
-                             Background="#FF2A313B" Foreground="White" BorderBrush="#FF3A4452"/>
-                    <TextBox x:Name="TxtAnswers" Margin="6,0,0,0" Padding="6,4"
-                             Background="#FF2A313B" Foreground="White" BorderBrush="#FF3A4452"/>
+                    <Button x:Name="BtnParlerPnj" Content="💬 Parler" DockPanel.Dock="Right"
+                            Margin="6,0,0,0" Padding="8,4" Click="BtnParlerPnj_Click"
+                            Background="#FF34618C" Foreground="White" BorderThickness="0"
+                            Cursor="Hand"/>
+                    <ComboBox x:Name="CmbPnj" Padding="6,4" Background="#FF2A313B"
+                              Foreground="Black"/>
                 </DockPanel>
+                <!-- Dialogue en direct : question + réponses cliquables -->
+                <Border x:Name="BoxDialogue" Background="#FF1A2733" CornerRadius="6"
+                        Padding="10,8" Margin="0,8,0,0" Visibility="Collapsed">
+                    <StackPanel>
+                        <TextBlock x:Name="TxtDlgQuestion" Foreground="#FFD8E4F0"
+                                   TextWrapping="Wrap" FontSize="12" Margin="0,0,0,6"/>
+                        <StackPanel x:Name="DlgReponses"/>
+                        <TextBlock x:Name="TxtDlgEnregistre" Foreground="#FF8FE0A6"
+                                   FontSize="11" Margin="0,6,0,0"/>
+                    </StackPanel>
+                </Border>
+                <TextBox x:Name="TxtAnswers" Visibility="Collapsed"/>
 
                 <TextBlock Text="Direction de sortie" Foreground="#FF8C95A3"
                            Margin="2,14,0,6" FontSize="11"/>

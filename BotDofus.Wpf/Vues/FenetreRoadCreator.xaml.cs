@@ -1,35 +1,47 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using BotDofus.Divers;
+using BotDofus.Divers.Cartes.Entites;
+using BotDofus.Divers.Donnees;
 using BotDofus.Divers.Scripts;
 
 namespace BotDofus.Wpf.Vues;
 
 /// <summary>
-/// Petite fenêtre « RoadCreator » (façon SynFus) : pour la carte courante,
-/// on coche Combat / Récolte, on indique éventuellement une cellule de
-/// sortie ou un PNJ, puis on choisit la direction de sortie. Chaque
-/// validation lève <see cref="Validee"/> avec la ligne construite.
+/// Fenêtre « Road Creator » : pour la carte courante on coche Combat/Récolte,
+/// on peut PARLER à un PNJ directement (les réponses cliquées sont envoyées
+/// ET enregistrées), puis on choisit la sortie. Chaque validation lève
+/// <see cref="Validee"/> avec la ligne (npc + réponses inclus).
 /// </summary>
 public partial class FenetreRoadCreator : Window
 {
     private int _mapId;
     private string _coords = "?,?";
+    private ContexteCompte? _ctx;
+    private int _npcChoisi;
+    private readonly List<int> _reponses = new();
 
-    /// <summary>Levé quand l'utilisateur valide la carte (direction ou « sans »).</summary>
     public event EventHandler<EnregistreurTrajet.Ligne>? Validee;
 
     public FenetreRoadCreator()
     {
         InitializeComponent();
-        // Fenêtre sans chrome → déplaçable en glissant n'importe où.
         MouseLeftButtonDown += (_, e) =>
         { if (e.ButtonState == System.Windows.Input.MouseButtonState.Pressed)
             try { DragMove(); } catch { } };
     }
 
-    /// <summary>Prépare la fenêtre pour une nouvelle carte.</summary>
+    /// <summary>Lie le contexte (API + état) pour l'interaction PNJ live.</summary>
+    public void Initialiser(ContexteCompte ctx)
+    {
+        if (_ctx != null) _ctx.PaquetRecu -= OnPaquet;
+        _ctx = ctx;
+        _ctx.PaquetRecu += OnPaquet;
+    }
+
     public void Preparer(int mapId, string coords)
     {
         _mapId = mapId;
@@ -40,17 +52,101 @@ public partial class FenetreRoadCreator : Window
         ChkDonjon.IsChecked = false;
         ChkBoss.IsChecked = false;
         TxtCellule.Text = "";
-        TxtNpc.Text = "";
-        TxtAnswers.Text = "";
+        _npcChoisi = 0;
+        _reponses.Clear();
+        BoxDialogue.Visibility = Visibility.Collapsed;
+        TxtDlgEnregistre.Text = "";
+        RemplirPnj();
         if (!IsVisible) Show();
         Activate();
     }
 
-    /// <summary>Met à jour le compteur de waypoints affiché.</summary>
-    public void MajCompteur(int n)
-        => TxtCompteur.Text = $"● REC — {n} waypoint{(n > 1 ? "s" : "")}";
+    private void RemplirPnj()
+    {
+        CmbPnj.Items.Clear();
+        var carte = _ctx?.EtatJeu.CarteCourante;
+        if (carte == null) return;
+        foreach (var p in carte.Entites.Values.OfType<EntitePNJ>())
+        {
+            var nom = !string.IsNullOrWhiteSpace(p.Nom) ? p.Nom : $"PNJ {p.IdGabarit}";
+            CmbPnj.Items.Add(new ComboBoxItem
+            { Content = $"{nom} (#{p.Identifiant}) cell {p.CellulePosition}", Tag = p.Identifiant });
+        }
+        if (CmbPnj.Items.Count > 0) CmbPnj.SelectedIndex = 0;
+    }
 
-    private void BtnFermer_Click(object sender, RoutedEventArgs e) => Hide();
+    private async void BtnParlerPnj_Click(object sender, RoutedEventArgs e)
+    {
+        if (_ctx == null || CmbPnj.SelectedItem is not ComboBoxItem it
+            || it.Tag is not int npcId) return;
+        _npcChoisi = npcId;
+        _reponses.Clear();
+        TxtDlgEnregistre.Text = "";
+        BoxDialogue.Visibility = Visibility.Visible;
+        TxtDlgQuestion.Text = "(ouverture du dialogue…)";
+        DlgReponses.Children.Clear();
+        await _ctx.Api.ParlerPnjAsync(0, npcId);
+    }
+
+    private void OnPaquet(object? s, BotDofus.Commun.Reseau.EvenementPaquetRecu e)
+    {
+        if (e.Paquet.Direction != BotDofus.Commun.Reseau.DirectionPaquet.VersClient) return;
+        var c = e.Paquet.Contenu;
+        if (c.Length < 2 || c[0] != 'D' || !char.IsUpper(c[1])) return;
+        Dispatcher.BeginInvoke(new Action(RafraichirDialogue));
+    }
+
+    private void RafraichirDialogue()
+    {
+        if (_ctx == null || _npcChoisi == 0) return;
+        var d = _ctx.EtatJeu.Dialogue;
+        if (!d.Ouvert) { return; }
+        BoxDialogue.Visibility = Visibility.Visible;
+        var bdd = BaseDonnees.Instance;
+        TxtDlgQuestion.Text = bdd.DialogueQ(d.QuestionId) ?? $"(dialogue #{d.QuestionId})";
+        DlgReponses.Children.Clear();
+        foreach (var rid in d.Reponses)
+        {
+            var libelle = bdd.DialogueA(rid) ?? $"Réponse #{rid}";
+            var btn = new Button
+            {
+                Content = libelle,
+                Margin = new Thickness(0, 2, 0, 2),
+                Padding = new Thickness(8, 4, 8, 4),
+                HorizontalContentAlignment = HorizontalAlignment.Left,
+                Background = new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(0x2B, 0x33, 0x40)),
+                Foreground = System.Windows.Media.Brushes.White,
+                BorderThickness = new Thickness(0), Cursor = System.Windows.Input.Cursors.Hand,
+                Tag = rid
+            };
+            btn.Click += async (_, __) =>
+            {
+                if (_ctx == null) return;
+                int q = _ctx.EtatJeu.Dialogue.QuestionId;
+                _reponses.Add(rid);
+                TxtDlgEnregistre.Text = "Réponses enregistrées : "
+                    + string.Join(", ", _reponses);
+                await _ctx.Api.RepondreDialogueAsync(q, rid);
+            };
+            DlgReponses.Children.Add(btn);
+        }
+        if (d.Reponses.Count == 0)
+        {
+            var fin = new Button
+            {
+                Content = "Terminer le dialogue ▸",
+                Margin = new Thickness(0, 4, 0, 0), Padding = new Thickness(8, 5, 8, 5),
+                Background = new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(0x2D, 0x4A, 0x33)),
+                Foreground = System.Windows.Media.Brushes.White,
+                BorderThickness = new Thickness(0), Cursor = System.Windows.Input.Cursors.Hand
+            };
+            fin.Click += async (_, __) =>
+            { if (_ctx != null) await _ctx.Api.QuitterDialogueAsync(); };
+            DlgReponses.Children.Add(fin);
+        }
+    }
 
     private void Dir_Click(object sender, RoutedEventArgs e)
     {
@@ -64,32 +160,32 @@ public partial class FenetreRoadCreator : Window
         };
         if (int.TryParse(TxtCellule.Text?.Trim(), out var cell) && cell > 0)
             l.Cellule = cell;
-        if (int.TryParse(TxtNpc.Text?.Trim(), out var npc) && npc != 0)
+        if (_npcChoisi != 0)
         {
-            l.Npc = npc;
-            foreach (var a in (TxtAnswers.Text ?? "")
-                         .Split(',', StringSplitOptions.RemoveEmptyEntries))
-                if (int.TryParse(a.Trim(), out var r)) l.Answers.Add(r);
+            l.Npc = _npcChoisi;
+            l.Answers.AddRange(_reponses);
         }
         Validee?.Invoke(this, l);
-        Hide(); // réaffichée à la prochaine carte
+        Hide();
     }
 
-    private bool _fermetureReelle;
+    public void MajCompteur(int n)
+        => TxtCompteur.Text = $"● REC — {n} waypoint{(n > 1 ? "s" : "")}";
 
+    private void BtnFermer_Click(object sender, RoutedEventArgs e) => Hide();
+
+    private bool _fermetureReelle;
     protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
     {
-        // On masque au lieu de fermer (la fenêtre est réutilisée par carte),
-        // sauf fermeture explicite de fin d'enregistrement.
         if (!_fermetureReelle) { e.Cancel = true; Hide(); }
         base.OnClosing(e);
     }
 
-    /// <summary>Ferme réellement (fin d'enregistrement).</summary>
     public void FermerVraiment()
     {
         Validee = null;
+        if (_ctx != null) _ctx.PaquetRecu -= OnPaquet;
         _fermetureReelle = true;
-        try { Close(); } catch { /* déjà fermée */ }
+        try { Close(); } catch { }
     }
 }

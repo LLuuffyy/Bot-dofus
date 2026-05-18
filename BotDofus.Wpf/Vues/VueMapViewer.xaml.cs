@@ -378,7 +378,36 @@ public partial class VueMapViewer : UserControl
             var (cx, cy) = ProjeterIso(cell.X, cell.Y);
 
             var couleur = CouleurCellule(cell);
+
+            // VOLUME 3D : on dessine d'abord les faces latérales (extrusion
+            // vers le bas) dans un ton plus sombre → effet de tuile en relief
+            // comme SynFus. Les obstacles sont plus « hauts » que le sol.
+            if (couleur is SolidColorBrush sc)
+            {
+                bool bloc = !cell.EstMarchable || cell.Type == TypesCellule.Obstacle;
+                double prof = bloc ? 13 : 5
+                    + Math.Clamp((int)cell.LayerNiveau, 0, 10) * 0.6;
+                var cote = AssombrirCouleur(sc.Color, bloc ? 0.42 : 0.62);
+                var face = new Polygon
+                {
+                    Points = new PointCollection
+                    {
+                        new Point(cx - _largeurCellule, cy + _hauteurCellule),
+                        new Point(cx, cy + _hauteurCellule * 2),
+                        new Point(cx + _largeurCellule, cy + _hauteurCellule),
+                        new Point(cx + _largeurCellule, cy + _hauteurCellule + prof),
+                        new Point(cx, cy + _hauteurCellule * 2 + prof),
+                        new Point(cx - _largeurCellule, cy + _hauteurCellule + prof),
+                    },
+                    Fill = new SolidColorBrush(cote),
+                    IsHitTestVisible = false,
+                };
+                Canvas.SetZIndex(face, 1);
+                CanvasMap.Children.Add(face);
+            }
+
             var poly = CreerPolygoneCellule(cell, couleur, 0.8);
+            Canvas.SetZIndex(poly, 2);
             // Pas de grille sur les obstacles/non-marchables : la zone sombre
             // devient une masse propre (avant : chaque bloc avait un liseré
             // clair → très bruité). Grille fine uniquement sur le sol.
@@ -589,6 +618,9 @@ public partial class VueMapViewer : UserControl
 
     private (double, double) ProjeterIso(int x, int y)
         => (_decalageX + (x - y) * _largeurCellule, _decalageY + (x + y) * _hauteurCellule);
+
+    private static Color AssombrirCouleur(Color c, double f)
+        => Color.FromRgb((byte)(c.R * f), (byte)(c.G * f), (byte)(c.B * f));
 
     private Brush CouleurCellule(Cellule cell)
     {
@@ -999,14 +1031,8 @@ public partial class VueMapViewer : UserControl
                     await System.Threading.Tasks.Task.Delay(500);
             }
             if (l.Gather) await api.RecolterToutAsync(ct);
-            if (l.Npc > 0)
-            {
-                await api.ParlerPnjAsync(0, l.Npc, ct);
-                await System.Threading.Tasks.Task.Delay(800);
-                foreach (var r in l.Answers)
-                    await api.RepondreDialogueAsync(
-                        _contexte.EtatJeu.Dialogue.QuestionId, r, ct);
-            }
+            // NB : le PNJ a déjà été parlé EN DIRECT dans la fenêtre Road
+            // Creator (réponses enregistrées) → on ne le refait pas ici.
             if (l.Cellule > 0)
                 await api.SeDeplacerVersCelluleAsync(l.Cellule, ct);
             else if (!string.IsNullOrEmpty(l.Direction))
@@ -1044,6 +1070,7 @@ public partial class VueMapViewer : UserControl
             BtnRecTrajet.Foreground = new SolidColorBrush(Color.FromRgb(0x4C, 0xC2, 0x7A));
 
             _roadFenetre = new FenetreRoadCreator { Owner = Window.GetWindow(this) };
+            _roadFenetre.Initialiser(_contexte);
             _roadFenetre.Validee += async (_, ligne) =>
             {
                 _recTrajet.AjouterLigne(ligne);
