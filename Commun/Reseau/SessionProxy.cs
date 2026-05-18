@@ -40,6 +40,13 @@ public sealed class SessionProxy : IDisposable
     private readonly object _verrouChiffrement = new();
     private EtatChiffrement _etatChiffrement = EtatChiffrement.Inactif;
 
+    // Tâche #6 : observation des paquets « - » CLIENT→SERVEUR. Décisif pour
+    // savoir si l'injection chiffrée est faisable : le client envoie-t-il du
+    // « - » ? quel index de clé (rotation) ? y a-t-il une signature Shield
+    // (octet 0xF9 = 'ù') autour du payload ? On loggue les N premiers.
+    private int _obsClientMinus;
+    private const int ObsClientMinusMax = 12;
+
     public event EventHandler<EvenementPaquetRecu>? PaquetRecu;
     public event EventHandler? SessionTerminee;
 
@@ -101,6 +108,15 @@ public sealed class SessionProxy : IDisposable
         await _coteClient.GetStream().WriteAsync(octets, ct).ConfigureAwait(false);
         Journaliseur.Debogue($"[INJ ->CLT] {message}");
     }
+
+    /// <summary>Valeur hex d'un caractère (0-9 a-f A-F), ou -1.</summary>
+    private static int HexValCar(char c) => c switch
+    {
+        >= '0' and <= '9' => c - '0',
+        >= 'a' and <= 'f' => c - 'a' + 10,
+        >= 'A' and <= 'F' => c - 'A' + 10,
+        _ => -1
+    };
 
     private static byte[] EncoderPaquet(string message)
     {
@@ -217,6 +233,27 @@ public sealed class SessionProxy : IDisposable
             try { _canalAbrak.EnregistrerDepuisAK(brut); } catch (Exception ex)
             { Journaliseur.Avertir($"[CRYPT] AK : {ex.Message}"); }
             // continue le traitement normal (AK est relayé/loggué via la suite)
+        }
+
+        // === Tâche #6 : observation « - » CLIENT→SERVEUR (diagnostic décisif) ===
+        if (direction == DirectionPaquet.VersServeur
+            && brut.Length > 2 && brut[0] == '-'
+            && _obsClientMinus < ObsClientMinusMax)
+        {
+            _obsClientMinus++;
+            bool shield = brut.IndexOf('ù') >= 0;   // 0xF9 = signature Shield
+            int idx = HexValCar(brut[1]);
+            char cks = brut[2];
+            string tete = brut.Substring(0, Math.Min(10, brut.Length));
+            string queue = brut.Length > 10 ? brut.Substring(brut.Length - 10) : "";
+            string clairTest;
+            try { clairTest = _canalAbrak.Dechiffrer(brut); } catch { clairTest = brut; }
+            bool dechiffrable = clairTest != brut && clairTest.Length > 0;
+            Journaliseur.Info(
+                $"[OBS C→S '-'] #{_obsClientMinus} len={brut.Length} idxClé={idx} cks='{cks}' "
+                + $"Shield(0xF9)={(shield ? "OUI" : "non")} déchiffrable={(dechiffrable ? "OUI" : "NON")} "
+                + $"tête='{tete}' queue='{queue}'"
+                + (dechiffrable ? $" → clair='{clairTest.Substring(0, Math.Min(40, clairTest.Length))}'" : ""));
         }
 
         if (brut.Length > 2 && brut[0] == '-' && _canalAbrak.PretAuDechiffrement)
