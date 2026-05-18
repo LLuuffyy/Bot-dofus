@@ -377,7 +377,14 @@ public partial class VueMapViewer : UserControl
             if (cell == null) continue;
             var (cx, cy) = ProjeterIso(cell.X, cell.Y);
 
-            var poly = CreerPolygoneCellule(cell, CouleurCellule(cell), 0.8);
+            var couleur = CouleurCellule(cell);
+            var poly = CreerPolygoneCellule(cell, couleur, 0.8);
+            // Pas de grille sur les obstacles/non-marchables : la zone sombre
+            // devient une masse propre (avant : chaque bloc avait un liseré
+            // clair → très bruité). Grille fine uniquement sur le sol.
+            bool sol = cell.EstMarchable && cell.IdInteractif < 0
+                       && cell.Type != TypesCellule.Transition;
+            if (!sol) poly.Stroke = couleur;
             if (_celluleSelectionnee == cell.Identifiant)
             {
                 poly.Stroke = new SolidColorBrush(Color.FromRgb(0x6C, 0x76, 0xFF));
@@ -477,7 +484,7 @@ public partial class VueMapViewer : UserControl
                 new Point(cx - _largeurCellule, cy + _hauteurCellule),
             },
             Fill = fill,
-            Stroke = new SolidColorBrush(Color.FromRgb(0x9A, 0xA0, 0xA8)),
+            Stroke = new SolidColorBrush(Color.FromRgb(0xBC, 0xC0, 0xC7)),
             StrokeThickness = strokeThickness,
             Tag = cell,
             Cursor = Cursors.Hand,
@@ -611,15 +618,14 @@ public partial class VueMapViewer : UserControl
         }
         if (cell.EstInteractif) return new SolidColorBrush(Color.FromRgb(0xD8, 0xC7, 0xA8));
         // Obstacle / hors LoS = blocs gris foncés « surélevés » comme SynFus.
-        if (cell.Type == TypesCellule.Obstacle) return new SolidColorBrush(Color.FromRgb(0x3C, 0x42, 0x4B));
-        if (cell.Type == TypesCellule.LignDeVueSeule) return new SolidColorBrush(Color.FromRgb(0xC6, 0xCA, 0xD0));
-        if (!cell.EstMarchable) return new SolidColorBrush(Color.FromRgb(0x3C, 0x42, 0x4B));
+        if (cell.Type == TypesCellule.Obstacle) return new SolidColorBrush(Color.FromRgb(0x39, 0x40, 0x4B));
+        if (cell.Type == TypesCellule.LignDeVueSeule) return new SolidColorBrush(Color.FromRgb(0x4A, 0x52, 0x5E));
+        if (!cell.EstMarchable) return new SolidColorBrush(Color.FromRgb(0x39, 0x40, 0x4B));
 
-        // Marchable : gris très clair uni (lisible avec la grille foncée),
-        // léger assombrissement selon l'altitude pour donner du relief.
-        var relief = Math.Clamp((int)cell.LayerNiveau, 0, 12) * 3;
-        var g = (byte)Math.Clamp(236 - relief, 205, 238);
-        return new SolidColorBrush(Color.FromRgb(g, g, (byte)Math.Clamp(g + 2, 205, 240)));
+        // Marchable : blanc cassé propre, léger relief selon l'altitude.
+        var relief = Math.Clamp((int)cell.LayerNiveau, 0, 12) * 2;
+        var g = (byte)Math.Clamp(240 - relief, 218, 242);
+        return new SolidColorBrush(Color.FromRgb(g, g, (byte)Math.Clamp(g - 3, 214, 240)));
     }
 
     private void Poly_MouseEnter(object sender, MouseEventArgs e)
@@ -651,8 +657,13 @@ public partial class VueMapViewer : UserControl
     {
         if (sender is Polygon poly)
         {
-            poly.Stroke = new SolidColorBrush(Color.FromRgb(0x9A, 0xA0, 0xA8));
             poly.StrokeThickness = 0.8;
+            // Restaure : grille claire sur le sol, pas de liseré sur les blocs.
+            bool sol = poly.Tag is Cellule c && c.EstMarchable
+                       && c.IdInteractif < 0 && c.Type != TypesCellule.Transition;
+            poly.Stroke = sol
+                ? new SolidColorBrush(Color.FromRgb(0xBC, 0xC0, 0xC7))
+                : poly.Fill;
         }
         _celluleHover = null;
         TooltipBorder.Visibility = Visibility.Collapsed;
