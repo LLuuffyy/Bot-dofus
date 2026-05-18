@@ -937,6 +937,35 @@ public partial class VueMapViewer : UserControl
 
     private void ChkAfficherIds_Changed(object sender, RoutedEventArgs e) => Rafraichir();
 
+    private readonly BotDofus.Divers.Scripts.EnregistreurTrajet _recTrajet = new();
+
+    private void BtnRecTrajet_Click(object sender, RoutedEventArgs e)
+    {
+        if (_contexte == null)
+        {
+            MessageBox.Show("Sélectionne un compte d'abord.", "RoadCreator",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+        if (!_recTrajet.EnCours)
+        {
+            _recTrajet.Demarrer(_contexte);
+            BtnRecTrajet.Content = "■ STOP trajet";
+            BtnRecTrajet.Foreground = new SolidColorBrush(Color.FromRgb(0x4C, 0xC2, 0x7A));
+        }
+        else
+        {
+            var chemin = _recTrajet.Arreter();
+            BtnRecTrajet.Content = "● REC trajet";
+            BtnRecTrajet.Foreground = new SolidColorBrush(Color.FromRgb(0xE0, 0x50, 0x50));
+            MessageBox.Show(
+                chemin != null
+                    ? $"Trajet enregistré :\n{chemin}\n\nCharge-le dans l'onglet Scripts pour le rejouer."
+                    : "Aucun trajet enregistré (pas de changement de carte).",
+                "RoadCreator", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+
     private async void BtnTravelCoords_Click(object sender, RoutedEventArgs e)
     {
         if (!int.TryParse(TxtTravelX.Text, out var x) || !int.TryParse(TxtTravelY.Text, out var y))
