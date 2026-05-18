@@ -50,7 +50,11 @@ public sealed class ApiLua
         _etat = etat;
         _configCombat = configCombat;
         _interception = interception;
+        Anka = new ApiAnka(api, etat, () => _ct);
     }
+
+    /// <summary>Couche compatible AnkaBot (modules character/map/inventory/npc/…).</summary>
+    public ApiAnka Anka { get; }
 
     // ---------------------------------------------------------------
     // Logging

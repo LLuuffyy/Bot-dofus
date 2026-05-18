@@ -47,6 +47,17 @@ public sealed class MoteurLuaInteractif : IDisposable
 
         _script = new Script(CoreModules.Preset_SoftSandbox);
         _script.Globals["bot"] = _api;
+        // Modules compatibles AnkaBot (https://doc.ankabot.dev) : les scripts
+        // écrits dans ce standard utilisent character.*, map.*, inventory.*, …
+        _script.Globals["character"] = _api.Anka.Character;
+        _script.Globals["map"] = _api.Anka.Map;
+        _script.Globals["inventory"] = _api.Anka.Inventory;
+        _script.Globals["npc"] = _api.Anka.Npc;
+        _script.Globals["fight"] = _api.Anka.Fight;
+        _script.Globals["chat"] = _api.Anka.Chat;
+        _script.Globals["exchange"] = _api.Anka.Exchange;
+        _script.Globals["mount"] = _api.Anka.Mount;
+        _script.Globals["quest"] = _api.Anka.Quest;
         _chemin = cheminFichier;
         Journaliseur.Info($"[LUA] Script chargé : {cheminFichier}");
     }

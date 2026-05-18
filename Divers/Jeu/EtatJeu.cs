@@ -18,6 +18,10 @@ public sealed class EtatJeu
     public Carte? CarteCourante { get; private set; }
     public Combat Combat { get; } = new();
 
+    /// <summary>État du dialogue PNJ courant (alimenté par DCK/DQ/DV) — utilisé
+    /// par l'API de script type AnkaBot (npc.hasReply / getRepliesId / reply).</summary>
+    public DialogueEtat Dialogue { get; } = new();
+
     public event EventHandler<Carte>? CarteChangee;
 
     public void ChangerCarte(int identifiant, string? dateVersion = null, string? clefCarte = null)
@@ -71,4 +75,18 @@ public sealed class EtatJeu
 
         CarteChangee?.Invoke(this, carte);
     }
+}
+
+/// <summary>État minimal du dialogue PNJ en cours (rempli depuis DCK/DQ/DV).</summary>
+public sealed class DialogueEtat
+{
+    public bool Ouvert { get; set; }
+    public int PnjId { get; set; }
+    public int QuestionId { get; set; }
+    public System.Collections.Generic.List<int> Reponses { get; } = new();
+
+    public void Ouvrir(int pnjId) { Ouvert = true; PnjId = pnjId; QuestionId = 0; Reponses.Clear(); }
+    public void Question(int qid, System.Collections.Generic.IEnumerable<int> reps)
+    { QuestionId = qid; Reponses.Clear(); Reponses.AddRange(reps); }
+    public void Fermer() { Ouvert = false; QuestionId = 0; Reponses.Clear(); }
 }

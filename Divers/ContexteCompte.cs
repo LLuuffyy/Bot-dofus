@@ -490,6 +490,40 @@ public sealed class ContexteCompte : IDisposable
             catch (Exception ex) { Journaliseur.Avertir($"[BDD] apprentissage GA500 : {ex.Message}"); }
         }
 
+        // Dialogue PNJ (serveur → client) : alimente EtatJeu.Dialogue pour
+        // l'API de script (npc.hasReply/getRepliesId/reply) — DCK ouvre,
+        // DQ<q>[|r1;r2…] = question + réponses, DV ferme.
+        if (e.Paquet.Direction == DirectionPaquet.VersClient)
+        {
+            var d = e.Paquet.Contenu;
+            try
+            {
+                if (d.StartsWith("DCK", StringComparison.Ordinal))
+                {
+                    var npc = d[3..].Split(',', ';')[0];
+                    int.TryParse(npc, out var npcId);
+                    EtatJeu.Dialogue.Ouvrir(npcId);
+                }
+                else if (d.StartsWith("DV", StringComparison.Ordinal))
+                {
+                    EtatJeu.Dialogue.Fermer();
+                }
+                else if (d.StartsWith("DQ", StringComparison.Ordinal))
+                {
+                    var corps = d[2..];
+                    var parts = corps.Split('|');
+                    int.TryParse(parts[0].Split(';')[0], out var qid);
+                    var reps = new System.Collections.Generic.List<int>();
+                    if (parts.Length > 1)
+                        foreach (var r in parts[1].Split(';', ',',
+                                     StringSplitOptions.RemoveEmptyEntries))
+                            if (int.TryParse(r, out var rid)) reps.Add(rid);
+                    EtatJeu.Dialogue.Question(qid, reps);
+                }
+            }
+            catch { /* parsing dialogue best-effort */ }
+        }
+
         Stats.NotifierPaquet(e);
         Repartiteur.TraiterPaquet(e.Paquet);
         PaquetRecu?.Invoke(this, e);
