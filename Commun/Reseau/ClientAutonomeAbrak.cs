@@ -180,33 +180,32 @@ public sealed class ClientAutonomeAbrak : IDisposable
             if (p.StartsWith("HC", StringComparison.Ordinal))
             {
                 _cleHc = p.Substring(2);
-                // core.swf onRegionalVersion : sendIdentity() PUIS setVersion().
-                // Le serveur gate la version sur aks_identity (Electron). On
-                // rejoue l'identité capturée du vrai client (valeur STABLE).
-                if (!string.IsNullOrEmpty(_aksIdentity))
-                {
-                    Etat?.Invoke($"[AUTO] HC reçu → Ai (identity rejouée, {_aksIdentity.Length} c.) + version + login.");
-                    await EnvoyerClairAsync("Ai" + _aksIdentity).ConfigureAwait(false);
-                }
-                else
-                {
-                    Etat?.Invoke("[AUTO] HC reçu → PAS d'aks_identity capturée (fais 1 login via « Lancer jeu » d'abord). Tentative sans Ai…");
-                }
+                // Séquence EXACTE du vrai client (capture wire, vérité sol) :
+                // version EN PREMIER, puis login, puis Af. PAS d'Ai ici —
+                // l'Ai vient bien plus tard (après AH, avec Ap1303, avant Ax).
+                // Envoyer Ai avant la version = serveur lit "Ai…" comme version
+                // → AlEv1.48.0 (BAD_VERSION). C'était LE bug.
+                Etat?.Invoke("[AUTO] HC reçu → version + login (Ai plus tard, comme le vrai client).");
                 await EnvoyerClairAsync("1.48.0").ConfigureAwait(false);
                 await EnvoyerClairAsync(_login + "\n" + CrypterMotDePasse(_motDePasse, _cleHc)).ConfigureAwait(false);
                 await EnvoyerClairAsync("Af").ConfigureAwait(false);
                 return;
             }
-            if (p.StartsWith("AlEv", StringComparison.Ordinal)
-                || p.StartsWith("AlEx", StringComparison.Ordinal)
-                || p == "AlEr")
+            if (p.StartsWith("AlE", StringComparison.Ordinal))
             {
-                Etat?.Invoke($"[AUTO] Auth REFUSÉE par le serveur : {p} (identifiants ? bannissement ? Ai requis ?)");
+                Etat?.Invoke($"[AUTO] Auth REFUSÉE : {p} "
+                    + "(Ev=version, Ea/Ec=déjà connecté, Eb=ban, Ef=identifiants).");
                 return;
             }
             if (p.StartsWith("AH", StringComparison.Ordinal))
             {
-                Etat?.Invoke("[AUTO] Liste serveurs reçue → demande détaillée (Ax).");
+                // Vrai client : après AH → Ap1303, Ai<identity>, Ax.
+                Etat?.Invoke("[AUTO] Liste serveurs → Ap1303 + Ai (identity rejouée) + Ax.");
+                await EnvoyerClairAsync("Ap1303").ConfigureAwait(false);
+                if (!string.IsNullOrEmpty(_aksIdentity))
+                    await EnvoyerClairAsync("Ai" + _aksIdentity).ConfigureAwait(false);
+                else
+                    Etat?.Invoke("[AUTO] ⚠ pas d'aks_identity (fais 1 « Lancer jeu » d'abord).");
                 await EnvoyerClairAsync("Ax").ConfigureAwait(false);
                 return;
             }
@@ -242,11 +241,7 @@ public sealed class ClientAutonomeAbrak : IDisposable
             catch (Exception ex) { Etat?.Invoke($"[AUTO] AK erreur : {ex.Message}"); }
             return;
         }
-        if (p.StartsWith("ATK", StringComparison.Ordinal))
-        {
-            await EnvoyerClairAsync("Ak0").ConfigureAwait(false);
-            return;
-        }
+        // (le vrai client n'envoie PAS de Ak0 sur 1304 — supprimé)
         if (!_avEnvoye && p == "BN")
         {
             _avEnvoye = true;
