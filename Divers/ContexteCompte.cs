@@ -167,11 +167,26 @@ public sealed class ContexteCompte : IDisposable
         {
             if (idCombattant != EtatJeu.Personnage.Identifiant) return;
             if (EtatJeu.Combat.Etat != BotDofus.Divers.Combats.Enums.EtatCombat.EnCours) return;
-            // MITM : ne PAS jouer le tour à la place du joueur (cf. handler
-            // placement). Auto-combat = mode autonome uniquement.
-            if (SessionJeuActive != null) return;
+            // MITM : on ne joue le tour à la place du client humain QUE si le
+            // Farm Auto est actif (= le bot pilote la session). En MITM manuel
+            // pur (sans farm) on laisse le joueur jouer.
+            if (SessionJeuActive != null && !Api.FarmActif) return;
             try
             {
+                // Auto-génère les règles offensives depuis les sorts RÉELLEMENT
+                // appris (scan SL) si aucune config peleas/<perso>.json fournie
+                // → l'IA lance vraiment les sorts au lieu de juste passer.
+                if (ConfigCombat.Regles.Count == 0
+                    && EtatJeu.Personnage.SortsAppris.Count > 0)
+                {
+                    var def = ConfigCombat.GenererParDefaut(
+                        EtatJeu.Personnage.SortsAppris.Keys);
+                    ConfigCombat.Regles = def.Regles;
+                    Journaliseur.Info(
+                        $"[IA] Config combat auto-générée : {def.Regles.Count} "
+                        + "règle(s) offensive(s) depuis les sorts appris.");
+                }
+
                 var decideur = new DecideurCombat(ConfigCombat.Strategie, ConfigCombat.Regles);
                 var action = decideur.Decider(EtatJeu.Combat);
                 int ennemisVivants = 0;

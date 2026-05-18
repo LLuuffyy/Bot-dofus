@@ -553,6 +553,12 @@ public sealed class ApiBot
     /// présent, ressource dispo (GDF), gfx connu en BDD ET skill dans les
     /// métiers du perso (JSK). Triées par distance réelle au perso.
     /// </summary>
+    // Cellules récemment récoltées : on les ignore le temps que le serveur
+    // confirme l'épuisement (GDF arrive ~10-15 s APRÈS le GA500, bien après
+    // notre attente → sans ça on récoltait 2× la même case, log 15:53→15:54).
+    private readonly Dictionary<int, DateTime> _recolteCooldown = new();
+    private static readonly TimeSpan CooldownRecolte = TimeSpan.FromSeconds(25);
+
     private List<Cellule> CellulesRecoltables()
     {
         var carte = _etat.CarteCourante;
@@ -560,11 +566,14 @@ public sealed class ApiBot
         var bdd = Divers.Donnees.BaseDonnees.Instance;
         var skills = _etat.Personnage.SkillsConnus;
         var moi = _etat.Personnage.CellulePosition;
+        var maintenant = DateTime.UtcNow;
 
         var liste = new List<Cellule>();
         foreach (var c in carte.Cellules)
         {
             if (c is not { IdInteractif: >= 0, RessourceDisponible: true }) continue;
+            if (_recolteCooldown.TryGetValue(c.Identifiant, out var jusqua)
+                && jusqua > maintenant) continue;                     // récoltée récemment
             var io = bdd.Interactif(c.IdInteractif);
             if (io is not { IdSkill: > 0 }) continue;                 // gfx pas encore appris
             if (skills.Count > 0 && !skills.Contains(io.IdSkill)) continue; // pas le métier
@@ -616,13 +625,20 @@ public sealed class ApiBot
                 Journaliseur.Info($"[RÉCOLTE] {cibles.Count} ressource(s) — cible cell "
                     + $"{cible.Identifiant} ({io?.Nom ?? $"#{cible.IdInteractif}"}) skill {skill}.");
 
+                // Cooldown AVANT la récolte : la case ne sera pas re-ciblée
+                // tant que le GDF d'épuisement n'est pas revenu (ou 25 s).
+                _recolteCooldown[cible.Identifiant] = DateTime.UtcNow + CooldownRecolte;
+
                 await RecolterAsync(cible.Identifiant, cible.IdInteractif, skill, ct)
                     .ConfigureAwait(false);
 
-                // Attend l'épuisement (GDF) de cette cellule, max ~9 s.
+                // Attend l'épuisement (GDF) de cette cellule, max ~9 s ; dès
+                // que le serveur confirme, on libère le cooldown et on enchaîne.
                 for (int i = 0; i < 18 && cible.RessourceDisponible
                                        && !ct.IsCancellationRequested; i++)
                     await Task.Delay(500, ct).ConfigureAwait(false);
+                if (!cible.RessourceDisponible)
+                    _recolteCooldown.Remove(cible.Identifiant);
 
                 await Task.Delay(600, ct).ConfigureAwait(false);
             }
