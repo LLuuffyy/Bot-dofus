@@ -181,6 +181,28 @@ public sealed class ContexteCompte : IDisposable
                 if (!ModePassif)
                 {
                     await System.Threading.Tasks.Task.Delay(900);
+
+                    // Exécution RÉELLE de l'action décidée. Le commentaire
+                    // historique « Shield non injectable » est OBSOLÈTE depuis
+                    // le proxy re-chiffrant : GA300/GA001 passent par le canal
+                    // « - » re-chiffré. Format de sort CAPTURÉ du vrai client
+                    // (log 11:25:22, '-' déchiffré) : GA300<idSort>;<cellule>,
+                    // suivi de GKK0 (ack fin d'action) — comme GA001.
+                    // STRICTEMENT ADDITIF : sans règle configurée le décideur
+                    // renvoie SeDeplacer/PasserTour → on garde le leech (juste
+                    // GT), comportement Incarnam inchangé. Avec règles → on
+                    // lance vraiment les sorts.
+                    if (action is ActionCombat.LancerSort s)
+                    {
+                        await Api.EnvoyerPaquetBrutAsync($"GA300{s.IdSort};{s.CelluleCible}");
+                        await System.Threading.Tasks.Task.Delay(
+                            System.Math.Max(300, ConfigCombat.DelaiEntreActionsMs));
+                        await Api.EnvoyerPaquetBrutAsync("GKK0");
+                        Journaliseur.Info(
+                            $"[AUTO-COMBAT] Sort lancé GA300{s.IdSort};{s.CelluleCible} + GKK0.");
+                        await System.Threading.Tasks.Task.Delay(700);
+                    }
+
                     await Api.EnvoyerPaquetBrutAsync("GT");
                     Journaliseur.Info("[AUTO-COMBAT] Tour passé (GT).");
                 }
