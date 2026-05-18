@@ -268,6 +268,29 @@ public partial class MainWindow : Window
         }
     }
 
+    private void BtnRecolteAuto_Click(object sender, RoutedEventArgs e)
+    {
+        var ctx = _contexteSelectionne ?? Comptes.FirstOrDefault()?.Contexte;
+        if (ctx == null)
+        {
+            MessageBox.Show("Sélectionne un compte d'abord.", "Récolte Auto",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+        if (ctx.Api.RecolteActive)
+        {
+            ctx.Api.ArreterRecolteAuto();
+            TxtRecolteAuto.Text = "Récolte Auto";
+            Journaliseur.Info("[RÉCOLTE] désactivée (clic).");
+        }
+        else
+        {
+            ctx.Api.LancerRecolteAuto();
+            TxtRecolteAuto.Text = "Récolte ON";
+            Journaliseur.Info("[RÉCOLTE] activée (clic) — récolte + changement de map en boucle.");
+        }
+    }
+
     private void LstComptes_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (LstComptes.SelectedItem is CompteVm vm)

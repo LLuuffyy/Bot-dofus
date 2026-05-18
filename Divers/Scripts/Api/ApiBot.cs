@@ -528,6 +528,114 @@ public sealed class ApiBot
         Journaliseur.Info("[FARM] boucle autonome ARRÊTÉE.");
     }
 
+    // ===================== RÉCOLTE AUTO EN BOUCLE ====================
+
+    private CancellationTokenSource? _recolteCts;
+    public bool RecolteActive => _recolteCts is { IsCancellationRequested: false };
+
+    /// <summary>Démarre la récolte autonome (idempotent).</summary>
+    public void LancerRecolteAuto()
+    {
+        if (RecolteActive) return;
+        _recolteCts = new CancellationTokenSource();
+        _ = BoucleRecolteAsync(_recolteCts.Token);
+    }
+
+    public void ArreterRecolteAuto()
+    {
+        _recolteCts?.Cancel();
+        _recolteCts = null;
+        Journaliseur.Info("[RÉCOLTE] arrêt demandé.");
+    }
+
+    /// <summary>
+    /// Cellules récoltables PAR CE PERSO sur la carte courante : interactif
+    /// présent, ressource dispo (GDF), gfx connu en BDD ET skill dans les
+    /// métiers du perso (JSK). Triées par distance réelle au perso.
+    /// </summary>
+    private List<Cellule> CellulesRecoltables()
+    {
+        var carte = _etat.CarteCourante;
+        if (carte == null) return new List<Cellule>();
+        var bdd = Divers.Donnees.BaseDonnees.Instance;
+        var skills = _etat.Personnage.SkillsConnus;
+        var moi = _etat.Personnage.CellulePosition;
+
+        var liste = new List<Cellule>();
+        foreach (var c in carte.Cellules)
+        {
+            if (c is not { IdInteractif: >= 0, RessourceDisponible: true }) continue;
+            var io = bdd.Interactif(c.IdInteractif);
+            if (io is not { IdSkill: > 0 }) continue;                 // gfx pas encore appris
+            if (skills.Count > 0 && !skills.Contains(io.IdSkill)) continue; // pas le métier
+            liste.Add(c);
+        }
+        liste.Sort((a, b) => DistanceCarte(moi, a.Identifiant)
+            .CompareTo(DistanceCarte(moi, b.Identifiant)));
+        return liste;
+    }
+
+    /// <summary>
+    /// Boucle de récolte : récolte toutes les ressources exploitables de la
+    /// carte (couleur verte « récoltable »), puis change de map (sortie en
+    /// cyclant les 4 directions) et recommence. Annulable.
+    /// </summary>
+    private async Task BoucleRecolteAsync(CancellationToken ct)
+    {
+        Journaliseur.Info("[RÉCOLTE] boucle autonome DÉMARRÉE.");
+        var directions = new[] { "est", "sud", "ouest", "nord" };
+        int dirIdx = 0;
+        while (!ct.IsCancellationRequested)
+        {
+            try
+            {
+                if (_clientAuto is not { EstEnJeu: true } && _session is null)
+                {
+                    await Task.Delay(3000, ct).ConfigureAwait(false);
+                    continue;
+                }
+                if (_etat.Combat.Etat != EtatCombat.Inactif)
+                {
+                    await Task.Delay(2000, ct).ConfigureAwait(false);
+                    continue;
+                }
+
+                var cibles = CellulesRecoltables();
+                if (cibles.Count == 0)
+                {
+                    var dir = directions[dirIdx++ % directions.Length];
+                    Journaliseur.Info($"[RÉCOLTE] rien à récolter ici → sortie « {dir} ».");
+                    await ChangerMapDirectionAsync(dir, ct).ConfigureAwait(false);
+                    await Task.Delay(3500, ct).ConfigureAwait(false);
+                    continue;
+                }
+
+                var cible = cibles[0];
+                var io = Divers.Donnees.BaseDonnees.Instance.Interactif(cible.IdInteractif);
+                int skill = io?.IdSkill ?? 45;
+                Journaliseur.Info($"[RÉCOLTE] {cibles.Count} ressource(s) — cible cell "
+                    + $"{cible.Identifiant} ({io?.Nom ?? $"#{cible.IdInteractif}"}) skill {skill}.");
+
+                await RecolterAsync(cible.Identifiant, cible.IdInteractif, skill, ct)
+                    .ConfigureAwait(false);
+
+                // Attend l'épuisement (GDF) de cette cellule, max ~9 s.
+                for (int i = 0; i < 18 && cible.RessourceDisponible
+                                       && !ct.IsCancellationRequested; i++)
+                    await Task.Delay(500, ct).ConfigureAwait(false);
+
+                await Task.Delay(600, ct).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) { break; }
+            catch (Exception ex)
+            {
+                Journaliseur.Avertir($"[RÉCOLTE] {ex.Message}");
+                try { await Task.Delay(3000, ct).ConfigureAwait(false); } catch { break; }
+            }
+        }
+        Journaliseur.Info("[RÉCOLTE] boucle autonome ARRÊTÉE.");
+    }
+
     /// <summary>
     /// Distance Chebyshev RÉELLE entre 2 cellules via les coordonnées X/Y
     /// décodées de la carte (≠ approximation id%14). Retourne 99 si la

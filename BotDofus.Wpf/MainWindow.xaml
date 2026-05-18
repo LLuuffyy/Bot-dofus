@@ -427,6 +427,20 @@
                                             <TextBlock x:Name="TxtFarmAuto" Text="Farm Auto" />
                                         </StackPanel>
                                     </Button>
+                                    <Button x:Name="BtnRecolteAuto"
+                                            Click="BtnRecolteAuto_Click"
+                                            Background="#2D4A33"
+                                            Foreground="#8FE0A6"
+                                            BorderBrush="#42693F"
+                                            BorderThickness="1"
+                                            Style="{StaticResource TopNavButtonStyle}"
+                                            ToolTip="Active/désactive la récolte autonome : récolte toutes les ressources exploitables (selon ton métier), change de map, recommence."
+                                            Margin="0,0,10,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="Leaf" Width="14" Height="14" Margin="0,0,6,0" />
+                                            <TextBlock x:Name="TxtRecolteAuto" Text="Récolte Auto" />
+                                        </StackPanel>
+                                    </Button>
                                     <Button x:Name="BtnDeconnecter"
                                             Click="BtnDeconnecter_Click"
                                             Background="#4A2C31"
