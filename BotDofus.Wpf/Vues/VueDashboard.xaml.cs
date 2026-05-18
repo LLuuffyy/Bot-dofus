@@ -36,16 +36,19 @@ public partial class VueDashboard : UserControl
         // faisait pas — un parent captait l'event). On scrolle le ScrollViewer
         // interne nous-mêmes, on coupe l'auto-scroll si on remonte, et on le
         // réactive automatiquement dès qu'on revient en bas.
-        var sv = TrouverScrollViewer(TxtLogs);
-        if (sv == null) return;
-
-        sv.ScrollToVerticalOffset(sv.VerticalOffset - e.Delta);  // delta>0 = molette vers le haut
+        // Méthode bulletproof : on scrolle le TextBox via SES PROPRES méthodes
+        // (LineUp/LineDown) — pas de dépendance au ScrollViewer interne ni au
+        // timing du template, et e.Handled empêche un parent de voler l'event.
+        int crans = 3; // lignes par cran de molette
+        if (e.Delta > 0) { for (int i = 0; i < crans; i++) TxtLogs.LineUp(); }
+        else { for (int i = 0; i < crans; i++) TxtLogs.LineDown(); }
         e.Handled = true;
 
         if (ChkAutoScrollConsole != null)
         {
-            bool enBas = sv.VerticalOffset >= sv.ScrollableHeight - 2;
-            ChkAutoScrollConsole.IsChecked = enBas; // suit le texte seulement collé en bas
+            var sv = TrouverScrollViewer(TxtLogs);
+            bool enBas = sv == null || sv.VerticalOffset >= sv.ScrollableHeight - 2;
+            ChkAutoScrollConsole.IsChecked = enBas; // re-suit le texte seulement si collé en bas
         }
     }
 
