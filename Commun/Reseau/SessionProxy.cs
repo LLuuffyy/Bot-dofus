@@ -60,6 +60,7 @@ public sealed class SessionProxy : IDisposable
     // du 1er paquet client pour rester identique tant qu'on n'injecte pas).
     private readonly object _verrouCs = new();
     private int _idxCs = -1;
+    private int _dernierIdxClient = -1;   // dernier index d'en-tête client vu (détection reset réel)
     private int _obsReenc;
     private const int ObsReencMax = 40;
 
@@ -156,13 +157,32 @@ public sealed class SessionProxy : IDisposable
         {
             int n = Math.Max(2, _canalAbrak.NombreCles);
             int idxClient = idxClientObserve ?? -1;
-            if (_idxCs < 0)
-                _idxCs = (idxClientObserve is >= 1 and <= 15) ? idxClientObserve.Value : 1;
+
+            // RESET RÉEL du compteur client (vraie réinit serveur) : son
+            // index saute en arrière vers le bas (≤2) depuis une valeur
+            // moyenne, SANS être le wrap naturel 15→1. Dans ce cas le
+            // serveur a aussi réinitialisé → on ré-amorce sur l'index
+            // client (on abandonne le décalage d'injection, légitime ici).
+            // Sinon (index continu, même après GC1) on garde le compteur
+            // monotone — droper le décalage casserait la séquence serveur.
+            bool resetReel = !injecte
+                && idxClient is >= 1 and <= 2
+                && _dernierIdxClient >= 4
+                && _dernierIdxClient != n - 1;
+
+            if (_idxCs < 0 || resetReel)
+            {
+                _idxCs = (idxClient is >= 1 and <= 15) ? idxClient : 1;
+                if (resetReel)
+                    Journaliseur.Info($"[REENC C→S] reset rotation détecté "
+                        + $"(idxClient {_dernierIdxClient}→{idxClient}) → ré-amorce idx={_idxCs}");
+            }
             else
             {
                 _idxCs++;
                 if (_idxCs > n - 1) _idxCs = 1;
             }
+            if (!injecte && idxClient >= 0) _dernierIdxClient = idxClient;
 
             var chiffre = _canalAbrak.Chiffrer(clair, _idxCs);
             if (chiffre is null)
@@ -324,24 +344,13 @@ public sealed class SessionProxy : IDisposable
 
     private string? TraiterPaquet(string brut, DirectionPaquet direction)
     {
-        // === RESYNC rotation « - » post-combat / (ré)entrée jeu ===
-        // Après un combat, le vrai client renvoie « GC1 » et REMET son
-        // compteur de rotation « - » à la base (idxClient observé : 1-2).
-        // Le serveur réinitialise aussi son attente. Notre proxy re-chiffrant
-        // gardait son compteur décalé → désync → kick systématique ~après
-        // « Combat terminé » (constaté 11:24/11:48/11:49/12:10). On force la
-        // ré-amorce : prochain paquet « - » client → _idxCs = son index.
-        if (direction == DirectionPaquet.VersServeur
-            && brut.StartsWith("GC1", StringComparison.Ordinal))
-        {
-            lock (_verrouCs)
-            {
-                if (_idxCs >= 0)
-                    Journaliseur.Info("[REENC C→S] GC1 (post-combat/entrée) "
-                        + "→ resync rotation '-' (ré-amorce sur prochain client).");
-                _idxCs = -1;
-            }
-        }
+        // NB : le resync rotation « - » N'EST PLUS déclenché par GC1. Le
+        // client ne réinitialise PAS toujours son compteur après combat
+        // (constaté 13:05 : idxClient continu 2→12). Re-seeder sur GC1
+        // droppait le décalage d'injection (+N paquets injectés) → le
+        // serveur attendait idx+N, on envoyait idx → désync → kick. Le
+        // resync se fait désormais UNIQUEMENT sur saut arrière RÉEL de
+        // l'index client (vraie réinit), géré dans EnvoyerCsVersServeur.
 
         // === Capture aks_identity (Ai) du vrai client → persistée pour le
         // client autonome. La valeur est STABLE (fingerprint machine/compte,
