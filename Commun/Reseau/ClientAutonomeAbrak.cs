@@ -334,6 +334,21 @@ public sealed class ClientAutonomeAbrak : IDisposable
             PretJeu?.Invoke();
             return;
         }
+
+        // === Carte chargée (GDM) → GI (game info) ===
+        // Le serveur n'envoie les acteurs (joueurs/monstres « GM ») et notre
+        // position qu'APRÈS réception de GI. Sans GI : carte « vide » → le
+        // farm ne voit aucun monstre (symptôme constaté en test autonome :
+        // [FARM] pas de monstre en boucle alors que la carte en a 5).
+        // Le vrai client envoie GI ~700ms après GDM (capture MITM 10:53:31).
+        // GI est en clair (hors whitelist core.swf). À chaque changement de
+        // carte → nouveau GDM → nouveau GI pour récupérer les acteurs.
+        if (_enJeu && p.StartsWith("GDM", StringComparison.Ordinal))
+        {
+            await EnvoyerClairAsync("GI").ConfigureAwait(false);
+            Etat?.Invoke("[AUTO] Carte chargée (GDM) → GI envoyé (demande acteurs/monstres).");
+            return;
+        }
     }
 
     private async Task BasculerServeurJeuAsync()

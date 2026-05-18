@@ -82,9 +82,9 @@ public sealed class ApiBot
     /// Utilise le pathfinder A* pour calculer le chemin et envoie un packet GA001 au serveur.
     /// Retourne true si le packet a été envoyé, false si pas de chemin trouvé ou pré-conditions non remplies.
     /// </summary>
-    public async Task<bool> SeDeplacerVersCelluleAsync(int celluleCible, CancellationToken ct = default)
+    public async Task<bool> SeDeplacerVersCelluleAsync(int celluleCible, CancellationToken ct = default, bool arreterDevant = false)
     {
-        if (_session is null)
+        if (_session is null && _clientAuto is not { EstEnJeu: true })
         {
             Journaliseur.Avertir("API.SeDeplacerVersCellule : pas de session active");
             return false;
@@ -108,10 +108,15 @@ public sealed class ApiBot
             return false;
         }
 
-        var chemin = Pathfinder.Trouver(_etat.CarteCourante, depart, arrivee);
+        // arreterDevant : pour approcher un monstre, sa cellule est occupée
+        // (non marchable) → un chemin « dessus » échoue toujours. On demande
+        // au pathfinder de s'arrêter à 1 case de la cible.
+        var chemin = Pathfinder.Trouver(_etat.CarteCourante, depart, arrivee,
+            arreterDevant: arreterDevant, distanceArret: 1);
         if (chemin == null || chemin.Count < 2)
         {
-            Journaliseur.Avertir($"API.SeDeplacerVersCellule : aucun chemin {depart.Identifiant} → {celluleCible}");
+            Journaliseur.Avertir($"API.SeDeplacerVersCellule : aucun chemin {depart.Identifiant} → {celluleCible}"
+                + (arreterDevant ? " (approche)" : ""));
             return false;
         }
 
@@ -276,9 +281,11 @@ public sealed class ApiBot
                     continue;
                 }
 
-                // S'approcher : le serveur engage souvent au contact ; sinon
-                // on force avec GA902.
-                await SeDeplacerVersCelluleAsync(mob.CellulePosition, ct).ConfigureAwait(false);
+                // S'approcher : on s'arrête À CÔTÉ du groupe (sa cellule est
+                // occupée → non marchable). Le serveur engage souvent au
+                // contact ; sinon on force avec GA902.
+                Journaliseur.Info($"[FARM] cible #{mob.Identifiant} « {mob.Nom} » cell {mob.CellulePosition} → approche");
+                await SeDeplacerVersCelluleAsync(mob.CellulePosition, ct, arreterDevant: true).ConfigureAwait(false);
                 await Task.Delay(1800, ct).ConfigureAwait(false);
 
                 if (_etat.Combat.Etat == EtatCombat.Inactif)
