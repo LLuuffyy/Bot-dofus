@@ -67,6 +67,7 @@ public sealed class MoteurLuaInteractif : IDisposable
 
         var code = File.ReadAllText(_chemin);
         _annulation = new CancellationTokenSource();
+        _api.DefinirAnnulation(_annulation.Token); // trajets : actif()/attendre() arrêtables
         EnExecution = true;
         ExecutionDemarree?.Invoke(this, EventArgs.Empty);
         Journaliseur.Info($"[LUA] Démarrage script : {Path.GetFileName(_chemin)}");

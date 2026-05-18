@@ -652,6 +652,35 @@ public sealed class ApiBot
         Journaliseur.Info("[RÉCOLTE] boucle autonome ARRÊTÉE.");
     }
 
+    /// <summary>Nombre de ressources récoltables PAR CE PERSO sur la carte courante (pour Lua).</summary>
+    public int NbRecoltables() => CellulesRecoltables().Count;
+
+    /// <summary>
+    /// Récolte UNE FOIS toutes les ressources exploitables de la carte
+    /// courante (snapshot au début), en attendant l'épuisement de chacune.
+    /// Renvoie le nombre récolté. Utilisé par les scripts Lua de trajet.
+    /// </summary>
+    public async Task<int> RecolterToutAsync(CancellationToken ct = default)
+    {
+        int n = 0;
+        foreach (var c in CellulesRecoltables())
+        {
+            if (ct.IsCancellationRequested) break;
+            if (_etat.Combat.Etat != EtatCombat.Inactif) break;
+            var io = Divers.Donnees.BaseDonnees.Instance.Interactif(c.IdInteractif);
+            int skill = io?.IdSkill ?? 45;
+            _recolteCooldown[c.Identifiant] = DateTime.UtcNow + CooldownRecolte;
+            await RecolterAsync(c.Identifiant, c.IdInteractif, skill, ct).ConfigureAwait(false);
+            for (int i = 0; i < 18 && c.RessourceDisponible
+                                   && !ct.IsCancellationRequested; i++)
+                await Task.Delay(500, ct).ConfigureAwait(false);
+            if (!c.RessourceDisponible) _recolteCooldown.Remove(c.Identifiant);
+            n++;
+        }
+        Journaliseur.Info($"[LUA] recolter_tout : {n} ressource(s) récoltée(s).");
+        return n;
+    }
+
     /// <summary>
     /// Distance Chebyshev RÉELLE entre 2 cellules via les coordonnées X/Y
     /// décodées de la carte (≠ approximation id%14). Retourne 99 si la

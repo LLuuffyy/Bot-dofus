@@ -59,3 +59,21 @@ Toutes les fonctions sont sur l'objet global `bot.*`. Voir `Divers/Scripts/Api/A
 
 `bot.log(msg)` → console (niveau Info)
 `bot.avertir(msg)` → console (niveau Avertissement)
+
+## Trajets / routes (scripting de déplacement & farm)
+
+`bot.actif()` → false quand on clique Arrêter (boucle : `while bot.actif() do ... end`)
+`bot.aller_xy(x, y)` → va sur la cellule (x,y) de la carte (pathfinding)
+`bot.deplacer(cell)` → va sur une cellule par id
+`bot.changer_map("est")` → sortie nord/sud/est/ouest (change de map)
+`bot.recolter(cell)` → récolte la ressource d'une cellule (skill auto)
+`bot.recolter_tout()` → récolte toutes les ressources du métier sur la map (renvoie le nombre)
+`bot.nb_recoltables()` → nb de ressources récoltables ici par ce perso
+`bot.engager_proche()` → engage le groupe de monstres le plus proche
+`bot.attendre_fin_combat()` → bloque jusqu'à la fin du combat
+`bot.parler_pnj(idPnj)` / `bot.repondre(question, reponse)` / `bot.quitter_dialogue()`
+`bot.pos_x()` / `bot.pos_y()` → coordonnées du perso sur la carte
+`bot.attendre(ms)` → pause (interrompue net à l'arrêt du script)
+
+Exemples fournis : `trajet_recolte.lua` (récolte en boucle multi-maps),
+`trajet_waypoints.lua` (route à points fixes).

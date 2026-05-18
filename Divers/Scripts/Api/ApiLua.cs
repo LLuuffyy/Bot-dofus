@@ -37,6 +37,12 @@ public sealed class ApiLua
     private readonly ConfigCombat _configCombat;
     private readonly BotDofus.Divers.Interception.GestionnaireInterception? _interception;
 
+    // Jeton d'annulation du script (posé par MoteurLuaInteractif.Demarrer).
+    // Permet aux trajets en boucle de s'arrêter proprement : bot.attendre()
+    // se débloque et bot.actif() renvoie false quand on clique « Arrêter ».
+    private CancellationToken _ct = CancellationToken.None;
+    public void DefinirAnnulation(CancellationToken ct) => _ct = ct;
+
     public ApiLua(ApiBot api, EtatJeu etat, ConfigCombat configCombat,
         BotDofus.Divers.Interception.GestionnaireInterception? interception = null)
     {
@@ -114,16 +120,96 @@ public sealed class ApiLua
         _api.EnvoyerTravelAsync(x, y, CancellationToken.None).GetAwaiter().GetResult();
     }
 
-    /// <summary>Attend N millisecondes (bloque le script Lua, mais pas le bot).</summary>
+    /// <summary>Attend N millisecondes. Interrompu net si on arrête le script.</summary>
     public void attendre(int millisecondes)
     {
-        Task.Delay(millisecondes).GetAwaiter().GetResult();
+        try { Task.Delay(millisecondes, _ct).GetAwaiter().GetResult(); }
+        catch (System.OperationCanceledException) { }
     }
 
     /// <summary>Termine le tour en combat.</summary>
     public void finir_tour()
     {
         _api.FinirTourAsync(CancellationToken.None).GetAwaiter().GetResult();
+    }
+
+    // ---------------------------------------------------------------
+    // Trajets / routes (scripting de déplacement & farm)
+    // ---------------------------------------------------------------
+
+    /// <summary>true tant que le script n'a pas été arrêté. Pour les boucles :
+    /// <c>while bot.actif() do ... end</c>.</summary>
+    public bool actif() => !_ct.IsCancellationRequested;
+
+    /// <summary>Va sur la cellule (x,y) de la carte courante (pathfinding).</summary>
+    public bool aller_xy(int x, int y)
+    {
+        var c = _etat.CarteCourante?.ObtenirParCoords(x, y);
+        if (c == null) { Journaliseur.Avertir($"[LUA] aller_xy : cellule ({x},{y}) introuvable"); return false; }
+        return _api.SeDeplacerVersCelluleAsync(c.Identifiant, _ct).GetAwaiter().GetResult();
+    }
+
+    /// <summary>Change de map par une sortie : "nord","sud","est","ouest".</summary>
+    public bool changer_map(string direction)
+        => _api.ChangerMapDirectionAsync(direction, _ct).GetAwaiter().GetResult();
+
+    /// <summary>Récolte la ressource de la cellule donnée (skill auto via la BDD).</summary>
+    public bool recolter(int cellule)
+    {
+        var c = _etat.CarteCourante?.Obtenir(cellule);
+        if (c == null || c.IdInteractif < 0)
+        { Journaliseur.Avertir($"[LUA] recolter : cell {cellule} non interactive"); return false; }
+        var io = BaseDonnees.Instance.Interactif(c.IdInteractif);
+        int skill = io?.IdSkill ?? 45;
+        _api.RecolterAsync(cellule, c.IdInteractif, skill, _ct).GetAwaiter().GetResult();
+        return true;
+    }
+
+    /// <summary>Récolte TOUTES les ressources exploitables de la carte. Renvoie le nombre.</summary>
+    public int recolter_tout()
+        => _api.RecolterToutAsync(_ct).GetAwaiter().GetResult();
+
+    /// <summary>Nombre de ressources récoltables par ce perso ici.</summary>
+    public int nb_recoltables() => _api.NbRecoltables();
+
+    /// <summary>Engage le groupe de monstres le plus proche (combat direct).</summary>
+    public bool engager_proche()
+        => _api.EngagerCombatAsync(_ct).GetAwaiter().GetResult();
+
+    /// <summary>Bloque tant qu'un combat est en cours (ou script arrêté).</summary>
+    public void attendre_fin_combat()
+    {
+        while (_etat.Combat.Etat != EtatCombat.Inactif && !_ct.IsCancellationRequested)
+        {
+            try { Task.Delay(1000, _ct).GetAwaiter().GetResult(); }
+            catch (System.OperationCanceledException) { break; }
+        }
+    }
+
+    /// <summary>Parle à un PNJ (id négatif du sprite).</summary>
+    public void parler_pnj(int idPnj)
+        => _api.ParlerPnjAsync(0, idPnj, _ct).GetAwaiter().GetResult();
+
+    /// <summary>Répond dans le dialogue PNJ : question + réponse.</summary>
+    public void repondre(int question, int reponse)
+        => _api.RepondreDialogueAsync(question, reponse, _ct).GetAwaiter().GetResult();
+
+    /// <summary>Quitte le dialogue PNJ courant.</summary>
+    public void quitter_dialogue()
+        => _api.QuitterDialogueAsync(_ct).GetAwaiter().GetResult();
+
+    /// <summary>Coordonnée X du perso sur la carte (-1 si inconnue).</summary>
+    public int pos_x()
+    {
+        var c = _etat.Personnage.CellulePosition is int p ? _etat.CarteCourante?.Obtenir(p) : null;
+        return c?.X ?? -1;
+    }
+
+    /// <summary>Coordonnée Y du perso sur la carte (-1 si inconnue).</summary>
+    public int pos_y()
+    {
+        var c = _etat.Personnage.CellulePosition is int p ? _etat.CarteCourante?.Obtenir(p) : null;
+        return c?.Y ?? -1;
     }
 
     // ---------------------------------------------------------------
