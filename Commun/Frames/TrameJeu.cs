@@ -306,19 +306,32 @@ public sealed class TrameJeu : TrameBase
             if (type == 1)
             {
                 var gabarits = champs.ElementAtOrDefault(4)?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
-                var niveaux = champs.ElementAtOrDefault(6)?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
                 var idGabarit = ParserInt(gabarits.ElementAtOrDefault(0));
-                var niveau = niveaux.Select(ParserNiveau).DefaultIfEmpty(0).Max();
                 var id = idEntite != 0 ? idEntite : -Math.Abs(cellule + 1);
+
+                // Le champ [6] (ex. "9035^100") est un id gfx/scale, PAS le
+                // niveau. Le niveau réel vient de la BDD par gabarit (comme le
+                // nom). Niveau de groupe = somme des niveaux (= ce qu'affiche
+                // Dofus en jeu) ; nom = liste des monstres du groupe.
+                int niveauGroupe = 0;
+                var noms = new System.Collections.Generic.List<string>();
+                foreach (var g in gabarits)
+                {
+                    var gid = ParserInt(g);
+                    if (gid == 0) continue;
+                    var m = Divers.Donnees.BaseDonnees.Instance.Monstre(gid);
+                    if (m != null) niveauGroupe += m.Niveau;
+                    noms.Add(NomMonstre(gid));
+                }
 
                 carte.Entites[id] = new EntiteMonstre
                 {
                     Identifiant = id,
                     CellulePosition = cellule,
                     IdGabarit = idGabarit,
-                    NiveauGroupe = niveau,
+                    NiveauGroupe = niveauGroupe,
                     TailleGroupe = Math.Max(1, gabarits.Length),
-                    Nom = NomMonstre(idGabarit)
+                    Nom = noms.Count > 0 ? string.Join(", ", noms) : NomMonstre(idGabarit)
                 };
                 continue;
             }
