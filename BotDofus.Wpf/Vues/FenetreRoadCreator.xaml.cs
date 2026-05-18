@@ -74,10 +74,21 @@ public partial class FenetreRoadCreator : Window
 
     private void RemplirPnj()
     {
-        CmbPnj.Items.Clear();
         var carte = _ctx?.EtatJeu.CarteCourante;
         if (carte == null) return;
-        foreach (var p in carte.Entites.Values.OfType<EntitePNJ>())
+        var pnjs = carte.Entites.Values.OfType<EntitePNJ>().ToList();
+        // Rien à afficher encore (GM pas arrivé) : on garde la liste telle
+        // quelle pour ne pas la vider inutilement.
+        if (pnjs.Count == 0) return;
+
+        // Préserve la sélection courante (gabarit) au cas où on rafraîchit
+        // pendant que l'utilisateur a déjà choisi un PNJ.
+        int gabaritSel = (CmbPnj.SelectedItem as ComboBoxItem)?.Tag
+            is ValueTuple<int, int> t ? t.Item2 : 0;
+
+        CmbPnj.Items.Clear();
+        int idx = 0, aSelectionner = -1;
+        foreach (var p in pnjs)
         {
             var nom = !string.IsNullOrWhiteSpace(p.Nom) ? p.Nom : $"PNJ {p.IdGabarit}";
             CmbPnj.Items.Add(new ComboBoxItem
@@ -86,8 +97,12 @@ public partial class FenetreRoadCreator : Window
                 // On retient les DEUX : contextuel (DC live) + gabarit (script).
                 Tag = (p.Identifiant, p.IdGabarit)
             });
+            if (p.IdGabarit == gabaritSel && aSelectionner < 0) aSelectionner = idx;
+            idx++;
         }
-        if (CmbPnj.Items.Count > 0) CmbPnj.SelectedIndex = 0;
+        if (CmbPnj.Items.Count > 0)
+            CmbPnj.SelectedIndex = aSelectionner >= 0 ? aSelectionner : 0;
+        return;
     }
 
     private async void BtnParlerPnj_Click(object sender, RoutedEventArgs e)
@@ -108,7 +123,16 @@ public partial class FenetreRoadCreator : Window
     {
         if (e.Paquet.Direction != BotDofus.Commun.Reseau.DirectionPaquet.VersClient) return;
         var c = e.Paquet.Contenu;
-        if (c.Length < 2 || c[0] != 'D' || !char.IsUpper(c[1])) return;
+        if (c.Length < 2) return;
+        // GM = (ré)apparition d'entités : les PNJ arrivent souvent APRÈS
+        // l'ouverture de la fenêtre (Preparer appelé au changement de carte,
+        // GM PNJ ~250 ms plus tard) → la liste était vide. On la re-remplit.
+        if (c[0] == 'G' && c[1] == 'M')
+        {
+            Dispatcher.BeginInvoke(new Action(RemplirPnj));
+            return;
+        }
+        if (c[0] != 'D' || !char.IsUpper(c[1])) return;
         Dispatcher.BeginInvoke(new Action(RafraichirDialogue));
     }
 
