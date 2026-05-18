@@ -125,6 +125,12 @@ public sealed class ContexteCompte : IDisposable
         EtatJeu.Combat.EtatChange += async (_, etat) =>
         {
             if (ModePassif) return;
+            // EN MITM (fenêtre Dofus ouverte) : le bot NE joue PAS le combat
+            // (il a juste engagé via GA907). Le JOUEUR joue le combat à la
+            // main. L'auto-combat (GR1/GT/GA300) ne tourne qu'en mode CLIENT
+            // AUTONOME (émetteur unique, pas de fenêtre) → plus de conflit
+            // bot↔joueur ni de désync « impossible d'agir pendant le combat ».
+            if (SessionJeuActive != null) return;
             if (etat == BotDofus.Divers.Combats.Enums.EtatCombat.Placement && !_combatPretEnvoye)
             {
                 _combatPretEnvoye = true;
@@ -161,6 +167,9 @@ public sealed class ContexteCompte : IDisposable
         {
             if (idCombattant != EtatJeu.Personnage.Identifiant) return;
             if (EtatJeu.Combat.Etat != BotDofus.Divers.Combats.Enums.EtatCombat.EnCours) return;
+            // MITM : ne PAS jouer le tour à la place du joueur (cf. handler
+            // placement). Auto-combat = mode autonome uniquement.
+            if (SessionJeuActive != null) return;
             try
             {
                 var decideur = new DecideurCombat(ConfigCombat.Strategie, ConfigCombat.Regles);
