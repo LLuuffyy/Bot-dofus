@@ -98,31 +98,23 @@ public sealed class SessionProxy : IDisposable
             _annulation.Token));
     }
 
-    private int _idxInjection = 1;   // rotation clé '-' pour l'injection MITM
-
     public async Task EnvoyerAuServeurAsync(string message, CancellationToken ct = default)
     {
-        // Injection MITM : si le paquet est dans la whitelist chiffrée Abrak
-        // (GA déplacement, sorts, dialogue…) et que le canal '-' est prêt, on
-        // le CHIFFRE (sinon le serveur l'ignore — cause du « clic map = rien »).
-        // Le serveur déchiffre chaque paquet '-' via l'index du frame
-        // (stateless), donc notre rotation indépendante du vrai client passe.
+        // Paquet whitelisté Abrak (GA déplacement/sorts/dialogue) en mode
+        // MITM : on NE PEUT PAS l'injecter. Le vrai client tourne son propre
+        // compteur de rotation '-' (idx +1/paquet) que le SERVEUR valide ;
+        // injecter avec notre index désynchronise → kick (prouvé : déco 37ms
+        // après chaque injection chiffrée). L'injection de gameplay exige le
+        // mode CLIENT AUTONOME (émetteur unique, pas de désync). On bloque
+        // proprement plutôt que de déconnecter le joueur.
         if (BotDofus.Commun.Reseau.ClientAutonomeAbrak.DoitEtreChiffre(message)
             && _canalAbrak.PretAuDechiffrement)
         {
-            int n = Math.Max(2, _canalAbrak.NombreCles);
-            _idxInjection++;
-            if (_idxInjection > n - 1) _idxInjection = 1;
-            var chiffre = _canalAbrak.Chiffrer(message, _idxInjection);
-            if (chiffre != null)
-            {
-                // '\n' terminateur Dofus (les '-' C→S finissent par \n) + '\0'.
-                var oct = EncoderPaquet(chiffre + "\n");
-                await _coteServeur.GetStream().WriteAsync(oct, ct).ConfigureAwait(false);
-                Journaliseur.Debogue($"[INJ ->SRV '-'] idx={_idxInjection} clair='{message}'");
-                return;
-            }
-            Journaliseur.Avertir($"[INJ ->SRV] échec chiffrement '{message}', envoi clair (sera ignoré).");
+            Journaliseur.Avertir(
+                $"[INJ] '{message}' NON injecté en mode MITM (désync rotation '-' "
+                + "= déco serveur). L'injection déplacement/combat exige le mode "
+                + "« Client Auto » (émetteur unique). En MITM : joue via la fenêtre Dofus.");
+            return;
         }
 
         var octets = EncoderPaquet(ChiffrerSiNecessaire(message, DirectionPaquet.VersServeur));
