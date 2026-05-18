@@ -99,7 +99,19 @@
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,2">
                                 <Rectangle Width="12" Height="12" Fill="#FF9800" Margin="0,0,6,0"/>
-                                <TextBlock Text="Transition" Foreground="White" FontSize="11"/>
+                                <TextBlock Text="Transition (chgt map)" Foreground="White" FontSize="11"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,2">
+                                <Rectangle Width="12" Height="12" Fill="#2ECC71" Margin="0,0,6,0"/>
+                                <TextBlock Text="Récoltable (ton métier)" Foreground="White" FontSize="11"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,2">
+                                <Rectangle Width="12" Height="12" Fill="#B07A28" Margin="0,0,6,0"/>
+                                <TextBlock Text="Métier/niveau insuffisant" Foreground="White" FontSize="11"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,2">
+                                <Rectangle Width="12" Height="12" Fill="#46604E" Margin="0,0,6,0"/>
+                                <TextBlock Text="Ressource épuisée" Foreground="White" FontSize="11"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
