@@ -91,7 +91,10 @@ public sealed class MessageObjetPoids : MessageDofus, IMessageVersClient
     public override void Desserialiser(string charge)
     {
         Charge = charge;
-        // Séparateur pipe (pas virgule) : "Ow5464|12190" → actuel=5464, max=12190.
+        // Format Hystoria : "Ow<charId>;<actuel>|<max>" (ex. Ow401770;812|25545).
+        // On retire d'abord l'éventuel "<id>;" de tête (avant : actuel restait 0).
+        var pv = charge.IndexOf(';');
+        if (pv >= 0) charge = charge[(pv + 1)..];
         var parts = charge.Split('|');
         if (parts.Length > 0 && int.TryParse(parts[0], out var a)) PoidsActuel = a;
         if (parts.Length > 1 && int.TryParse(parts[1], out var m)) PoidsMax = m;

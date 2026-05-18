@@ -59,10 +59,12 @@ public sealed class Personnage
     /// 10=Vitalité 11=Sagesse 12=Force 13=Intelligence 14=Chance 15=Agilité.</summary>
     public Dictionary<int, int> Caracteristiques { get; } = new();
 
+    // Ordre RÉEL Dofus Retro (vérifié sur capture : client envoie AB;10 pour
+    // la Force, et le paquet As ordonne Force,Vita,Sag,Chance,Agi,Intel).
     public static readonly Dictionary<int, string> NomsCaracteristiques = new()
     {
-        [10] = "Vitalité", [11] = "Sagesse", [12] = "Force",
-        [13] = "Intelligence", [14] = "Chance", [15] = "Agilité"
+        [10] = "Force", [11] = "Vitalité", [12] = "Sagesse",
+        [13] = "Chance", [14] = "Agilité", [15] = "Intelligence"
     };
 
     public event EventHandler? Mis_A_Jour;

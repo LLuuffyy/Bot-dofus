@@ -68,12 +68,13 @@ public partial class VuePersonnage : UserControl
         TxtPointsCaracs.Text = p.PointsCaracteristiques.ToString();
         TxtPointsSorts.Text = p.PointsSorts.ToString();
 
-        TxtVita.Text = p.Caracteristiques.GetValueOrDefault(10).ToString();
-        TxtSag.Text  = p.Caracteristiques.GetValueOrDefault(11).ToString();
-        TxtFor.Text  = p.Caracteristiques.GetValueOrDefault(12).ToString();
-        TxtInt.Text  = p.Caracteristiques.GetValueOrDefault(13).ToString();
-        TxtCha.Text  = p.Caracteristiques.GetValueOrDefault(14).ToString();
-        TxtAgi.Text  = p.Caracteristiques.GetValueOrDefault(15).ToString();
+        // statId Dofus Retro : 10=Force 11=Vita 12=Sag 13=Chance 14=Agi 15=Intel
+        TxtFor.Text  = p.Caracteristiques.GetValueOrDefault(10).ToString();
+        TxtVita.Text = p.Caracteristiques.GetValueOrDefault(11).ToString();
+        TxtSag.Text  = p.Caracteristiques.GetValueOrDefault(12).ToString();
+        TxtCha.Text  = p.Caracteristiques.GetValueOrDefault(13).ToString();
+        TxtAgi.Text  = p.Caracteristiques.GetValueOrDefault(14).ToString();
+        TxtInt.Text  = p.Caracteristiques.GetValueOrDefault(15).ToString();
 
         TxtPosition.Text = p.CarteCourante.HasValue
             ? $"Carte {p.CarteCourante} · Cellule {p.CellulePosition?.ToString() ?? "—"}"
