@@ -50,6 +50,9 @@ public sealed class ClientAutonomeAbrak : IDisposable
     private string _cleHc = string.Empty;
     private string _gameTicket = string.Empty;
     private bool _phaseJeu;
+    private bool _avEnvoye;
+    private bool _persoSelectionne;
+    private bool _enJeu;
     private int _idxEnvoi = 1;          // rotation clé '-' en envoi (1..N-1)
     private bool _disposed;
 
@@ -201,18 +204,64 @@ public sealed class ClientAutonomeAbrak : IDisposable
             return;
         }
 
-        // === Phase jeu ===
+        // === Phase jeu : handshake serveur de jeu + sélection perso ===
+        // Séquence exacte reconstituée des captures live (1304) :
+        //   AT → S:AK,ATK,BN → C:AV → S:AV0 → C:Agfr,1.48.0,AL,Af
+        //   → S:ALK0|1|<id>;<nom>;… → C:AS<id> → S:ASK|<id>|… → C:GC1 → monde
         if (p.StartsWith("AK", StringComparison.Ordinal) && p.Length > 6 && p.IndexOf('|') > 0)
         {
             try
             {
                 _canal.EnregistrerDepuisAK(p);
                 _idxEnvoi = 1;
-                Etat?.Invoke($"[AUTO] AK reçues : {_canal.NombreCles} clés — cipher '-' PRÊT. Auth jeu OK ✅");
-                await EnvoyerClairAsync("Ak0").ConfigureAwait(false);
-                PretJeu?.Invoke();
+                Etat?.Invoke($"[AUTO] AK reçues : {_canal.NombreCles} clés — cipher '-' PRÊT.");
             }
             catch (Exception ex) { Etat?.Invoke($"[AUTO] AK erreur : {ex.Message}"); }
+            return;
+        }
+        if (p.StartsWith("ATK", StringComparison.Ordinal))
+        {
+            await EnvoyerClairAsync("Ak0").ConfigureAwait(false);
+            return;
+        }
+        if (!_avEnvoye && p == "BN")
+        {
+            _avEnvoye = true;
+            await EnvoyerClairAsync("AV").ConfigureAwait(false);
+            return;
+        }
+        if (p.StartsWith("AV0", StringComparison.Ordinal))
+        {
+            // On REPLIQUE le client sauf "Ai" (aks_identity Electron, non
+            // générable hors client officiel) : test décisif = le serveur
+            // tolère-t-il l'absence d'Ai ?
+            await EnvoyerClairAsync("Agfr").ConfigureAwait(false);
+            await EnvoyerClairAsync("1.48.0").ConfigureAwait(false);
+            await EnvoyerClairAsync("AL").ConfigureAwait(false);
+            await EnvoyerClairAsync("Af").ConfigureAwait(false);
+            return;
+        }
+        // Liste perso : "ALK0|1|401770;Beiloddurul;…" → on sélectionne le 1er.
+        if (!_persoSelectionne && p.StartsWith("AL", StringComparison.Ordinal) && p.IndexOf(';') > 0)
+        {
+            var parts = p.Split('|');
+            var entree = parts.Length > 0 ? parts[^1] : string.Empty;
+            var idTxt = entree.Split(';')[0];
+            if (int.TryParse(idTxt, out var idPerso) && idPerso > 0)
+            {
+                _persoSelectionne = true;
+                Etat?.Invoke($"[AUTO] Perso #{idPerso} → sélection (AS).");
+                await EnvoyerClairAsync("AS" + idPerso).ConfigureAwait(false);
+            }
+            return;
+        }
+        if (p.StartsWith("ASK", StringComparison.Ordinal) && !_enJeu)
+        {
+            _enJeu = true;
+            await EnvoyerClairAsync("GC1").ConfigureAwait(false);
+            Etat?.Invoke("[AUTO] ✅ EN JEU sans client officiel (sans Shield) — GC1 envoyé, monde en cours de chargement.");
+            PretJeu?.Invoke();
+            return;
         }
     }
 
