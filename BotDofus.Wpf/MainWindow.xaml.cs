@@ -185,10 +185,29 @@ public partial class MainWindow : Window
                 MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
-        if (string.IsNullOrWhiteSpace(ctx.Compte.MotDePasse))
+        // Le VRAI login Dofus est celui capté du client officiel (ex.
+        // "Zeliox83"), PAS l'alias du compte dans le bot (ex. "test").
+        var loginReel = !string.IsNullOrWhiteSpace(ctx.LoginCapture)
+            ? ctx.LoginCapture!
+            : ctx.Compte.Identifiant;
+        if (string.IsNullOrWhiteSpace(ctx.LoginCapture))
         {
-            MessageBox.Show("Le compte n'a pas de mot de passe enregistré (requis pour l'auth autonome).",
+            MessageBox.Show(
+                "Login Dofus réel inconnu. Fais d'abord 1 connexion via « Lancer jeu » "
+                + "(le proxy capture le vrai login + l'aks_identity), puis réessaie.",
                 "Client Auto", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        // Le bot n'a jamais eu besoin du vrai mot de passe (le client officiel
+        // le chiffrait). Pour l'auth autonome il le faut → on le demande.
+        var mdp = SaisieDialog.Demander(this, "Client Auto",
+            $"Mot de passe Dofus réel pour « {loginReel} »\n"
+            + "(le bot ne le stocke pas en clair, requis pour l'auth socket) :",
+            ctx.Compte.MotDePasse ?? string.Empty);
+        if (string.IsNullOrWhiteSpace(mdp))
+        {
+            Journaliseur.Avertir("[AUTO] Annulé : pas de mot de passe.");
             return;
         }
 
@@ -198,12 +217,12 @@ public partial class MainWindow : Window
             var cfg = new ConfigReseau();
             int srv = ctx.Compte.ServeurPrefere > 0 ? ctx.Compte.ServeurPrefere : 5;
             Journaliseur.Info(
-                $"[AUTO] Démarrage client autonome — {ctx.Compte.Identifiant} sur serveur #{srv} "
+                $"[AUTO] Démarrage client autonome — login réel « {loginReel} » sur serveur #{srv} "
                 + $"({cfg.HoteDistant}:{cfg.PortDistant}→{cfg.PortJeuDistant}). AUCUN client officiel lancé.");
 
             _clientAuto = new ClientAutonomeAbrak(
                 cfg.HoteDistant, cfg.PortDistant, cfg.PortJeuDistant,
-                ctx.Compte.Identifiant, ctx.Compte.MotDePasse, srv);
+                loginReel, mdp, srv);
 
             _clientAuto.Etat += s => Journaliseur.Info(s);
             _clientAuto.PaquetClair += p => Journaliseur.Debogue($"[AUTO ←SRV] {p}");
