@@ -580,14 +580,12 @@ public partial class VueMapViewer : UserControl
 
         if (ent is EntitePNJ)
         {
-            AjouterBoutonMenu($"Ouvrir dialogue DC{ent.Identifiant} (canal chiffré)", async () =>
+            AjouterBoutonMenu($"💬 Parler à ce PNJ (#{ent.Identifiant} cell {ent.CellulePosition})", async () =>
             {
                 if (_contexte == null) return;
-                BotDofus.Utilitaires.Journaux.Journaliseur.Avertir(
-                    $"[DIALOGUE] PNJ #{ent.Identifiant} : 'DC' est dans la whitelist chiffrée " +
-                    "Abrak (Aks.prepareSendPacket). Une injection en clair est ignorée par le " +
-                    "serveur — le dialogue PNJ requiert l'injection chiffrée (canal '-').");
-                await _contexte.Api.EnvoyerPaquetBrutAsync($"DC{ent.Identifiant}");
+                BotDofus.Utilitaires.Journaux.Journaliseur.Info(
+                    $"[UI] Parler PNJ #{ent.Identifiant} « {ent.Nom} » cell {ent.CellulePosition} (approche+DC).");
+                await _contexte.Api.ParlerPnjAsync(ent.CellulePosition, ent.Identifiant);
             });
         }
 

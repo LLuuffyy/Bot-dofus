@@ -81,7 +81,11 @@ public static class Pathfinder
             foreach (var voisin in VoisinsAdjacents(carte, courante))
             {
                 if (fermees.Contains(voisin)) continue;
-                if (!voisin.EstMarchable) continue;
+                // On AUTORISE la case d'ARRIVÉE même si non « marchable »
+                // (transition/zaap/téléport jaune) : c'est en marchant
+                // dessus qu'on change de map. Sinon « aucun chemin » et le
+                // clic sur case jaune ne faisait rien.
+                if (!voisin.EstMarchable && voisin != arrivee) continue;
                 if (voisin.EstCelluleTeleport() && voisin != arrivee) continue;
 
                 int gTemporaire = courante.CouG + Distance(voisin, courante);

@@ -181,11 +181,75 @@ public sealed class ApiBot
     /// </summary>
     public async Task EngagerGroupeAsync(int cellule, int idGroupe, CancellationToken ct = default)
     {
-        Journaliseur.Info($"[UI] Approche + engage groupe #{idGroupe} cell {cellule}");
-        await SeDeplacerVersCelluleAsync(cellule, ct, arreterDevant: true).ConfigureAwait(false);
-        await Task.Delay(500, ct).ConfigureAwait(false);
-        if (_etat.Combat.Etat == EtatCombat.Inactif)
+        // === Engage DIRECT (style SynFus / vrai client) ===
+        // Capture réelle 11:48 : le client envoie GA001<path> PUIS GA907
+        // IMMÉDIATEMENT (sans attendre la marche, sans GKK0 entre). Le
+        // SERVEUR fait marcher le perso puis lance le combat. On reproduit :
+        // pathfind (arrêt à 1 case) → GA001 → GA907 tout de suite → GKK0
+        // après. Plus de « marche puis pause puis engage » visible.
+        if (_etat.CarteCourante == null || _etat.Personnage.CellulePosition == null)
+        {
             await EnvoyerHumaniseAsync($"GA907{cellule};{idGroupe}", ct).ConfigureAwait(false);
+            return;
+        }
+        var dep = _etat.CarteCourante.Obtenir(_etat.Personnage.CellulePosition.Value);
+        var arr = _etat.CarteCourante.Obtenir(cellule);
+        string? paquet = null;
+        int cases = 0;
+        if (dep != null && arr != null)
+        {
+            var chemin = Pathfinder.Trouver(_etat.CarteCourante, dep, arr,
+                arreterDevant: true, distanceArret: 1);
+            if (chemin is { Count: >= 2 })
+            {
+                paquet = Pathfinder.PaquetDeplacement(chemin);
+                cases = chemin.Count;
+            }
+        }
+        Journaliseur.Info($"[UI] Engage DIRECT groupe #{idGroupe} cell {cellule} "
+            + (paquet != null ? $"(GA001 {cases} cases + GA907)" : "(GA907 seul, pas de chemin)"));
+        if (paquet != null)
+        {
+            await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
+            await Task.Delay(120, ct).ConfigureAwait(false); // GA001 puis GA907 collés
+        }
+        await EnvoyerHumaniseAsync($"GA907{cellule};{idGroupe}", ct).ConfigureAwait(false);
+        // GKK0 après la durée de marche (le serveur a fait marcher le perso).
+        if (paquet != null)
+        {
+            await Task.Delay(Math.Clamp((cases - 1) * 180, 250, 3000), ct).ConfigureAwait(false);
+            await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Parle à un PNJ depuis la carte : approche (GA001) puis DC&lt;idPnj&gt;
+    /// (canal « - » re-chiffré, n'est plus ignoré). Même logique que le
+    /// combat : il faut être au contact. NB : format DC à confirmer sur
+    /// capture réelle si le serveur ne répond pas (clic PNJ manuel dans
+    /// Dofus.exe → le proxy loggue le vrai paquet déchiffré).
+    /// </summary>
+    public async Task ParlerPnjAsync(int cellule, int idPnj, CancellationToken ct = default)
+    {
+        if (_etat.CarteCourante != null && _etat.Personnage.CellulePosition is int pc)
+        {
+            var dep = _etat.CarteCourante.Obtenir(pc);
+            var arr = _etat.CarteCourante.Obtenir(cellule);
+            if (dep != null && arr != null)
+            {
+                var chemin = Pathfinder.Trouver(_etat.CarteCourante, dep, arr,
+                    arreterDevant: true, distanceArret: 1);
+                if (chemin is { Count: >= 2 })
+                {
+                    await EnvoyerHumaniseAsync(Pathfinder.PaquetDeplacement(chemin), ct).ConfigureAwait(false);
+                    await Task.Delay(Math.Clamp((chemin.Count - 1) * 180, 250, 3000), ct).ConfigureAwait(false);
+                    await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
+                    await Task.Delay(300, ct).ConfigureAwait(false);
+                }
+            }
+        }
+        Journaliseur.Info($"[UI] Parler PNJ #{idPnj} cell {cellule} → DC{idPnj}");
+        await EnvoyerHumaniseAsync($"DC{idPnj}", ct).ConfigureAwait(false);
     }
 
     /// <summary>Ouvre un dialogue avec un PNJ, puis enchaîne les réponses indiquées.</summary>
@@ -346,26 +410,14 @@ public sealed class ApiBot
                     continue;
                 }
 
-                // PROUVÉ : GA907 n'est accepté QUE si le perso est adjacent
-                // au groupe (le serveur n'auto-approche PAS). Donc on DOIT
-                // marcher jusqu'au groupe (GA001+GKK0, arreterDevant), avec
-                // le DirectionVers désormais corrigé (dérivé des paquets
-                // réels), PUIS engager (GA907<cell>;<id>).
+                // Engage DIRECT (GA001+GA907 collés, le serveur marche puis
+                // lance le combat) — flux SynFus, plus de pause visible.
                 int dist = DistanceCarte(_etat.Personnage.CellulePosition, mob.CellulePosition);
                 Journaliseur.Info($"[FARM] cible #{mob.Identifiant} « {mob.Nom} » cell {mob.CellulePosition} "
-                    + $"(perso {_etat.Personnage.CellulePosition}, dist {dist}) → approche");
+                    + $"(perso {_etat.Personnage.CellulePosition}, dist {dist}) → engage direct");
 
-                await SeDeplacerVersCelluleAsync(mob.CellulePosition, ct, arreterDevant: true).ConfigureAwait(false);
-                await Task.Delay(400, ct).ConfigureAwait(false);
-
-                if (_etat.Combat.Etat == EtatCombat.Inactif)
-                {
-                    int dap = DistanceCarte(_etat.Personnage.CellulePosition, mob.CellulePosition);
-                    Journaliseur.Info($"[FARM] après approche : perso {_etat.Personnage.CellulePosition}, "
-                        + $"dist {dap} → GA907");
-                    await EngagerCombatAsync(ct).ConfigureAwait(false);
-                }
-                await Task.Delay(3000, ct).ConfigureAwait(false);
+                await EngagerGroupeAsync(mob.CellulePosition, mob.Identifiant, ct).ConfigureAwait(false);
+                await Task.Delay(2500, ct).ConfigureAwait(false);
             }
             catch (OperationCanceledException) { break; }
             catch (Exception ex)
