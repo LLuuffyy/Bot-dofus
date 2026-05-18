@@ -508,13 +508,19 @@ public sealed class TrameJeu : TrameBase
     private void OnMetiersSkills(MessageMetiersSkills msg)
     {
         var perso = _etat.Personnage;
-        perso.MetiersSkills.Clear();
-        perso.SkillsConnus.Clear();
+        // IMPORTANT : au level-up d'un métier, le serveur renvoie un JSK PARTIEL
+        // (uniquement le métier qui vient de up). Si on .Clear() ici, on perd les
+        // ~62 skills des autres métiers → la récolte casse (« je peux plus tout
+        // récolter ») et le farm s'arrête. On FUSIONNE : on écrase seulement les
+        // métiers présents dans ce JSK, puis on reconstruit SkillsConnus depuis
+        // TOUS les métiers connus (union).
         foreach (var kv in msg.Metiers)
-        {
             perso.MetiersSkills[kv.Key] = kv.Value;
+
+        perso.SkillsConnus.Clear();
+        foreach (var kv in perso.MetiersSkills)
             foreach (var s in kv.Value) perso.SkillsConnus.Add(s);
-        }
+
         LoggerMetiers();
     }
 
