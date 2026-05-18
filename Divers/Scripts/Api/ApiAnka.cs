@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using BotDofus.Divers.Cartes;
@@ -40,9 +41,19 @@ public sealed class ApiAnka
         Mount = new ModuleMount(this);
         Quest = new ModuleQuest(this);
         Job = new ModuleJob(this);
+        Console = new ModuleConsole(this);
+        Global = new ModuleGlobal(this);
+        Memory = new ModuleMemory(this);
+        Script = new ModuleScript(this);
+        Storage = new ModuleStorage(this);
     }
 
     public ModuleJob Job { get; }
+    public ModuleConsole Console { get; }
+    public ModuleGlobal Global { get; }
+    public ModuleMemory Memory { get; }
+    public ModuleScript Script { get; }
+    public ModuleStorage Storage { get; }
 
     public ModuleCharacter Character { get; }
     public ModuleMap Map { get; }
@@ -56,6 +67,12 @@ public sealed class ApiAnka
 
     private CancellationToken Ct => _ct();
     private static void Stub(string m) => Journaliseur.Avertir($"[ANKA] {m} : non supporté (ignoré)");
+
+    // Compteurs façon Frigost (fightCount/gatherCount/wasInFight).
+    private int _nbCombats;
+    private int _nbRecoltes;
+    private bool _dernierCombatFini;
+    public readonly Dictionary<string, object> MemoireScript = new();
 
     // =================================================================
     // character
@@ -88,6 +105,17 @@ public sealed class ApiAnka
         public string serverName() => "Hystoria";
         public void giveUpFight() => Stub("character.giveUpFight");
         public void getBonusPack() => Stub("character.getBonusPack");
+
+        // --- Alias Frigost ---
+        public bool wasInFight() => _a._dernierCombatFini;
+        public int fightCount() => _a._nbCombats;
+        public void resetFightCount() => _a._nbCombats = 0;
+        public int gatherCount() => _a._nbRecoltes;
+        public void resetGatherCount() => _a._nbRecoltes = 0;
+        public bool playerInMap(string nom)
+            => _a._etat.CarteCourante?.Entites.Values.OfType<EntiteJoueur>()
+                   .Any(j => string.Equals(j.Nom, nom, StringComparison.OrdinalIgnoreCase)) ?? false;
+        public void launchExchange(string nom) => Stub("character.launchExchange");
     }
 
     // =================================================================
@@ -128,9 +156,20 @@ public sealed class ApiAnka
         public bool moveToward(string direction)
             => _a._api.ChangerMapDirectionAsync(direction, _a.Ct).GetAwaiter().GetResult();
 
-        public bool fight() => _a._api.EngagerCombatAsync(_a.Ct).GetAwaiter().GetResult();
+        public bool fight()
+        {
+            _a._dernierCombatFini = false;
+            var r = _a._api.EngagerCombatAsync(_a.Ct).GetAwaiter().GetResult();
+            if (r) { _a._nbCombats++; _a._dernierCombatFini = true; }
+            return r;
+        }
         public bool forceFight() => fight();
-        public int gather() => _a._api.RecolterToutAsync(_a.Ct).GetAwaiter().GetResult();
+        public int gather()
+        {
+            int n = _a._api.RecolterToutAsync(_a.Ct).GetAwaiter().GetResult();
+            _a._nbRecoltes += n;
+            return n;
+        }
 
         public int countPlayers()
             => _a._etat.CarteCourante?.Entites.Values.OfType<EntiteJoueur>().Count() ?? 0;
@@ -157,6 +196,36 @@ public sealed class ApiAnka
         public void saveZaap() => Stub("map.saveZaap");
         public void zaap(int mapId) => Stub("map.zaap");
         public void zaapi(int mapId) => Stub("map.zaapi");
+
+        // --- Alias Frigost (doc.frigost.dev) ---
+        public int currentCellId() => currentCell();
+        public int x() => BaseDonnees.Instance.Map(_a._etat.Personnage.CarteCourante ?? 0)?.X ?? 0;
+        public int y() => BaseDonnees.Instance.Map(_a._etat.Personnage.CarteCourante ?? 0)?.Y ?? 0;
+        public bool move(int cell) => moveToCell(cell);
+        /// <summary>Frigost map.change : direction ("top"/"left"/…) ou id de cellule.</summary>
+        public bool change(object cible)
+        {
+            var s = cible?.ToString() ?? "";
+            if (int.TryParse(s, out var cell)) return moveToCell(cell);
+            var d = s switch
+            {
+                "top" => "nord", "bottom" => "sud", "right" => "est",
+                "left" => "ouest", _ => s
+            };
+            return changeMap(d);
+        }
+        public bool waitChange()
+        {
+            int avant = currentMapId();
+            for (int i = 0; i < 40; i++)
+            {
+                if (currentMapId() != avant) return true;
+                System.Threading.Thread.Sleep(250);
+            }
+            return false;
+        }
+        public void interactive(int cell) => move(cell);
+        public void teleport(int mapId) => Stub("map.teleport");
     }
 
     // =================================================================
@@ -198,6 +267,19 @@ public sealed class ApiAnka
         public void useMultipleItem(int gid, int n) => Stub("inventory.useMultipleItem");
         public void equipItem(int gid) => Stub("inventory.equipItem");
         public void deleteItem(int gid, int n) => Stub("inventory.deleteItem");
+
+        // --- Alias Frigost ---
+        public double podsPercent() => podsP();
+        public double kamas() => _a._etat.Personnage.Kamas;
+        public Table content() => inventoryContent();
+        public int objectQuantity(int gid) => itemCount(gid);
+        public string objectName(int gid) => itemNameId(gid);
+        public int objectPosition(int gid)
+            => _a._etat.Personnage.Inventaire.FirstOrDefault(o => o.IdTemplate == gid)?.Position ?? -1;
+        public int objectUid(int gid)
+            => _a._etat.Personnage.Inventaire.FirstOrDefault(o => o.IdTemplate == gid)?.Identifiant ?? -1;
+        public void useObject(int gid) => Stub("inventory.useObject");
+        public void deleteObject(int gid, int n) => Stub("inventory.deleteObject");
     }
 
     // =================================================================
@@ -228,6 +310,17 @@ public sealed class ApiAnka
         public void npcBank() => Stub("npc.npcBank");
         public void npcSale() => Stub("npc.npcSale");
         public void npcBuy() => Stub("npc.npcBuy");
+
+        // --- Alias Frigost ---
+        public bool exists(int npcId) => npcInMap(npcId);
+        public void talk(int npcId) => npc(npcId);
+        public void interact(int npcId) => npc(npcId);
+        public bool inDialog() => _a._etat.Dialogue.Ouvert;
+        public bool indialog() => _a._etat.Dialogue.Ouvert;
+        public void leaveDialog() => leave();
+        public void leavedialog() => leave();
+        public Table possibleReplies() => getRepliesId();
+        public Table possiblereplies() => getRepliesId();
     }
 
     // =================================================================
@@ -317,5 +410,92 @@ public sealed class ApiAnka
                 return BaseDonnees.FamilleRessource(BaseDonnees.Instance.Skill(sk[0]));
             return $"Métier {jobId}";
         }
+    }
+
+    // =================================================================
+    // console (Frigost) : sortie texte
+    // =================================================================
+    [MoonSharpUserData]
+    public sealed class ModuleConsole
+    {
+        public ModuleConsole(ApiAnka _) { }
+        public void print(object m) => Journaliseur.Info($"[LUA] {m}");
+        public void error(object m) => Journaliseur.Avertir($"[LUA] {m}");
+        public void success(object m) => Journaliseur.Info($"[LUA] ✔ {m}");
+        public void clear() { }
+        public int lines() => 0;
+    }
+
+    // =================================================================
+    // global (Frigost) : utilitaires
+    // =================================================================
+    [MoonSharpUserData]
+    public sealed class ModuleGlobal
+    {
+        private readonly ApiAnka _a;
+        private static readonly Random _rng = new();
+        public ModuleGlobal(ApiAnka a) => _a = a;
+        public void sleep(int ms) => Pause(ms, _a.Ct);
+        public void delay(int ms) => Pause(ms, _a.Ct);
+        public int random(int min, int max) => _rng.Next(min, max + 1);
+        public bool isInTeam() => false;
+        public bool isTeamLeader() => true;
+        public int teamCount() => 1;
+        public int teamNumber() => 1;
+        public string username() => _a._etat.Personnage.Nom;
+        public long timestamp() => DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        public void leaveDialog()
+            => _a._api.QuitterDialogueAsync(_a.Ct).GetAwaiter().GetResult();
+        public void disconnect() => Stub("global.disconnect");
+
+        private static void Pause(int ms, CancellationToken ct)
+        { try { System.Threading.Tasks.Task.Delay(ms, ct).GetAwaiter().GetResult(); }
+          catch (OperationCanceledException) { } }
+    }
+
+    // =================================================================
+    // memory (Frigost) : variables persistantes en RAM
+    // =================================================================
+    [MoonSharpUserData]
+    public sealed class ModuleMemory
+    {
+        private readonly ApiAnka _a;
+        public ModuleMemory(ApiAnka a) => _a = a;
+        public void set(string k, object v) => _a.MemoireScript[k] = v;
+        public object? get(string k) => _a.MemoireScript.TryGetValue(k, out var v) ? v : null;
+        public void erase(string k) => _a.MemoireScript.Remove(k);
+    }
+
+    // =================================================================
+    // script (Frigost) : contrôle du script
+    // =================================================================
+    [MoonSharpUserData]
+    public sealed class ModuleScript
+    {
+        public ModuleScript(ApiAnka _) { }
+        public string name() => "script";
+        public string folder() => System.IO.Directory.Exists("scripts")
+            ? System.IO.Path.GetFullPath("scripts") : Environment.CurrentDirectory;
+        public void restart() => Stub("script.restart");
+        public void load(string f) => Stub("script.load");
+        public void stop() => Stub("script.stop");
+    }
+
+    // =================================================================
+    // storage (Frigost) : banque/coffre — protocole pas encore branché
+    // =================================================================
+    [MoonSharpUserData]
+    public sealed class ModuleStorage
+    {
+        public ModuleStorage(ApiAnka _) { }
+        public void putObject(int gid, int n) => Stub("storage.putObject");
+        public void getObject(int gid, int n) => Stub("storage.getObject");
+        public void putAllObjects() => Stub("storage.putAllObjects");
+        public void getAllObjects() => Stub("storage.getAllObjects");
+        public void putKamas(int n) => Stub("storage.putKamas");
+        public void getKamas(int n) => Stub("storage.getKamas");
+        public int kamas() => 0;
+        public Table content() => new(null);
+        public void leave() => Stub("storage.leave");
     }
 }

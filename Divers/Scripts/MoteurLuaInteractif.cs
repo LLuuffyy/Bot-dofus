@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BotDofus.Divers.Scripts.Api;
@@ -59,6 +60,12 @@ public sealed class MoteurLuaInteractif : IDisposable
         _script.Globals["mount"] = _api.Anka.Mount;
         _script.Globals["quest"] = _api.Anka.Quest;
         _script.Globals["job"] = _api.Anka.Job;
+        // Modules supplémentaires Frigost (doc.frigost.dev)
+        _script.Globals["console"] = _api.Anka.Console;
+        _script.Globals["global"] = _api.Anka.Global;
+        _script.Globals["memory"] = _api.Anka.Memory;
+        _script.Globals["script"] = _api.Anka.Script;
+        _script.Globals["storage"] = _api.Anka.Storage;
         // Fonctions globales AnkaBot
         _script.Globals["delay"] = (System.Action<double>)(ms =>
         {
@@ -204,13 +211,15 @@ public sealed class MoteurLuaInteractif : IDisposable
     private void ExecuterLigne(Table row, Random rnd, CancellationToken ct)
     {
         var anka = _api.Anka;
-        bool B(string k) { var v = row.Get(k); return v.Type != DataType.Nil && v.CastToBool(); }
+        bool B1(string k) { var v = row.Get(k); return v.Type != DataType.Nil && v.CastToBool(); }
+        // Tolère les variantes de casse (AnkaBot forcefight / Frigost forceFight).
+        bool B(params string[] ks) => ks.Any(B1);
         string S(string k) { var v = row.Get(k); return v.Type == DataType.Nil ? "" : v.CastToString(); }
 
         // 1) Récolte
-        if (B("gather") || B("forcegather"))
+        if (B("gather", "forcegather", "forceGather"))
         {
-            bool force = B("forcegather");
+            bool force = B("forcegather", "forceGather");
             int n;
             do
             {
@@ -221,9 +230,9 @@ public sealed class MoteurLuaInteractif : IDisposable
                    && !ct.IsCancellationRequested);
         }
         // 2) Combat
-        if (B("fight") || B("forcefight"))
+        if (B("fight", "forcefight", "forceFight"))
         {
-            bool force = B("forcefight");
+            bool force = B("forcefight", "forceFight");
             do
             {
                 if (ct.IsCancellationRequested) return;
