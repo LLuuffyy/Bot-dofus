@@ -91,7 +91,12 @@ public sealed class Personnage
 
     public void ActualiserPoids(int actuel, int max)
     {
-        PoidsActuel = actuel; PoidsMax = max;
+        PoidsActuel = actuel;
+        // Un Ow PARTIEL (sans le max, ex. "Ow<id>;<actuel>") donne max=0 :
+        // ne PAS écraser le vrai max (25575) avec 0, sinon « 814 / 0 », % pods
+        // à 0 et la banque ne se déclenche jamais. On garde le dernier max
+        // connu tant qu'on n'en reçoit pas un valide.
+        if (max > 0) PoidsMax = max;
         Mis_A_Jour?.Invoke(this, EventArgs.Empty);
     }
 
