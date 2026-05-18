@@ -162,7 +162,7 @@ public sealed class TrameJeu : TrameBase
         {
             foreach (var c in msg.Combattants)
             {
-                if (!c.Vivant) { carte.Entites.Remove(c.Id); continue; }
+                if (!c.Vivant) { carte.Entites.TryRemove(c.Id, out _); continue; }
                 if (c.Cellule <= 0) continue;
                 if (c.Id < 0)
                     carte.Entites[c.Id] = new EntiteMonstre
@@ -276,7 +276,7 @@ public sealed class TrameJeu : TrameBase
         {
             if (entree.Operation == OperationGM.Despawn)
             {
-                carte.Entites.Remove(entree.IdentifiantEntite);
+                carte.Entites.TryRemove(entree.IdentifiantEntite, out _);
                 continue;
             }
 

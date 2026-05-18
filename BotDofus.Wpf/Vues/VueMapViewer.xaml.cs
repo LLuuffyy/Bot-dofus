@@ -58,6 +58,7 @@ public partial class VueMapViewer : UserControl
     }
 
     private int _dialoguePnjId;
+    private string _dernierDialogue = "";
 
     private void OnPaquet(object? sender, EvenementPaquetRecu e)
     {
@@ -100,6 +101,10 @@ public partial class VueMapViewer : UserControl
     /// </summary>
     private void TraiterDialogue(string contenu)
     {
+        // Évite de reconstruire les boutons sous le curseur si le serveur
+        // renvoie le même paquet (sinon clic réponse perdu).
+        if (contenu == _dernierDialogue) return;
+        _dernierDialogue = contenu;
         try
         {
             if (contenu.StartsWith("DCK", StringComparison.Ordinal))

@@ -23,7 +23,15 @@ public sealed class Carte
     public int Largeur { get; set; }
     public int Hauteur { get; set; }
     public Cellule[] Cellules { get; }
-    public Dictionary<int, Entite> Entites { get; } = new();
+
+    /// <summary>
+    /// Entités présentes (joueurs/monstres/PNJ). MUTÉE par le thread réseau
+    /// (TrameJeu / canal '-') et LUE par l'UI (VueTools/VueMapViewer) →
+    /// <see cref="System.Collections.Concurrent.ConcurrentDictionary{TKey,TValue}"/>
+    /// obligatoire : un Dictionary plantait l'UI (« Destination array is not
+    /// long enough », CopyTo concurrent). .Values renvoie ici un instantané.
+    /// </summary>
+    public System.Collections.Concurrent.ConcurrentDictionary<int, Entite> Entites { get; } = new();
 
     private Dictionary<long, Cellule>? _indexParCoords;
 

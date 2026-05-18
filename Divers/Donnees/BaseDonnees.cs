@@ -36,7 +36,14 @@ public sealed class BaseDonnees
     public InfoNpc? Npc(int id) => Npcs.TryGetValue(id, out var v) ? v : null;
     public InfoMap? Map(int id) => Maps.TryGetValue(id, out var v) ? v : null;
     public string? Skill(int id) => Skills.TryGetValue(id, out var v) ? v : null;
-    public InfoInteractif? Interactif(int id) => Interactifs.TryGetValue(id, out var v) ? v : null;
+    // Lu par l'UI (couleur de chaque cellule) PENDANT que le thread réseau
+    // écrit via ApprendreInteractif → lecture sous le même verrou (sinon
+    // même race « Destination array »/corruption qu'avec carte.Entites).
+    public InfoInteractif? Interactif(int id)
+    {
+        lock (_verrouInteractifs)
+            return Interactifs.TryGetValue(id, out var v) ? v : null;
+    }
 
     private static string? _dossierData;
     private static readonly object _verrouInteractifs = new();
