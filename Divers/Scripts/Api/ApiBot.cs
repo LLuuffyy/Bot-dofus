@@ -135,7 +135,13 @@ public sealed class ApiBot
         }
 
         string paquet = Pathfinder.PaquetDeplacement(chemin);
-        Journaliseur.Info($"API.SeDeplacerVersCellule : chemin {chemin.Count} cellules, packet={paquet[..Math.Min(paquet.Length, 60)]}...");
+        // Trace décisive : chemin A* complet (ids cellules) + paquet encodé.
+        // Permet de comparer à un GA001 du VRAI client sur la même carte pour
+        // trancher : bug d'encodage vs marchabilité carte fausse (le serveur
+        // renvoie un GA0 no-op « reste sur place » si le chemin est invalide).
+        var cellsChemin = string.Join(">", chemin.ConvertAll(c => c.Identifiant));
+        Journaliseur.Info($"API.SeDeplacerVersCellule : dep={depart.Identifiant} arr={celluleCible} "
+            + $"chemin[{chemin.Count}]={cellsChemin} paquet={paquet}");
         await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
 
         // CONFIRMATION FIN DE DÉPLACEMENT — décisif. Le vrai client envoie
