@@ -294,7 +294,10 @@ public partial class VueTools : UserControl
             TxtTravelY.Text = map.Y.ToString();
         }
 
-        foreach (var entite in carte.Entites.Values)
+        // Snapshot : carte.Entites est muté par le thread réseau (TrameJeu /
+        // déchiffrement canal '-'). Itérer la live collection = crash
+        // « Collection was modified ». On copie avant d'énumérer.
+        foreach (var entite in System.Linq.Enumerable.ToList(carte.Entites.Values))
         {
             var type = entite switch
             {

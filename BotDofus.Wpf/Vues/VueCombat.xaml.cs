@@ -126,12 +126,13 @@ public partial class VueCombat : UserControl
         BadgeEtat.Background = (Brush)new BrushConverter().ConvertFromString(couleur)!;
 
         CombattantsLive.Clear();
-        foreach (var allie in combat.Allies)
+        // Snapshot : combat.Allies/Ennemis mutés par le thread réseau.
+        foreach (var allie in System.Linq.Enumerable.ToList(combat.Allies))
         {
             CombattantsLive.Add(new CombattantVm(allie, estAllie: true,
                 joueActuellement: combat.IdentifiantCombattantActuel == allie.Identifiant));
         }
-        foreach (var ennemi in combat.Ennemis)
+        foreach (var ennemi in System.Linq.Enumerable.ToList(combat.Ennemis))
         {
             CombattantsLive.Add(new CombattantVm(ennemi, estAllie: false,
                 joueActuellement: combat.IdentifiantCombattantActuel == ennemi.Identifiant));

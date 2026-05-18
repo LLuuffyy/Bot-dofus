@@ -289,7 +289,7 @@ public partial class VueMapViewer : UserControl
 
     private void DessinerEntites(Carte carte)
     {
-        foreach (var ent in carte.Entites.Values)
+        foreach (var ent in System.Linq.Enumerable.ToList(carte.Entites.Values))
         {
             var cell = carte.Obtenir(ent.CellulePosition);
             if (cell == null) continue;
@@ -384,7 +384,7 @@ public partial class VueMapViewer : UserControl
         var nbMonstres = 0;
         var nbPnjs = 0;
 
-        foreach (var ent in carte.Entites.Values)
+        foreach (var ent in System.Linq.Enumerable.ToList(carte.Entites.Values))
         {
             var typeNom = ent.GetType().Name.Replace("Entite", "");
             var info = ent is EntiteMonstre m ? $" Lv{m.NiveauGroupe} (id:{m.IdGabarit})" : "";
