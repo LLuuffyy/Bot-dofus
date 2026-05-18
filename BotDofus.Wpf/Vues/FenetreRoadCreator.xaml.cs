@@ -21,7 +21,9 @@ public partial class FenetreRoadCreator : Window
     private int _mapId;
     private string _coords = "?,?";
     private ContexteCompte? _ctx;
-    private int _npcChoisi;
+    private int _npcChoisi;        // id CONTEXTUEL (négatif) — pour le DC live
+    private int _npcTemplate;      // id TEMPLATE (gabarit) — pour le script .lua
+    private int _dernierMapPrepare = -1;
     private readonly List<int> _reponses = new();
 
     public event EventHandler<EnregistreurTrajet.Ligne>? Validee;
@@ -52,10 +54,19 @@ public partial class FenetreRoadCreator : Window
         ChkDonjon.IsChecked = false;
         ChkBoss.IsChecked = false;
         TxtCellule.Text = "";
-        _npcChoisi = 0;
-        _reponses.Clear();
-        BoxDialogue.Visibility = Visibility.Collapsed;
-        TxtDlgEnregistre.Text = "";
+        // IMPORTANT : on ne vide le PNJ/les réponses que si la carte a VRAIMENT
+        // changé. Sinon un simple rafraîchissement GM (même carte) effacerait
+        // le PNJ auquel on vient de parler avant qu'on valide la sortie
+        // (= « rien dans le script »).
+        if (mapId != _dernierMapPrepare)
+        {
+            _npcChoisi = 0;
+            _npcTemplate = 0;
+            _reponses.Clear();
+            BoxDialogue.Visibility = Visibility.Collapsed;
+            TxtDlgEnregistre.Text = "";
+        }
+        _dernierMapPrepare = mapId;
         RemplirPnj();
         if (!IsVisible) Show();
         Activate();
@@ -70,7 +81,11 @@ public partial class FenetreRoadCreator : Window
         {
             var nom = !string.IsNullOrWhiteSpace(p.Nom) ? p.Nom : $"PNJ {p.IdGabarit}";
             CmbPnj.Items.Add(new ComboBoxItem
-            { Content = $"{nom} (#{p.Identifiant}) cell {p.CellulePosition}", Tag = p.Identifiant });
+            {
+                Content = $"{nom} (id {p.IdGabarit}) cell {p.CellulePosition}",
+                // On retient les DEUX : contextuel (DC live) + gabarit (script).
+                Tag = (p.Identifiant, p.IdGabarit)
+            });
         }
         if (CmbPnj.Items.Count > 0) CmbPnj.SelectedIndex = 0;
     }
@@ -78,14 +93,15 @@ public partial class FenetreRoadCreator : Window
     private async void BtnParlerPnj_Click(object sender, RoutedEventArgs e)
     {
         if (_ctx == null || CmbPnj.SelectedItem is not ComboBoxItem it
-            || it.Tag is not int npcId) return;
-        _npcChoisi = npcId;
+            || it.Tag is not ValueTuple<int, int> ids) return;
+        _npcChoisi = ids.Item1;     // contextuel (négatif) → DC live
+        _npcTemplate = ids.Item2;   // gabarit → écrit dans le script
         _reponses.Clear();
         TxtDlgEnregistre.Text = "";
         BoxDialogue.Visibility = Visibility.Visible;
         TxtDlgQuestion.Text = "(ouverture du dialogue…)";
         DlgReponses.Children.Clear();
-        await _ctx.Api.ParlerPnjAsync(0, npcId);
+        await _ctx.Api.ParlerPnjAsync(0, _npcChoisi);
     }
 
     private void OnPaquet(object? s, BotDofus.Commun.Reseau.EvenementPaquetRecu e)
@@ -160,9 +176,12 @@ public partial class FenetreRoadCreator : Window
         };
         if (int.TryParse(TxtCellule.Text?.Trim(), out var cell) && cell > 0)
             l.Cellule = cell;
-        if (_npcChoisi != 0)
+        // Dans le script on écrit le GABARIT (ex. npc = 228) façon AnkaBot :
+        // stable entre sessions. Le moteur le re-résout vers l'id contextuel
+        // de la carte au moment de rejouer.
+        if (_npcTemplate != 0)
         {
-            l.Npc = _npcChoisi;
+            l.Npc = _npcTemplate;
             l.Answers.AddRange(_reponses);
         }
         Validee?.Invoke(this, l);

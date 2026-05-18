@@ -255,8 +255,22 @@ public sealed class ApiBot
     /// </summary>
     public async Task ParlerPnjAsync(int cellule, int idPnj, CancellationToken ct = default)
     {
-        var paquet = $"DC{_etat.Personnage.Identifiant},{idPnj}";
-        Journaliseur.Info($"[UI] Parler PNJ #{idPnj} (cell {cellule}) → {paquet}");
+        // Le DC du serveur attend l'id CONTEXTUEL (négatif, propre à la carte).
+        // Les scripts AnkaBot/RoadCreator stockent le GABARIT (positif, stable).
+        // Si on reçoit un gabarit, on le re-résout vers l'entité présente sur
+        // la carte courante (IdGabarit → Identifiant contextuel).
+        int idEnvoye = idPnj;
+        if (idPnj >= 0)
+        {
+            var pnj = _etat.CarteCourante?.Entites.Values
+                .OfType<BotDofus.Divers.Cartes.Entites.EntitePNJ>()
+                .FirstOrDefault(p => p.IdGabarit == idPnj);
+            if (pnj != null) idEnvoye = pnj.Identifiant;
+            else Journaliseur.Avertir(
+                $"[UI] PNJ gabarit {idPnj} introuvable sur la carte — envoi tel quel.");
+        }
+        var paquet = $"DC{_etat.Personnage.Identifiant},{idEnvoye}";
+        Journaliseur.Info($"[UI] Parler PNJ gabarit#{idPnj} → ctx {idEnvoye} (cell {cellule}) → {paquet}");
         await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
     }
 
