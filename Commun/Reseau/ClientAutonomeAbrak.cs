@@ -355,7 +355,11 @@ public sealed class ClientAutonomeAbrak : IDisposable
     public async Task EnvoyerClairAsync(string message)
     {
         if (_flux == null) return;
-        var octets = Encoding.UTF8.GetBytes(message + "\0");
+        // Le vrai client termine CHAQUE message par '\n' (terminateur Dofus)
+        // puis '\0' (frame). Comparaison byte-à-byte des captures : nos
+        // paquets faisaient 1 octet de moins → version mal terminée →
+        // AlEv1.48.0. On ajoute le '\n' manquant.
+        var octets = Encoding.UTF8.GetBytes(message + "\n\0");
         await _flux.WriteAsync(octets, 0, octets.Length, _cts.Token).ConfigureAwait(false);
         Journaliseur.Debogue($"[AUTO →SRV clair] {message}");
     }
@@ -378,7 +382,8 @@ public sealed class ClientAutonomeAbrak : IDisposable
             Journaliseur.Avertir($"[AUTO →SRV '-'] échec chiffrement '{clair}' (idx {_idxEnvoi})");
             return false;
         }
-        var octets = Encoding.UTF8.GetBytes(chiffre + "\0");
+        // '\n' terminateur Dofus (les captures '-' C→S finissent par \n) + '\0'.
+        var octets = Encoding.UTF8.GetBytes(chiffre + "\n\0");
         await _flux.WriteAsync(octets, 0, octets.Length, _cts.Token).ConfigureAwait(false);
         Journaliseur.Debogue($"[AUTO →SRV '-'] idx={_idxEnvoi} clair='{clair}'");
         return true;
