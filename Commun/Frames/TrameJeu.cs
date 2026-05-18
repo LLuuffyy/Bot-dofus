@@ -399,6 +399,23 @@ public sealed class TrameJeu : TrameBase
         var chemin = p[3];
         if (string.IsNullOrEmpty(chemin) || chemin.Length < 2) return;
 
+        // GARDE : un chemin de déplacement compressé n'utilise QUE l'alphabet
+        // hash Dofus (alphanumérique + '-' '_'). Les GA0 « non déplacement »
+        // (résultat de récolte ex. '168,11900,201', animations, etc.) contiennent
+        // des virgules / caractères hors alphabet : on les ignore ici, sinon on
+        // décodait '01' → cellule bidon 3381 qui CORROMPAIT la position perso et
+        // rendait la carte interactive inutilisable jusqu'à un clic dans Dofus.exe.
+        foreach (var ch in chemin)
+        {
+            if (BotDofus.Utilitaires.Crypto.HashCarte.IndexCar(ch) < 0)
+            {
+                Journaliseur.Info(
+                    $"[GA0] payload non-déplacement ignoré (acteur p[2]={p[2]}, " +
+                    $"charge='{chemin}')");
+                return;
+            }
+        }
+
         // Le chemin compressé Dofus = (dirChar + cell2chars) répété par
         // changement de direction. La cellule d'ARRIVÉE = les 2 derniers chars.
         var hashDest = chemin.Substring(chemin.Length - 2);

@@ -224,32 +224,17 @@ public sealed class ApiBot
     }
 
     /// <summary>
-    /// Parle à un PNJ depuis la carte : approche (GA001) puis DC&lt;idPnj&gt;
-    /// (canal « - » re-chiffré, n'est plus ignoré). Même logique que le
-    /// combat : il faut être au contact. NB : format DC à confirmer sur
-    /// capture réelle si le serveur ne répond pas (clic PNJ manuel dans
-    /// Dofus.exe → le proxy loggue le vrai paquet déchiffré).
+    /// Parle à un PNJ depuis la carte : envoie DIRECTEMENT DC&lt;idPnj&gt;
+    /// (canal « - » re-chiffré). Contrairement au combat/récolte, le dialogue
+    /// PNJ Dofus Retro N'EXIGE PAS la proximité : le serveur accepte DC depuis
+    /// n'importe où (confirmé en capture : DC-1 → serveur DCK-1,0). On NE
+    /// déplace donc PAS le perso — l'ancien code faisait un Pathfinder qui,
+    /// la cellule du PNJ étant marchable, amenait le perso PILE SUR la case du
+    /// PNJ (bug remonté : « ça va sur la case du pnj »).
     /// </summary>
     public async Task ParlerPnjAsync(int cellule, int idPnj, CancellationToken ct = default)
     {
-        if (_etat.CarteCourante != null && _etat.Personnage.CellulePosition is int pc)
-        {
-            var dep = _etat.CarteCourante.Obtenir(pc);
-            var arr = _etat.CarteCourante.Obtenir(cellule);
-            if (dep != null && arr != null)
-            {
-                var chemin = Pathfinder.Trouver(_etat.CarteCourante, dep, arr,
-                    arreterDevant: true, distanceArret: 1);
-                if (chemin is { Count: >= 2 })
-                {
-                    await EnvoyerHumaniseAsync(Pathfinder.PaquetDeplacement(chemin), ct).ConfigureAwait(false);
-                    await Task.Delay(Math.Clamp((chemin.Count - 1) * 180, 250, 3000), ct).ConfigureAwait(false);
-                    await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
-                    await Task.Delay(300, ct).ConfigureAwait(false);
-                }
-            }
-        }
-        Journaliseur.Info($"[UI] Parler PNJ #{idPnj} cell {cellule} → DC{idPnj}");
+        Journaliseur.Info($"[UI] Parler PNJ #{idPnj} (cell {cellule}) → DC{idPnj} (sans déplacement)");
         await EnvoyerHumaniseAsync($"DC{idPnj}", ct).ConfigureAwait(false);
     }
 
@@ -290,14 +275,14 @@ public sealed class ApiBot
 
     /// <summary>
     /// Récolte un élément interactif (arbre, minerai, blé…) : approche au
-    /// contact puis envoie le paquet d'interaction. Le format exact n'a pas
-    /// encore été capturé (comme GA907/GA300 au début) → on approche et on
-    /// loggue clairement : un clic MANUEL sur la ressource dans Dofus.exe
-    /// fait apparaître le vrai paquet déchiffré ([OBS C→S '-']) qu'on
-    /// alignera ensuite. On tente quand même le format Retro courant
-    /// « GA + 502 + cellule » (inoffensif si faux : le serveur l'ignore).
+    /// contact puis envoie le VRAI paquet d'interaction capturé en jeu manuel :
+    /// <c>GA500&lt;cellule&gt;;&lt;skillId&gt;</c> (capture : <c>GA500168;45</c>,
+    /// 45 = « Faucher », blé niv. 1). Le <paramref name="skillId"/> dépend du
+    /// type de ressource (Couper=bois, Faucher=blé, Cueillir=plantes,
+    /// Pêcher=poisson…) ; faute de base d'objets interactifs (le JSON Hystoria
+    /// est vide), on prend par défaut 45 (Faucher) et on permet de surcharger.
     /// </summary>
-    public async Task RecolterAsync(int cellule, int idInteractif, CancellationToken ct = default)
+    public async Task RecolterAsync(int cellule, int idInteractif, int skillId = 45, CancellationToken ct = default)
     {
         if (_etat.CarteCourante != null && _etat.Personnage.CellulePosition is int pc)
         {
@@ -316,10 +301,11 @@ public sealed class ApiBot
                 }
             }
         }
-        Journaliseur.Info($"[UI] Récolte cell {cellule} #{idInteractif} : tentative « GA502{cellule} ». "
-            + "Si rien : clique la ressource À LA MAIN dans Dofus.exe → le proxy loggue "
-            + "le vrai paquet ([OBS C→S '-']) et je l'aligne (méthode GA907).");
-        await EnvoyerHumaniseAsync($"GA502{cellule}", ct).ConfigureAwait(false);
+        var paquet = $"GA500{cellule};{skillId}";
+        Journaliseur.Info($"[UI] Récolte cell {cellule} objet #{idInteractif} : envoi « {paquet} » "
+            + $"(skill {skillId}). Si la ressource n'est pas du blé, le skill diffère "
+            + "(Couper=bois, Cueillir=plantes, Pêcher=poisson) : surcharge skillId.");
+        await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
     }
 
     /// <summary>Ouvre un dialogue avec un PNJ, puis enchaîne les réponses indiquées.</summary>
