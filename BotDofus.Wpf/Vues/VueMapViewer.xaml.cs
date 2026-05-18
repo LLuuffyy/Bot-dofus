@@ -213,15 +213,6 @@ public partial class VueMapViewer : UserControl
         }
     }
 
-    private async void BtnDialogueRepondre_Click(object sender, RoutedEventArgs e)
-    {
-        if (_contexte == null) return;
-        if (int.TryParse(TxtDialogueReponseId.Text?.Trim(), out var rid))
-        {
-            _dernierDialogue = "";
-            await _contexte.Api.RepondreDialogueAsync(_dialogueQuestionId, rid);
-        }
-    }
 
     private async void BtnDialogueQuitter_Click(object sender, RoutedEventArgs e)
     {
