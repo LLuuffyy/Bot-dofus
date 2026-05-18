@@ -60,6 +60,8 @@ public sealed class SessionProxy : IDisposable
     // du 1er paquet client pour rester identique tant qu'on n'injecte pas).
     private readonly object _verrouCs = new();
     private int _idxCs = -1;
+    private int _obsReenc;
+    private const int ObsReencMax = 40;
 
     public event EventHandler<EvenementPaquetRecu>? PaquetRecu;
     public event EventHandler? SessionTerminee;
@@ -118,7 +120,7 @@ public sealed class SessionProxy : IDisposable
         if (BotDofus.Commun.Reseau.ClientAutonomeAbrak.DoitEtreChiffre(message)
             && _canalAbrak.PretAuDechiffrement)
         {
-            bool ok = EnvoyerCsVersServeur(message, null);
+            bool ok = EnvoyerCsVersServeur(message, null, injecte: true);
             Journaliseur.Debogue(ok
                 ? $"[INJ ->SRV '-' réenc] {message}"
                 : $"[INJ ->SRV '-' réenc] ÉCHEC '{message}'");
@@ -140,11 +142,12 @@ public sealed class SessionProxy : IDisposable
     /// paquet client (sert UNIQUEMENT à amorcer le compteur sur la 1re
     /// trame, pour rester bit-compatible tant qu'on n'a pas injecté).
     /// </summary>
-    private bool EnvoyerCsVersServeur(string clair, int? idxClientObserve)
+    private bool EnvoyerCsVersServeur(string clair, int? idxClientObserve, bool injecte)
     {
         lock (_verrouCs)
         {
             int n = Math.Max(2, _canalAbrak.NombreCles);
+            int idxClient = idxClientObserve ?? -1;
             if (_idxCs < 0)
                 _idxCs = (idxClientObserve is >= 1 and <= 15) ? idxClientObserve.Value : 1;
             else
@@ -159,6 +162,20 @@ public sealed class SessionProxy : IDisposable
                 Journaliseur.Avertir($"[REENC C→S] échec chiffrement idx={_idxCs} "
                     + $"clair='{clair[..Math.Min(clair.Length, 24)]}'");
                 return false;
+            }
+
+            // Trace décisive (N premières) : séquence EXACTE émise vers le
+            // serveur. Si kick → ce log montre à quel idx/clair, et si
+            // idxProxy s'écarte de idxClient (désync wrap / injection).
+            if (_obsReenc < ObsReencMax)
+            {
+                _obsReenc++;
+                string dec = injecte
+                    ? "INJECTÉ"
+                    : $"relayé idxClient={idxClient}"
+                      + (idxClient >= 0 && idxClient != _idxCs ? " ≠proxy(décalé)" : "");
+                Journaliseur.Info($"[REENC C→S] #{_obsReenc} idxProxy={_idxCs} {dec} "
+                    + $"clair='{clair[..Math.Min(clair.Length, 32)]}'");
             }
 
             try
@@ -407,7 +424,7 @@ public sealed class SessionProxy : IDisposable
                 if (direction == DirectionPaquet.VersServeur)
                 {
                     int idxClient = HexValCar(brut[1]);
-                    EnvoyerCsVersServeur(clairAbrak, idxClient);
+                    EnvoyerCsVersServeur(clairAbrak, idxClient, injecte: false);
                     return null; // déjà envoyé, re-chiffré, par l'émetteur unique
                 }
             }
