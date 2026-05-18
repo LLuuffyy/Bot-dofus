@@ -417,13 +417,27 @@ public partial class VueMapViewer : UserControl
     {
         if (_celluleSelectionnee == cell.Identifiant) return new SolidColorBrush(Color.FromRgb(0x3A, 0x42, 0x55));
         if (cell.Type == TypesCellule.Transition) return new SolidColorBrush(Color.FromRgb(255, 152, 0));
-        // Élément interactif / récoltable (arbre, minerai, blé… IdInteractif
-        // décodé du mapData) → vert vif si exploitable, vert terne si épuisé
-        // (mis à jour en direct par les paquets GDF — la carte « s'actualise »).
+        // Élément interactif / récoltable :
+        //  - épuisé (GDF) → vert très terne
+        //  - skill connu de ce perso → vert vif (récoltable)
+        //  - skill appris en BDD mais PAS dans tes métiers → orange/brun
+        //    (« tu n'as pas le métier/niveau pour celle-ci »)
+        //  - skill encore inconnu (jamais récolté) → vert moyen
         if (cell.IdInteractif >= 0)
-            return new SolidColorBrush(cell.RessourceDisponible
-                ? Color.FromRgb(46, 204, 113)
-                : Color.FromRgb(70, 96, 78));
+        {
+            if (!cell.RessourceDisponible)
+                return new SolidColorBrush(Color.FromRgb(70, 96, 78));
+
+            var ioMap = BaseDonnees.Instance.Interactif(cell.IdInteractif);
+            var skillsPerso = _contexte?.EtatJeu.Personnage.SkillsConnus;
+            if (ioMap is { IdSkill: > 0 } && skillsPerso is { Count: > 0 })
+            {
+                return new SolidColorBrush(skillsPerso.Contains(ioMap.IdSkill)
+                    ? Color.FromRgb(46, 204, 113)   // récoltable par toi
+                    : Color.FromRgb(176, 122, 40)); // métier/niveau insuffisant
+            }
+            return new SolidColorBrush(Color.FromRgb(46, 204, 113));
+        }
         if (cell.EstInteractif) return new SolidColorBrush(Color.FromRgb(118, 94, 58));
         if (cell.Type == TypesCellule.Obstacle) return new SolidColorBrush(Color.FromRgb(38, 43, 51));
         if (cell.Type == TypesCellule.LignDeVueSeule) return new SolidColorBrush(Color.FromRgb(72, 82, 96));
@@ -445,8 +459,14 @@ public partial class VueMapViewer : UserControl
         {
             var io = BaseDonnees.Instance.Interactif(cell.IdInteractif);
             var etat = cell.RessourceDisponible ? "disponible" : "épuisée";
+            var skillsPerso = _contexte?.EtatJeu.Personnage.SkillsConnus;
+            string metier = "";
+            if (io is { IdSkill: > 0 } && skillsPerso is { Count: > 0 })
+                metier = skillsPerso.Contains(io.IdSkill)
+                    ? "  ✓ récoltable"
+                    : "  ✗ métier/niveau insuffisant";
             txt += io != null && !string.IsNullOrEmpty(io.Nom)
-                ? $"\n🌿 {io.Nom} (gfx #{cell.IdInteractif}, skill {io.IdSkill}) — {etat}"
+                ? $"\n🌿 {io.Nom} (gfx #{cell.IdInteractif}, skill {io.IdSkill}) — {etat}{metier}"
                 : $"\n🌿 Interactif gfx #{cell.IdInteractif} — {etat} (récolte-le pour l'identifier)";
         }
         TxtTooltip.Text = txt;

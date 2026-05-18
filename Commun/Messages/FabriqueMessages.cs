@@ -129,6 +129,8 @@ public static class FabriqueMessages
         EnregistrerVersClient<VersClient.Jeu.MessageDonneesCarte>("GDM");
         EnregistrerVersClient<VersClient.Jeu.MessageDonneesCarteFin>("GDF");
         EnregistrerVersClient<VersClient.Jeu.MessageDonneesCarteKeyframe>("GDK");
+        EnregistrerVersClient<VersClient.Jeu.MessageMetiersSkills>("JSK");
+        EnregistrerVersClient<VersClient.Jeu.MessageMetiersXp>("JXK");
         EnregistrerVersClient<VersClient.Jeu.MessageRejoindreJeu>("GJ");
         EnregistrerVersClient<VersClient.Jeu.MessagePositionsCombat>("GP");
         EnregistrerVersClient<VersClient.Jeu.MessageDebutCombat>("GS");

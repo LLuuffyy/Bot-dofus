@@ -44,6 +44,8 @@ public sealed class TrameJeu : TrameBase
     {
         Ecouter<MessageDonneesCarte>(OnDonneesCarte);
         Ecouter<MessageDonneesCarteFin>(OnElementsInteractifs);
+        Ecouter<MessageMetiersSkills>(OnMetiersSkills);
+        Ecouter<MessageMetiersXp>(OnMetiersXp);
         Ecouter<MessageInfoMessage>(OnInfoMessage);
         Ecouter<MessageInfoVie>(OnInfoVie);
         Ecouter<MessageSelectionPersonnage>(OnSelectionPersonnage);
@@ -494,6 +496,71 @@ public sealed class TrameJeu : TrameBase
                 + $"(carte #{carte.Identifiant}).");
             carte.SignalerRechargee();
         }
+    }
+
+    /// <summary>
+    /// JSK : skills (récoltes/recettes) connus par métier. On agrège tous les
+    /// idSkill dans <see cref="Personnage.SkillsConnus"/> : c'est ce qui permet
+    /// de savoir, sur la carte, si une ressource est récoltable PAR CE perso
+    /// (le gfx interactif → skill via la BDD auto-apprise ; si ce skill n'est
+    /// pas connu, le serveur refuse la récolte = « je peux pas tout récolter »).
+    /// </summary>
+    private void OnMetiersSkills(MessageMetiersSkills msg)
+    {
+        var perso = _etat.Personnage;
+        perso.MetiersSkills.Clear();
+        perso.SkillsConnus.Clear();
+        foreach (var kv in msg.Metiers)
+        {
+            perso.MetiersSkills[kv.Key] = kv.Value;
+            foreach (var s in kv.Value) perso.SkillsConnus.Add(s);
+        }
+        LoggerMetiers();
+    }
+
+    /// <summary>JXK : niveau par métier.</summary>
+    private void OnMetiersXp(MessageMetiersXp msg)
+    {
+        var perso = _etat.Personnage;
+        perso.MetiersNiveaux.Clear();
+        foreach (var kv in msg.Niveaux) perso.MetiersNiveaux[kv.Key] = kv.Value;
+        LoggerMetiers();
+    }
+
+    /// <summary>
+    /// Résumé lisible des métiers : pour chaque job, niveau + famille déduite
+    /// du 1er skill connu (on n'a pas de table jobId→nom, mais les NOMS de
+    /// skills oui via skills_hystoria.json → Couper=Bois, Faucher=Céréale…).
+    /// </summary>
+    private void LoggerMetiers()
+    {
+        var perso = _etat.Personnage;
+        if (perso.MetiersNiveaux.Count == 0 && perso.MetiersSkills.Count == 0) return;
+
+        var bdd = Divers.Donnees.BaseDonnees.Instance;
+        var ids = new SortedSet<int>(perso.MetiersNiveaux.Keys);
+        foreach (var k in perso.MetiersSkills.Keys) ids.Add(k);
+
+        var sb = new System.Text.StringBuilder("[MÉTIERS] ");
+        foreach (var jobId in ids)
+        {
+            int niveau = perso.MetiersNiveaux.TryGetValue(jobId, out var n) ? n : 0;
+            perso.MetiersSkills.TryGetValue(jobId, out var skills);
+            string famille = "—";
+            if (skills is { Count: > 0 })
+            {
+                var nomsk = bdd.Skill(skills[0]);
+                famille = Divers.Donnees.BaseDonnees.FamilleRessource(nomsk);
+            }
+            sb.Append($"job#{jobId}={famille} niv{niveau}");
+            if (skills is { Count: > 0 }) sb.Append($" (skills {string.Join(",", skills)})");
+            sb.Append(" | ");
+        }
+        Journaliseur.Info(sb.ToString().TrimEnd(' ', '|'));
+        if (perso.SkillsConnus.Count > 0)
+            Journaliseur.Info($"[MÉTIERS] {perso.SkillsConnus.Count} skill(s) connus → "
+                + "les ressources dont le skill n'est PAS dans cette liste ne sont "
+                + "pas récoltables par ce perso (niveau/métier insuffisant).");
     }
 
     private void OnInfoMessage(MessageInfoMessage msg)

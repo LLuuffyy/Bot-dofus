@@ -42,6 +42,19 @@ public sealed class Personnage
     /// <summary>Sorts appris par le personnage. Clé = ID sort, valeur = niveau (SR/SM packets).</summary>
     public Dictionary<int, int> SortsAppris { get; } = new();
 
+    /// <summary>Niveau par métier. Clé = jobId, valeur = niveau (paquet JXK).</summary>
+    public Dictionary<int, int> MetiersNiveaux { get; } = new();
+
+    /// <summary>Skills (recettes/récoltes) par métier. Clé = jobId, valeur = liste d'idSkill (paquet JSK).</summary>
+    public Dictionary<int, List<int>> MetiersSkills { get; } = new();
+
+    /// <summary>
+    /// Tous les idSkill que le personnage SAIT utiliser (récolte/craft),
+    /// agrégés depuis JSK. Sert à savoir si une ressource (gfx→skill via la
+    /// BDD interactifs auto-apprise) est récoltable PAR CE perso.
+    /// </summary>
+    public HashSet<int> SkillsConnus { get; } = new();
+
     /// <summary>Caractéristiques (total affiché). Clé = statId Dofus (AB) :
     /// 10=Vitalité 11=Sagesse 12=Force 13=Intelligence 14=Chance 15=Agilité.</summary>
     public Dictionary<int, int> Caracteristiques { get; } = new();

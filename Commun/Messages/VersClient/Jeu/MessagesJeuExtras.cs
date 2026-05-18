@@ -188,6 +188,73 @@ public sealed class MessageDonneesCarteKeyframe : MessageDofus, IMessageVersClie
 }
 
 /// <summary>
+/// JSK : liste des SKILLS (récoltes/recettes) du personnage, groupés par
+/// métier. Format : <c>&lt;charId&gt;_&lt;jobId&gt;;&lt;skill&gt;~a~b~c~d,&lt;skill&gt;~…|&lt;jobId&gt;;…</c>
+/// (ex. <c>401770_64;165~3~0~0~1,167~3~0~0~1|2;6~1~2~0~11900,101~2~0~0~50|…</c>).
+/// Un bloc <c>1;</c> = métier connu sans skill listé.
+/// </summary>
+public sealed class MessageMetiersSkills : MessageDofus, IMessageVersClient
+{
+    public override string Prefixe => "JSK";
+    public override DirectionPaquet Direction => DirectionPaquet.VersClient;
+
+    /// <summary>jobId → liste d'idSkill.</summary>
+    public Dictionary<int, List<int>> Metiers { get; } = new();
+
+    public override void Desserialiser(string charge)
+    {
+        Charge = charge;
+        var us = charge.IndexOf('_');
+        var corps = us >= 0 ? charge[(us + 1)..] : charge;
+        foreach (var bloc in corps.Split('|', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var pv = bloc.IndexOf(';');
+            if (pv < 0) continue;
+            if (!int.TryParse(bloc[..pv], out var jobId)) continue;
+            var liste = new List<int>();
+            foreach (var sk in bloc[(pv + 1)..].Split(',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var tete = sk.Split('~')[0];
+                if (int.TryParse(tete, out var idSkill) && idSkill > 0)
+                    liste.Add(idSkill);
+            }
+            Metiers[jobId] = liste;
+        }
+    }
+}
+
+/// <summary>
+/// JXK : niveau / XP par métier. Format :
+/// <c>&lt;charId&gt;~&lt;jobId&gt;;&lt;niveau&gt;;&lt;xp&gt;;&lt;xpMin&gt;;&lt;xpMax&gt;;|&lt;jobId&gt;;…</c>
+/// (ex. <c>401770~64;1;0;0;50;|2;1;0;0;50;|…</c>).
+/// </summary>
+public sealed class MessageMetiersXp : MessageDofus, IMessageVersClient
+{
+    public override string Prefixe => "JXK";
+    public override DirectionPaquet Direction => DirectionPaquet.VersClient;
+
+    /// <summary>jobId → niveau.</summary>
+    public Dictionary<int, int> Niveaux { get; } = new();
+
+    public override void Desserialiser(string charge)
+    {
+        Charge = charge;
+        var tilde = charge.IndexOf('~');
+        var corps = tilde >= 0 ? charge[(tilde + 1)..] : charge;
+        foreach (var bloc in corps.Split('|', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var champs = bloc.Split(';');
+            if (champs.Length < 2) continue;
+            if (int.TryParse(champs[0], out var jobId)
+                && int.TryParse(champs[1], out var niveau))
+            {
+                Niveaux[jobId] = niveau;
+            }
+        }
+    }
+}
+
+/// <summary>
 /// GM : Game Movement / Map. Plusieurs sous-formats :
 ///   GM|+&lt;cell&gt;;&lt;type&gt;;...   spawn/update d'une entité (un ou plusieurs séparés par "|+")
 ///   GM|-&lt;id&gt;                  despawn d'une entité
