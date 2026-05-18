@@ -58,6 +58,19 @@ public sealed class MoteurLuaInteractif : IDisposable
         _script.Globals["exchange"] = _api.Anka.Exchange;
         _script.Globals["mount"] = _api.Anka.Mount;
         _script.Globals["quest"] = _api.Anka.Quest;
+        _script.Globals["job"] = _api.Anka.Job;
+        // Fonctions globales AnkaBot
+        _script.Globals["delay"] = (System.Action<double>)(ms =>
+        {
+            try { Task.Delay((int)ms, _annulation?.Token ?? CancellationToken.None)
+                      .GetAwaiter().GetResult(); }
+            catch (OperationCanceledException) { }
+        });
+        System.Action<object> imprime = o => Journaliseur.Info($"[LUA] {o}");
+        _script.Globals["print"] = imprime;
+        _script.Globals["printText"] = imprime;
+        _script.Globals["printError"] =
+            (System.Action<object>)(o => Journaliseur.Avertir($"[LUA] {o}"));
         _chemin = cheminFichier;
         Journaliseur.Info($"[LUA] Script chargé : {cheminFichier}");
     }
@@ -88,6 +101,14 @@ public sealed class MoteurLuaInteractif : IDisposable
             try
             {
                 _script.DoString(code);
+                // Script au format AnkaBot (définit move()/bank()/phenix()) :
+                // on pilote la route. Sinon script libre déjà exécuté ci-dessus.
+                var moveFn = _script.Globals.Get("move");
+                if (moveFn.Type == DataType.Function)
+                {
+                    Journaliseur.Info("[ANKA] Script de route détecté → moteur AnkaBot");
+                    ExecuterRoute();
+                }
                 Journaliseur.Info($"[LUA] Script terminé normalement : {Path.GetFileName(_chemin)}");
                 ExecutionTerminee?.Invoke(this, null);
             }
@@ -111,6 +132,164 @@ public sealed class MoteurLuaInteractif : IDisposable
                 EnExecution = false;
             }
         });
+    }
+
+    // =================================================================
+    // Moteur de ROUTE façon AnkaBot : exécute move()/bank()/phenix() qui
+    // renvoient { { map="x,y", path="top", gather=true, fight=true,
+    //              door="254", custom=fn, ... }, ... }
+    // =================================================================
+    private void ExecuterRoute()
+    {
+        var rnd = new Random();
+        var ct = _annulation!.Token;
+        var anka = _api.Anka;
+        while (!ct.IsCancellationRequested)
+        {
+            try
+            {
+                if (anka.Character.lifePoints() <= 0
+                    && _script!.Globals.Get("phenix").Type == DataType.Function)
+                { SuivreUnTour("phenix", rnd, ct); continue; }
+
+                if (anka.Inventory.podsP() >= 98
+                    && _script!.Globals.Get("bank").Type == DataType.Function)
+                { SuivreUnTour("bank", rnd, ct); continue; }
+
+                SuivreUnTour("move", rnd, ct);
+            }
+            catch (OperationCanceledException) { break; }
+            catch (Exception ex)
+            {
+                Journaliseur.Avertir($"[ANKA] {ex.Message}");
+                Pause(2500, ct);
+            }
+        }
+    }
+
+    private void SuivreUnTour(string fn, Random rnd, CancellationToken ct)
+    {
+        var res = _script!.Call(_script.Globals.Get(fn));
+        if (res.Type != DataType.Table) { Pause(2000, ct); return; }
+
+        var coords = _api.Anka.Map.currentMap();           // "x,y"
+        DynValue? ligne = null;
+        foreach (var p in res.Table.Pairs)
+        {
+            if (p.Value.Type != DataType.Table) continue;
+            if (p.Value.Table.Get("map").CastToString() == coords) { ligne = p.Value; break; }
+        }
+        if (ligne == null)
+        {
+            Journaliseur.Info($"[ANKA] carte {coords} non prévue dans {fn}() — attente");
+            Pause(3000, ct);
+            return;
+        }
+        ExecuterLigne(ligne.Table, rnd, ct);
+    }
+
+    private void ExecuterLigne(Table row, Random rnd, CancellationToken ct)
+    {
+        var anka = _api.Anka;
+        bool B(string k) { var v = row.Get(k); return v.Type != DataType.Nil && v.CastToBool(); }
+        string S(string k) { var v = row.Get(k); return v.Type == DataType.Nil ? "" : v.CastToString(); }
+
+        // 1) Récolte
+        if (B("gather") || B("forcegather"))
+        {
+            bool force = B("forcegather");
+            int n;
+            do
+            {
+                if (ct.IsCancellationRequested) return;
+                n = anka.Map.gather();
+            }
+            while (force && n > 0 && anka.Inventory.podsP() < 98
+                   && !ct.IsCancellationRequested);
+        }
+        // 2) Combat
+        if (B("fight") || B("forcefight"))
+        {
+            bool force = B("forcefight");
+            do
+            {
+                if (ct.IsCancellationRequested) return;
+                anka.Map.fight();
+                while (anka.Character.isInFight() && !ct.IsCancellationRequested)
+                    Pause(1000, ct);
+            }
+            while (force && anka.Map.monsterGroups().Length > 0 && !ct.IsCancellationRequested);
+        }
+        // 3) Door (élément interactif → change souvent de carte)
+        if (S("door") is { Length: > 0 } d && int.TryParse(d, out var dcell))
+        {
+            int avant = anka.Map.currentMapId();
+            anka.Map.door(dcell);
+            AttendreChangementCarte(avant, ct);
+        }
+        // 4) custom / lockedCustom
+        var custom = row.Get("custom");
+        if (custom.Type == DataType.Function) _script!.Call(custom);
+        var lcustom = row.Get("lockedCustom");
+        if (lcustom.Type == DataType.Function) _script!.Call(lcustom);
+        // 5) npcBank (protocole banque pas encore branché)
+        if (B("npcBank")) Journaliseur.Avertir("[ANKA] npcBank non supporté (ignoré)");
+        // 6) Changement de carte (path)
+        var path = S("path");
+        if (path.Length > 0)
+        {
+            int avant = anka.Map.currentMapId();
+            AppliquerPath(path, rnd, ct);
+            AttendreChangementCarte(avant, ct);
+        }
+        else Pause(800, ct);
+    }
+
+    private void AppliquerPath(string path, Random rnd, CancellationToken ct)
+    {
+        path = path.Trim();
+        if (path.Contains('|'))
+        {
+            var choix = path.Split('|', StringSplitOptions.RemoveEmptyEntries);
+            path = choix[rnd.Next(choix.Length)].Trim();
+        }
+        // "top(364)" / "left(12)" → on marche sur la cellule de sortie
+        int po = path.IndexOf('(');
+        if (po >= 0 && path.EndsWith(")"))
+        {
+            var inner = path.Substring(po + 1, path.Length - po - 2);
+            if (int.TryParse(inner, out var cellExit)) { _api.Anka.Map.moveToCell(cellExit); return; }
+        }
+        // "364" → cellule déclencheuse directe
+        if (int.TryParse(path, out var cell)) { _api.Anka.Map.moveToCell(cell); return; }
+        // "zaap(...)" / "zaapi(...)" / "havenbag" : non supportés
+        if (path.StartsWith("zaap") || path.StartsWith("havenbag"))
+        { Journaliseur.Avertir($"[ANKA] path '{path}' non supporté (ignoré)"); return; }
+        // Direction : top/bottom/left/right
+        var dir = path switch
+        {
+            "top" => "nord", "haut" => "nord",
+            "bottom" => "sud", "bas" => "sud",
+            "right" => "est", "droite" => "est",
+            "left" => "ouest", "gauche" => "ouest",
+            _ => path
+        };
+        _api.Anka.Map.changeMap(dir);
+    }
+
+    private void AttendreChangementCarte(int mapIdAvant, CancellationToken ct)
+    {
+        for (int i = 0; i < 30 && !ct.IsCancellationRequested; i++)
+        {
+            if (_api.Anka.Map.currentMapId() != mapIdAvant) return;
+            Pause(300, ct);
+        }
+    }
+
+    private static void Pause(int ms, CancellationToken ct)
+    {
+        try { Task.Delay(ms, ct).GetAwaiter().GetResult(); }
+        catch (OperationCanceledException) { }
     }
 
     /// <summary>Arrête l'exécution en cours. Le script peut prendre du temps à réagir si bloqué dans Task.Delay.</summary>

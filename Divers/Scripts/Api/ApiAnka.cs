@@ -39,7 +39,10 @@ public sealed class ApiAnka
         Exchange = new ModuleExchange(this);
         Mount = new ModuleMount(this);
         Quest = new ModuleQuest(this);
+        Job = new ModuleJob(this);
     }
+
+    public ModuleJob Job { get; }
 
     public ModuleCharacter Character { get; }
     public ModuleMap Map { get; }
@@ -289,5 +292,30 @@ public sealed class ApiAnka
         public ModuleQuest(ApiAnka _) { }
         public bool isQuestActive(int id) => false;
         public bool isStepActive(int id) => false;
+        public bool questActive(int id) => false;
+        public int questCurrentStep(int id) => 0;
+    }
+
+    // =================================================================
+    // job  (métiers : nom + niveau, depuis JSK/JXK déjà parsés)
+    // =================================================================
+    [MoonSharpUserData]
+    public sealed class ModuleJob
+    {
+        private readonly ApiAnka _a;
+        public ModuleJob(ApiAnka a) => _a = a;
+
+        /// <summary>Niveau du métier (jobId Dofus). 0 si inconnu.</summary>
+        public int level(int jobId)
+            => _a._etat.Personnage.MetiersNiveaux.TryGetValue(jobId, out var n) ? n : 0;
+
+        /// <summary>Nom déduit du métier via le 1er skill connu (Bois/Céréale/…).</summary>
+        public string name(int jobId)
+        {
+            if (_a._etat.Personnage.MetiersSkills.TryGetValue(jobId, out var sk)
+                && sk.Count > 0)
+                return BaseDonnees.FamilleRessource(BaseDonnees.Instance.Skill(sk[0]));
+            return $"Métier {jobId}";
+        }
     }
 }

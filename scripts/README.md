@@ -77,3 +77,31 @@ Toutes les fonctions sont sur l'objet global `bot.*`. Voir `Divers/Scripts/Api/A
 
 Exemples fournis : `trajet_recolte.lua` (récolte en boucle multi-maps),
 `trajet_waypoints.lua` (route à points fixes).
+
+## Scripts format AnkaBot (https://doc.ankabot.dev)
+
+Le moteur reconnaît les scripts standard AnkaBot (Dofus Retro) : si le
+script définit une fonction `move()`, il pilote la route automatiquement.
+
+Structure :
+```lua
+function move() return {
+  { map="5,-18", path="bottom", gather=true },
+  { map="7,12",  fight=true,    path="right" },
+  { map="4,-20", door="254" },
+  { map="0,0",   custom=maFn,   path="top" },
+} end
+function bank()  return { ... } end   -- appelée si pods >= 98%
+function phenix() return { ... } end  -- appelée si mort
+```
+
+Actions par ligne : `gather`/`forcegather`, `fight`/`forcefight`,
+`door="cell"`, `custom=fn`, `lockedCustom=fn`, `path`.
+`path` : `"top|bottom|left|right"` (=nord/sud/ouest/est),
+`"top(364)"` (sortie via cellule), `"364"` (cellule déclencheuse),
+`"a|b"` (aléatoire). `zaap/zaapi/havenbag/npcBank` : stub (à venir).
+
+Modules type AnkaBot disponibles : `character`, `map`, `inventory`,
+`npc`, `fight`, `chat`, `job`, `exchange`, `mount`, `quest` +
+globaux `delay(ms)`, `print/printText/printError`.
+Exemple : `anka_recolte.lua`.
