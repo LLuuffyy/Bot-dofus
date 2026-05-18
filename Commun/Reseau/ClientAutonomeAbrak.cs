@@ -186,7 +186,10 @@ public sealed class ClientAutonomeAbrak : IDisposable
 
     private async Task TraiterPaquetAsync(string p)
     {
-        // === Canal chiffré '-' : on déchiffre et on remonte le clair ===
+        // === Canal chiffré '-' : déchiffre, remonte le clair ET réinjecte
+        // dans la machine à états. Sinon les BN/ALK/ASK (chiffrés après AK
+        // sur le serveur de jeu) ne déclenchent jamais AV/AS/GC1 → handshake
+        // jeu bloqué (cause du stall après AT observée en test). ===
         if (p.Length > 2 && p[0] == '-' && _canal.PretAuDechiffrement)
         {
             string clair;
@@ -196,14 +199,26 @@ public sealed class ClientAutonomeAbrak : IDisposable
                 foreach (var sous in clair.Split('\n'))
                 {
                     var q = sous.Trim('\r', '\0');
-                    if (q.Length >= 2) PaquetClair?.Invoke(q);
+                    if (q.Length >= 2)
+                    {
+                        PaquetClair?.Invoke(q);
+                        await TraiterClairAsync(q).ConfigureAwait(false);
+                    }
                 }
                 return;
             }
         }
 
         PaquetClair?.Invoke(p);
+        await TraiterClairAsync(p).ConfigureAwait(false);
+    }
 
+    /// <summary>
+    /// Machine à états auth + handshake jeu. Reçoit du CLAIR : soit un paquet
+    /// non chiffré, soit un sous-paquet déchiffré du canal '-'.
+    /// </summary>
+    private async Task TraiterClairAsync(string p)
+    {
         // === Machine à états d'authentification ===
         if (!_phaseJeu)
         {
