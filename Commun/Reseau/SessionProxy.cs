@@ -324,6 +324,25 @@ public sealed class SessionProxy : IDisposable
 
     private string? TraiterPaquet(string brut, DirectionPaquet direction)
     {
+        // === RESYNC rotation « - » post-combat / (ré)entrée jeu ===
+        // Après un combat, le vrai client renvoie « GC1 » et REMET son
+        // compteur de rotation « - » à la base (idxClient observé : 1-2).
+        // Le serveur réinitialise aussi son attente. Notre proxy re-chiffrant
+        // gardait son compteur décalé → désync → kick systématique ~après
+        // « Combat terminé » (constaté 11:24/11:48/11:49/12:10). On force la
+        // ré-amorce : prochain paquet « - » client → _idxCs = son index.
+        if (direction == DirectionPaquet.VersServeur
+            && brut.StartsWith("GC1", StringComparison.Ordinal))
+        {
+            lock (_verrouCs)
+            {
+                if (_idxCs >= 0)
+                    Journaliseur.Info("[REENC C→S] GC1 (post-combat/entrée) "
+                        + "→ resync rotation '-' (ré-amorce sur prochain client).");
+                _idxCs = -1;
+            }
+        }
+
         // === Capture aks_identity (Ai) du vrai client → persistée pour le
         // client autonome. La valeur est STABLE (fingerprint machine/compte,
         // identique à chaque session) donc rejouable hors client officiel. ===
