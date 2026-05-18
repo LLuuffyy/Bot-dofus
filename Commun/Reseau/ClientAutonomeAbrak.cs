@@ -244,9 +244,16 @@ public sealed class ClientAutonomeAbrak : IDisposable
             }
             if (p.StartsWith("AX", StringComparison.Ordinal) && p.Length > 3)
             {
-                // AXK<gameTicket> : on bascule sur le serveur de jeu.
-                _gameTicket = p.StartsWith("AXK", StringComparison.Ordinal) ? p.Substring(3) : p.Substring(2);
-                Etat?.Invoke($"[AUTO] Ticket de jeu reçu ({_gameTicket.Length} c.) → bascule serveur jeu.");
+                // Format : AXK + "33599914auy" (header CONSTANT observé dans
+                // toutes les sessions) + <vraiTicket>. Le vrai client strippe
+                // "AXK33599914auy" et envoie "AT"+ticket. On gardait le header
+                // → AT malformé (+11 c.) → serveur de jeu muet (pas d'AK).
+                var t = p.StartsWith("AXK", StringComparison.Ordinal) ? p.Substring(3) : p.Substring(2);
+                const string headerConst = "33599914auy";
+                if (t.StartsWith(headerConst, StringComparison.Ordinal))
+                    t = t.Substring(headerConst.Length);
+                _gameTicket = t;
+                Etat?.Invoke($"[AUTO] Ticket de jeu reçu ({_gameTicket.Length} c., header strippé) → bascule serveur jeu.");
                 await BasculerServeurJeuAsync().ConfigureAwait(false);
                 return;
             }
