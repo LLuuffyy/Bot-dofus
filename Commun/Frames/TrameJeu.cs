@@ -309,6 +309,25 @@ public sealed class TrameJeu : TrameBase
                 var idGabarit = ParserInt(gabarits.ElementAtOrDefault(0));
                 var id = idEntite != 0 ? idEntite : -Math.Abs(cellule + 1);
 
+                // Discrimination PNJ vs monstre : le « look » (champ [6] avant
+                // '^') des PNJ est ≥ 3000 (ex. Bûcheron d'Incarnam = 9035),
+                // les monstres ~1200-1700 (Larve/Champ = 1565…). Validé sur
+                // capture live. Les ids gabarit Abrak ≠ BDD standard → on tente
+                // la table NPC puis Monstre pour le nom.
+                int look = ParserInt((champs.ElementAtOrDefault(6) ?? "").Split('^', ',')[0]);
+                if (look >= 3000)
+                {
+                    var npc = Divers.Donnees.BaseDonnees.Instance.Npc(idGabarit);
+                    carte.Entites[id] = new EntitePNJ
+                    {
+                        Identifiant = id,
+                        CellulePosition = cellule,
+                        IdGabarit = idGabarit,
+                        Nom = !string.IsNullOrWhiteSpace(npc?.Nom) ? npc!.Nom : $"PNJ #{idGabarit}"
+                    };
+                    continue;
+                }
+
                 // Le champ [6] (ex. "9035^100") est un id gfx/scale, PAS le
                 // niveau. Le niveau réel vient de la BDD par gabarit (comme le
                 // nom). Niveau de groupe = somme des niveaux (= ce qu'affiche
