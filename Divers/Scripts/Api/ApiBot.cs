@@ -253,6 +253,40 @@ public sealed class ApiBot
     }
 
     /// <summary>
+    /// Change de map dans une direction (sortie/« soleil ») : marche sur la
+    /// cellule de TRANSITION la plus extrême du côté demandé. Le pathfinder
+    /// autorise la transition comme destination → marcher dessus change la
+    /// map côté serveur. Directions : "ouest","est","nord","sud".
+    /// Réutilisable depuis les scripts (bot.changerMap("est")).
+    /// </summary>
+    public async Task<bool> ChangerMapDirectionAsync(string direction, CancellationToken ct = default)
+    {
+        var carte = _etat.CarteCourante;
+        if (carte == null) { Journaliseur.Avertir("[MAP] pas de carte courante"); return false; }
+        var transitions = carte.Cellules
+            .Where(c => c is { Type: BotDofus.Divers.Cartes.TypesCellule.Transition })
+            .ToList();
+        if (transitions.Count == 0)
+        {
+            Journaliseur.Avertir($"[MAP] aucune sortie (transition) sur cette carte pour « {direction} »");
+            return false;
+        }
+        // Projection iso écran : sx = x - y (horizontal), sy = x + y (vertical).
+        Cellule? cible = direction.ToLowerInvariant() switch
+        {
+            "est" or "droite" => transitions.OrderByDescending(c => c.X - c.Y).First(),
+            "ouest" or "gauche" => transitions.OrderBy(c => c.X - c.Y).First(),
+            "sud" or "bas" => transitions.OrderByDescending(c => c.X + c.Y).First(),
+            "nord" or "haut" => transitions.OrderBy(c => c.X + c.Y).First(),
+            _ => null
+        };
+        if (cible == null) { Journaliseur.Avertir($"[MAP] direction inconnue « {direction} »"); return false; }
+        Journaliseur.Info($"[MAP] Sortie « {direction} » → cellule transition {cible.Identifiant} "
+            + $"({cible.X},{cible.Y}) — déplacement (change de map).");
+        return await SeDeplacerVersCelluleAsync(cible.Identifiant, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Récolte un élément interactif (arbre, minerai, blé…) : approche au
     /// contact puis envoie le paquet d'interaction. Le format exact n'a pas
     /// encore été capturé (comme GA907/GA300 au début) → on approche et on

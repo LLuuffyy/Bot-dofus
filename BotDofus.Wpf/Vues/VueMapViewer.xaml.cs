@@ -718,6 +718,11 @@ public partial class VueMapViewer : UserControl
         await EnvoyerTravelAsync(x, y);
     }
 
+    private async void BtnMapGauche_Click(object s, RoutedEventArgs e) { if (_contexte != null) await _contexte.Api.ChangerMapDirectionAsync("ouest"); }
+    private async void BtnMapDroite_Click(object s, RoutedEventArgs e) { if (_contexte != null) await _contexte.Api.ChangerMapDirectionAsync("est"); }
+    private async void BtnMapHaut_Click(object s, RoutedEventArgs e) { if (_contexte != null) await _contexte.Api.ChangerMapDirectionAsync("nord"); }
+    private async void BtnMapBas_Click(object s, RoutedEventArgs e) { if (_contexte != null) await _contexte.Api.ChangerMapDirectionAsync("sud"); }
+
     private async Task EnvoyerTravelAsync(int x, int y)
     {
         if (_contexte == null)

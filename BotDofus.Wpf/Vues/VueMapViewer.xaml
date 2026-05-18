@@ -23,6 +23,15 @@
                               ToolTip="Quand actif, clic gauche sur une cellule envoie un deplacement direct"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                    <TextBlock Text="Sortie map :" VerticalAlignment="Center" Opacity="0.75" Margin="0,0,6,0"/>
+                    <Button x:Name="BtnMapGauche" Content="◀" Width="34" Margin="0,0,3,0" Padding="0,2"
+                            ToolTip="Aller à la sortie OUEST (change de map)" Click="BtnMapGauche_Click"/>
+                    <Button x:Name="BtnMapHaut" Content="▲" Width="34" Margin="0,0,3,0" Padding="0,2"
+                            ToolTip="Aller à la sortie NORD" Click="BtnMapHaut_Click"/>
+                    <Button x:Name="BtnMapBas" Content="▼" Width="34" Margin="0,0,3,0" Padding="0,2"
+                            ToolTip="Aller à la sortie SUD" Click="BtnMapBas_Click"/>
+                    <Button x:Name="BtnMapDroite" Content="▶" Width="34" Margin="0,0,16,0" Padding="0,2"
+                            ToolTip="Aller à la sortie EST" Click="BtnMapDroite_Click"/>
                     <TextBlock Text=".travel" VerticalAlignment="Center" FontFamily="Consolas" Opacity="0.75" Margin="0,0,8,0"/>
                     <TextBox x:Name="TxtTravelX" Width="54" Margin="0,0,4,0" materialDesign:HintAssist.Hint="x"/>
                     <TextBox x:Name="TxtTravelY" Width="54" Margin="0,0,8,0" materialDesign:HintAssist.Hint="y"/>
