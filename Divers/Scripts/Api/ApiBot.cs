@@ -48,11 +48,11 @@ public sealed class ApiBot
     }
 
     /// <summary>Lie l'API à la session MITM active (appelée quand le client se connecte).</summary>
-    public void LierSession(SessionProxy session) => _session = session;
+    public void LierSession(SessionProxy session) { _session = session; SessionMorte = false; }
 
     /// <summary>Lie l'API au client AUTONOME (architecture SynFus, sans client
     /// officiel). Prioritaire sur la session MITM si présent.</summary>
-    public void LierClientAutonome(ClientAutonomeAbrak? client) => _clientAuto = client;
+    public void LierClientAutonome(ClientAutonomeAbrak? client) { _clientAuto = client; SessionMorte = false; }
 
     /// <summary>
     /// Point d'envoi UNIQUE pour TOUT paquet initié par le bot. Passe
@@ -62,16 +62,38 @@ public sealed class ApiBot
     /// détectable côté serveur. C'EST le point de furtivité de l'examen :
     /// aucune méthode ne doit envoyer au serveur en court-circuitant ceci.
     /// </summary>
+    /// <summary>true si la session/socket est morte → on n'envoie plus rien
+    /// (les boucles auto-stats/scripts s'arrêtent au lieu de crasher l'UI).</summary>
+    public bool SessionMorte { get; private set; }
+
     private async Task EnvoyerHumaniseAsync(string paquet, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(paquet)) return;
-        await Humaniseur.RespecterCadenceAsync(ct).ConfigureAwait(false);
-        // Client autonome prioritaire (route clair/chiffré '-' via whitelist).
-        if (_clientAuto is { EstConnecte: true })
-            await _clientAuto.EnvoyerAuServeurAsync(paquet, ct).ConfigureAwait(false);
-        else if (_session is not null)
-            await _session.EnvoyerAuServeurAsync(paquet, ct).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(paquet) || SessionMorte) return;
+        try
+        {
+            await Humaniseur.RespecterCadenceAsync(ct).ConfigureAwait(false);
+            // Client autonome prioritaire (route clair/chiffré '-' via whitelist).
+            if (_clientAuto is { EstConnecte: true })
+                await _clientAuto.EnvoyerAuServeurAsync(paquet, ct).ConfigureAwait(false);
+            else if (_session is not null)
+                await _session.EnvoyerAuServeurAsync(paquet, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) { /* arrêt normal */ }
+        catch (Exception ex) when (ex is ObjectDisposedException
+            or System.IO.IOException or System.Net.Sockets.SocketException
+            or InvalidOperationException)
+        {
+            // Socket fermée (déconnexion / changement de session) : on coupe
+            // proprement au lieu de laisser l'exception tuer le thread → crash UI.
+            SessionMorte = true;
+            Journaliseur.Avertir(
+                $"[RÉSEAU] envoi impossible (session fermée) : {ex.GetType().Name}. "
+                + "Les actions auto sont stoppées — relance/relie une session.");
+        }
     }
+
+    /// <summary>Réarme l'envoi quand une nouvelle session est attachée.</summary>
+    public void ReinitialiserSession() => SessionMorte = false;
 
     /// <summary>Déplace le personnage vers une carte adjacente (si une direction est donnée).</summary>
     public async Task SeDeplacerVersCarteAsync(string idCarte, string? direction, CancellationToken ct)
@@ -422,7 +444,7 @@ public sealed class ApiBot
     {
         Journaliseur.Info($"[STATS] Auto-distribution capital → {BotDofus.Divers.Jeu.Personnage.Personnage.NomsCaracteristiques.GetValueOrDefault(statId, statId.ToString())}.");
         int garde = 0;
-        while (!ct.IsCancellationRequested && _etat.Personnage.PointsCaracteristiques > 0 && garde++ < 500)
+        while (!ct.IsCancellationRequested && !SessionMorte && _etat.Personnage.PointsCaracteristiques > 0 && garde++ < 500)
         {
             await MonterCaracteristiqueAsync(statId, 1, ct).ConfigureAwait(false);
             await Task.Delay(450, ct).ConfigureAwait(false); // laisse le As revenir
@@ -436,7 +458,7 @@ public sealed class ApiBot
     {
         Journaliseur.Info($"[SORTS] Auto-montée sorts (pts {_etat.Personnage.PointsSorts}).");
         int garde = 0;
-        while (!ct.IsCancellationRequested && _etat.Personnage.PointsSorts > 0 && garde++ < 200)
+        while (!ct.IsCancellationRequested && !SessionMorte && _etat.Personnage.PointsSorts > 0 && garde++ < 200)
         {
             var sorts = _etat.Personnage.SortsAppris.Keys.ToList();
             if (sorts.Count == 0) break;
