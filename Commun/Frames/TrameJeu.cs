@@ -278,16 +278,22 @@ public sealed class TrameJeu : TrameBase
                 continue;
             }
 
-            var type = ParserInt(champs, 1);
+            // champs[1] = DIRECTION du sprite (0..7), PAS le type d'entité :
+            // l'ancien code branchait dessus → monstres face 3/4 vus comme
+            // « joueurs », et monstres face 2/5/6/7 droppés (0 branche). Le
+            // VRAI discriminant Dofus Retro = le SIGNE de l'id :
+            //   id > 0  → vrai joueur (id de compte, ex. 401855 + pseudo)
+            //   id <= 0 → sprite serveur (monstre / groupe / PNJ)
             var idEntite = ParserInt(champs, 3);
+            var champ4 = champs.ElementAtOrDefault(4) ?? string.Empty;
+            bool champ4Numerique = champ4.Length > 0
+                && champ4.All(c => char.IsDigit(c) || c == ',' || c == '-');
 
-            if (EstEntreeJoueur(type, champs))
+            // ---- Vrai joueur : id positif + pseudo (non numérique) ----
+            if (idEntite > 0 && champ4.Length > 0 && !champ4Numerique)
             {
-                var nom = champs.ElementAtOrDefault(4) ?? string.Empty;
-                var niveau = ParserNiveau(champs.ElementAtOrDefault(6));
-
-                if ((idEntite != 0 && idEntite == _etat.Personnage.Identifiant)
-                    || (!string.IsNullOrWhiteSpace(nom) && nom == _etat.Personnage.Nom))
+                if (idEntite == _etat.Personnage.Identifiant
+                    || champ4 == _etat.Personnage.Nom)
                 {
                     _etat.Personnage.CellulePosition = cellule;
                     continue;
@@ -297,26 +303,24 @@ public sealed class TrameJeu : TrameBase
                 {
                     Identifiant = idEntite,
                     CellulePosition = cellule,
-                    Nom = nom,
-                    Niveau = niveau,
+                    Nom = champ4,
+                    Niveau = ParserNiveau(champs.ElementAtOrDefault(6)),
                     Sexe = ParserInt(champs, 5)
                 };
                 continue;
             }
 
-            if (type == 1)
+            // ---- Sprite serveur (id ≤ 0) : monstre/groupe ou PNJ ----
+            // Clé unique : l'id (négatif, distinct par sprite) ; fallback cellule.
             {
-                var gabarits = champs.ElementAtOrDefault(4)?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+                var gabarits = champ4.Split(',', StringSplitOptions.RemoveEmptyEntries);
                 var idGabarit = ParserInt(gabarits.ElementAtOrDefault(0));
                 var id = idEntite != 0 ? idEntite : -Math.Abs(cellule + 1);
 
-                // Discrimination PNJ vs monstre : le « look » (champ [6] avant
-                // '^') des PNJ est ≥ 3000 (ex. Bûcheron d'Incarnam = 9035),
-                // les monstres ~1200-1700 (Larve/Champ = 1565…). Validé sur
-                // capture live. Les ids gabarit Abrak ≠ BDD standard → on tente
-                // la table NPC puis Monstre pour le nom.
+                // PNJ : le « look » (champ [6] avant '^') ≥ 3000 (ex. PNJ
+                // Incarnam 9059/9035) ; monstres ~30..1700. Validé live.
                 int look = ParserInt((champs.ElementAtOrDefault(6) ?? "").Split('^', ',')[0]);
-                if (look >= 3000)
+                if (look >= 3000 && gabarits.Length <= 1)
                 {
                     var npc = Divers.Donnees.BaseDonnees.Instance.Npc(idGabarit);
                     carte.Entites[id] = new EntitePNJ
@@ -329,10 +333,10 @@ public sealed class TrameJeu : TrameBase
                     continue;
                 }
 
-                // Le champ [6] (ex. "9035^100") est un id gfx/scale, PAS le
-                // niveau. Le niveau réel vient de la BDD par gabarit (comme le
-                // nom). Niveau de groupe = somme des niveaux (= ce qu'affiche
-                // Dofus en jeu) ; nom = liste des monstres du groupe.
+                if (gabarits.Length == 0) continue; // rien d'exploitable
+
+                // Groupe de monstres : niveau = somme (= affichage Dofus),
+                // nom = liste. champs[6] = gfx/scale, PAS le niveau.
                 int niveauGroupe = 0;
                 var noms = new System.Collections.Generic.List<string>();
                 foreach (var g in gabarits)
@@ -352,19 +356,6 @@ public sealed class TrameJeu : TrameBase
                     NiveauGroupe = niveauGroupe,
                     TailleGroupe = Math.Max(1, gabarits.Length),
                     Nom = noms.Count > 0 ? string.Join(", ", noms) : NomMonstre(idGabarit)
-                };
-                continue;
-            }
-
-            if (type == -3 || type == 2)
-            {
-                var id = idEntite != 0 ? idEntite : cellule;
-                carte.Entites[id] = new EntitePNJ
-                {
-                    Identifiant = id,
-                    CellulePosition = cellule,
-                    IdGabarit = Math.Abs(idEntite),
-                    Nom = champs.ElementAtOrDefault(4) ?? $"PNJ #{Math.Abs(idEntite)}"
                 };
             }
         }
