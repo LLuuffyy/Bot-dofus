@@ -386,7 +386,13 @@ public partial class VueMapViewer : UserControl
             // sombre) pour le relief.
             if (couleur is SolidColorBrush sc)
             {
-                const double prof = 7;   // épaisseur fixe, identique partout
+                // Le GRIS (obstacle/non-marchable) est une masse SURÉLEVÉE
+                // au-dessus du sol blanc (marche nette ≈ SynFus). Le sol garde
+                // une fine tranche. La différence de hauteur = le relief.
+                bool bloc = !cell.EstMarchable
+                            || cell.Type == TypesCellule.Obstacle
+                            || cell.Type == TypesCellule.LignDeVueSeule;
+                double prof = bloc ? 22 : 7;
 
                 var pG = new Point(cx - _largeurCellule, cy + _hauteurCellule); // gauche
                 var pB = new Point(cx, cy + _hauteurCellule * 2);               // bas
@@ -671,7 +677,7 @@ public partial class VueMapViewer : UserControl
 
         // Marchable : quasi-blanc neutre comme SynFus, très léger relief.
         var relief = Math.Clamp((int)cell.LayerNiveau, 0, 12) * 2;
-        var g = (byte)Math.Clamp(250 - relief, 234, 250);
+        var g = (byte)Math.Clamp(242 - relief, 224, 242);
         return new SolidColorBrush(Color.FromRgb(g, g, g));
     }
 
