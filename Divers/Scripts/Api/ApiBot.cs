@@ -151,7 +151,11 @@ public sealed class ApiBot
         // ça, en injection, le perso bouge côté serveur mais rien ne se
         // passe ensuite en jeu. Durée ≈ nb de cases × ~300 ms (vitesse course
         // Dofus Retro), bornée. Cf. capture live : GA001df_ → +1,0 s → GKK0.
-        int dureeMarcheMs = Math.Clamp((chemin.Count - 1) * 300, 350, 6000);
+        // Durée de marche raccourcie : le serveur a déjà traité le GA0 (perso
+        // déplacé) ; GKK0 = ack d'arrivée. ~180 ms/case, borné [250, 3000] →
+        // approche bien plus directe/snappy (demande utilisateur), sans
+        // désync (GKK0 reste après que le serveur ait bougé le perso).
+        int dureeMarcheMs = Math.Clamp((chemin.Count - 1) * 180, 250, 3000);
         await Task.Delay(dureeMarcheMs, ct).ConfigureAwait(false);
         await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
         // NE PAS écraser la position locale avec chemin[^1] : le SERVEUR fait
@@ -337,7 +341,7 @@ public sealed class ApiBot
                     + $"(perso {_etat.Personnage.CellulePosition}, dist {dist}) → approche");
 
                 await SeDeplacerVersCelluleAsync(mob.CellulePosition, ct, arreterDevant: true).ConfigureAwait(false);
-                await Task.Delay(1200, ct).ConfigureAwait(false);
+                await Task.Delay(400, ct).ConfigureAwait(false);
 
                 if (_etat.Combat.Etat == EtatCombat.Inactif)
                 {
