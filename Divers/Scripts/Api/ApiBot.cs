@@ -29,6 +29,11 @@ public sealed class ApiBot
     private SessionProxy? _session;
     private ClientAutonomeAbrak? _clientAuto;
 
+    // Garde anti-flood déplacement : un seul GA001 en vol à la fois. Sans ça,
+    // un clic-carte répété ou la boucle farm spamment 6+ GA001 en 1 s (constaté
+    // log 11:41) → le serveur clampe → désync de position → farm bloqué.
+    private readonly System.Threading.SemaphoreSlim _verrouDeplacement = new(1, 1);
+
     /// <summary>
     /// Garde anti-burst (Phase 3) : impose un espacement humain entre les paquets
     /// que le BOT envoie de son propre chef. Désactivé par défaut (mode passif).
@@ -84,6 +89,15 @@ public sealed class ApiBot
     /// </summary>
     public async Task<bool> SeDeplacerVersCelluleAsync(int celluleCible, CancellationToken ct = default, bool arreterDevant = false)
     {
+        // Anti-flood : si un déplacement est déjà en cours (marche + GKK0 pas
+        // encore terminés), on IGNORE cet appel au lieu de spammer le serveur.
+        if (!await _verrouDeplacement.WaitAsync(0, ct).ConfigureAwait(false))
+        {
+            Journaliseur.Debogue("API.SeDeplacerVersCellule : déplacement déjà en cours, ignoré.");
+            return false;
+        }
+        try
+        {
         if (_session is null && _clientAuto is not { EstEnJeu: true })
         {
             Journaliseur.Avertir("API.SeDeplacerVersCellule : pas de session active");
@@ -134,11 +148,19 @@ public sealed class ApiBot
         int dureeMarcheMs = Math.Clamp((chemin.Count - 1) * 300, 350, 6000);
         await Task.Delay(dureeMarcheMs, ct).ConfigureAwait(false);
         await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
-        // Position locale = arrivée (le GA0 serveur la confirme aussi, mais on
-        // évite que la prochaine itération du farm pathfind depuis l'ancienne).
-        _etat.Personnage.CellulePosition = chemin[^1].Identifiant;
-        Journaliseur.Info($"API.SeDeplacerVersCellule : GKK0 envoyé (marche {dureeMarcheMs} ms) → cell {chemin[^1].Identifiant}");
+        // NE PAS écraser la position locale avec chemin[^1] : le SERVEUR fait
+        // foi (GA0 → OnActionJeu met _etat.Personnage.CellulePosition à la
+        // VRAIE case d'arrivée, souvent différente du chemin demandé car le
+        // serveur clampe/tronque). L'écraser ici créait une désync (le perso
+        // se croyait sur la cellule du monstre → « aucun chemin 368→368 » →
+        // farm bloqué en boucle, cf. log 11:38-11:39). On laisse un délai
+        // pour que le GA0 arrive avant la prochaine action.
+        await Task.Delay(250, ct).ConfigureAwait(false);
+        Journaliseur.Info($"API.SeDeplacerVersCellule : GA001+GKK0 envoyés (marche {dureeMarcheMs} ms), "
+            + $"position réelle via GA0 = cell {_etat.Personnage.CellulePosition}");
         return true;
+        }
+        finally { _verrouDeplacement.Release(); }
     }
 
     /// <summary>Ouvre un dialogue avec un PNJ, puis enchaîne les réponses indiquées.</summary>
