@@ -394,13 +394,20 @@ public sealed class TrameJeu : TrameBase
         var chemin = p[3];
         if (string.IsNullOrEmpty(chemin) || chemin.Length < 2) return;
 
+        // Le chemin compressé Dofus = (dirChar + cell2chars) répété par
+        // changement de direction. La cellule d'ARRIVÉE = les 2 derniers chars.
         var hashDest = chemin.Substring(chemin.Length - 2);
         int cell = BotDofus.Utilitaires.Crypto.HashCarte.DecoderCellule(hashDest);
+        bool moi = acteurId == _etat.Personnage.Identifiant;
+        Journaliseur.Info(
+            $"[GA0] acteur #{acteurId} {(moi ? "(MOI)" : "")} chemin='{chemin}' " +
+            $"dest='{hashDest}' → cell {cell} (perso.Id={_etat.Personnage.Identifiant})");
         if (cell <= 0) return;
 
-        if (acteurId == _etat.Personnage.Identifiant)
+        if (moi)
         {
             _etat.Personnage.CellulePosition = cell;
+            _etat.CarteCourante?.SignalerRechargee();
         }
         else
         {
