@@ -36,6 +36,12 @@ public partial class VueMapViewer : UserControl
     private bool _centrageNecessaire = true;
     private int _carteCarteSuivie = -1;
     private int? _celluleSelectionnee;
+    // Auto-ajustement du zoom : tant que true, la carte entière est cadrée
+    // pour tenir dans la vue (plus besoin de dézoomer à la main). Repassé à
+    // true à chaque changement de carte et au bouton Recentrer ; désactivé
+    // dès que l'utilisateur zoome manuellement.
+    private bool _autoFit = true;
+    private bool _sizeChangedAbonne;
 
     public VueMapViewer()
     {
@@ -231,6 +237,7 @@ public partial class VueMapViewer : UserControl
         {
             _carteCarteSuivie = carte.Identifiant;
             _centrageNecessaire = true;
+            _autoFit = true; // nouvelle carte → on re-cadre tout automatiquement
             _celluleSelectionnee = _contexte.EtatJeu.Personnage.CellulePosition;
             RecalculerCadreCarte(carte);
         }
@@ -306,17 +313,60 @@ public partial class VueMapViewer : UserControl
 
     private void CentrerSiNecessaire(Carte carte)
     {
-        if (!_centrageNecessaire || ScrollerMap == null) return;
-        var cellule = _contexte?.EtatJeu.Personnage.CellulePosition is int pos ? carte.Obtenir(pos) : null;
-        if (cellule == null) return;
+        if (ScrollerMap == null) return;
 
+        // Abonnement unique : si la fenêtre est redimensionnée, on re-cadre
+        // la carte (reste « propre » sans dézoomer).
+        if (!_sizeChangedAbonne)
+        {
+            _sizeChangedAbonne = true;
+            ScrollerMap.SizeChanged += (_, __) =>
+            {
+                if (_autoFit) AjusterZoomAuto();
+            };
+        }
+
+        if (!_centrageNecessaire) return;
         _centrageNecessaire = false;
-        var (cx, cy) = ProjeterIso(cellule.X, cellule.Y);
+
+        var cellule = _contexte?.EtatJeu.Personnage.CellulePosition is int pos
+            ? carte.Obtenir(pos) : null;
+        var (cx, cy) = cellule != null ? ProjeterIso(cellule.X, cellule.Y) : (0d, 0d);
+
         Dispatcher.BeginInvoke(new Action(() =>
         {
-            ScrollerMap.ScrollToHorizontalOffset(Math.Max(0, cx * ZoomTransform.ScaleX - ScrollerMap.ViewportWidth / 2));
-            ScrollerMap.ScrollToVerticalOffset(Math.Max(0, cy * ZoomTransform.ScaleY - ScrollerMap.ViewportHeight / 2));
-        }), System.Windows.Threading.DispatcherPriority.Background);
+            // 1) Cadre toute la carte dans la vue (auto-fit), puis 2) si la
+            // carte déborde encore (zoom plancher atteint), centre sur le perso.
+            AjusterZoomAuto();
+            if (cellule != null)
+            {
+                ScrollerMap.ScrollToHorizontalOffset(
+                    Math.Max(0, cx * ZoomTransform.ScaleX - ScrollerMap.ViewportWidth / 2));
+                ScrollerMap.ScrollToVerticalOffset(
+                    Math.Max(0, cy * ZoomTransform.ScaleY - ScrollerMap.ViewportHeight / 2));
+            }
+        }), System.Windows.Threading.DispatcherPriority.Loaded);
+    }
+
+    /// <summary>
+    /// Calcule et applique le zoom qui fait tenir TOUTE la carte dans la zone
+    /// visible (≈ 97 % pour une petite marge). N'agit que si <see cref="_autoFit"/>
+    /// est actif (désactivé dès que l'utilisateur zoome manuellement).
+    /// </summary>
+    private void AjusterZoomAuto()
+    {
+        if (!_autoFit || ScrollerMap == null) return;
+        double dispoW = ScrollerMap.ViewportWidth > 10
+            ? ScrollerMap.ViewportWidth : ScrollerMap.ActualWidth;
+        double dispoH = ScrollerMap.ViewportHeight > 10
+            ? ScrollerMap.ViewportHeight : ScrollerMap.ActualHeight;
+        if (dispoW < 10 || dispoH < 10
+            || CanvasMap.Width < 1 || CanvasMap.Height < 1) return;
+
+        double scale = Math.Min(dispoW / CanvasMap.Width, dispoH / CanvasMap.Height) * 0.97;
+        scale = Math.Clamp(scale, 0.15, 1.0);
+        ZoomTransform.ScaleX = scale;
+        ZoomTransform.ScaleY = scale;
     }
 
     private void DessinerGrille(Carte carte)
@@ -852,20 +902,23 @@ public partial class VueMapViewer : UserControl
 
     private void CanvasMap_MouseWheel(object sender, MouseWheelEventArgs e)
     {
+        _autoFit = false; // zoom manuel : on respecte le choix de l'utilisateur
         double facteur = e.Delta > 0 ? 1.15 : 0.87;
-        ZoomTransform.ScaleX = Math.Clamp(ZoomTransform.ScaleX * facteur, 0.3, 4.0);
+        ZoomTransform.ScaleX = Math.Clamp(ZoomTransform.ScaleX * facteur, 0.12, 4.0);
         ZoomTransform.ScaleY = ZoomTransform.ScaleX;
     }
 
     private void BtnZoomIn_Click(object sender, RoutedEventArgs e)
     {
-        ZoomTransform.ScaleX = Math.Clamp(ZoomTransform.ScaleX * 1.2, 0.3, 4.0);
+        _autoFit = false;
+        ZoomTransform.ScaleX = Math.Clamp(ZoomTransform.ScaleX * 1.2, 0.12, 4.0);
         ZoomTransform.ScaleY = ZoomTransform.ScaleX;
     }
 
     private void BtnZoomOut_Click(object sender, RoutedEventArgs e)
     {
-        ZoomTransform.ScaleX = Math.Clamp(ZoomTransform.ScaleX / 1.2, 0.3, 4.0);
+        _autoFit = false;
+        ZoomTransform.ScaleX = Math.Clamp(ZoomTransform.ScaleX / 1.2, 0.12, 4.0);
         ZoomTransform.ScaleY = ZoomTransform.ScaleX;
     }
 
@@ -873,13 +926,12 @@ public partial class VueMapViewer : UserControl
     {
         _decalageX = 500;
         _decalageY = 60;
+        _autoFit = true; // re-cadre toute la carte automatiquement
         if (_contexte?.EtatJeu.CarteCourante is Carte carte)
         {
             RecalculerCadreCarte(carte);
             _centrageNecessaire = true;
         }
-        ZoomTransform.ScaleX = 1;
-        ZoomTransform.ScaleY = 1;
         Rafraichir();
     }
 
