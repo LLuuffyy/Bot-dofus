@@ -321,41 +321,27 @@ public sealed class ApiBot
                     continue;
                 }
 
-                // GA907 n'est accepté QUE si le perso est ADJACENT au groupe
-                // (prouvé live 11:48 : le vrai client envoie GA001 puis
-                // GA907<cell>;<id> une fois collé ; le bot spammait GA907 de
-                // loin → ignoré). On approche, on attend, on vérifie la
-                // distance RÉELLE (X/Y carte, position = serveur via GA0),
-                // puis seulement on engage. Max 4 tentatives d'approche.
-                int distance = DistanceCarte(_etat.Personnage.CellulePosition, mob.CellulePosition);
+                // Flux PROUVÉ (capture manuelle 11:48:05) : on s'approche
+                // (GA001 + GKK0, s'arrête à 1 case du groupe) PUIS on engage
+                // (GA907<cell>;<id>). La position vient du serveur (GA0) donc
+                // l'approche atteint vraiment le groupe (désync corrigée).
+                int distAvant = DistanceCarte(_etat.Personnage.CellulePosition, mob.CellulePosition);
                 Journaliseur.Info($"[FARM] cible #{mob.Identifiant} « {mob.Nom} » cell {mob.CellulePosition} "
-                    + $"(perso {_etat.Personnage.CellulePosition}, dist {distance})");
+                    + $"(perso {_etat.Personnage.CellulePosition}, dist {distAvant}) → approche");
 
-                if (distance > 2)
-                {
-                    bool ok = await SeDeplacerVersCelluleAsync(mob.CellulePosition, ct, arreterDevant: true)
-                        .ConfigureAwait(false);
-                    // laisser GA0 (position serveur) se stabiliser avant de re-jauger
-                    await Task.Delay(1200, ct).ConfigureAwait(false);
-                    distance = DistanceCarte(_etat.Personnage.CellulePosition, mob.CellulePosition);
-                    if (!ok && distance > 2)
-                    {
-                        // pas de chemin / pas rapproché → on retentera la boucle
-                        await Task.Delay(800, ct).ConfigureAwait(false);
-                        continue;
-                    }
-                }
+                await SeDeplacerVersCelluleAsync(mob.CellulePosition, ct, arreterDevant: true).ConfigureAwait(false);
+                // laisser le GA0 (position serveur réelle) se stabiliser
+                await Task.Delay(1200, ct).ConfigureAwait(false);
 
-                if (distance <= 2 && _etat.Combat.Etat == EtatCombat.Inactif)
+                if (_etat.Combat.Etat == EtatCombat.Inactif)
                 {
-                    Journaliseur.Info($"[FARM] adjacent (dist {distance}) → engage GA907");
+                    int distApres = DistanceCarte(_etat.Personnage.CellulePosition, mob.CellulePosition);
+                    Journaliseur.Info($"[FARM] après approche : perso {_etat.Personnage.CellulePosition}, "
+                        + $"dist {distApres} → engage GA907");
                     await EngagerCombatAsync(ct).ConfigureAwait(false);
-                    await Task.Delay(3500, ct).ConfigureAwait(false);
                 }
-                else
-                {
-                    await Task.Delay(800, ct).ConfigureAwait(false);
-                }
+
+                await Task.Delay(3000, ct).ConfigureAwait(false);
             }
             catch (OperationCanceledException) { break; }
             catch (Exception ex)
