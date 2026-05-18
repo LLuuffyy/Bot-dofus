@@ -116,6 +116,49 @@ public sealed class CanalAbrak
         return paquet;
     }
 
+    /// <summary>
+    /// Crackeur sens CLIENT→SERVEUR : le C→S utilise une calibration clé/
+    /// offset différente du S→C. On essaie TOUTES les clés (0..N) × plusieurs
+    /// formules d'offset et on retourne la 1re combinaison qui donne de
+    /// l'ASCII imprimable (opcode Dofus lisible). But : trouver la
+    /// calibration C→S pour pouvoir CHIFFRER nos injections (déplacement).
+    /// </summary>
+    public string? CraquerVersServeur(string paquet)
+    {
+        if (string.IsNullOrEmpty(paquet) || paquet[0] != '-' || paquet.Length < 6) return null;
+        if (_clesPreparees.Length == 0) return null;
+
+        char cks = char.ToUpperInvariant(paquet[2]);
+        int idxFrame = HexVal(paquet[1]);
+        var donnees = paquet.Substring(3).TrimEnd('\0', '\r', '\n');
+        if ((donnees.Length & 1) != 0 || donnees.Length < 2) return null;
+
+        int cksVal = HexVal(cks);
+        int[] offsets = { cksVal * 2, 0, cksVal, cksVal * 2 + 1, cksVal * 2 - 1, idxFrame * 2 };
+
+        foreach (var off in offsets)
+        {
+            if (off < 0) continue;
+            for (int k = 0; k < _clesPreparees.Length; k++)
+            {
+                var cle = _clesPreparees[k];
+                if (string.IsNullOrEmpty(cle)) continue;
+                var clair = DechiffrerHex(donnees, cle, off);
+                if (string.IsNullOrEmpty(clair)) continue;
+
+                bool printable = true;
+                foreach (var c in clair)
+                    if (c is < ' ' or > '~') { printable = false; break; }
+                if (!printable) continue;
+
+                bool cksOk = Checksum(clair) == cks;
+                return $"clé={k} (delta={k - idxFrame}) offset={off} "
+                     + $"cks={(cksOk ? "OK" : "non")} clair='{clair}'";
+            }
+        }
+        return null;
+    }
+
     private string? TenterDechiffrer(string donneesHex, int indiceCle, char checksumChar)
     {
         if (indiceCle < 0 || indiceCle >= _clesPreparees.Length) return null;

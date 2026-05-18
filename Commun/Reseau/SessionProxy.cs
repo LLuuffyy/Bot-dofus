@@ -299,6 +299,16 @@ public sealed class SessionProxy : IDisposable
                 + $"Shield(0xF9)={(shield ? "OUI" : "non")} déchiffrable={(dechiffrable ? "OUI" : "NON")} "
                 + $"tête='{tete}' queue='{queue}'"
                 + (dechiffrable ? $" → clair='{clairTest.Substring(0, Math.Min(40, clairTest.Length))}'" : ""));
+
+            // Crackeur calibration C→S : essaie toutes les clés × offsets.
+            if (!dechiffrable)
+            {
+                string? crack = null;
+                try { crack = _canalAbrak.CraquerVersServeur(brut); } catch { }
+                Journaliseur.Info(crack != null
+                    ? $"[CRACK C→S] #{_obsClientMinus} TROUVÉ → {crack}"
+                    : $"[CRACK C→S] #{_obsClientMinus} aucune clé/offset ne donne d'ASCII (chiffre C→S ≠ S→C ?)");
+            }
         }
 
         if (brut.Length > 2 && brut[0] == '-' && _canalAbrak.PretAuDechiffrement)
