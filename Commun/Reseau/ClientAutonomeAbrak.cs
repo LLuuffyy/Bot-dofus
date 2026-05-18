@@ -104,13 +104,40 @@ public sealed class ClientAutonomeAbrak : IDisposable
         return sb.ToString();
     }
 
+    /// <summary>
+    /// Crée un socket dont le PORT SOURCE est le port-marqueur (50303 auth /
+    /// 50304 jeu). Le filtre WinDivert exclut <c>tcp.SrcPort == marqueur</c>
+    /// ⇒ notre connexion N'EST PAS redirigée vers notre propre proxy : on
+    /// parle DIRECT au vrai serveur. Si le port est déjà pris (proxy actif
+    /// via « Lancer jeu »), fallback sans bind (on passe alors par le proxy,
+    /// ce qui marche aussi en relais transparent).
+    /// </summary>
+    private TcpClient CreerSocketMarque(int portMarqueur)
+    {
+        var s = new TcpClient();
+        try
+        {
+            s.Client.SetSocketOption(System.Net.Sockets.SocketOptionLevel.Socket,
+                System.Net.Sockets.SocketOptionName.ReuseAddress, true);
+            s.Client.Bind(new System.Net.IPEndPoint(
+                System.Net.IPAddress.Any, portMarqueur));
+            Etat?.Invoke($"[AUTO] Socket lié au port-marqueur {portMarqueur} (connexion DIRECTE, sans proxy).");
+        }
+        catch (Exception ex)
+        {
+            Etat?.Invoke($"[AUTO] Port-marqueur {portMarqueur} indispo ({ex.Message}) → via proxy (OK aussi).");
+            s = new TcpClient();
+        }
+        return s;
+    }
+
     /// <summary>Démarre l'auth puis la boucle de réception (tâche de fond).</summary>
     public async Task DemarrerAsync()
     {
         try
         {
             Etat?.Invoke($"[AUTO] Connexion auth {_hote}:{_portAuth}…");
-            _socket = new TcpClient();
+            _socket = CreerSocketMarque(50303);
             await _socket.ConnectAsync(_hote, _portAuth).ConfigureAwait(false);
             _flux = _socket.GetStream();
             Etat?.Invoke("[AUTO] Socket auth établi — attente HC…");
@@ -294,7 +321,7 @@ public sealed class ClientAutonomeAbrak : IDisposable
             _phaseJeu = true;
 
             Etat?.Invoke($"[AUTO] Connexion jeu {_hote}:{_portJeu}…");
-            _socket = new TcpClient();
+            _socket = CreerSocketMarque(50304);
             await _socket.ConnectAsync(_hote, _portJeu).ConfigureAwait(false);
             _flux = _socket.GetStream();
             await EnvoyerClairAsync("AT" + _gameTicket).ConfigureAwait(false);
