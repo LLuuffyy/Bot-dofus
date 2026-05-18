@@ -327,27 +327,32 @@ public sealed class ApiBot
                     continue;
                 }
 
-                // Flux PROUVÉ (capture manuelle 11:48:05) : on s'approche
-                // (GA001 + GKK0, s'arrête à 1 case du groupe) PUIS on engage
-                // (GA907<cell>;<id>). La position vient du serveur (GA0) donc
-                // l'approche atteint vraiment le groupe (désync corrigée).
-                int distAvant = DistanceCarte(_etat.Personnage.CellulePosition, mob.CellulePosition);
+                // === MODE B : GA907 DIRECT (sans approche A*) ===
+                // Notre pathfinder encode des directions fausses (formule
+                // coords Dofus à corriger) → l'approche GA001 est rejetée.
+                // En Dofus Retro, cliquer un groupe fait que le SERVEUR
+                // marche le perso jusqu'au groupe et lance le combat. On
+                // envoie donc GA907<cell>;<id> directement et on laisse le
+                // serveur gérer l'approche. Si combat lancé → l'auto-combat
+                // (mode autonome) ou le joueur (MITM) prend le relais.
+                int dist = DistanceCarte(_etat.Personnage.CellulePosition, mob.CellulePosition);
                 Journaliseur.Info($"[FARM] cible #{mob.Identifiant} « {mob.Nom} » cell {mob.CellulePosition} "
-                    + $"(perso {_etat.Personnage.CellulePosition}, dist {distAvant}) → approche");
+                    + $"(perso {_etat.Personnage.CellulePosition}, dist {dist}) → GA907 direct");
 
-                await SeDeplacerVersCelluleAsync(mob.CellulePosition, ct, arreterDevant: true).ConfigureAwait(false);
-                // laisser le GA0 (position serveur réelle) se stabiliser
-                await Task.Delay(1200, ct).ConfigureAwait(false);
+                await EngagerCombatAsync(ct).ConfigureAwait(false);
+                // Laisse au serveur le temps de (faire) marcher + lancer le
+                // combat. On re-vérifie : si toujours pas en combat, on
+                // retentera au tour de boucle suivant (le serveur a parfois
+                // besoin de 2 envois selon la distance).
+                await Task.Delay(4000, ct).ConfigureAwait(false);
 
                 if (_etat.Combat.Etat == EtatCombat.Inactif)
                 {
-                    int distApres = DistanceCarte(_etat.Personnage.CellulePosition, mob.CellulePosition);
-                    Journaliseur.Info($"[FARM] après approche : perso {_etat.Personnage.CellulePosition}, "
-                        + $"dist {distApres} → engage GA907");
+                    // 2e tentative rapprochée (le 1er GA907 a pu lancer la
+                    // marche serveur ; le 2e engage une fois à portée).
                     await EngagerCombatAsync(ct).ConfigureAwait(false);
+                    await Task.Delay(4000, ct).ConfigureAwait(false);
                 }
-
-                await Task.Delay(3000, ct).ConfigureAwait(false);
             }
             catch (OperationCanceledException) { break; }
             catch (Exception ex)

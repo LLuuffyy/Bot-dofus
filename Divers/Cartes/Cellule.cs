@@ -90,14 +90,29 @@ public sealed class Cellule
     /// </summary>
     public char DirectionVers(Cellule voisine)
     {
-        if (X == voisine.X)
-            return voisine.Y < Y ? (char)('a' + 3) : (char)('a' + 7);
-        if (Y == voisine.Y)
-            return voisine.X < X ? (char)('a' + 1) : (char)('a' + 5);
-        if (X > voisine.X)
-            return Y > voisine.Y ? (char)('a' + 2) : (char)('a' + 0);
-        // X < voisine.X
-        return Y < voisine.Y ? (char)('a' + 6) : (char)('a' + 4);
+        // Mapping (signe Δx, signe Δy) → direction Dofus 0..7, DÉRIVÉ et
+        // VÉRIFIÉ sur 5 segments de déplacements RÉELS du vrai client
+        // (paquets GA001 capturés déchiffrés). Coordonnées via
+        // CalculerCoordonnees(Largeur=15) — déjà correctes ; c'est ce
+        // mapping qui était faux (dir3/7 et 0/4 inversés) → le serveur
+        // rejetait tous les GA001 injectés. Opposés = +4 & vecteur négatif.
+        //   (0,-1)=7  (1,-1)=0  (1,0)=1  (1,1)=2
+        //   (0, 1)=3  (-1,1)=4  (-1,0)=5 (-1,-1)=6
+        int dx = Math.Sign(voisine.X - X);
+        int dy = Math.Sign(voisine.Y - Y);
+        int dir = (dx, dy) switch
+        {
+            (0, -1) => 7,
+            (1, -1) => 0,
+            (1, 0) => 1,
+            (1, 1) => 2,
+            (0, 1) => 3,
+            (-1, 1) => 4,
+            (-1, 0) => 5,
+            (-1, -1) => 6,
+            _ => 0
+        };
+        return (char)('a' + dir);
     }
 
     /// <summary>True si la cellule est un pad de téléport (changement de map).</summary>
