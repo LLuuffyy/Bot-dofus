@@ -46,6 +46,8 @@ public sealed class SessionProxy : IDisposable
     // (octet 0xF9 = 'ù') autour du payload ? On loggue les N premiers.
     private int _obsClientMinus;
     private const int ObsClientMinusMax = 12;
+    private int _obsBrutCs;
+    private const int ObsBrutCsMax = 30;
 
     public event EventHandler<EvenementPaquetRecu>? PaquetRecu;
     public event EventHandler? SessionTerminee;
@@ -213,6 +215,28 @@ public sealed class SessionProxy : IDisposable
 
     private string? TraiterPaquet(string brut, DirectionPaquet direction)
     {
+        // === Tâche #6 : trace BRUTE de TOUT paquet C→S (30 premiers) ===
+        // Décisif : que voit-on quand le client bouge ? un '-' ? du binaire
+        // Shield (0xF9) ? rien (paquet hors-proxy) ? Ça tranche la faisabilité
+        // de l'injection de déplacement.
+        if (direction == DirectionPaquet.VersServeur
+            && _obsBrutCs < ObsBrutCsMax
+            && !string.IsNullOrEmpty(brut))
+        {
+            _obsBrutCs++;
+            int b0 = brut[0];
+            bool f9 = brut.IndexOf('ù') >= 0;
+            bool ascii = true;
+            foreach (var c in brut) if (c < 32 || c > 126) { ascii = false; break; }
+            string ap = brut.Length <= 24 ? brut : brut.Substring(0, 24);
+            // échappe le non-imprimable pour la lisibilité console
+            var sb = new StringBuilder();
+            foreach (var c in ap) sb.Append(c is >= ' ' and <= '~' ? c : '·');
+            Journaliseur.Info(
+                $"[OBS-BRUT C→S] #{_obsBrutCs} len={brut.Length} b0=0x{b0:X2}'{(b0 is >= 32 and <= 126 ? (char)b0 : '·')}' "
+                + $"ascii={(ascii ? "OUI" : "non")} Shield0xF9={(f9 ? "OUI" : "non")} aperçu='{sb}'");
+        }
+
         if (direction == DirectionPaquet.VersServeur
             && brut.StartsWith("<policy-file-request", StringComparison.Ordinal))
         {
