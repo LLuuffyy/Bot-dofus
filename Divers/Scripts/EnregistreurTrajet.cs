@@ -29,12 +29,14 @@ public sealed class EnregistreurTrajet
     private readonly List<Ligne> _lignes = new();
     public bool EnCours { get; private set; }
     public int NbLignes => _lignes.Count;
+    private string _nom = "trajet";
 
-    public void Demarrer()
+    public void Demarrer(string nom)
     {
         _lignes.Clear();
+        _nom = string.IsNullOrWhiteSpace(nom) ? "trajet" : nom.Trim();
         EnCours = true;
-        Journaliseur.Info("[ROADREC] Enregistrement DÉMARRÉ — configure chaque carte.");
+        Journaliseur.Info($"[ROADREC] Enregistrement DÉMARRÉ « {_nom} » — configure chaque carte.");
     }
 
     public void AjouterLigne(Ligne l)

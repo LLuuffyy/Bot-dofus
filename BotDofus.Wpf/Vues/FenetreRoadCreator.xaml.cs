@@ -23,6 +23,10 @@ public partial class FenetreRoadCreator : Window
     public FenetreRoadCreator()
     {
         InitializeComponent();
+        // Fenêtre sans chrome → déplaçable en glissant n'importe où.
+        MouseLeftButtonDown += (_, e) =>
+        { if (e.ButtonState == System.Windows.Input.MouseButtonState.Pressed)
+            try { DragMove(); } catch { } };
     }
 
     /// <summary>Prépare la fenêtre pour une nouvelle carte.</summary>
@@ -33,12 +37,20 @@ public partial class FenetreRoadCreator : Window
         TxtTitre.Text = $"Map [{coords}] — ID: {mapId}";
         ChkCombat.IsChecked = false;
         ChkRecolte.IsChecked = false;
+        ChkDonjon.IsChecked = false;
+        ChkBoss.IsChecked = false;
         TxtCellule.Text = "";
         TxtNpc.Text = "";
         TxtAnswers.Text = "";
         if (!IsVisible) Show();
         Activate();
     }
+
+    /// <summary>Met à jour le compteur de waypoints affiché.</summary>
+    public void MajCompteur(int n)
+        => TxtCompteur.Text = $"● REC — {n} waypoint{(n > 1 ? "s" : "")}";
+
+    private void BtnFermer_Click(object sender, RoutedEventArgs e) => Hide();
 
     private void Dir_Click(object sender, RoutedEventArgs e)
     {

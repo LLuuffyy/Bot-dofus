@@ -377,7 +377,7 @@ public partial class VueMapViewer : UserControl
             if (cell == null) continue;
             var (cx, cy) = ProjeterIso(cell.X, cell.Y);
 
-            var poly = CreerPolygoneCellule(cell, CouleurCellule(cell), 0.5);
+            var poly = CreerPolygoneCellule(cell, CouleurCellule(cell), 0.8);
             if (_celluleSelectionnee == cell.Identifiant)
             {
                 poly.Stroke = new SolidColorBrush(Color.FromRgb(0x6C, 0x76, 0xFF));
@@ -477,7 +477,7 @@ public partial class VueMapViewer : UserControl
                 new Point(cx - _largeurCellule, cy + _hauteurCellule),
             },
             Fill = fill,
-            Stroke = new SolidColorBrush(Color.FromRgb(0xC6, 0xC8, 0xCC)),
+            Stroke = new SolidColorBrush(Color.FromRgb(0x9A, 0xA0, 0xA8)),
             StrokeThickness = strokeThickness,
             Tag = cell,
             Cursor = Cursors.Hand,
@@ -615,10 +615,11 @@ public partial class VueMapViewer : UserControl
         if (cell.Type == TypesCellule.LignDeVueSeule) return new SolidColorBrush(Color.FromRgb(0xC6, 0xCA, 0xD0));
         if (!cell.EstMarchable) return new SolidColorBrush(Color.FromRgb(0x3C, 0x42, 0x4B));
 
-        // Marchable : blanc cassé, très léger relief selon l'altitude.
-        var relief = Math.Clamp((int)cell.LayerNiveau, 0, 12) * 2;
-        var g = (byte)Math.Clamp(246 - relief, 226, 248);
-        return new SolidColorBrush(Color.FromRgb(g, g, (byte)Math.Clamp(g - 2, 224, 246)));
+        // Marchable : gris très clair uni (lisible avec la grille foncée),
+        // léger assombrissement selon l'altitude pour donner du relief.
+        var relief = Math.Clamp((int)cell.LayerNiveau, 0, 12) * 3;
+        var g = (byte)Math.Clamp(236 - relief, 205, 238);
+        return new SolidColorBrush(Color.FromRgb(g, g, (byte)Math.Clamp(g + 2, 205, 240)));
     }
 
     private void Poly_MouseEnter(object sender, MouseEventArgs e)
@@ -650,8 +651,8 @@ public partial class VueMapViewer : UserControl
     {
         if (sender is Polygon poly)
         {
-            poly.Stroke = new SolidColorBrush(Color.FromRgb(0xC6, 0xC8, 0xCC));
-            poly.StrokeThickness = 0.5;
+            poly.Stroke = new SolidColorBrush(Color.FromRgb(0x9A, 0xA0, 0xA8));
+            poly.StrokeThickness = 0.8;
         }
         _celluleHover = null;
         TooltipBorder.Visibility = Visibility.Collapsed;
@@ -930,6 +931,40 @@ public partial class VueMapViewer : UserControl
         return (id, m != null ? $"{m.X},{m.Y}" : id.ToString());
     }
 
+    /// <summary>Petite boîte de saisie texte modale (nom de script…).</summary>
+    private string? PromptTexte(string titre, string label, string defaut)
+    {
+        var win = new Window
+        {
+            Title = titre, Width = 380, SizeToContent = SizeToContent.Height,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Owner = Window.GetWindow(this), ResizeMode = ResizeMode.NoResize,
+            Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x1E))
+        };
+        var sp = new StackPanel { Margin = new Thickness(16) };
+        sp.Children.Add(new TextBlock
+        {
+            Text = label, Foreground = Brushes.White, Margin = new Thickness(0, 0, 0, 8)
+        });
+        var tb = new TextBox { Text = defaut };
+        tb.SelectAll();
+        sp.Children.Add(tb);
+        var dp = new DockPanel { Margin = new Thickness(0, 12, 0, 0) };
+        var ok = new Button { Content = "OK", Width = 80, IsDefault = true };
+        var cancel = new Button { Content = "Annuler", Width = 80, Margin = new Thickness(8, 0, 0, 0), IsCancel = true };
+        string? res = null;
+        ok.Click += (_, __) => { res = tb.Text; win.DialogResult = true; };
+        cancel.Click += (_, __) => win.DialogResult = false;
+        var btns = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
+        btns.Children.Add(ok); btns.Children.Add(cancel);
+        DockPanel.SetDock(btns, Dock.Right);
+        dp.Children.Add(btns);
+        sp.Children.Add(dp);
+        win.Content = sp;
+        tb.Focus();
+        return win.ShowDialog() == true ? res : null;
+    }
+
     private void BtnRecTrajet_Click(object sender, RoutedEventArgs e)
     {
         if (_contexte == null)
@@ -940,12 +975,19 @@ public partial class VueMapViewer : UserControl
         }
         if (!_recTrajet.EnCours)
         {
-            _recTrajet.Demarrer();
-            BtnRecTrajet.Content = "■ STOP trajet";
+            var nom = PromptTexte("Road Creator — nom du script",
+                "Nom du trajet (fichier .lua) :", $"trajet_{DateTime.Now:yyyyMMdd_HHmm}");
+            if (string.IsNullOrWhiteSpace(nom)) return; // annulé
+            _recTrajet.Demarrer(nom);
+            BtnRecTrajet.Content = "■ STOP Road Creator";
             BtnRecTrajet.Foreground = new SolidColorBrush(Color.FromRgb(0x4C, 0xC2, 0x7A));
 
             _roadFenetre = new FenetreRoadCreator { Owner = Window.GetWindow(this) };
-            _roadFenetre.Validee += (_, ligne) => _recTrajet.AjouterLigne(ligne);
+            _roadFenetre.Validee += (_, ligne) =>
+            {
+                _recTrajet.AjouterLigne(ligne);
+                _roadFenetre?.MajCompteur(_recTrajet.NbLignes);
+            };
             var (id, co) = MapCourante();
             _roadFenetre.Preparer(id, co);
 
@@ -967,7 +1009,7 @@ public partial class VueMapViewer : UserControl
             _roadFenetre = null;
 
             var chemin = _recTrajet.Arreter();
-            BtnRecTrajet.Content = "● REC trajet";
+            BtnRecTrajet.Content = "🛣 Road Creator";
             BtnRecTrajet.Foreground = new SolidColorBrush(Color.FromRgb(0xE0, 0x50, 0x50));
             MessageBox.Show(
                 chemin != null
