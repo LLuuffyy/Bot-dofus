@@ -193,6 +193,20 @@ public sealed class ApiBot
         {
             try
             {
+                // GATE : ne rien faire tant que le client autonome n'est pas
+                // réellement EN JEU (sinon on agit sur des données périmées /
+                // un socket fermé → spam d'erreurs, cf. test 09:05).
+                if (_clientAuto is { EstEnJeu: true } || _session is not null)
+                {
+                    // ok : soit client autonome en jeu, soit mode MITM
+                }
+                else
+                {
+                    Journaliseur.Info("[FARM] en attente : client autonome pas encore EN JEU…");
+                    await Task.Delay(3000, ct).ConfigureAwait(false);
+                    continue;
+                }
+
                 if (_etat.Combat.Etat != EtatCombat.Inactif)
                 {
                     await Task.Delay(2000, ct).ConfigureAwait(false);
