@@ -176,6 +176,31 @@ public partial class VueMapViewer : UserControl
                         DialogueReponses.Children.Add(btn);
                     }
                 }
+
+                // Aucune réponse → message TERMINAL : un seul bouton clair
+                // « Terminer » qui ferme proprement le dialogue (DV), comme le
+                // vrai client (capture : DQ32256 sans réponses → C→S DV).
+                if (DialogueReponses.Children.Count == 0)
+                {
+                    var fin = new System.Windows.Controls.Button
+                    {
+                        Content = "Terminer ▸",
+                        Margin = new Thickness(0, 4, 0, 0),
+                        Padding = new Thickness(10, 6, 10, 6),
+                        FontWeight = System.Windows.FontWeights.SemiBold,
+                        Background = new SolidColorBrush(Color.FromRgb(0x2D, 0x4A, 0x33)),
+                        Foreground = new SolidColorBrush(Color.FromRgb(0x8F, 0xE0, 0xA6)),
+                        HorizontalAlignment = System.Windows.HorizontalAlignment.Right
+                    };
+                    fin.Click += async (_, __) =>
+                    {
+                        PanneauDialogue.Visibility = Visibility.Collapsed;
+                        _dialogueQuestionId = 0;
+                        _dernierDialogue = "";
+                        if (_contexte != null) await _contexte.Api.QuitterDialogueAsync();
+                    };
+                    DialogueReponses.Children.Add(fin);
+                }
                 BotDofus.Utilitaires.Journaux.Journaliseur.Info(
                     $"[DIALOGUE] PNJ #{_dialoguePnjId} q={qid} brut='{contenu}'");
                 PanneauDialogue.Visibility = Visibility.Visible;
