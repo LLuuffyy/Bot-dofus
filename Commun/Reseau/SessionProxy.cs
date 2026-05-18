@@ -34,6 +34,9 @@ public sealed class SessionProxy : IDisposable
     private readonly StringBuilder _tamponVersServeur = new();
     private readonly HystoriaCipher _cipherVersServeur = new();
     private readonly HystoriaCipher _cipherVersClient = new();
+    // Canal chiffré Abrak v1.48 (paquets « - ») — déchiffrement lecture seule
+    // pour que les parsers voient enfin entités/positions overworld.
+    private readonly BotDofus.Utilitaires.Crypto.CanalAbrak _canalAbrak = new();
     private readonly object _verrouChiffrement = new();
     private EtatChiffrement _etatChiffrement = EtatChiffrement.Inactif;
 
@@ -200,6 +203,39 @@ public sealed class SessionProxy : IDisposable
             Journaliseur.Info("[POLICY] Requete Flash policy-file-request recue, reponse locale.");
             _ = _coteClient.GetStream().WriteAsync(EncoderPaquet(PolicyResponse), _annulation.Token).AsTask();
             return null;
+        }
+
+        // === Abrak v1.48 : clés réseau (AK) + canal chiffré « - » ===
+        // On capture les clés AK, et on déchiffre les paquets « - » UNIQUEMENT
+        // pour l'observation/parsing : on relaie TOUJOURS l'original chiffré
+        // intact au destinataire (intégrité MITM). Déverrouille les entités/
+        // positions overworld qui transitent chiffrées.
+        if (direction == DirectionPaquet.VersClient
+            && brut.StartsWith("AK", StringComparison.Ordinal) && brut.Length > 6
+            && brut.IndexOf('|') > 0)
+        {
+            try { _canalAbrak.EnregistrerDepuisAK(brut); } catch (Exception ex)
+            { Journaliseur.Avertir($"[CRYPT] AK : {ex.Message}"); }
+            // continue le traitement normal (AK est relayé/loggué via la suite)
+        }
+
+        if (brut.Length > 2 && brut[0] == '-' && _canalAbrak.PretAuDechiffrement)
+        {
+            string clairAbrak;
+            try { clairAbrak = _canalAbrak.Dechiffrer(brut); }
+            catch { clairAbrak = brut; }
+
+            if (clairAbrak != brut && clairAbrak.Length > 0)
+            {
+                // Le clair peut contenir plusieurs messages (séparateur \n).
+                foreach (var sous in clairAbrak.Split('\n'))
+                {
+                    var p = sous.Trim('\r', '\0');
+                    if (p.Length >= 2) EmettrePaquet(p, direction);
+                }
+            }
+            // Relais inchangé : le vrai client/serveur reçoit l'original chiffré.
+            return brut;
         }
 
         if (direction == DirectionPaquet.VersServeur
