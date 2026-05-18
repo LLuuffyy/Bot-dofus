@@ -47,8 +47,12 @@
                     </StackPanel>
                 </Border>
 
-                <TextBlock Text="Cellule de sortie (optionnel)" Foreground="#FF8C95A3"
-                           Margin="2,12,0,3" FontSize="11"/>
+                <TextBlock Text="Cellule de sortie (optionnel — PAS pour changer de map)"
+                           Foreground="#FF8C95A3" Margin="2,12,0,3" FontSize="11"
+                           TextWrapping="Wrap"/>
+                <TextBlock Text="↳ se déplacer sur cette case (récolte/PNJ). Pour CHANGER de carte, utilise une direction ci-dessous."
+                           Foreground="#FF6F7B8A" Margin="2,0,0,3" FontSize="10"
+                           TextWrapping="Wrap" FontStyle="Italic"/>
                 <TextBox x:Name="TxtCellule" Background="#FF2A313B" Foreground="White"
                          BorderBrush="#FF3A4452" Padding="6,4"/>
 

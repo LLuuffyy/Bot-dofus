@@ -293,6 +293,19 @@ public sealed class MoteurLuaInteractif : IDisposable
             int avant = anka.Map.currentMapId();
             AppliquerPath(path, rnd, ct);
             AttendreChangementCarte(avant, ct);
+            // Si la carte n'a PAS changé alors qu'on attendait une sortie :
+            // la « cellule de sortie » choisie n'est pas une vraie cellule de
+            // transition (= bord de map). On le dit clairement et on temporise
+            // pour ne pas boucler frénétiquement sur la même case.
+            if (anka.Map.currentMapId() == avant)
+            {
+                Journaliseur.Avertir(
+                    $"[ANKA] carte {avant} inchangée après path='{path}'. "
+                    + "Cette cellule n'est pas une sortie (transition). "
+                    + "Pour changer de carte utilise une DIRECTION "
+                    + "(top/bottom/left/right) plutôt qu'un n° de cellule.");
+                Pause(2500, ct);
+            }
         }
         else Pause(800, ct);
     }
