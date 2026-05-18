@@ -263,11 +263,15 @@ public sealed class MoteurLuaInteractif : IDisposable
                     if (ct.IsCancellationRequested) return;
                     if (ap.Value.Type != DataType.Number) continue;
                     int rep = (int)ap.Value.Number;
-                    // -1 = première réponse disponible (convention SynFus)
-                    if (rep == -1)
+                    // Convention AnkaBot/SynFus : un nombre NÉGATIF = la N-ième
+                    // réponse proposée (-1 = 1ère, -2 = 2ème, …). Un nombre
+                    // positif = un replyId brut (compat ascendante).
+                    if (rep < 0)
                     {
+                        int n = -rep;                       // -1→1, -2→2 …
                         var ids = anka.Npc.getRepliesId();
-                        if (ids.Length > 0) rep = (int)ids.Get(1).Number;
+                        if (ids.Length >= n) rep = (int)ids.Get(n).Number;
+                        else if (ids.Length > 0) rep = (int)ids.Get(1).Number;
                         else { anka.Npc.leave(); break; }
                     }
                     anka.Npc.reply(rep);

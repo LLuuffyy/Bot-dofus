@@ -121,12 +121,15 @@ public partial class FenetreRoadCreator : Window
         var bdd = BaseDonnees.Instance;
         TxtDlgQuestion.Text = bdd.DialogueQ(d.QuestionId) ?? $"(dialogue #{d.QuestionId})";
         DlgReponses.Children.Clear();
-        foreach (var rid in d.Reponses)
+        for (int i = 0; i < d.Reponses.Count; i++)
         {
+            var rid = d.Reponses[i];
+            int position = i + 1;             // 1ère, 2ème, … réponse proposée
+            int code = -position;             // AnkaBot : -1, -2, -3 …
             var libelle = bdd.DialogueA(rid) ?? $"Réponse #{rid}";
             var btn = new Button
             {
-                Content = libelle,
+                Content = $"[{code}] {libelle}",
                 Margin = new Thickness(0, 2, 0, 2),
                 Padding = new Thickness(8, 4, 8, 4),
                 HorizontalContentAlignment = HorizontalAlignment.Left,
@@ -140,7 +143,8 @@ public partial class FenetreRoadCreator : Window
             {
                 if (_ctx == null) return;
                 int q = _ctx.EtatJeu.Dialogue.QuestionId;
-                _reponses.Add(rid);
+                // On enregistre la POSITION (AnkaBot : -1/-2/…), pas l'id brut.
+                _reponses.Add(code);
                 TxtDlgEnregistre.Text = "Réponses enregistrées : "
                     + string.Join(", ", _reponses);
                 await _ctx.Api.RepondreDialogueAsync(q, rid);
