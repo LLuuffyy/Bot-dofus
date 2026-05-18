@@ -64,6 +64,7 @@ public partial class VueMapViewer : UserControl
         // pour rafraîchir la grille PENDANT le combat — les positions des
         // combattants Abrak arrivent par GTM (préfixe "GT", PAS "GM").
         if (!contenu.StartsWith("GM", StringComparison.Ordinal)
+            && !contenu.StartsWith("GA", StringComparison.Ordinal)
             && !contenu.StartsWith("GT", StringComparison.Ordinal)
             && !contenu.StartsWith("GDM", StringComparison.Ordinal)
             && !contenu.StartsWith("GDK", StringComparison.Ordinal)

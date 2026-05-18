@@ -32,8 +32,34 @@ public partial class VueDashboard : UserControl
 
     private void TxtLogs_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
     {
-        // Roulette = interaction utilisateur : on décoche auto-scroll pour pas snapper en bas.
-        if (ChkAutoScrollConsole != null) ChkAutoScrollConsole.IsChecked = false;
+        // La molette doit VRAIMENT scroller (le TextBox readonly imbriqué ne le
+        // faisait pas — un parent captait l'event). On scrolle le ScrollViewer
+        // interne nous-mêmes, on coupe l'auto-scroll si on remonte, et on le
+        // réactive automatiquement dès qu'on revient en bas.
+        var sv = TrouverScrollViewer(TxtLogs);
+        if (sv == null) return;
+
+        sv.ScrollToVerticalOffset(sv.VerticalOffset - e.Delta);  // delta>0 = molette vers le haut
+        e.Handled = true;
+
+        if (ChkAutoScrollConsole != null)
+        {
+            bool enBas = sv.VerticalOffset >= sv.ScrollableHeight - 2;
+            ChkAutoScrollConsole.IsChecked = enBas; // suit le texte seulement collé en bas
+        }
+    }
+
+    private static System.Windows.Controls.ScrollViewer? TrouverScrollViewer(System.Windows.DependencyObject? racine)
+    {
+        if (racine == null) return null;
+        if (racine is System.Windows.Controls.ScrollViewer sv) return sv;
+        int n = System.Windows.Media.VisualTreeHelper.GetChildrenCount(racine);
+        for (int i = 0; i < n; i++)
+        {
+            var r = TrouverScrollViewer(System.Windows.Media.VisualTreeHelper.GetChild(racine, i));
+            if (r != null) return r;
+        }
+        return null;
     }
 
     public void Lier(ContexteCompte contexte)

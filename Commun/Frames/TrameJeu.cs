@@ -52,6 +52,7 @@ public sealed class TrameJeu : TrameBase
         Ecouter<MessageObjetQuantite>(OnObjetQuantite);
         Ecouter<MessageObjetPoids>(msg => _etat.Personnage.ActualiserPoids(msg.PoidsActuel, msg.PoidsMax));
         Ecouter<MessageMouvementCarte>(OnMouvementCarte);
+        Ecouter<MessageActionJeu>(OnActionJeu);
         Ecouter<MessagePositionsCombat>(OnPositionsCombat);
         Ecouter<MessageChatMessage>(OnChatMessage);
         Ecouter<MessageChatServeur>(msg => Journaliseur.Info($"[SERVEUR] {msg.Texte}"));
@@ -374,6 +375,42 @@ public sealed class TrameJeu : TrameBase
         Journaliseur.Info(
             $"[ENT] carte #{carte.Identifiant} → {carte.Entites.Count} entité(s) " +
             $"(J={nbJ} M={nbM} P={nbP}), perso cell={_etat.Personnage.CellulePosition?.ToString() ?? "?"}");
+    }
+
+    /// <summary>
+    /// GA0/GA1 : déplacement d'un acteur (serveur → client, déchiffré).
+    /// Format : <c>GA&lt;type&gt;;&lt;?&gt;;&lt;acteurId&gt;;&lt;cheminCompressé&gt;</c>
+    /// (ex. <c>GA0;1;401770;aeEhdy</c>). La cellule destination = les 2 derniers
+    /// caractères du chemin (hash cellule). Met à jour la position perso/entité
+    /// EN LIVE (avant ce handler, la position ne bougeait qu'au changement de map).
+    /// </summary>
+    private void OnActionJeu(MessageActionJeu msg)
+    {
+        var p = (msg.Charge ?? string.Empty).Split(';');
+        // Seulement les déplacements : type 0/1, acteur numérique, chemin présent.
+        if (p.Length < 4) return;
+        if (p[0] != "0" && p[0] != "1") return;
+        if (!int.TryParse(p[2], out var acteurId)) return;
+        var chemin = p[3];
+        if (string.IsNullOrEmpty(chemin) || chemin.Length < 2) return;
+
+        var hashDest = chemin.Substring(chemin.Length - 2);
+        int cell = BotDofus.Utilitaires.Crypto.HashCarte.DecoderCellule(hashDest);
+        if (cell <= 0) return;
+
+        if (acteurId == _etat.Personnage.Identifiant)
+        {
+            _etat.Personnage.CellulePosition = cell;
+        }
+        else
+        {
+            var carte = _etat.CarteCourante;
+            if (carte != null && carte.Entites.TryGetValue(acteurId, out var ent))
+            {
+                ent.CellulePosition = cell;
+                carte.SignalerRechargee();
+            }
+        }
     }
 
     private void OnInfoMessage(MessageInfoMessage msg)
