@@ -965,6 +965,56 @@ public partial class VueMapViewer : UserControl
         return win.ShowDialog() == true ? res : null;
     }
 
+    /// <summary>
+    /// Exécute la ligne validée dans le Road Creator : le bot enchaîne
+    /// combat → récolte → PNJ → sortie (cellule ou direction) tout seul.
+    /// Ainsi pas besoin de refaire l'action manuellement après l'avoir cochée.
+    /// </summary>
+    private async System.Threading.Tasks.Task ExecuterLigneRoadCreator(
+        BotDofus.Divers.Scripts.EnregistreurTrajet.Ligne l)
+    {
+        if (_contexte == null) return;
+        var api = _contexte.Api;
+        var ct = System.Threading.CancellationToken.None;
+        try
+        {
+            if (l.Fight)
+            {
+                await api.EngagerCombatAsync(ct);
+                // attend la fin du combat (max ~3 min)
+                for (int i = 0; i < 360
+                     && _contexte.EtatJeu.Combat.Etat
+                        != BotDofus.Divers.Combats.Enums.EtatCombat.Inactif; i++)
+                    await System.Threading.Tasks.Task.Delay(500);
+            }
+            if (l.Gather) await api.RecolterToutAsync(ct);
+            if (l.Npc > 0)
+            {
+                await api.ParlerPnjAsync(0, l.Npc, ct);
+                await System.Threading.Tasks.Task.Delay(800);
+                foreach (var r in l.Answers)
+                    await api.RepondreDialogueAsync(
+                        _contexte.EtatJeu.Dialogue.QuestionId, r, ct);
+            }
+            if (l.Cellule > 0)
+                await api.SeDeplacerVersCelluleAsync(l.Cellule, ct);
+            else if (!string.IsNullOrEmpty(l.Direction))
+            {
+                var dir = l.Direction switch
+                {
+                    "top" => "nord", "bottom" => "sud",
+                    "right" => "est", "left" => "ouest", _ => l.Direction
+                };
+                await api.ChangerMapDirectionAsync(dir, ct);
+            }
+        }
+        catch (Exception ex)
+        {
+            BotDofus.Utilitaires.Journaux.Journaliseur.Avertir(
+                $"[ROADREC] exécution ligne : {ex.Message}");
+        }
+    }
+
     private void BtnRecTrajet_Click(object sender, RoutedEventArgs e)
     {
         if (_contexte == null)
@@ -983,10 +1033,13 @@ public partial class VueMapViewer : UserControl
             BtnRecTrajet.Foreground = new SolidColorBrush(Color.FromRgb(0x4C, 0xC2, 0x7A));
 
             _roadFenetre = new FenetreRoadCreator { Owner = Window.GetWindow(this) };
-            _roadFenetre.Validee += (_, ligne) =>
+            _roadFenetre.Validee += async (_, ligne) =>
             {
                 _recTrajet.AjouterLigne(ligne);
                 _roadFenetre?.MajCompteur(_recTrajet.NbLignes);
+                // Exécute l'action validée (comme SynFus) : le bot combat /
+                // récolte / se déplace tout seul, pas besoin de le faire à la main.
+                await ExecuterLigneRoadCreator(ligne);
             };
             var (id, co) = MapCourante();
             _roadFenetre.Preparer(id, co);
