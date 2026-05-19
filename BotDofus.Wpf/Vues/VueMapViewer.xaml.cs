@@ -478,8 +478,8 @@ public partial class VueMapViewer : UserControl
                 : gris ? prof + 200 : prof);
             if (gris && couleur is SolidColorBrush gc)
             {
-                poly.Stroke = new SolidColorBrush(AssombrirCouleur(gc.Color, 0.55));
-                poly.StrokeThickness = 0.9;
+                poly.Stroke = new SolidColorBrush(AssombrirCouleur(gc.Color, 0.78));
+                poly.StrokeThickness = 0.5;
             }
             else if (!sol)
             {
@@ -492,8 +492,8 @@ public partial class VueMapViewer : UserControl
                 // l'anti-crénelage doublait la ligne entre 2 cases voisines
                 // (démarcations « grosses »). Liseré quasi-blanc + très fin
                 // + Aliased (pas de doublon flou) = grille propre façon SynFus.
-                poly.Stroke = new SolidColorBrush(Color.FromRgb(0xEC, 0xEE, 0xF0));
-                poly.StrokeThickness = 0.25;
+                poly.Stroke = new SolidColorBrush(Color.FromRgb(0xF1, 0xF3, 0xF5));
+                poly.StrokeThickness = 0.15;
                 System.Windows.Media.RenderOptions.SetEdgeMode(
                     poly, System.Windows.Media.EdgeMode.Aliased);
             }
