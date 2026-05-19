@@ -171,7 +171,25 @@ public sealed class ApiBot
             if (carte == null) break;
             if (_etat.Personnage.CellulePosition is not int posCur)
             { await Task.Delay(300, ct).ConfigureAwait(false); continue; }
-            if (posCur == celluleCible) { aBouge = true; break; }
+            if (posCur == celluleCible)
+            {
+                // Déjà SUR la case. Si c'est une TRANSITION et que la carte
+                // n'a pas changé (GKK0 raté/trop tôt au rejeu), un nouveau
+                // GKK0 re-déclenche le franchissement de bord côté serveur
+                // (récupération bon marché du « bug TP bizarre »).
+                var cc = carte.Obtenir(posCur);
+                if (cc != null
+                    && cc.Type == BotDofus.Divers.Cartes.TypesCellule.Transition
+                    && (_etat.Personnage.CarteCourante ?? 0) == mapAvant)
+                {
+                    Journaliseur.Info($"[MAP] déjà sur transition {posCur}, "
+                        + "carte inchangée → GKK0 de re-déclenchement.");
+                    await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
+                    await Task.Delay(900, ct).ConfigureAwait(false);
+                }
+                aBouge = true;
+                break;
+            }
 
             var dep = carte.Obtenir(posCur);
             var arr = carte.Obtenir(celluleCible);
@@ -327,16 +345,39 @@ public sealed class ApiBot
             Journaliseur.Avertir($"[ANKA] chemin brut invalide : '{ga001}'");
             return;
         }
-        // Durée de marche ≈ nb de pas (2 chars/pas après "GA001"), bornée.
-        // IMPORTANT : à l'enregistrement le vrai client envoie GKK0 ~2,76 s
-        // après le GA001 (marche réelle terminée) → le serveur enregistre le
-        // franchissement de bord et déclenche GDM. Si on envoie GKK0 trop tôt
-        // (~1 s), le serveur replace le perso SANS changer de carte
-        // (« bug de la TP bizarre »). On colle donc au vrai client :
-        // ~400 ms/pas, plafond 6 s.
-        int pas = Math.Max(1, (ga001.Length - 5) / 2);
-        int dureeMarcheMs = Math.Clamp(pas * 400, 400, 6000);
-        Journaliseur.Info($"[ANKA] Rejeu chemin brut « {ga001} » (~{pas} pas, {dureeMarcheMs} ms)");
+        // DURÉE DE MARCHE = nb RÉEL de cases × ~450 ms (≈ vrai client).
+        // BUG cadernis confirmé (thread deplacement-dofus-1-29 ; log 19:43) :
+        // les TOKENS du GA001 ≠ nb de cases (une longue ligne droite = 1 seul
+        // token). Calculer pas=(len-5)/2 SOUS-estimait massivement (4 tokens
+        // vs ~10 cases) → GKK0 envoyé ~1,6 s au lieu de ~4,3 s → le serveur
+        // replace le perso SANS changer de carte. On recalcule la distance
+        // RÉELLE via le pathfinder (case courante → case d'arrivée décodée
+        // des 2 derniers chars du path), comme salesprendes
+        // get_Tiempo_Desplazamiento_Mapa. Plancher haut : mieux vaut un GKK0
+        // trop tard (perso attend) que trop tôt (pas de changement de carte).
+        string corps = ga001.Substring(5);
+        int destCell = corps.Length >= 2
+            ? BotDofus.Utilitaires.Crypto.HashCarte.DecoderCellule(
+                corps.Substring(corps.Length - 2))
+            : -1;
+        int cases = Math.Max(1, (ga001.Length - 5) / 2); // fallback (tokens)
+        var carteRej = _etat.CarteCourante;
+        if (carteRej != null && _etat.Personnage.CellulePosition is int posRej
+            && destCell >= 0)
+        {
+            var depRej = carteRej.Obtenir(posRej);
+            var arrRej = carteRej.Obtenir(destCell);
+            if (depRej != null && arrRej != null)
+            {
+                var chRej = Pathfinder.Trouver(carteRej, depRej, arrRej);
+                if (chRej is { Count: >= 2 }) cases = chRej.Count;
+            }
+        }
+        // ~450 ms/case (course), borné [2000, 9000] ms : une sortie de carte
+        // exige la marche COMPLÈTE avant GKK0.
+        int dureeMarcheMs = Math.Clamp(cases * 450, 2000, 9000);
+        Journaliseur.Info($"[ANKA] Rejeu chemin brut « {ga001} » (dest {destCell}, "
+            + $"{cases} case(s) → {dureeMarcheMs} ms avant GKK0)");
         await EnvoyerHumaniseAsync(ga001, ct).ConfigureAwait(false);
         await Task.Delay(dureeMarcheMs, ct).ConfigureAwait(false);
         await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
