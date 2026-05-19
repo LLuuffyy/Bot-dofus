@@ -98,19 +98,19 @@ public sealed class EnregistreurTrajet
                 if (l.Answers.Count > 0)
                     sb2.Append($", answers = {{ {string.Join(", ", l.Answers)} }}");
             }
-            // Sur une ROUTE on entre toujours une carte au MÊME endroit →
-            // rejouer le chemin EXACT (raw:GA001) fait à la main est le plus
-            // fiable (le serveur l'a déjà accepté). On le met en priorité, et
-            // on garde la CELLULE de sortie réelle en SECOURS (cell=…) si le
-            // raw échoue (entrée différente), puis la direction.
-            if (!string.IsNullOrEmpty(l.CheminBrut))
-            {
-                sb2.Append($", path = \"raw:{l.CheminBrut}\"");
-                if (l.Cellule > 0) sb2.Append($", cell = {l.Cellule}");
-            }
-            else if (l.Cellule > 0) sb2.Append($", path = \"{l.Cellule}\"");
-            else if (!string.IsNullOrEmpty(l.Direction))
+            // PRIORITÉ À LA DIRECTION (top/bottom/left/right). C'est la seule
+            // sortie GLOBALE : depuis n'importe où sur la carte elle marche
+            // vers le bon bord et change de map. Le raw:GA001 était capturé
+            // depuis la case EXACTE d'enregistrement → après une récolte le
+            // point de départ varie (blé déjà pris…) → rejeu KO. On l'abandonne
+            // comme mécanisme principal. Ordre :
+            //   1) direction  (changement de carte global, robuste)
+            //   2) cell       (se poser sur une case précise : PNJ/récolte —
+            //                   PAS un changement de carte)
+            if (!string.IsNullOrEmpty(l.Direction))
                 sb2.Append($", path = \"{l.Direction}\"");
+            else if (l.Cellule > 0)
+                sb2.Append($", path = \"{l.Cellule}\"");
             sb2.Append($" }},   -- [{l.Coords}]");
             sb.AppendLine(sb2.ToString());
         }

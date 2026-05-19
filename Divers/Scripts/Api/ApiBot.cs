@@ -157,10 +157,27 @@ public sealed class ApiBot
             return false;
         }
 
+        // CASES OCCUPÉES → INTERDITES au pathfinder. Sans ça, l'A* traçait un
+        // chemin À TRAVERS un monstre/joueur ; le serveur refuse ce chemin et
+        // tronque le déplacement (perso s'arrête avant, AUCUN franchissement
+        // de bord → pas de GDM). C'est LA cause du « ça bug si la carte n'est
+        // pas vide » : la sortie par direction marchait sur map vide et
+        // échouait dès qu'il y avait des mobs. On exclut le départ (sinon A*
+        // bloqué) et l'arrivée (transition = destination autorisée).
+        var occupees = new List<Cellule>();
+        foreach (var ent in _etat.CarteCourante.Entites.Values)
+        {
+            if (ent.CellulePosition == depart.Identifiant
+                || ent.CellulePosition == arrivee.Identifiant) continue;
+            var co = _etat.CarteCourante.Obtenir(ent.CellulePosition);
+            if (co != null) occupees.Add(co);
+        }
+
         // arreterDevant : pour approcher un monstre, sa cellule est occupée
         // (non marchable) → un chemin « dessus » échoue toujours. On demande
         // au pathfinder de s'arrêter à 1 case de la cible.
         var chemin = Pathfinder.Trouver(_etat.CarteCourante, depart, arrivee,
+            cellulesInterdites: occupees,
             arreterDevant: arreterDevant, distanceArret: 1);
         if (chemin == null || chemin.Count < 2)
         {
@@ -371,18 +388,56 @@ public sealed class ApiBot
             return false;
         }
         // Projection iso écran : sx = x - y (horizontal), sy = x + y (vertical).
-        Cellule? cible = direction.ToLowerInvariant() switch
+        // Clé de tri « côté » : plus c'est petit, plus c'est du bon côté.
+        Func<Cellule, int>? ordreCote = direction.ToLowerInvariant() switch
         {
-            "est" or "droite" => transitions.OrderByDescending(c => c.X - c.Y).First(),
-            "ouest" or "gauche" => transitions.OrderBy(c => c.X - c.Y).First(),
-            "sud" or "bas" => transitions.OrderByDescending(c => c.X + c.Y).First(),
-            "nord" or "haut" => transitions.OrderBy(c => c.X + c.Y).First(),
+            "est" or "droite" => c => -(c.X - c.Y),
+            "ouest" or "gauche" => c => (c.X - c.Y),
+            "sud" or "bas" => c => -(c.X + c.Y),
+            "nord" or "haut" => c => (c.X + c.Y),
             _ => null
         };
-        if (cible == null) { Journaliseur.Avertir($"[MAP] direction inconnue « {direction} »"); return false; }
-        Journaliseur.Info($"[MAP] Sortie « {direction} » → cellule transition {cible.Identifiant} "
-            + $"({cible.X},{cible.Y}) — déplacement (change de map).");
-        return await SeDeplacerVersCelluleAsync(cible.Identifiant, ct).ConfigureAwait(false);
+        if (ordreCote == null)
+        {
+            Journaliseur.Avertir($"[MAP] direction inconnue « {direction} »");
+            return false;
+        }
+
+        // Une seule transition « la plus extrême » peut être inatteignable
+        // (bloquée par un mob, sur un îlot…). On TENTE plusieurs sorties du
+        // bon côté : la plus extrême d'abord, puis à extrême ≈ égal la plus
+        // proche du perso. On s'arrête dès que la CARTE a changé (GDM). C'est
+        // ça la sortie « globale » fiable depuis n'importe où sur la carte.
+        var dep = _etat.Personnage.CellulePosition is int p
+            ? carte.Obtenir(p) : null;
+        var candidats = transitions
+            .OrderBy(ordreCote)
+            .ThenBy(c => dep == null ? 0
+                : (c.X - dep.X) * (c.X - dep.X) + (c.Y - dep.Y) * (c.Y - dep.Y))
+            .Take(4)
+            .ToList();
+        int mapAvant = _etat.Personnage.CarteCourante ?? 0;
+
+        foreach (var cible in candidats)
+        {
+            if (ct.IsCancellationRequested) return false;
+            Journaliseur.Info($"[MAP] Sortie « {direction} » → essai cellule "
+                + $"{cible.Identifiant} ({cible.X},{cible.Y})");
+            await SeDeplacerVersCelluleAsync(cible.Identifiant, ct)
+                .ConfigureAwait(false);
+            await Task.Delay(400, ct).ConfigureAwait(false); // laisse venir le GDM
+            if ((_etat.Personnage.CarteCourante ?? 0) != mapAvant)
+            {
+                Journaliseur.Info($"[MAP] Sortie « {direction} » OK → carte "
+                    + $"{_etat.Personnage.CarteCourante}");
+                return true;
+            }
+            Journaliseur.Avertir($"[MAP] cellule {cible.Identifiant} n'a pas "
+                + "changé la carte — essai suivant…");
+        }
+        Journaliseur.Avertir($"[MAP] Sortie « {direction} » : aucune des "
+            + $"{candidats.Count} transitions testées n'a changé la carte.");
+        return false;
     }
 
     /// <summary>
