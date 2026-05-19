@@ -388,25 +388,21 @@ public sealed class ApiBot
         // changé (transition franchie) ou qu'on est ARRIVÉ à destination,
         // on enchaîne immédiatement. dureeMarcheMs ne sert plus que de
         // plafond de sécurité.
-        // La cible est-elle une cellule de TRANSITION (sortie de carte) ?
-        // Si OUI : NE PAS sortir tôt sur « cellule atteinte » — le serveur
-        // exige la marche COMPLÈTE avant le GKK0 pour enregistrer le
-        // franchissement de bord ; sortir à +150 ms = GKK0 trop tôt = la
-        // carte NE change PAS (régression vue log 20:18 cell 405). On ne
-        // sort tôt que sur CHANGEMENT DE CARTE réel. Pour un déplacement
-        // interne (PNJ/récolte), « cellule atteinte » reste un raccourci OK.
-        bool destEstTransition = destCell >= 0 && carteRej != null
-            && carteRej.Obtenir(destCell) is { } cdRej
-            && cdRej.Type == BotDofus.Divers.Cartes.TypesCellule.Transition;
+        // On NE sort tôt QUE sur CHANGEMENT DE CARTE réel. On NE se fie PLUS
+        // au « cellule de destination atteinte » : c'était un raccourci
+        // fragile qui envoyait le GKK0 trop tôt sur les sorties de carte et
+        // empêchait le franchissement (régressions 405 puis 324). En plus,
+        // certaines maps (ex. 10354) arrivent SANS mapData dans le GDM →
+        // le type « Transition » n'est pas fiable. Un rejeu raw:GA001 est
+        // TOUJOURS une reproduction d'un mouvement déjà accepté : on laisse
+        // marcher la durée pleine (plafond) et le client envoie son GKK0 ;
+        // si la carte change avant, on enchaîne aussitôt (zéro temps mort).
         int ecoule = 0;
         bool carteAChange = false;
         while (ecoule < dureeMarcheMs && !ct.IsCancellationRequested)
         {
             if ((_etat.Personnage.CarteCourante ?? 0) != mapAvantRej)
             { carteAChange = true; break; }            // franchi par le client
-            if (!destEstTransition && destCell >= 0
-                && (_etat.Personnage.CellulePosition ?? -1) == destCell)
-                break;                                  // interne : arrivé → GKK0
             await Task.Delay(150, ct).ConfigureAwait(false);
             ecoule += 150;
         }
