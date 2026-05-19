@@ -47,6 +47,7 @@ public sealed class MoteurLuaInteractif : IDisposable
             throw new FileNotFoundException($"Script Lua introuvable : {cheminFichier}");
 
         _script = new Script(CoreModules.Preset_SoftSandbox);
+        _idxRoute = -1; // nouveau script → resynchro au 1er tour
         _script.Globals["bot"] = _api;
         // Modules compatibles AnkaBot (https://doc.ankabot.dev) : les scripts
         // écrits dans ce standard utilisent character.*, map.*, inventory.*, …
@@ -183,29 +184,75 @@ public sealed class MoteurLuaInteractif : IDisposable
         return null;
     }
 
+    // Index du waypoint courant dans la liste mouvement(). -1 = pas encore
+    // synchronisé (on se cale sur la carte de départ au 1er tour).
+    private int _idxRoute = -1;
+
     private void SuivreUnTour(string fn, Random rnd, CancellationToken ct)
     {
         var res = _script!.Call(_script.Globals.Get(fn));
         if (res.Type != DataType.Table) { Pause(2000, ct); return; }
 
+        // Liste ORDONNÉE des waypoints (clés 1..n).
+        var rows = new System.Collections.Generic.List<Table>();
+        for (int i = 1; ; i++)
+        {
+            var v = res.Table.Get(i);
+            if (v.Type == DataType.Nil) break;
+            if (v.Type == DataType.Table) rows.Add(v.Table);
+        }
+        if (rows.Count == 0) { Pause(2000, ct); return; }
+
         var coords = _api.Anka.Map.currentMap();          // "x,y"
         var mapId = _api.Anka.Map.currentMapId().ToString();
-        DynValue? ligne = null;
-        foreach (var p in res.Table.Pairs)
+        bool Match(Table r)
         {
-            if (p.Value.Type != DataType.Table) continue;
-            // SynFus utilise map="<idMap>" (ex. "9127"), AnkaBot map="x,y" :
-            // on accepte les deux.
-            var m = p.Value.Table.Get("map").CastToString();
-            if (m == coords || m == mapId) { ligne = p.Value; break; }
+            var m = r.Get("map").CastToString();
+            return m == coords || m == mapId;
         }
-        if (ligne == null)
+        // Cherche un waypoint correspondant à la carte courante À PARTIR de
+        // `depart` (en bouclant). Crucial : sur une carte qui revient 2×, on
+        // repart APRÈS l'index courant → on prend la 2e occurrence (donc la
+        // 2e action), pas la 1re. C'est ça « passer 2× sans refaire la 1re ».
+        int Depuis(int depart)
         {
-            Journaliseur.Info($"[ANKA] carte {coords} (id {mapId}) non prévue dans {fn}() — attente");
-            Pause(3000, ct);
-            return;
+            for (int k = 0; k < rows.Count; k++)
+            {
+                int j = (depart + k) % rows.Count;
+                if (Match(rows[j])) return j;
+            }
+            return -1;
         }
-        ExecuterLigne(ligne.Table, rnd, ct);
+
+        if (_idxRoute < 0 || _idxRoute >= rows.Count)
+        {
+            // 1er tour : on se cale sur la carte où on est.
+            _idxRoute = Depuis(0);
+            if (_idxRoute < 0)
+            {
+                Journaliseur.Info($"[ANKA] carte {coords} (id {mapId}) hors trajet — attente (lance le script depuis une carte du trajet)");
+                Pause(3000, ct);
+                return;
+            }
+        }
+        else if (!Match(rows[_idxRoute]))
+        {
+            // Désync (mauvaise sortie, déplacement manuel…) : on resynchronise
+            // en cherchant À PARTIR de l'index courant (pas depuis 0) → on ne
+            // retombe pas sur une occurrence précédente de cette carte.
+            int j = Depuis(_idxRoute);
+            if (j < 0)
+            {
+                Journaliseur.Info($"[ANKA] carte {coords} (id {mapId}) imprévue — attente (resynchro)");
+                Pause(2500, ct);
+                return;
+            }
+            _idxRoute = j;
+        }
+
+        ExecuterLigne(rows[_idxRoute], rnd, ct);
+        // Étape suivante dans l'ORDRE (boucle en fin de liste).
+        _idxRoute = (_idxRoute + 1) % rows.Count;
     }
 
     private void ExecuterLigne(Table row, Random rnd, CancellationToken ct)
