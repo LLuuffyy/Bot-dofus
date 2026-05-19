@@ -21,6 +21,7 @@ public sealed class EnregistreurTrajet
         public bool Fight;
         public bool Gather;
         public int Cellule;          // sortie via cellule précise (optionnel)
+        public int CelluleDepart;    // cellule où était le perso AVANT le GA001 brut (garde-fou rejeu fidèle)
         public string Direction = ""; // top/bottom/left/right (optionnel)
         public int Npc;              // dialogue PNJ (optionnel)
         public List<int> Answers = new();
@@ -107,17 +108,28 @@ public sealed class EnregistreurTrajet
             //   1) direction  (changement de carte global, robuste)
             //   2) cell       (se poser sur une case précise : PNJ/récolte —
             //                   PAS un changement de carte)
+            bool ga001Valide = !string.IsNullOrEmpty(l.CheminBrut)
+                && l.CheminBrut.StartsWith("GA001", StringComparison.Ordinal);
             if (!string.IsNullOrEmpty(l.Direction))
                 sb2.Append($", path = \"{l.Direction}\"");
-            // Carte de PURE TRANSITION (ni récolte ni combat) : on émet la
-            // CELLULE de sortie seule. Le moteur route vers SortirCarteAsync
-            // qui est DIRECTION-first (déduit le côté est/ouest/sud/nord à
-            // partir de la cellule vs les cellules Transition de la map, puis
-            // ChangerMapDirectionAsync). Robuste depuis N'IMPORTE OÙ sur la
-            // map (comme SynFus/dyshay/cadernis). On ABANDONNE le raw:GA001 :
-            // il était capturé depuis la case EXACTE d'enregistrement → rejeu
-            // dépendant de la position de départ → ~13 s perdues à marcher
-            // vers la mauvaise case avant que le secours direction n'agisse.
+            // Carte de PURE TRANSITION (ni récolte ni combat) → raw:GA001
+            // CONDITIONNEL. Le GA001 brut capturé à la main est un chemin
+            // DÉJÀ accepté par le serveur (zéro pathfinder, zéro rollback) —
+            // mais il n'est fidèle QUE depuis la cellule de départ exacte de
+            // l'enregistrement (champ `from`). En entrant sur une carte PAR
+            // une transition, la cellule d'arrivée est DÉTERMINISTE (toujours
+            // la même) → `from` matche → raw fiable. Sinon (map#1 / départ
+            // arbitraire) le moteur saute DIRECT au secours `cell`
+            // (SortirCarteAsync transition-first/direction) → zéro détour,
+            // zéro ~13 s perdues. Le pathfinder se trompe de route sur ces
+            // maps 15×17 (cf. cadernis « Deplacement dofus 1.29 ») : c'est
+            // le chemin brut EXACT qui est la vérité terrain.
+            else if (ga001Valide && !l.Gather && !l.Fight)
+            {
+                sb2.Append($", path = \"raw:{l.CheminBrut}\"");
+                if (l.CelluleDepart > 0) sb2.Append($", from = {l.CelluleDepart}");
+                if (l.Cellule > 0) sb2.Append($", cell = {l.Cellule}");
+            }
             else if (l.Cellule > 0)
                 sb2.Append($", path = \"{l.Cellule}\"");
             sb2.Append($" }},   -- [{l.Coords}]");

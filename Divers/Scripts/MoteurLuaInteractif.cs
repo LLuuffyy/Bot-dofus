@@ -344,6 +344,36 @@ public sealed class MoteurLuaInteractif : IDisposable
         var path = S("path");
         if (path.Length > 0)
         {
+            // raw:GA001 CONDITIONNEL — garde-fou « vérité terrain ».
+            // Le chemin brut n'est fidèle que depuis la cellule de départ
+            // EXACTE de l'enregistrement (champ `from`). En entrant par une
+            // transition la cellule d'arrivée est déterministe → from matche
+            // → rejeu fidèle (zéro pathfinder, le pathfinder se trompe de
+            // route sur ces maps 15×17). Sinon (map#1 / départ arbitraire)
+            // on saute DIRECT à la cellule de sortie (SortirCarteAsync
+            // transition-first/direction) → zéro détour, zéro 13 s perdues.
+            if (path.StartsWith("raw:", StringComparison.OrdinalIgnoreCase))
+            {
+                var fromV = row.Get("from");
+                var cellG = row.Get("cell");
+                if (fromV.Type == DataType.Number
+                    && cellG.Type == DataType.Number)
+                {
+                    AttendrePositionConnue(ct);
+                    int cur = anka.Map.currentCell();
+                    int frm = (int)fromV.Number;
+                    if (cur != frm)
+                    {
+                        Journaliseur.Info($"[ANKA] départ {cur} ≠ enregistré "
+                            + $"{frm} → raw ignoré, sortie directe cellule "
+                            + $"{(int)cellG.Number}.");
+                        path = ((int)cellG.Number).ToString();
+                    }
+                    else
+                        Journaliseur.Info($"[ANKA] départ {cur} = enregistré "
+                            + $"{frm} → rejeu fidèle du chemin brut.");
+                }
+            }
             int avant = anka.Map.currentMapId();
             AppliquerPath(path, rnd, ct);
             AttendreChangementCarte(avant, ct);

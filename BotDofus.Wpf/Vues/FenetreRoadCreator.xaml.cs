@@ -25,6 +25,7 @@ public partial class FenetreRoadCreator : Window
     private int _npcTemplate;      // id TEMPLATE (gabarit) — pour le script .lua
     private int _dernierMapPrepare = -1;
     private string _dernierGa001 = "";   // dernier déplacement C→S fait à la main
+    private int _celluleDepartGa001;     // cellule du perso AU MOMENT de ce GA001 (garde-fou rejeu fidèle)
     private readonly List<int> _reponses = new();
 
     public event EventHandler<EnregistreurTrajet.Ligne>? Validee;
@@ -65,6 +66,7 @@ public partial class FenetreRoadCreator : Window
             _npcTemplate = 0;
             _reponses.Clear();
             _dernierGa001 = ""; // nouveau terrain : on repart sans chemin brut
+            _celluleDepartGa001 = 0;
             BoxDialogue.Visibility = Visibility.Collapsed;
             TxtDlgEnregistre.Text = "";
         }
@@ -135,6 +137,13 @@ public partial class FenetreRoadCreator : Window
             if (cs.StartsWith("GA001", StringComparison.Ordinal) && cs.Length > 6)
             {
                 _dernierGa001 = cs;
+                // Cellule du perso AVANT ce déplacement = point de départ
+                // EXACT du chemin brut. Au rejeu on ne rejoue le raw que si
+                // on est sur cette même case (sinon le chemin part de
+                // travers). Le paquet C→S part AVANT que le serveur ne bouge
+                // le perso → CellulePosition est encore la case de départ.
+                _celluleDepartGa001 =
+                    _ctx?.EtatJeu.Personnage.CellulePosition ?? 0;
             }
             // ENREGISTREMENT PASSIF : tu parles au PNJ DANS LE JEU →
             // « DC<perso>,<ctx> ». On capture le PNJ tout seul (plus besoin
@@ -301,7 +310,11 @@ public partial class FenetreRoadCreator : Window
         if (celluleSortie > 0) l.Cellule = celluleSortie; // fallback
         // Chemin EXACT que tu viens de faire à la main → rejeu fidèle,
         // serveur-valide (plus de rollback/pathfinder qui se trompe).
-        if (!string.IsNullOrEmpty(_dernierGa001)) l.CheminBrut = _dernierGa001;
+        if (!string.IsNullOrEmpty(_dernierGa001))
+        {
+            l.CheminBrut = _dernierGa001;
+            l.CelluleDepart = _celluleDepartGa001;
+        }
         if (_npcTemplate != 0)
         {
             l.Npc = _npcTemplate;
@@ -312,6 +325,7 @@ public partial class FenetreRoadCreator : Window
         _npcTemplate = 0;
         _reponses.Clear();
         _dernierGa001 = "";
+        _celluleDepartGa001 = 0;
         return l;
     }
 
