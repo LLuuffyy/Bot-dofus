@@ -30,7 +30,7 @@ namespace BotDofus.Divers.Scripts.Api;
 /// </code>
 /// </summary>
 [MoonSharpUserData]
-public sealed class ApiLua
+public sealed partial class ApiLua
 {
     private readonly ApiBot _api;
     private readonly EtatJeu _etat;
