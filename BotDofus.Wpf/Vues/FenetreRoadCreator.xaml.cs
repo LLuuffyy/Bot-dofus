@@ -133,7 +133,54 @@ public partial class FenetreRoadCreator : Window
         {
             var cs = e.Paquet.Contenu;
             if (cs.StartsWith("GA001", StringComparison.Ordinal) && cs.Length > 6)
+            {
                 _dernierGa001 = cs;
+            }
+            // ENREGISTREMENT PASSIF : tu parles au PNJ DANS LE JEU →
+            // « DC<perso>,<ctx> ». On capture le PNJ tout seul (plus besoin
+            // du bouton de la popup) : on retrouve son gabarit (template) via
+            // l'entité PNJ de la carte pour que le script soit rejouable.
+            else if (cs.StartsWith("DC", StringComparison.Ordinal)
+                     && _ctx != null)
+            {
+                var virg = cs.IndexOf(',');
+                if (virg >= 0
+                    && int.TryParse(cs[(virg + 1)..], out var ctxId))
+                {
+                    var pnj = _ctx.EtatJeu.CarteCourante?.Entites.Values
+                        .OfType<EntitePNJ>()
+                        .FirstOrDefault(p => p.Identifiant == ctxId);
+                    _npcChoisi = ctxId;
+                    _npcTemplate = pnj?.IdGabarit ?? ctxId;
+                    Dispatcher.BeginInvoke(new Action(RafraichirDialogue));
+                }
+            }
+            // Tu choisis une réponse DANS LE JEU → « DR<q>|<rep> ». On
+            // enregistre la POSITION (convention AnkaBot : -1, -2, …) en
+            // retrouvant l'index de la réponse dans la question courante.
+            else if (cs.StartsWith("DR", StringComparison.Ordinal)
+                     && _ctx != null)
+            {
+                var bar = cs.IndexOf('|');
+                if (bar >= 0
+                    && int.TryParse(cs[(bar + 1)..], out var repId))
+                {
+                    var reps = _ctx.EtatJeu.Dialogue.Reponses;
+                    int idx = reps.IndexOf(repId);
+                    if (idx >= 0)
+                    {
+                        int code = -(idx + 1);
+                        if (_reponses.Count == 0 || _reponses[^1] != code)
+                        {
+                            _reponses.Add(code);
+                            Dispatcher.BeginInvoke(new Action(() =>
+                                TxtDlgEnregistre.Text =
+                                    "Réponses enregistrées : "
+                                    + string.Join(", ", _reponses)));
+                        }
+                    }
+                }
+            }
             return;
         }
         var c = e.Paquet.Contenu;
