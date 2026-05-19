@@ -98,11 +98,12 @@ public sealed class EnregistreurTrajet
                 if (l.Answers.Count > 0)
                     sb2.Append($", answers = {{ {string.Join(", ", l.Answers)} }}");
             }
-            // Priorité : chemin BRUT capturé à la main (rejeu 100 % fidèle,
-            // serveur-valide) > cellule > direction.
-            if (!string.IsNullOrEmpty(l.CheminBrut))
-                sb2.Append($", path = \"raw:{l.CheminBrut}\"");
-            else if (l.Cellule > 0) sb2.Append($", path = \"{l.Cellule}\"");
+            // Priorité : CELLULE de sortie réelle capturée (la case exacte où
+            // la map a changé quand tu es sorti à la main → vraie transition,
+            // le moteur y route d'où qu'il soit) > direction. Le raw:GA001
+            // n'est plus utilisé (ne marchait que si on entrait la carte
+            // pile au même endroit qu'à l'enregistrement → trop aléatoire).
+            if (l.Cellule > 0) sb2.Append($", path = \"{l.Cellule}\"");
             else if (!string.IsNullOrEmpty(l.Direction))
                 sb2.Append($", path = \"{l.Direction}\"");
             sb2.Append($" }},   -- [{l.Coords}]");
