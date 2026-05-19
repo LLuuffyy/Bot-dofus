@@ -957,8 +957,20 @@ public sealed class ApiBot
             if (_recolteCooldown.TryGetValue(c.Identifiant, out var jusqua)
                 && jusqua > maintenant) continue;                     // récoltée récemment
             var io = bdd.Interactif(c.IdInteractif);
-            if (io is not { IdSkill: > 0 }) continue;                 // gfx pas encore appris
-            if (skills.Count > 0 && !skills.Contains(io.IdSkill)) continue; // pas le métier
+            // La BDD interactifs Hystoria est VIDE (« 0 interactifs » au
+            // chargement) → bdd.Interactif() renvoie toujours null. L'ancien
+            // « if (io is not { IdSkill: > 0 }) continue; » jetait alors
+            // TOUTES les cellules → CellulesRecoltables() toujours vide →
+            // recolter_tout : 0 sur toutes les maps (récolte impossible).
+            // Désormais : si io connu, on filtre par métier ; si io null
+            // (BDD vide), on GARDE la cellule — RecolterAsync utilisera le
+            // skill par défaut (45 = Faucher). Le garde-fou reste la dispo
+            // GDF (RessourceDisponible, ligne ci-dessus) + le cooldown.
+            if (io is { IdSkill: > 0 })
+            {
+                if (skills.Count > 0 && !skills.Contains(io.IdSkill))
+                    continue;                                         // pas le métier
+            }
             liste.Add(c);
         }
         liste.Sort((a, b) => DistanceCarte(moi, a.Identifiant)
@@ -1049,7 +1061,19 @@ public sealed class ApiBot
     public async Task<int> RecolterToutAsync(CancellationToken ct = default)
     {
         int n = 0;
-        foreach (var c in CellulesRecoltables())
+        // Le serveur envoie le GDF (dispo des ressources) ~30-300 ms APRÈS
+        // l'arrivée sur la map. recolter_tout était appelé ~60 ms après le
+        // changement de carte → CellulesRecoltables() vide → 0 récolte
+        // (log 21:32:14 : « recolter_tout : 0 » 63 ms après l'entrée).
+        // On attend que des ressources apparaissent (jusqu'à ~4 s) avant
+        // de figer le snapshot.
+        for (int w = 0; w < 16 && CellulesRecoltables().Count == 0
+                              && !ct.IsCancellationRequested; w++)
+            await Task.Delay(250, ct).ConfigureAwait(false);
+        var cibles = CellulesRecoltables();
+        Journaliseur.Info($"[LUA] recolter_tout : {cibles.Count} ressource(s) "
+            + "détectée(s) sur la carte.");
+        foreach (var c in cibles)
         {
             if (ct.IsCancellationRequested) break;
             if (_etat.Combat.Etat != EtatCombat.Inactif) break;
