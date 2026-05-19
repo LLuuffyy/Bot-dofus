@@ -472,6 +472,9 @@ public sealed class ApiAnka
         public void set(string k, object v) => _a.MemoireScript[k] = v;
         public object? get(string k) => _a.MemoireScript.TryGetValue(k, out var v) ? v : null;
         public void erase(string k) => _a.MemoireScript.Remove(k);
+        // Compat WGRetro : bot.memory.has / bot.memory.delete
+        public bool has(string k) => _a.MemoireScript.ContainsKey(k);
+        public void delete(string k) => _a.MemoireScript.Remove(k);
     }
 
     // =================================================================

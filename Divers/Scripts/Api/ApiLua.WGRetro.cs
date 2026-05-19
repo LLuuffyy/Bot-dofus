@@ -1,4 +1,5 @@
 using System;
+using MoonSharp.Interpreter;
 
 namespace BotDofus.Divers.Scripts.Api;
 
@@ -100,4 +101,92 @@ public sealed partial class ApiLua
     public void printSuccess(string msg) => log("[SUCCESS] " + msg);
     private readonly Random _rngWg = new();
     public int random(int min, int max) => _rngWg.Next(min, max + 1);
+
+    // ---- PNJ / dialogue (suite) -----------------------------------------
+    public bool isInDialog => _etat.Dialogue.Ouvert;
+    public string getQuestionId() => Convert.ToString(_etat.Dialogue.QuestionId) ?? "";
+    /// <summary>IDs des réponses possibles (Table Lua 1-based).</summary>
+    public Table getResponses() => Anka.Npc.getRepliesId();
+    /// <summary>Répondre par ID de réponse (WGRetro bot.reply).</summary>
+    public void reply(int responseId) => Anka.Npc.reply(responseId);
+    /// <summary>Répondre par INDEX 1-based dans la liste des réponses.</summary>
+    public void npcReply(int index)
+    {
+        int i = 1;
+        foreach (var r in _etat.Dialogue.Reponses)
+        {
+            if (i++ == index) { Anka.Npc.reply(Convert.ToInt32(r)); return; }
+        }
+        avertir($"[bot] npcReply({index}) : pas de réponse à cet index");
+    }
+    public void respond(int index) => npcReply(index);
+    /// <summary>Attend (≈timeout ms, def 5000) qu'une question PNJ arrive.</summary>
+    public void waitForDialog(double timeout = 5000)
+    {
+        int reste = (int)timeout;
+        while (reste > 0 && !_ct.IsCancellationRequested
+               && !(_etat.Dialogue.Ouvert && _etat.Dialogue.Reponses.Count > 0))
+        { attendre(120); reste -= 120; }
+    }
+
+    // ---- Mémoire de session (bot.memory.set/get/has/delete) -------------
+    public ApiAnka.ModuleMemory memory => Anka.Memory;
+    public void memorySet(string k, object v) => Anka.Memory.set(k, v);
+    public object? memoryGet(string k) => Anka.Memory.get(k);
+    public bool memoryHas(string k) => Anka.Memory.has(k);
+    public void memoryDelete(string k) => Anka.Memory.delete(k);
+    public void remember(string k, object v) => Anka.Memory.set(k, v);
+
+    // ---- Stats & sorts ---------------------------------------------------
+    private static int StatNameToId(string name) => (name ?? "").Trim().ToLowerInvariant() switch
+    {
+        "strength" or "force" => 10,
+        "vitality" or "vitalite" or "vitalité" => 11,
+        "wisdom" or "sagesse" => 12,
+        "chance" => 13,
+        "agility" or "agilite" or "agilité" => 14,
+        "intelligence" or "intel" => 15,
+        _ => -1
+    };
+    /// <summary>Boost une stat de +1 (10=force,11=vita,12=sagesse,13=chance,
+    /// 14=agi,15=intel).</summary>
+    public void boostStat(int statId)
+        => _api.MonterCaracteristiqueAsync(statId, 1, _ct).GetAwaiter().GetResult();
+    /// <summary>Verse tout le capital dispo dans une stat de base (best
+    /// effort ; la cible est indicative).</summary>
+    public bool statUpgrade(string name, int targetBase = 0)
+    {
+        int id = StatNameToId(name);
+        if (id < 0) { avertir($"[bot] statUpgrade : stat inconnue '{name}'"); return false; }
+        _api.AutoDistribuerCaracteristiquesAsync(id, _ct).GetAwaiter().GetResult();
+        return true;
+    }
+    public void UpgradeStrength(int pts = 1) { for (int i = 0; i < Math.Max(1, pts); i++) boostStat(10); }
+    public void UpgradeVitality(int pts = 1) { for (int i = 0; i < Math.Max(1, pts); i++) boostStat(11); }
+    public void UpgradeWisdom(int pts = 1) { for (int i = 0; i < Math.Max(1, pts); i++) boostStat(12); }
+    public void UpgradeChance(int pts = 1) { for (int i = 0; i < Math.Max(1, pts); i++) boostStat(13); }
+    public void UpgradeAgility(int pts = 1) { for (int i = 0; i < Math.Max(1, pts); i++) boostStat(14); }
+    public void UpgradeIntelligence(int pts = 1) { for (int i = 0; i < Math.Max(1, pts); i++) boostStat(15); }
+    public void boostSpell(int spellId)
+        => _api.MonterSortAsync(spellId, _ct).GetAwaiter().GetResult();
+    /// <summary>Monte un sort vers un niveau cible (best effort, +1 par
+    /// itération).</summary>
+    public bool spellUpgrade(int spellId, int targetLevel)
+    {
+        for (int i = 0; i < Math.Max(1, targetLevel) && !_ct.IsCancellationRequested; i++)
+            _api.MonterSortAsync(spellId, _ct).GetAwaiter().GetResult();
+        return true;
+    }
+    public void upgradeSpell(int spellId) => boostSpell(spellId);
+
+    // ---- Chat (par canal) ------------------------------------------------
+    private void Canal(string c, string m)
+        => Anka.Chat.sendMessage(c, m);
+    public void say(string channel, string message) => Canal(channel, message);
+    public void general(string m) => Canal("*", m);
+    public void team(string m) => Canal("#", m);
+    public void guild(string m) => Canal("%", m);
+    public void trade(string m) => Canal(":", m);
+    public void recruit(string m) => Canal("?", m);
+    public void partyChat(string m) => Canal("^", m);
 }
