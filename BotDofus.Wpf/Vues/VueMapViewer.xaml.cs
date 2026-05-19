@@ -392,12 +392,17 @@ public partial class VueMapViewer : UserControl
             if (couleur is SolidColorBrush sc)
             {
                 // Sommets bas du losange, REMONTÉS de `elev` (dessus du plateau).
-                var pG = new Point(cx - _largeurCellule, cy + _hauteurCellule - elev);
-                var pB = new Point(cx, cy + _hauteurCellule * 2 - elev);
-                var pD = new Point(cx + _largeurCellule, cy + _hauteurCellule - elev);
-                // La falaise descend jusqu'au niveau du SOL (elev + épaisseur).
-                double bas = elev + epais;
+                // On élargit LÉGÈREMENT (0.6px) et on descend un peu plus bas
+                // que nécessaire : la falaise déborde sur la case d'en dessous
+                // → plus de fin liseré blanc entre le bloc et le sol.
+                const double deb = 0.6;                 // débord latéral
+                double bas = elev + epais + 2.0;        // débord vers le bas
+                var pG = new Point(cx - _largeurCellule - deb, cy + _hauteurCellule - elev);
+                var pB = new Point(cx, cy + _hauteurCellule * 2 - elev + deb);
+                var pD = new Point(cx + _largeurCellule + deb, cy + _hauteurCellule - elev);
 
+                var brushG = new SolidColorBrush(AssombrirCouleur(sc.Color, 0.78));
+                var brushD = new SolidColorBrush(AssombrirCouleur(sc.Color, 0.62));
                 var faceG = new Polygon
                 {
                     Points = new PointCollection
@@ -406,7 +411,9 @@ public partial class VueMapViewer : UserControl
                         new Point(pB.X, pB.Y + bas),
                         new Point(pG.X, pG.Y + bas),
                     },
-                    Fill = new SolidColorBrush(AssombrirCouleur(sc.Color, 0.78)),
+                    Fill = brushG,
+                    // stroke = même couleur → ferme les hairlines d'anti-crénelage
+                    Stroke = brushG, StrokeThickness = 0.9,
                     IsHitTestVisible = false,
                 };
                 var faceD = new Polygon
@@ -417,9 +424,14 @@ public partial class VueMapViewer : UserControl
                         new Point(pD.X, pD.Y + bas),
                         new Point(pB.X, pB.Y + bas),
                     },
-                    Fill = new SolidColorBrush(AssombrirCouleur(sc.Color, 0.62)),
+                    Fill = brushD,
+                    Stroke = brushD, StrokeThickness = 0.9,
                     IsHitTestVisible = false,
                 };
+                System.Windows.Media.RenderOptions.SetEdgeMode(
+                    faceG, System.Windows.Media.EdgeMode.Aliased);
+                System.Windows.Media.RenderOptions.SetEdgeMode(
+                    faceD, System.Windows.Media.EdgeMode.Aliased);
                 Canvas.SetZIndex(faceG, 1);
                 Canvas.SetZIndex(faceD, 1);
                 CanvasMap.Children.Add(faceG);
