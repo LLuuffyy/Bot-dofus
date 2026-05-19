@@ -388,15 +388,25 @@ public sealed class ApiBot
         // changé (transition franchie) ou qu'on est ARRIVÉ à destination,
         // on enchaîne immédiatement. dureeMarcheMs ne sert plus que de
         // plafond de sécurité.
+        // La cible est-elle une cellule de TRANSITION (sortie de carte) ?
+        // Si OUI : NE PAS sortir tôt sur « cellule atteinte » — le serveur
+        // exige la marche COMPLÈTE avant le GKK0 pour enregistrer le
+        // franchissement de bord ; sortir à +150 ms = GKK0 trop tôt = la
+        // carte NE change PAS (régression vue log 20:18 cell 405). On ne
+        // sort tôt que sur CHANGEMENT DE CARTE réel. Pour un déplacement
+        // interne (PNJ/récolte), « cellule atteinte » reste un raccourci OK.
+        bool destEstTransition = destCell >= 0 && carteRej != null
+            && carteRej.Obtenir(destCell) is { } cdRej
+            && cdRej.Type == BotDofus.Divers.Cartes.TypesCellule.Transition;
         int ecoule = 0;
         bool carteAChange = false;
         while (ecoule < dureeMarcheMs && !ct.IsCancellationRequested)
         {
             if ((_etat.Personnage.CarteCourante ?? 0) != mapAvantRej)
             { carteAChange = true; break; }            // franchi par le client
-            if (destCell >= 0
+            if (!destEstTransition && destCell >= 0
                 && (_etat.Personnage.CellulePosition ?? -1) == destCell)
-                break;                                  // arrivé → GKK0 maintenant
+                break;                                  // interne : arrivé → GKK0
             await Task.Delay(150, ct).ConfigureAwait(false);
             ecoule += 150;
         }
