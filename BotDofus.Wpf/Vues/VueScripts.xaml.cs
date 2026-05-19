@@ -15,13 +15,63 @@ public partial class VueScripts : UserControl
     public VueScripts()
     {
         InitializeComponent();
+        Loaded += (_, __) => RafraichirListe();
+        IsVisibleChanged += (_, __) => { if (IsVisible) RafraichirListe(); };
+    }
+
+    private static string DossierScripts()
+        => Directory.Exists("scripts") ? Path.GetFullPath("scripts")
+                                       : Environment.CurrentDirectory;
+
+    /// <summary>Liste tous les .lua du dossier scripts (trajets enregistrés
+    /// inclus), le plus récent en haut. Un clic charge le script.</summary>
+    private void RafraichirListe()
+    {
+        if (ListeScripts == null) return;
+        var selErr = (ListeScripts.SelectedItem as ListBoxItem)?.Tag as string;
+        ListeScripts.Items.Clear();
+        try
+        {
+            var dossier = DossierScripts();
+            if (!Directory.Exists(dossier)) return;
+            var fichiers = new DirectoryInfo(dossier).GetFiles("*.lua");
+            Array.Sort(fichiers, (a, b) => b.LastWriteTime.CompareTo(a.LastWriteTime));
+            foreach (var f in fichiers)
+            {
+                var item = new ListBoxItem
+                {
+                    Content = $"{f.Name}\n{f.LastWriteTime:dd/MM HH:mm}",
+                    Tag = f.FullName,
+                    ToolTip = f.FullName
+                };
+                ListeScripts.Items.Add(item);
+                if (f.FullName == selErr) ListeScripts.SelectedItem = item;
+            }
+        }
+        catch { /* dossier illisible : liste vide */ }
+    }
+
+    private void BtnRafraichir_Click(object sender, RoutedEventArgs e) => RafraichirListe();
+
+    private void ListeScripts_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ListeScripts.SelectedItem is not ListBoxItem it || it.Tag is not string chemin)
+            return;
+        if (!File.Exists(chemin)) { RafraichirListe(); return; }
+        _cheminCharge = chemin;
+        TxtFichier.Text = Path.GetFileName(chemin);
+        try { TxtScriptContenu.Text = File.ReadAllText(chemin); } catch { }
+        BtnDemarrer.IsEnabled = _contexte != null
+            && !(_contexte?.Lua.EnExecution ?? false);
+        BtnEnregistrer.IsEnabled = ChkEditable?.IsChecked == true;
     }
 
     public void Lier(ContexteCompte contexte)
     {
         _contexte = contexte;
         contexte.Lua.ExecutionDemarree += (_, __) => Dispatcher.Invoke(() => MajBoutons(true));
-        contexte.Lua.ExecutionTerminee += (_, __) => Dispatcher.Invoke(() => MajBoutons(false));
+        contexte.Lua.ExecutionTerminee += (_, __) => Dispatcher.Invoke(() =>
+        { MajBoutons(false); RafraichirListe(); });
         contexte.Lua.ExecutionErreur += (_, ex) => Dispatcher.Invoke(() =>
         {
             MajBoutons(false);

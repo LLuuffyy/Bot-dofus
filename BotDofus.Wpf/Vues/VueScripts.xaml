@@ -41,13 +41,33 @@
             </StackPanel>
         </Border>
 
+        <materialDesign:Card DockPanel.Dock="Left" Width="280" Margin="0,0,12,0" Padding="0">
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Background="#22000000" Padding="10,8">
+                    <DockPanel>
+                        <Button x:Name="BtnRafraichir" DockPanel.Dock="Right"
+                                Click="BtnRafraichir_Click"
+                                Style="{StaticResource MaterialDesignFlatButton}"
+                                Padding="6,0" MinWidth="0" ToolTip="Rafraîchir la liste">
+                            <materialDesign:PackIcon Kind="Refresh"/>
+                        </Button>
+                        <TextBlock Text="Mes trajets / scripts" FontWeight="Bold"
+                                   VerticalAlignment="Center"/>
+                    </DockPanel>
+                </Border>
+                <ListBox x:Name="ListeScripts" BorderThickness="0"
+                         SelectionChanged="ListeScripts_SelectionChanged"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+            </DockPanel>
+        </materialDesign:Card>
+
         <materialDesign:Card Padding="0">
             <TextBox x:Name="TxtScriptContenu" AcceptsReturn="True" AcceptsTab="True"
                      FontFamily="Consolas" FontSize="13"
                      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
                      BorderThickness="0" Padding="12"
                      IsReadOnly="True"
-                     Text="-- Ouvre un fichier .lua pour voir/éditer son contenu&#10;-- L'auto-script (scripts/&lt;identifiant&gt;.lua) se lance automatiquement à la connexion"/>
+                     Text="-- Sélectionne un trajet à gauche pour le charger, puis « Démarrer »&#10;-- (ou « Charger script .lua » pour un fichier ailleurs)"/>
         </materialDesign:Card>
     </DockPanel>
 </UserControl>
