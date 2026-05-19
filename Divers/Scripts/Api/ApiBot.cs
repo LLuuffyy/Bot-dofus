@@ -467,7 +467,8 @@ public sealed class ApiBot
     /// map côté serveur. Directions : "ouest","est","nord","sud".
     /// Réutilisable depuis les scripts (bot.changerMap("est")).
     /// </summary>
-    public async Task<bool> ChangerMapDirectionAsync(string direction, CancellationToken ct = default)
+    public async Task<bool> ChangerMapDirectionAsync(string direction,
+        CancellationToken ct = default, int celluleHint = 0)
     {
         var carte = _etat.CarteCourante;
         if (carte == null) { Journaliseur.Avertir("[MAP] pas de carte courante"); return false; }
@@ -522,11 +523,24 @@ public sealed class ApiBot
         Func<Cellule, double> distDep = c => dep == null ? 0
             : (c.X - dep.X) * (c.X - dep.X) + (c.Y - dep.Y) * (c.Y - dep.Y);
 
+        // DÉPARTAGE par la cellule de sortie ENREGISTRÉE (celluleHint) :
+        // une carte peut avoir PLUSIEURS sorties du même côté vers des
+        // cartes DIFFÉRENTES (10302 : 327→10354 ET 458→10338, toutes
+        // « sud »). La direction seule est ambiguë ; on PRIORISE donc la
+        // transition la plus proche de la case exacte qu'on avait prise à
+        // l'enregistrement → on prend la BONNE sortie, tout en marchant
+        // vers ce bord DEPUIS N'IMPORTE OÙ (robuste, façon SynFus/dyshay).
+        var hint = celluleHint > 0 ? carte.Obtenir(celluleHint) : null;
+        Func<Cellule, double> distHint = c => hint == null ? 0
+            : (c.X - hint.X) * (c.X - hint.X) + (c.Y - hint.Y) * (c.Y - hint.Y);
+
         var bordures = transitions.Where(estBordure)
-            .OrderBy(distDep).ToList();
+            .OrderBy(distHint).ThenBy(distDep).ToList();
         IEnumerable<Cellule> ordonnees = bordures.Count > 0
             ? bordures
-            : transitions.OrderBy(ordreCote).ThenBy(distDep);
+            : hint != null
+                ? transitions.OrderBy(distHint).ThenBy(ordreCote).ThenBy(distDep)
+                : transitions.OrderBy(ordreCote).ThenBy(distDep);
         var candidats = ordonnees.Take(4).ToList();
         if (bordures.Count > 0)
             Journaliseur.Info($"[MAP] « {direction} » : {bordures.Count} "
@@ -556,18 +570,17 @@ public sealed class ApiBot
     }
 
     /// <summary>
-    /// Sortie « intelligente » vers une cellule enregistrée.
+    /// Sortie de carte « DIRECTION-first » (façon SynFus/dyshay).
     ///
-    /// PRIORITÉ À LA CELLULE EXACTE : une carte peut avoir PLUSIEURS sorties
-    /// du même côté menant à des cartes DIFFÉRENTES (ex. 10302 : cell 327 →
-    /// 10354, cell 458 → 10338, toutes deux « sud »). Déduire une simple
-    /// direction est donc AMBIGU et envoyait vers la mauvaise carte. On vise
-    /// donc la cellule de transition EXACTE enregistrée (destination
-    /// déterministe) ; le pathfinder évite déjà les mobs et le GKK0 long
-    /// (case transition) déclenche le GDM → fiable depuis n'importe où.
-    ///
-    /// La sortie par DIRECTION ne sert plus que de SECOURS si la cellule
-    /// exacte n'a pas changé la carte (cellule injoignable / entrée ailleurs).
+    /// La cellule enregistrée ne sert qu'à DÉDUIRE LE CÔTÉ (est/ouest/nord/
+    /// sud) — relatif aux cellules de transition de CETTE carte (donc
+    /// indépendant de la taille de map). On marche ensuite vers ce bord
+    /// DEPUIS N'IMPORTE OÙ (pathfinder depuis la position courante), pas
+    /// vers une case figée → robuste même après une récolte / une entrée
+    /// par une autre case. Pour les rares cartes à PLUSIEURS sorties du
+    /// même côté vers des cartes différentes (10302 : 327→10354, 458→
+    /// 10338), la cellule enregistrée sert de DÉPARTAGE : on prend la
+    /// transition du bon côté la plus proche d'elle.
     /// </summary>
     public async Task<bool> SortirCarteAsync(int celluleCible, CancellationToken ct = default)
     {
@@ -577,43 +590,47 @@ public sealed class ApiBot
             Journaliseur.Avertir("[MAP] SortirCarte : pas de carte courante");
             return false;
         }
-        var c = carte.Obtenir(celluleCible);
-        bool estTransition = c != null
-            && c.Type == BotDofus.Divers.Cartes.TypesCellule.Transition;
         int mapAvant = _etat.Personnage.CarteCourante ?? 0;
+        var c = carte.Obtenir(celluleCible);
 
-        // 1) Cellule EXACTE (sortie déterministe).
-        await SeDeplacerVersCelluleAsync(celluleCible, ct).ConfigureAwait(false);
-        await Task.Delay(400, ct).ConfigureAwait(false); // laisse venir le GDM
-        if (!estTransition || (_etat.Personnage.CarteCourante ?? 0) != mapAvant)
-            return (_etat.Personnage.CarteCourante ?? 0) != mapAvant
-                   || !estTransition;
-
-        // 2) SECOURS : la cellule exacte n'a pas (encore) changé de carte.
-        //    On RÉESSAIE LA MÊME cellule, jamais une autre déduite par
-        //    direction. RAISON (bug récurrent « va en 458 au lieu de 327 ») :
-        //    une carte a souvent PLUSIEURS sorties du même côté vers des
-        //    cartes DIFFÉRENTES (10302 : 327→10354, 458→10338, toutes « sud »).
-        //    Substituer une cellule de bord « la plus au sud » envoyait vers
-        //    la MAUVAISE carte → désync de plusieurs minutes. Mieux vaut
-        //    échouer proprement (le moteur de route resynchronise) que
-        //    téléporter le perso dans une zone imprévue.
-        for (int essai = 0; essai < 3
-                && (_etat.Personnage.CarteCourante ?? 0) == mapAvant
-                && !ct.IsCancellationRequested; essai++)
+        // Déduire le CÔTÉ de la cellule enregistrée vs les transitions de
+        // la carte (projection iso : sx=x−y, sy=x+y). Le côté = celui dont
+        // la cellule est la plus « extrême » (min distance à l'extrémité).
+        var trans = carte.Cellules
+            .OfType<Cellule>()
+            .Where(t => t.Type == BotDofus.Divers.Cartes.TypesCellule.Transition)
+            .ToList();
+        if (c != null && trans.Count > 0)
         {
-            Journaliseur.Avertir($"[MAP] cellule {celluleCible} n'a pas changé "
-                + $"la carte → nouvel essai MÊME cellule ({essai + 1}/3).");
-            await Task.Delay(700, ct).ConfigureAwait(false);
-            await SeDeplacerVersCelluleAsync(celluleCible, ct).ConfigureAwait(false);
-            await Task.Delay(500, ct).ConfigureAwait(false);
+            double maxXmY = trans.Max(t => t.X - t.Y);
+            double minXmY = trans.Min(t => t.X - t.Y);
+            double maxXpY = trans.Max(t => t.X + t.Y);
+            double minXpY = trans.Min(t => t.X + t.Y);
+            double dE = maxXmY - (c.X - c.Y);   // proche du bord EST
+            double dO = (c.X - c.Y) - minXmY;   // OUEST
+            double dS = maxXpY - (c.X + c.Y);   // SUD
+            double dN = (c.X + c.Y) - minXpY;   // NORD
+            double m = Math.Min(Math.Min(dE, dO), Math.Min(dS, dN));
+            string dir = m == dE ? "est" : m == dO ? "ouest"
+                       : m == dS ? "sud" : "nord";
+            Journaliseur.Info($"[MAP] Sortie cellule {celluleCible} → côté "
+                + $"déduit « {dir} » (marche vers ce bord depuis n'importe où, "
+                + "départage par la cellule enregistrée).");
+            if (await ChangerMapDirectionAsync(dir, ct, celluleHint: celluleCible)
+                    .ConfigureAwait(false))
+                return true;
         }
-        bool change = (_etat.Personnage.CarteCourante ?? 0) != mapAvant;
-        if (!change)
-            Journaliseur.Avertir($"[MAP] sortie cellule {celluleCible} ÉCHOUÉE "
-                + "— pas de substitution par direction (risque mauvaise "
-                + "carte). Le moteur de route va resynchroniser.");
-        return change;
+
+        // Secours : pas de transition décodée (ex. map sans mapData) → on
+        // vise la cellule exacte directement.
+        if ((_etat.Personnage.CarteCourante ?? 0) == mapAvant)
+        {
+            Journaliseur.Avertir($"[MAP] côté indéterminé → essai cellule "
+                + $"exacte {celluleCible}.");
+            await SeDeplacerVersCelluleAsync(celluleCible, ct).ConfigureAwait(false);
+            await Task.Delay(400, ct).ConfigureAwait(false);
+        }
+        return (_etat.Personnage.CarteCourante ?? 0) != mapAvant;
     }
 
     /// <summary>
