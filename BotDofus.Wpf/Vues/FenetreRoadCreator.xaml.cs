@@ -96,6 +96,9 @@ public partial class FenetreRoadCreator : Window
             CmbPnj.Items.Add(new ComboBoxItem
             {
                 Content = $"{nom} (id {p.IdGabarit}) cell {p.CellulePosition}",
+                // Texte sombre lisible (la liste déroulante a un fond clair).
+                Foreground = new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(0x15, 0x20, 0x2B)),
                 // On retient les DEUX : contextuel (DC live) + gabarit (script).
                 Tag = (p.Identifiant, p.IdGabarit)
             });
@@ -197,7 +200,12 @@ public partial class FenetreRoadCreator : Window
                 BorderThickness = new Thickness(0), Cursor = System.Windows.Input.Cursors.Hand
             };
             fin.Click += async (_, __) =>
-            { if (_ctx != null) await _ctx.Api.QuitterDialogueAsync(); };
+            {
+                if (_ctx != null) await _ctx.Api.QuitterDialogueAsync();
+                // Dialogue terminé : on referme la boîte dans le créateur.
+                BoxDialogue.Visibility = Visibility.Collapsed;
+                DlgReponses.Children.Clear();
+            };
             DlgReponses.Children.Add(fin);
         }
     }

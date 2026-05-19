@@ -63,8 +63,9 @@
                             Margin="6,0,0,0" Padding="8,4" Click="BtnParlerPnj_Click"
                             Background="#FF34618C" Foreground="White" BorderThickness="0"
                             Cursor="Hand"/>
-                    <ComboBox x:Name="CmbPnj" Padding="6,4" Background="#FF2A313B"
-                              Foreground="Black"/>
+                    <ComboBox x:Name="CmbPnj" Padding="6,4"
+                              Background="#FFEDF1F6" Foreground="#FF15202B"
+                              FontWeight="SemiBold"/>
                 </DockPanel>
                 <!-- Dialogue en direct : question + réponses cliquables -->
                 <Border x:Name="BoxDialogue" Background="#FF1A2733" CornerRadius="6"
