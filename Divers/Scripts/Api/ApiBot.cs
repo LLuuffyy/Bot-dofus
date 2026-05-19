@@ -149,90 +149,98 @@ public sealed class ApiBot
             return false;
         }
 
-        var depart = _etat.CarteCourante.Obtenir(_etat.Personnage.CellulePosition.Value);
-        var arrivee = _etat.CarteCourante.Obtenir(celluleCible);
-        if (depart == null || arrivee == null)
+        // ===== DÉPLACEMENT SEGMENTÉ ====================================
+        // Le serveur TRONQUE les longs chemins A* (>~6 cases) : il refait son
+        // propre routage et s'arrête en chemin → la cellule de sortie n'est
+        // jamais atteinte, le GDM ne part pas. PREUVE log : chemin[10] tronqué
+        // à mi-route, chemin[2] toujours OK. On envoie donc le trajet en
+        // PETITS SAUTS (≤ Kseg cases), en RE-PATHFINDANT depuis la VRAIE
+        // position serveur à chaque saut (robuste au clamp/troncature, aux
+        // mobs qui bougent), jusqu'à atteindre la cible ou changer de carte.
+        const int Kseg = 4;          // sauts courts = jamais tronqués
+        const int maxSeg = 18;
+        int mapAvant = _etat.Personnage.CarteCourante ?? 0;
+        bool aBouge = false;
+
+        for (int iter = 0; iter < maxSeg && !ct.IsCancellationRequested; iter++)
         {
-            Journaliseur.Avertir($"API.SeDeplacerVersCellule : depart {_etat.Personnage.CellulePosition} ou arrivée {celluleCible} hors map");
-            return false;
+            if ((_etat.Personnage.CarteCourante ?? 0) != mapAvant)
+                break; // transition franchie → fini
+
+            var carte = _etat.CarteCourante;
+            if (carte == null) break;
+            if (_etat.Personnage.CellulePosition is not int posCur)
+            { await Task.Delay(300, ct).ConfigureAwait(false); continue; }
+            if (posCur == celluleCible) { aBouge = true; break; }
+
+            var dep = carte.Obtenir(posCur);
+            var arr = carte.Obtenir(celluleCible);
+            if (dep == null || arr == null)
+            {
+                if (iter == 0)
+                    Journaliseur.Avertir($"API.SeDeplacerVersCellule : depart {posCur} ou arrivée {celluleCible} hors map");
+                break;
+            }
+
+            // Cases occupées (mobs/joueurs/PNJ) → interdites au pathfinder,
+            // sinon l'A* passe « à travers » et le serveur tronque.
+            var occ = new List<Cellule>();
+            foreach (var ent in carte.Entites.Values)
+            {
+                if (ent.CellulePosition == dep.Identifiant
+                    || ent.CellulePosition == arr.Identifiant) continue;
+                var co = carte.Obtenir(ent.CellulePosition);
+                if (co != null) occ.Add(co);
+            }
+
+            var full = Pathfinder.Trouver(carte, dep, arr,
+                cellulesInterdites: occ,
+                arreterDevant: arreterDevant, distanceArret: 1);
+            if (full == null || full.Count < 2)
+            {
+                if (iter == 0)
+                    Journaliseur.Avertir($"API.SeDeplacerVersCellule : aucun chemin {dep.Identifiant} → {celluleCible}"
+                        + (arreterDevant ? " (approche)" : ""));
+                break;
+            }
+
+            int take = Math.Min(Kseg + 1, full.Count); // dep inclus
+            var sub = full.GetRange(0, take);
+            bool dernier = take == full.Count;          // ce saut atteint la cible
+            bool versTransition = dernier
+                && arr.Type == BotDofus.Divers.Cartes.TypesCellule.Transition;
+
+            var paquet = Pathfinder.PaquetDeplacement(sub);
+            Journaliseur.Info($"API.SeDeplacerVersCellule : saut {iter} {dep.Identifiant}→{celluleCible} "
+                + $"sous[{sub.Count}]={string.Join(">", sub.ConvertAll(c => c.Identifiant))} {paquet}");
+            await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
+
+            // Transition = GKK0 APRÈS la vraie marche (sinon pas de GDM) ;
+            // saut interne = court/snappy.
+            int duree = versTransition
+                ? Math.Clamp(sub.Count * 450, 1100, 6000)
+                : Math.Clamp((sub.Count - 1) * 200, 250, 1400);
+            await Task.Delay(duree, ct).ConfigureAwait(false);
+            await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
+            await Task.Delay(350, ct).ConfigureAwait(false); // GA0 / GDM
+
+            // Anti-blocage : aucun progrès après ce saut (serveur refuse) →
+            // on arrête (sinon boucle infinie).
+            if ((_etat.Personnage.CarteCourante ?? 0) == mapAvant
+                && (_etat.Personnage.CellulePosition ?? -1) == posCur)
+            {
+                Journaliseur.Avertir($"API.SeDeplacerVersCellule : saut sans progrès (pos {posCur}) — arrêt.");
+                break;
+            }
+            aBouge = true;
         }
 
-        // CASES OCCUPÉES → INTERDITES au pathfinder. Sans ça, l'A* traçait un
-        // chemin À TRAVERS un monstre/joueur ; le serveur refuse ce chemin et
-        // tronque le déplacement (perso s'arrête avant, AUCUN franchissement
-        // de bord → pas de GDM). C'est LA cause du « ça bug si la carte n'est
-        // pas vide » : la sortie par direction marchait sur map vide et
-        // échouait dès qu'il y avait des mobs. On exclut le départ (sinon A*
-        // bloqué) et l'arrivée (transition = destination autorisée).
-        var occupees = new List<Cellule>();
-        foreach (var ent in _etat.CarteCourante.Entites.Values)
-        {
-            if (ent.CellulePosition == depart.Identifiant
-                || ent.CellulePosition == arrivee.Identifiant) continue;
-            var co = _etat.CarteCourante.Obtenir(ent.CellulePosition);
-            if (co != null) occupees.Add(co);
-        }
-
-        // arreterDevant : pour approcher un monstre, sa cellule est occupée
-        // (non marchable) → un chemin « dessus » échoue toujours. On demande
-        // au pathfinder de s'arrêter à 1 case de la cible.
-        var chemin = Pathfinder.Trouver(_etat.CarteCourante, depart, arrivee,
-            cellulesInterdites: occupees,
-            arreterDevant: arreterDevant, distanceArret: 1);
-        if (chemin == null || chemin.Count < 2)
-        {
-            Journaliseur.Avertir($"API.SeDeplacerVersCellule : aucun chemin {depart.Identifiant} → {celluleCible}"
-                + (arreterDevant ? " (approche)" : ""));
-            return false;
-        }
-
-        string paquet = Pathfinder.PaquetDeplacement(chemin);
-        // Trace décisive : chemin A* complet (ids cellules) + paquet encodé.
-        // Permet de comparer à un GA001 du VRAI client sur la même carte pour
-        // trancher : bug d'encodage vs marchabilité carte fausse (le serveur
-        // renvoie un GA0 no-op « reste sur place » si le chemin est invalide).
-        var cellsChemin = string.Join(">", chemin.ConvertAll(c => c.Identifiant));
-        Journaliseur.Info($"API.SeDeplacerVersCellule : dep={depart.Identifiant} arr={celluleCible} "
-            + $"chemin[{chemin.Count}]={cellsChemin} paquet={paquet}");
-        await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
-
-        // CONFIRMATION FIN DE DÉPLACEMENT — décisif. Le vrai client envoie
-        // « GKK0 » ~1-1,5 s après chaque GA001 (fin d'animation de marche).
-        // Le serveur considère le perso « en marche » tant qu'il ne l'a pas
-        // reçu et IGNORE toute action suivante (GA902 combat, etc.) → sans
-        // ça, en injection, le perso bouge côté serveur mais rien ne se
-        // passe ensuite en jeu. Durée ≈ nb de cases × ~300 ms (vitesse course
-        // Dofus Retro), bornée. Cf. capture live : GA001df_ → +1,0 s → GKK0.
-        // Durée de marche raccourcie : le serveur a déjà traité le GA0 (perso
-        // déplacé) ; GKK0 = ack d'arrivée. ~180 ms/case, borné [250, 3000] →
-        // approche bien plus directe/snappy (demande utilisateur), sans
-        // désync (GKK0 reste après que le serveur ait bougé le perso).
-        // CAS PARTICULIER — case d'arrivée = TRANSITION (changement de carte) :
-        // le serveur ne déclenche le GDM que si le GKK0 arrive APRÈS la vraie
-        // marche jusqu'au bord. À 250-380 ms (cadence interne snappy) le
-        // serveur replace juste le perso sur la case SANS changer de carte
-        // (« perso bloqué sur la case de sortie »). Le vrai client attend
-        // 0,6-4 s sur ce type de déplacement (cf. logs). On colle au vrai
-        // client UNIQUEMENT pour les transitions ; les déplacements internes
-        // restent snappy (demande utilisateur).
-        bool versTransition =
-            arrivee.Type == BotDofus.Divers.Cartes.TypesCellule.Transition;
-        int dureeMarcheMs = versTransition
-            ? Math.Clamp(chemin.Count * 450, 1100, 6000)
-            : Math.Clamp((chemin.Count - 1) * 180, 250, 3000);
-        await Task.Delay(dureeMarcheMs, ct).ConfigureAwait(false);
-        await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
-        // NE PAS écraser la position locale avec chemin[^1] : le SERVEUR fait
-        // foi (GA0 → OnActionJeu met _etat.Personnage.CellulePosition à la
-        // VRAIE case d'arrivée, souvent différente du chemin demandé car le
-        // serveur clampe/tronque). L'écraser ici créait une désync (le perso
-        // se croyait sur la cellule du monstre → « aucun chemin 368→368 » →
-        // farm bloqué en boucle, cf. log 11:38-11:39). On laisse un délai
-        // pour que le GA0 arrive avant la prochaine action.
-        await Task.Delay(250, ct).ConfigureAwait(false);
-        Journaliseur.Info($"API.SeDeplacerVersCellule : GA001+GKK0 envoyés (marche {dureeMarcheMs} ms), "
-            + $"position réelle via GA0 = cell {_etat.Personnage.CellulePosition}");
-        return true;
+        bool carteChangee = (_etat.Personnage.CarteCourante ?? 0) != mapAvant;
+        Journaliseur.Info($"API.SeDeplacerVersCellule : fini pos={_etat.Personnage.CellulePosition} "
+            + (carteChangee ? "carte CHANGÉE" : "carte idem"));
+        return carteChangee
+               || _etat.Personnage.CellulePosition == celluleCible
+               || aBouge;
         }
         finally { _verrouDeplacement.Release(); }
     }
