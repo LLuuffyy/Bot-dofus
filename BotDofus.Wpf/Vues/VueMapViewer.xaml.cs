@@ -383,9 +383,13 @@ public partial class VueMapViewer : UserControl
             // le DESSUS est remonté à l'écran (élévation) → il surplombe le sol
             // blanc qui, lui, reste au niveau bas. La falaise (faces latérales)
             // descend du dessus remonté jusqu'au niveau du sol → vraie marche.
-            bool blocCell = !cell.EstMarchable
-                            || cell.Type == TypesCellule.Obstacle
-                            || cell.Type == TypesCellule.LignDeVueSeule;
+            // Une TRANSITION (sortie/soleil) n'est PAS une falaise : elle
+            // reste à PLAT au niveau du sol, sinon le marqueur orange (dessiné
+            // à plat) est décalé par rapport au bloc surélevé.
+            bool blocCell = cell.Type != TypesCellule.Transition
+                            && (!cell.EstMarchable
+                                || cell.Type == TypesCellule.Obstacle
+                                || cell.Type == TypesCellule.LignDeVueSeule);
             double elev = blocCell ? 20 : 0;  // hauteur du plateau gris
             const double epais = 4;           // fine épaisseur commune (dalle)
             // Profondeur iso (peintre) : plus (x+y) est grand, plus la case
@@ -458,9 +462,10 @@ public partial class VueMapViewer : UserControl
             // même au milieu de la carte : chaque bloc gris est délimité par
             // un liseré plus sombre → la masse grise se lit en blocs surélevés
             // distincts (pas un aplat). Le sol garde sa fine grille claire.
-            bool gris = !cell.EstMarchable
-                        || cell.Type == TypesCellule.Obstacle
-                        || cell.Type == TypesCellule.LignDeVueSeule;
+            bool gris = cell.Type != TypesCellule.Transition
+                        && (!cell.EstMarchable
+                            || cell.Type == TypesCellule.Obstacle
+                            || cell.Type == TypesCellule.LignDeVueSeule);
             // Dessus gris AU-DESSUS des murs (offset +200) → la surface du
             // plateau est nette ; trié par profondeur pour qu'un bloc gris
             // devant masque la falaise d'un bloc gris derrière. Le sol/les
