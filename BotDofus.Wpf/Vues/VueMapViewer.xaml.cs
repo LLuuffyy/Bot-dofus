@@ -707,6 +707,11 @@ public partial class VueMapViewer : UserControl
         // Palette claire façon SynFus : cases blanches, blocs gris foncés.
         if (_celluleSelectionnee == cell.Identifiant) return new SolidColorBrush(Color.FromRgb(0xC8, 0xDA, 0xFF));
         if (cell.Type == TypesCellule.Transition) return new SolidColorBrush(Color.FromRgb(0xF2, 0xA3, 0x3C));
+        // ZAAP / ZAAPI : couleur dédiée (prête ; s'affiche dès que le décodeur
+        // type la case en Zaap — ce qui nécessite de capturer ton interaction
+        // avec le zaap, cf. Paquet B).
+        if (cell.Type == TypesCellule.Zaap) return new SolidColorBrush(Color.FromRgb(0x29, 0xB6, 0xF6));
+        if (cell.Type == TypesCellule.Zaapi) return new SolidColorBrush(Color.FromRgb(0x7E, 0x57, 0xC2));
         // Élément interactif / récoltable :
         //  - épuisé (GDF) → vert très terne
         //  - skill connu de ce perso → vert vif (récoltable)
