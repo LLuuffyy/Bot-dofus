@@ -272,12 +272,19 @@ public sealed class MoteurLuaInteractif : IDisposable
                         var ids = anka.Npc.getRepliesId();
                         if (ids.Length >= n) rep = (int)ids.Get(n).Number;
                         else if (ids.Length > 0) rep = (int)ids.Get(1).Number;
-                        else { anka.Npc.leave(); break; }
+                        else break;
                     }
                     anka.Npc.reply(rep);
                     Pause(900, ct);
                 }
-            else anka.Npc.leave();
+            // TOUJOURS fermer le dialogue (DV) — qu'il y ait eu des réponses
+            // ou non. Tant que le dialogue PNJ reste ouvert, le SERVEUR
+            // IGNORE tout déplacement (GA001) → le perso reste coincé sur sa
+            // case (cf. log : après le PNJ, raw + secours cell échouent,
+            // perso bloqué 310). À l'enregistrement, « Terminer le dialogue »
+            // envoyait ce DV ; au rejeu il manquait.
+            anka.Npc.leave();
+            Pause(700, ct);
         }
         // 4) custom / lockedCustom
         var custom = row.Get("custom");
