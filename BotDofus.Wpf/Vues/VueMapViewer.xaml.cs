@@ -1109,14 +1109,16 @@ public partial class VueMapViewer : UserControl
 
             _roadFenetre = new FenetreRoadCreator { Owner = Window.GetWindow(this) };
             _roadFenetre.Initialiser(_contexte);
-            _roadFenetre.Validee += async (_, ligne) =>
+            _roadFenetre.Validee += (_, ligne) =>
             {
+                // ENREGISTREMENT SEULEMENT : on NE rejoue PAS l'action ici.
+                // Avant, le bot exécutait combat/récolte/déplacement tout seul
+                // pendant qu'on enregistrait (le perso bougeait/récoltait seul
+                // → capture pourrie). Le trajet est rejoué plus tard via le
+                // script (chemin brut + npc + answers déjà capturés).
                 _recTrajet.AjouterLigne(ligne);
                 _roadFenetre?.MajCompteur(_recTrajet.NbLignes);
                 _roadLigneDejaValidee = true; // évite le double-enregistrement
-                // Exécute l'action validée (comme SynFus) : le bot combat /
-                // récolte / se déplace tout seul, pas besoin de le faire à la main.
-                await ExecuterLigneRoadCreator(ligne);
             };
             var (id, co) = MapCourante();
             _roadMapId = id;
