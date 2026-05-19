@@ -378,10 +378,38 @@ public sealed class ApiBot
         int dureeMarcheMs = Math.Clamp(cases * 450, 2000, 9000);
         Journaliseur.Info($"[ANKA] Rejeu chemin brut « {ga001} » (dest {destCell}, "
             + $"{cases} case(s) → {dureeMarcheMs} ms avant GKK0)");
+        int mapAvantRej = _etat.Personnage.CarteCourante ?? 0;
         await EnvoyerHumaniseAsync(ga001, ct).ConfigureAwait(false);
-        await Task.Delay(dureeMarcheMs, ct).ConfigureAwait(false);
-        await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
-        await Task.Delay(250, ct).ConfigureAwait(false);
+        // ATTENTE ADAPTATIVE : le vrai client (qui voit le GA0 de notre
+        // GA001 injecté) marche AUSSI et envoie SON propre GKK0 → la carte
+        // change souvent AVANT la fin de notre durée estimée. On sortait
+        // bêtement après dureeMarcheMs complet (1-3 s morts à chaque carte,
+        // perso planté à l'arrivée). On scrute donc : dès que la CARTE a
+        // changé (transition franchie) ou qu'on est ARRIVÉ à destination,
+        // on enchaîne immédiatement. dureeMarcheMs ne sert plus que de
+        // plafond de sécurité.
+        int ecoule = 0;
+        bool carteAChange = false;
+        while (ecoule < dureeMarcheMs && !ct.IsCancellationRequested)
+        {
+            if ((_etat.Personnage.CarteCourante ?? 0) != mapAvantRej)
+            { carteAChange = true; break; }            // franchi par le client
+            if (destCell >= 0
+                && (_etat.Personnage.CellulePosition ?? -1) == destCell)
+                break;                                  // arrivé → GKK0 maintenant
+            await Task.Delay(150, ct).ConfigureAwait(false);
+            ecoule += 150;
+        }
+        // GKK0 inutile si la carte a déjà changé (client l'a déjà déclenché).
+        if (!carteAChange && (_etat.Personnage.CarteCourante ?? 0) == mapAvantRej)
+        {
+            await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
+            // petit délai pour laisser venir le GDM (changement de carte)
+            for (int i = 0; i < 12 && !ct.IsCancellationRequested
+                    && (_etat.Personnage.CarteCourante ?? 0) == mapAvantRej; i++)
+                await Task.Delay(150, ct).ConfigureAwait(false);
+        }
+        await Task.Delay(120, ct).ConfigureAwait(false);
     }
 
     public async Task ParlerPnjAsync(int cellule, int idPnj, CancellationToken ct = default)
