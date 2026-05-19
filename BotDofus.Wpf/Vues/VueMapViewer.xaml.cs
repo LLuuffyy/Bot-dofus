@@ -392,7 +392,9 @@ public partial class VueMapViewer : UserControl
                 bool bloc = !cell.EstMarchable
                             || cell.Type == TypesCellule.Obstacle
                             || cell.Type == TypesCellule.LignDeVueSeule;
-                double prof = bloc ? 22 : 7;
+                // Gris = bloc bien SURÉLEVÉ ; blanc = sol fin, nettement en
+                // dessous → grosse marche, le sol « s'enfonce » sous le gris.
+                double prof = bloc ? 26 : 3;
 
                 var pG = new Point(cx - _largeurCellule, cy + _hauteurCellule); // gauche
                 var pB = new Point(cx, cy + _hauteurCellule * 2);               // bas
@@ -428,12 +430,24 @@ public partial class VueMapViewer : UserControl
 
             var poly = CreerPolygoneCellule(cell, couleur, 0.8);
             Canvas.SetZIndex(poly, 2);
-            // Pas de grille sur les obstacles/non-marchables : la zone sombre
-            // devient une masse propre (avant : chaque bloc avait un liseré
-            // clair → très bruité). Grille fine uniquement sur le sol.
             bool sol = cell.EstMarchable && cell.IdInteractif < 0
                        && cell.Type != TypesCellule.Transition;
-            if (!sol) poly.Stroke = couleur;
+            // BORDURE sur TOUTES les cases grises (obstacle/non-marchable),
+            // même au milieu de la carte : chaque bloc gris est délimité par
+            // un liseré plus sombre → la masse grise se lit en blocs surélevés
+            // distincts (pas un aplat). Le sol garde sa fine grille claire.
+            bool gris = !cell.EstMarchable
+                        || cell.Type == TypesCellule.Obstacle
+                        || cell.Type == TypesCellule.LignDeVueSeule;
+            if (gris && couleur is SolidColorBrush gc)
+            {
+                poly.Stroke = new SolidColorBrush(AssombrirCouleur(gc.Color, 0.55));
+                poly.StrokeThickness = 0.9;
+            }
+            else if (!sol)
+            {
+                poly.Stroke = couleur;
+            }
             if (_celluleSelectionnee == cell.Identifiant)
             {
                 poly.Stroke = new SolidColorBrush(Color.FromRgb(0x6C, 0x76, 0xFF));
