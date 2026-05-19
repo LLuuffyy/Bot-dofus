@@ -966,9 +966,13 @@ public sealed class ApiBot
                 await RecolterAsync(cible.Identifiant, cible.IdInteractif, skill, ct)
                     .ConfigureAwait(false);
 
-                // Attend l'épuisement (GDF) de cette cellule, max ~9 s ; dès
-                // que le serveur confirme, on libère le cooldown et on enchaîne.
-                for (int i = 0; i < 18 && cible.RessourceDisponible
+                // Attend l'épuisement (GDF) de cette cellule. CAPTURE MANUELLE
+                // (log 20:14) : la récolte du blé prend ~12 s (GA500 →
+                // GDF;3 + OQ/IQ loot). L'ancien plafond 9 s faisait PARTIR le
+                // bot AVANT la fin → GA001 suivant = la récolte est ANNULÉE,
+                // GDF cosmétique mais aucun OQ/IQ → « coupe pour rien ».
+                // On attend donc l'épuisement réel, plafond ~17 s.
+                for (int i = 0; i < 34 && cible.RessourceDisponible
                                        && !ct.IsCancellationRequested; i++)
                     await Task.Delay(500, ct).ConfigureAwait(false);
                 if (!cible.RessourceDisponible)
@@ -1005,7 +1009,10 @@ public sealed class ApiBot
             int skill = io?.IdSkill ?? 45;
             _recolteCooldown[c.Identifiant] = DateTime.UtcNow + CooldownRecolte;
             await RecolterAsync(c.Identifiant, c.IdInteractif, skill, ct).ConfigureAwait(false);
-            for (int i = 0; i < 18 && c.RessourceDisponible
+            // Récolte blé Retro ≈ 12 s (capture manuelle 20:14 : GA500 →
+            // GDF;3 + OQ/IQ à +12 s). Plafond 9 s = bot partait trop tôt
+            // → récolte annulée, aucun loot. On attend l'épuisement, ~17 s.
+            for (int i = 0; i < 34 && c.RessourceDisponible
                                    && !ct.IsCancellationRequested; i++)
                 await Task.Delay(500, ct).ConfigureAwait(false);
             if (!c.RessourceDisponible) _recolteCooldown.Remove(c.Identifiant);
