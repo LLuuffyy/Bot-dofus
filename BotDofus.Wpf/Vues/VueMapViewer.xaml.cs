@@ -1054,14 +1054,18 @@ public partial class VueMapViewer : UserControl
     /// Ainsi pas besoin de refaire l'action manuellement après l'avoir cochée.
     /// </summary>
     private async System.Threading.Tasks.Task ExecuterLigneRoadCreator(
-        BotDofus.Divers.Scripts.EnregistreurTrajet.Ligne l)
+        BotDofus.Divers.Scripts.EnregistreurTrajet.Ligne l,
+        bool deplacementSeul = false)
     {
         if (_contexte == null) return;
         var api = _contexte.Api;
         var ct = System.Threading.CancellationToken.None;
         try
         {
-            if (l.Fight)
+            // deplacementSeul (clic direction pendant l'ENREGISTREMENT) : on
+            // change juste de map pour naviguer, SANS auto-récolte/combat
+            // (sinon le bot récolte toute la map seul pendant qu'on enregistre).
+            if (!deplacementSeul && l.Fight)
             {
                 await api.EngagerCombatAsync(ct);
                 // attend la fin du combat (max ~3 min)
@@ -1070,7 +1074,7 @@ public partial class VueMapViewer : UserControl
                         != BotDofus.Divers.Combats.Enums.EtatCombat.Inactif; i++)
                     await System.Threading.Tasks.Task.Delay(500);
             }
-            if (l.Gather) await api.RecolterToutAsync(ct);
+            if (!deplacementSeul && l.Gather) await api.RecolterToutAsync(ct);
             // NB : le PNJ a déjà été parlé EN DIRECT dans la fenêtre Road
             // Creator (réponses enregistrées) → on ne le refait pas ici.
             if (l.Cellule > 0)
@@ -1111,16 +1115,16 @@ public partial class VueMapViewer : UserControl
 
             _roadFenetre = new FenetreRoadCreator { Owner = Window.GetWindow(this) };
             _roadFenetre.Initialiser(_contexte);
-            _roadFenetre.Validee += (_, ligne) =>
+            _roadFenetre.Validee += async (_, ligne) =>
             {
-                // ENREGISTREMENT SEULEMENT : on NE rejoue PAS l'action ici.
-                // Avant, le bot exécutait combat/récolte/déplacement tout seul
-                // pendant qu'on enregistrait (le perso bougeait/récoltait seul
-                // → capture pourrie). Le trajet est rejoué plus tard via le
-                // script (chemin brut + npc + answers déjà capturés).
                 _recTrajet.AjouterLigne(ligne);
                 _roadFenetre?.MajCompteur(_recTrajet.NbLignes);
                 _roadLigneDejaValidee = true; // évite le double-enregistrement
+                // Clic direction/cellule = on change RÉELLEMENT de map pour
+                // naviguer pendant l'enregistrement, mais SANS auto-récolte
+                // ni combat (deplacementSeul) → le perso ne récolte/combat
+                // plus tout seul ; ça reste juste coché et enregistré.
+                await ExecuterLigneRoadCreator(ligne, deplacementSeul: true);
             };
             var (id, co) = MapCourante();
             _roadMapId = id;
