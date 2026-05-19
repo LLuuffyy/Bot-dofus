@@ -204,11 +204,21 @@ public sealed class ApiBot
                 break;
             }
 
-            int take = Math.Min(Kseg + 1, full.Count); // dep inclus
+            // CHEMIN COMPLET vers une TRANSITION : l'enregistrement manuel
+            // prouve que le vrai client atteint une case de sortie en UN seul
+            // GA001 (ex. 262→327 « GA001aehbfWafXhfh » accepté). Segmenter ce
+            // trajet le faisait REFUSER par le serveur au 2ᵉ tronçon (log :
+            // saut1 280→327 → GA0 reste 280 → « sans progrès » → secours
+            // direction « sud » → 458 → MAUVAISE carte 10338). On ne segmente
+            // donc QUE les longs déplacements internes (non-transition).
+            bool ciblesTransition =
+                arr.Type == BotDofus.Divers.Cartes.TypesCellule.Transition;
+            int take = ciblesTransition
+                ? full.Count                              // un seul GA001
+                : Math.Min(Kseg + 1, full.Count);         // dep inclus
             var sub = full.GetRange(0, take);
             bool dernier = take == full.Count;          // ce saut atteint la cible
-            bool versTransition = dernier
-                && arr.Type == BotDofus.Divers.Cartes.TypesCellule.Transition;
+            bool versTransition = dernier && ciblesTransition;
 
             var paquet = Pathfinder.PaquetDeplacement(sub);
             Journaliseur.Info($"API.SeDeplacerVersCellule : saut {iter} {dep.Identifiant}→{celluleCible} "
@@ -504,27 +514,31 @@ public sealed class ApiBot
             return (_etat.Personnage.CarteCourante ?? 0) != mapAvant
                    || !estTransition;
 
-        // 2) SECOURS uniquement : la cellule exacte n'a pas fait changer de
-        //    carte → on tente la sortie par direction déduite de cette case.
-        var trans = carte.Cellules
-            .OfType<Cellule>()
-            .Where(t => t.Type == BotDofus.Divers.Cartes.TypesCellule.Transition)
-            .ToList();
-        if (trans.Count == 0 || c == null) return false;
-        double maxXmY = trans.Max(t => t.X - t.Y);
-        double minXmY = trans.Min(t => t.X - t.Y);
-        double maxXpY = trans.Max(t => t.X + t.Y);
-        double minXpY = trans.Min(t => t.X + t.Y);
-        double dE = maxXmY - (c.X - c.Y);
-        double dO = (c.X - c.Y) - minXmY;
-        double dS = maxXpY - (c.X + c.Y);
-        double dN = (c.X + c.Y) - minXpY;
-        double m = Math.Min(Math.Min(dE, dO), Math.Min(dS, dN));
-        string dir = m == dE ? "est" : m == dO ? "ouest"
-                   : m == dS ? "sud" : "nord";
-        Journaliseur.Avertir($"[MAP] cellule {celluleCible} n'a pas changé "
-            + $"la carte → SECOURS sortie par direction « {dir} ».");
-        return await ChangerMapDirectionAsync(dir, ct).ConfigureAwait(false);
+        // 2) SECOURS : la cellule exacte n'a pas (encore) changé de carte.
+        //    On RÉESSAIE LA MÊME cellule, jamais une autre déduite par
+        //    direction. RAISON (bug récurrent « va en 458 au lieu de 327 ») :
+        //    une carte a souvent PLUSIEURS sorties du même côté vers des
+        //    cartes DIFFÉRENTES (10302 : 327→10354, 458→10338, toutes « sud »).
+        //    Substituer une cellule de bord « la plus au sud » envoyait vers
+        //    la MAUVAISE carte → désync de plusieurs minutes. Mieux vaut
+        //    échouer proprement (le moteur de route resynchronise) que
+        //    téléporter le perso dans une zone imprévue.
+        for (int essai = 0; essai < 3
+                && (_etat.Personnage.CarteCourante ?? 0) == mapAvant
+                && !ct.IsCancellationRequested; essai++)
+        {
+            Journaliseur.Avertir($"[MAP] cellule {celluleCible} n'a pas changé "
+                + $"la carte → nouvel essai MÊME cellule ({essai + 1}/3).");
+            await Task.Delay(700, ct).ConfigureAwait(false);
+            await SeDeplacerVersCelluleAsync(celluleCible, ct).ConfigureAwait(false);
+            await Task.Delay(500, ct).ConfigureAwait(false);
+        }
+        bool change = (_etat.Personnage.CarteCourante ?? 0) != mapAvant;
+        if (!change)
+            Journaliseur.Avertir($"[MAP] sortie cellule {celluleCible} ÉCHOUÉE "
+                + "— pas de substitution par direction (risque mauvaise "
+                + "carte). Le moteur de route va resynchroniser.");
+        return change;
     }
 
     /// <summary>
