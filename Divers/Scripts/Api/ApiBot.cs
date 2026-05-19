@@ -190,7 +190,19 @@ public sealed class ApiBot
         // déplacé) ; GKK0 = ack d'arrivée. ~180 ms/case, borné [250, 3000] →
         // approche bien plus directe/snappy (demande utilisateur), sans
         // désync (GKK0 reste après que le serveur ait bougé le perso).
-        int dureeMarcheMs = Math.Clamp((chemin.Count - 1) * 180, 250, 3000);
+        // CAS PARTICULIER — case d'arrivée = TRANSITION (changement de carte) :
+        // le serveur ne déclenche le GDM que si le GKK0 arrive APRÈS la vraie
+        // marche jusqu'au bord. À 250-380 ms (cadence interne snappy) le
+        // serveur replace juste le perso sur la case SANS changer de carte
+        // (« perso bloqué sur la case de sortie »). Le vrai client attend
+        // 0,6-4 s sur ce type de déplacement (cf. logs). On colle au vrai
+        // client UNIQUEMENT pour les transitions ; les déplacements internes
+        // restent snappy (demande utilisateur).
+        bool versTransition =
+            arrivee.Type == BotDofus.Divers.Cartes.TypesCellule.Transition;
+        int dureeMarcheMs = versTransition
+            ? Math.Clamp(chemin.Count * 450, 1100, 6000)
+            : Math.Clamp((chemin.Count - 1) * 180, 250, 3000);
         await Task.Delay(dureeMarcheMs, ct).ConfigureAwait(false);
         await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
         // NE PAS écraser la position locale avec chemin[^1] : le SERVEUR fait
