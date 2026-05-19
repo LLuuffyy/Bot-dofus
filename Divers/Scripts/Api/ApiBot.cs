@@ -281,8 +281,14 @@ public sealed class ApiBot
             return;
         }
         // Durée de marche ≈ nb de pas (2 chars/pas après "GA001"), bornée.
+        // IMPORTANT : à l'enregistrement le vrai client envoie GKK0 ~2,76 s
+        // après le GA001 (marche réelle terminée) → le serveur enregistre le
+        // franchissement de bord et déclenche GDM. Si on envoie GKK0 trop tôt
+        // (~1 s), le serveur replace le perso SANS changer de carte
+        // (« bug de la TP bizarre »). On colle donc au vrai client :
+        // ~400 ms/pas, plafond 6 s.
         int pas = Math.Max(1, (ga001.Length - 5) / 2);
-        int dureeMarcheMs = Math.Clamp(pas * 180, 250, 3000);
+        int dureeMarcheMs = Math.Clamp(pas * 400, 400, 6000);
         Journaliseur.Info($"[ANKA] Rejeu chemin brut « {ga001} » (~{pas} pas, {dureeMarcheMs} ms)");
         await EnvoyerHumaniseAsync(ga001, ct).ConfigureAwait(false);
         await Task.Delay(dureeMarcheMs, ct).ConfigureAwait(false);
