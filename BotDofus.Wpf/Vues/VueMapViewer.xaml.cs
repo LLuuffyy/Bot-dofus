@@ -470,7 +470,12 @@ public partial class VueMapViewer : UserControl
             // plateau est nette ; trié par profondeur pour qu'un bloc gris
             // devant masque la falaise d'un bloc gris derrière. Le sol/les
             // cases colorées restent en bas (z = prof) sous les falaises.
-            Canvas.SetZIndex(poly, gris ? prof + 200 : prof);
+            // Transition : léger boost (+60) → ressort nettement au-dessus
+            // de la grille du sol, mais reste sous les murs (prof+100) et
+            // l'UI (300+). Gris : +200 (au-dessus des murs). Sol : prof.
+            Canvas.SetZIndex(poly,
+                cell.Type == TypesCellule.Transition ? prof + 60
+                : gris ? prof + 200 : prof);
             if (gris && couleur is SolidColorBrush gc)
             {
                 poly.Stroke = new SolidColorBrush(AssombrirCouleur(gc.Color, 0.55));
@@ -525,22 +530,11 @@ public partial class VueMapViewer : UserControl
             if (cell?.Type != TypesCellule.Transition) continue;
             var (cx, cy) = ProjeterIso(cell.X, cell.Y);
 
-            var poly = CreerPolygoneCellule(cell, new SolidColorBrush(Color.FromRgb(255, 152, 0)), 0.6);
-            // Liseré orange doux (au lieu de DarkOrange épais) + bord net.
-            poly.Stroke = new SolidColorBrush(Color.FromRgb(0xD0, 0x78, 0x12));
-            System.Windows.Media.RenderOptions.SetEdgeMode(
-                poly, System.Windows.Media.EdgeMode.Aliased);
-            // Légèrement réduit et CENTRÉ sur la case (centre du losange =
-            // cx, cy+h) → le marqueur de sortie est posé PROPREMENT dans sa
-            // cellule, aligné, sans déborder sur la falaise voisine.
-            poly.RenderTransform = new System.Windows.Media.ScaleTransform(
-                0.84, 0.84, cx, cy + _hauteurCellule);
-            poly.MouseEnter += Poly_MouseEnter;
-            poly.MouseLeave += Poly_MouseLeave;
-            poly.MouseRightButtonDown += Poly_MouseRightButtonDown;
-            Canvas.SetZIndex(poly, 300);
-            CanvasMap.Children.Add(poly);
-
+            // PAS de 2e polygone : la grille (DessinerGrille) dessine DÉJÀ la
+            // case de transition en orange, à PLEINE TAILLE et donc PARFAITEMENT
+            // alignée sur la cellule (même polygone que toutes les cases). Un
+            // 2e losange réduit par-dessus créait le halo/décalage. Ici on
+            // n'ajoute QUE le numéro de la cellule.
             var txt = new TextBlock
             {
                 Text = cell.Identifiant.ToString(),
