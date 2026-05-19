@@ -482,8 +482,8 @@ public partial class VueMapViewer : UserControl
                 // l'anti-crénelage doublait la ligne entre 2 cases voisines
                 // (démarcations « grosses »). Liseré quasi-blanc + très fin
                 // + Aliased (pas de doublon flou) = grille propre façon SynFus.
-                poly.Stroke = new SolidColorBrush(Color.FromRgb(0xE6, 0xE8, 0xEB));
-                poly.StrokeThickness = 0.35;
+                poly.Stroke = new SolidColorBrush(Color.FromRgb(0xEC, 0xEE, 0xF0));
+                poly.StrokeThickness = 0.25;
                 System.Windows.Media.RenderOptions.SetEdgeMode(
                     poly, System.Windows.Media.EdgeMode.Aliased);
             }
@@ -520,8 +520,16 @@ public partial class VueMapViewer : UserControl
             if (cell?.Type != TypesCellule.Transition) continue;
             var (cx, cy) = ProjeterIso(cell.X, cell.Y);
 
-            var poly = CreerPolygoneCellule(cell, new SolidColorBrush(Color.FromRgb(255, 152, 0)), 1);
-            poly.Stroke = Brushes.DarkOrange;
+            var poly = CreerPolygoneCellule(cell, new SolidColorBrush(Color.FromRgb(255, 152, 0)), 0.6);
+            // Liseré orange doux (au lieu de DarkOrange épais) + bord net.
+            poly.Stroke = new SolidColorBrush(Color.FromRgb(0xD0, 0x78, 0x12));
+            System.Windows.Media.RenderOptions.SetEdgeMode(
+                poly, System.Windows.Media.EdgeMode.Aliased);
+            // Légèrement réduit et CENTRÉ sur la case (centre du losange =
+            // cx, cy+h) → le marqueur de sortie est posé PROPREMENT dans sa
+            // cellule, aligné, sans déborder sur la falaise voisine.
+            poly.RenderTransform = new System.Windows.Media.ScaleTransform(
+                0.84, 0.84, cx, cy + _hauteurCellule);
             poly.MouseEnter += Poly_MouseEnter;
             poly.MouseLeave += Poly_MouseLeave;
             poly.MouseRightButtonDown += Poly_MouseRightButtonDown;
