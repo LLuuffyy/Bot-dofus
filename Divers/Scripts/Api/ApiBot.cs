@@ -545,6 +545,26 @@ public sealed class ApiBot
         if (bordures.Count > 0)
             Journaliseur.Info($"[MAP] « {direction} » : {bordures.Count} "
                 + "cellule(s) de bordure exacte (équations dyshay).");
+
+        // VÉRITÉ TERRAIN > équations dyshay. Si la cellule de sortie
+        // ENREGISTRÉE est elle-même une Transition sur CETTE carte, c'est
+        // la case EXACTE sur laquelle le joueur a marché → changement de
+        // map déterministe vers la BONNE carte, et indépendant de la
+        // position de départ (on PATHFIND vers cette case depuis n'importe
+        // où, ≠ rejouer un GA001 figé). Les équations dyshay (27/31) sont
+        // fausses pour les maps 15×17 et choisissent parfois une AUTRE
+        // transition du même côté vers une MAUVAISE carte (10302 : eq →
+        // 458→10338 au lieu de 327→10354). → on l'essaie EN PREMIER ;
+        // direction/bordures restent le secours.
+        if (hint != null
+            && hint.Type == BotDofus.Divers.Cartes.TypesCellule.Transition)
+        {
+            candidats = new[] { hint }
+                .Concat(candidats.Where(c => c.Identifiant != hint.Identifiant))
+                .Take(4).ToList();
+            Journaliseur.Info($"[MAP] cellule enregistrée {hint.Identifiant} "
+                + "EST une transition → essai prioritaire (vérité terrain).");
+        }
         int mapAvant = _etat.Personnage.CarteCourante ?? 0;
 
         foreach (var cible in candidats)
