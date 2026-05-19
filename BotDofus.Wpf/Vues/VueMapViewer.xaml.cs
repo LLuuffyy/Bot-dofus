@@ -475,6 +475,18 @@ public partial class VueMapViewer : UserControl
             {
                 poly.Stroke = couleur;
             }
+            else
+            {
+                // SOL blanc : grille très discrète. Avant elle gardait le
+                // stroke par défaut (#BCC0C7, 0.8) → trop contrasté, et
+                // l'anti-crénelage doublait la ligne entre 2 cases voisines
+                // (démarcations « grosses »). Liseré quasi-blanc + très fin
+                // + Aliased (pas de doublon flou) = grille propre façon SynFus.
+                poly.Stroke = new SolidColorBrush(Color.FromRgb(0xE6, 0xE8, 0xEB));
+                poly.StrokeThickness = 0.35;
+                System.Windows.Media.RenderOptions.SetEdgeMode(
+                    poly, System.Windows.Media.EdgeMode.Aliased);
+            }
             if (_celluleSelectionnee == cell.Identifiant)
             {
                 poly.Stroke = new SolidColorBrush(Color.FromRgb(0x6C, 0x76, 0xFF));
