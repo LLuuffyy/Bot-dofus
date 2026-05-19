@@ -441,6 +441,56 @@ public sealed class ApiBot
     }
 
     /// <summary>
+    /// Sortie « intelligente » à partir d'une cellule enregistrée. Si cette
+    /// cellule est une TRANSITION (donc un changement de carte), on n'essaie
+    /// PAS d'y marcher pile dessus (fragile : dépend du point de départ, des
+    /// mobs…). On en DÉDUIT le côté (est/ouest/nord/sud) et on déclenche la
+    /// sortie GLOBALE par direction — fiable depuis n'importe où sur la carte.
+    /// Sinon (cellule normale : récolte / PNJ sur place) → déplacement simple.
+    /// C'est ce qui rend TOUS les trajets déjà enregistrés (cell=…) robustes.
+    /// </summary>
+    public async Task<bool> SortirCarteAsync(int celluleCible, CancellationToken ct = default)
+    {
+        var carte = _etat.CarteCourante;
+        if (carte == null)
+        {
+            Journaliseur.Avertir("[MAP] SortirCarte : pas de carte courante");
+            return false;
+        }
+        var c = carte.Obtenir(celluleCible);
+        if (c != null
+            && c.Type == BotDofus.Divers.Cartes.TypesCellule.Transition)
+        {
+            var trans = carte.Cellules
+                .OfType<Cellule>()
+                .Where(t => t.Type == BotDofus.Divers.Cartes.TypesCellule.Transition)
+                .ToList();
+            if (trans.Count > 0)
+            {
+                double maxXmY = trans.Max(t => t.X - t.Y);
+                double minXmY = trans.Min(t => t.X - t.Y);
+                double maxXpY = trans.Max(t => t.X + t.Y);
+                double minXpY = trans.Min(t => t.X + t.Y);
+                double dE = maxXmY - (c.X - c.Y);   // distance au bord EST
+                double dO = (c.X - c.Y) - minXmY;   // …OUEST
+                double dS = maxXpY - (c.X + c.Y);   // …SUD
+                double dN = (c.X + c.Y) - minXpY;   // …NORD
+                double m = Math.Min(Math.Min(dE, dO), Math.Min(dS, dN));
+                string dir = m == dE ? "est"
+                           : m == dO ? "ouest"
+                           : m == dS ? "sud" : "nord";
+                Journaliseur.Info($"[MAP] cellule de sortie {celluleCible} = "
+                    + $"transition (côté {dir}) → sortie GLOBALE par direction.");
+                return await ChangerMapDirectionAsync(dir, ct)
+                    .ConfigureAwait(false);
+            }
+        }
+        // Pas une transition → vraie cellule (récolte / PNJ) : déplacement.
+        return await SeDeplacerVersCelluleAsync(celluleCible, ct)
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Récolte un élément interactif (arbre, minerai, blé…) : approche au
     /// contact puis envoie le VRAI paquet d'interaction capturé en jeu manuel :
     /// <c>GA500&lt;cellule&gt;;&lt;skillId&gt;</c> (capture : <c>GA500168;45</c>,

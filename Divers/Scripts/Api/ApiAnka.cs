@@ -151,6 +151,11 @@ public sealed class ApiAnka
             => _a._api.SeDeplacerVersCelluleAsync(cell, _a.Ct).GetAwaiter().GetResult();
         public bool door(int cell)
             => _a._api.SeDeplacerVersCelluleAsync(cell, _a.Ct).GetAwaiter().GetResult();
+        /// <summary>Sortie « intelligente » : si la cellule enregistrée est une
+        /// transition → sortie GLOBALE par direction (robuste depuis partout) ;
+        /// sinon déplacement simple. Rend les trajets cell=… fiables.</summary>
+        public bool sortie(int cell)
+            => _a._api.SortirCarteAsync(cell, _a.Ct).GetAwaiter().GetResult();
         /// <summary>Rejoue VERBATIM un GA001 capturé à la main (Road Creator).</summary>
         public void replayPath(string ga001)
             => _a._api.RejouerCheminBrutAsync(ga001, _a.Ct).GetAwaiter().GetResult();

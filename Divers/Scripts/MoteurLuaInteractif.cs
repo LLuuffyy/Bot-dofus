@@ -316,7 +316,7 @@ public sealed class MoteurLuaInteractif : IDisposable
                     for (int e = 0; e < 4 && !ct.IsCancellationRequested
                                     && anka.Map.currentMapId() == avant; e++)
                     {
-                        anka.Map.moveToCell(cs);
+                        anka.Map.sortie(cs);
                         AttendreChangementCarte(avant, ct);
                         if (anka.Map.currentMapId() == avant) Pause(700, ct);
                     }
@@ -357,7 +357,7 @@ public sealed class MoteurLuaInteractif : IDisposable
         if (po >= 0 && path.EndsWith(")"))
         {
             var inner = path.Substring(po + 1, path.Length - po - 2);
-            if (int.TryParse(inner, out var cellExit)) { _api.Anka.Map.moveToCell(cellExit); return; }
+            if (int.TryParse(inner, out var cellExit)) { _api.Anka.Map.sortie(cellExit); return; }
         }
         // "364" → cellule déclencheuse directe. On attend que la position soit
         // connue (sinon, juste après un changement de carte, le déplacement
@@ -367,7 +367,7 @@ public sealed class MoteurLuaInteractif : IDisposable
             AttendrePositionConnue(ct);
             for (int essai = 0; essai < 4 && !ct.IsCancellationRequested; essai++)
             {
-                if (_api.Anka.Map.moveToCell(cell)) return;
+                if (_api.Anka.Map.sortie(cell)) return;
                 Pause(700, ct);
             }
             return;
