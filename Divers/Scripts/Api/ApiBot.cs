@@ -665,12 +665,17 @@ public sealed class ApiBot
         // GA500 collé au GA001 (pas d'attente entre les deux).
         await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
 
-        // Puis on laisse marcher et on acquitte la fin de déplacement.
-        if (dureeMarche > 0)
-        {
-            await Task.Delay(dureeMarche, ct).ConfigureAwait(false);
-            await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
-        }
+        // ⚠ NE PLUS injecter de GKK0 ici. CAPTURE MANUELLE (20:14, récolte
+        // qui DONNE le loot) : un seul GKK0, celui de la MARCHE, envoyé par
+        // le vrai client ~0,1 s après le GA500 ; PLUS AUCUN GKK0 ensuite
+        // pendant les ~12 s de récolte. Le bot injectait un 2ᵉ GKK0 ~2-3 s
+        // après le GA500 (fin de dureeMarche) → reçu EN PLEINE récolte → le
+        // serveur ANNULE l'action → GDF « épuisé » mais jamais OQ/IQ
+        // (« coupe pour rien », log 20:30). Le client relaie déjà son propre
+        // GKK0 de marche (suffisant pour que le perso arrive adjacent). On
+        // ne touche plus à rien : la récolte se termine, le loot OQ/IQ
+        // arrive, et RecolterTout attend l'épuisement réel (GDF).
+        _ = dureeMarche; // (gardé pour le log ; plus de GKK0 injecté)
     }
 
     /// <summary>Ouvre un dialogue avec un PNJ, puis enchaîne les réponses indiquées.</summary>
