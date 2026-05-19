@@ -293,17 +293,35 @@ public sealed class MoteurLuaInteractif : IDisposable
             int avant = anka.Map.currentMapId();
             AppliquerPath(path, rnd, ct);
             AttendreChangementCarte(avant, ct);
-            // Si la carte n'a PAS changé alors qu'on attendait une sortie :
-            // la « cellule de sortie » choisie n'est pas une vraie cellule de
-            // transition (= bord de map). On le dit clairement et on temporise
-            // pour ne pas boucler frénétiquement sur la même case.
+
+            // SECOURS : si la carte n'a pas changé après un raw:GA001 (on est
+            // entré ailleurs qu'à l'enregistrement), on retombe sur la CELLULE
+            // de sortie réelle capturée (champ cell=…) et on la rejoue.
+            if (anka.Map.currentMapId() == avant)
+            {
+                var cellV = row.Get("cell");
+                if (cellV.Type == DataType.Number)
+                {
+                    int cs = (int)cellV.Number;
+                    Journaliseur.Info(
+                        $"[ANKA] raw inchangé → secours cellule de sortie {cs}.");
+                    AttendrePositionConnue(ct);
+                    for (int e = 0; e < 4 && !ct.IsCancellationRequested
+                                    && anka.Map.currentMapId() == avant; e++)
+                    {
+                        anka.Map.moveToCell(cs);
+                        AttendreChangementCarte(avant, ct);
+                        if (anka.Map.currentMapId() == avant) Pause(700, ct);
+                    }
+                }
+            }
+            // Toujours bloqué : ni le raw ni la cellule n'ont fait sortir.
             if (anka.Map.currentMapId() == avant)
             {
                 Journaliseur.Avertir(
-                    $"[ANKA] carte {avant} inchangée après path='{path}'. "
-                    + "Cette cellule n'est pas une sortie (transition). "
-                    + "Pour changer de carte utilise une DIRECTION "
-                    + "(top/bottom/left/right) plutôt qu'un n° de cellule.");
+                    $"[ANKA] carte {avant} inchangée après path='{path}' "
+                    + "(et secours cellule). Sortie non déclenchée — "
+                    + "essaie une DIRECTION (top/bottom/left/right).");
                 Pause(2500, ct);
             }
         }
