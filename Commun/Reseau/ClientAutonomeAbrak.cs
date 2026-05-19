@@ -382,7 +382,10 @@ public sealed class ClientAutonomeAbrak : IDisposable
         char c0 = p[0], c1 = p.Length > 1 ? p[1] : '\0';
         switch (c0)
         {
-            case 'A': return c1 is 'A' or 'D' or 'Z';
+            // AB = montée de caractéristique (in-game) → DOIT être chiffré
+            // comme les autres actions ; en clair le serveur l'ignore (stat
+            // qui ne monte jamais → boucle auto-distribution infinie).
+            case 'A': return c1 is 'A' or 'B' or 'D' or 'Z';
             case 'N': return c1 is 'A' or 'R';
             case 'W' or 'e' or 'O' or 'D' or 'F' or 'K' or 'z' or 'w' or 'S' or 'B':
                 return true;

@@ -495,10 +495,28 @@ public sealed class ApiBot
     {
         Journaliseur.Info($"[STATS] Auto-distribution capital → {BotDofus.Divers.Jeu.Personnage.Personnage.NomsCaracteristiques.GetValueOrDefault(statId, statId.ToString())}.");
         int garde = 0;
-        while (!ct.IsCancellationRequested && !SessionMorte && _etat.Personnage.PointsCaracteristiques > 0 && garde++ < 500)
+        int capitalAvant = _etat.Personnage.PointsCaracteristiques;
+        int sansProgres = 0;
+        while (!ct.IsCancellationRequested && !SessionMorte
+               && _etat.Personnage.PointsCaracteristiques > 0 && garde++ < 500)
         {
             await MonterCaracteristiqueAsync(statId, 1, ct).ConfigureAwait(false);
             await Task.Delay(450, ct).ConfigureAwait(false); // laisse le As revenir
+
+            // Garde-fou anti-spam : si après plusieurs envois le capital n'a
+            // PAS bougé, le serveur n'applique pas (mauvais canal/format/zone)
+            // → on arrête au lieu de marteler 500 fois pour rien.
+            if (_etat.Personnage.PointsCaracteristiques >= capitalAvant)
+            {
+                if (++sansProgres >= 5)
+                {
+                    Journaliseur.Avertir(
+                        "[STATS] Capital inchangé après 5 essais — le serveur "
+                        + "n'applique pas (montée impossible ici ?). Arrêt.");
+                    break;
+                }
+            }
+            else { sansProgres = 0; capitalAvant = _etat.Personnage.PointsCaracteristiques; }
         }
         Journaliseur.Info($"[STATS] Auto-distribution terminée (capital restant {_etat.Personnage.PointsCaracteristiques}).");
     }
