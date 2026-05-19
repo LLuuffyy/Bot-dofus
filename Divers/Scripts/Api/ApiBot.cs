@@ -418,12 +418,34 @@ public sealed class ApiBot
         // ça la sortie « globale » fiable depuis n'importe où sur la carte.
         var dep = _etat.Personnage.CellulePosition is int p
             ? carte.Obtenir(p) : null;
-        var candidats = transitions
-            .OrderBy(ordreCote)
-            .ThenBy(c => dep == null ? 0
-                : (c.X - dep.X) * (c.X - dep.X) + (c.Y - dep.Y) * (c.Y - dep.Y))
-            .Take(4)
-            .ToList();
+
+        // ÉQUATIONS DE BORDURE du modèle dyshay (Movimiento.get_Puede_Cambiar_Mapa).
+        // Notre Cellule.X/Y suit EXACTEMENT la convention dyshay Cell.cs, donc
+        // ces prédicats identifient les VRAIES cellules de sortie d'un côté
+        // (≠ tri « extrémité » approximatif). Si une carte a des bordures
+        // irrégulières et qu'aucune transition ne matche, on retombe sur
+        // l'ancien comportement (tri par extrémité). 27 = mapWidth*2-1 (14),
+        // 31 = constante BOTTOM standard Retro.
+        Func<Cellule, bool> estBordure = direction.ToLowerInvariant() switch
+        {
+            "est" or "droite" => c => (c.X - 27) == c.Y,
+            "ouest" or "gauche" => c => (c.X - 1) == c.Y,
+            "sud" or "bas" => c => (c.X + c.Y) == 31,
+            "nord" or "haut" => c => c.Y < 0 && (c.X - Math.Abs(c.Y)) == 1,
+            _ => _ => false
+        };
+        Func<Cellule, double> distDep = c => dep == null ? 0
+            : (c.X - dep.X) * (c.X - dep.X) + (c.Y - dep.Y) * (c.Y - dep.Y);
+
+        var bordures = transitions.Where(estBordure)
+            .OrderBy(distDep).ToList();
+        IEnumerable<Cellule> ordonnees = bordures.Count > 0
+            ? bordures
+            : transitions.OrderBy(ordreCote).ThenBy(distDep);
+        var candidats = ordonnees.Take(4).ToList();
+        if (bordures.Count > 0)
+            Journaliseur.Info($"[MAP] « {direction} » : {bordures.Count} "
+                + "cellule(s) de bordure exacte (équations dyshay).");
         int mapAvant = _etat.Personnage.CarteCourante ?? 0;
 
         foreach (var cible in candidats)
