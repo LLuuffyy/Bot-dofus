@@ -189,4 +189,127 @@ public sealed partial class ApiLua
     public void trade(string m) => Canal(":", m);
     public void recruit(string m) => Canal("?", m);
     public void partyChat(string m) => Canal("^", m);
+
+    // ---- Route (trajet façon WGRetro, version de base) ------------------
+    private volatile bool _routeStop;
+    public void stopRoute() => _routeStop = true;
+    public void stopBankRoute() => _routeStop = true;
+
+    /// <summary>
+    /// Lance un trajet EN BOUCLE (façon WGRetro). Pour chaque step :
+    /// custom() si fourni, PNJ+réponses, récolte, combat, puis sortie via
+    /// path. path = "right/left/top/bottom" → sortie GLOBALE robuste ;
+    /// path = nombre → cellule de sortie (auto-direction si transition) ;
+    /// path = "zaap(...)" → couche suivante (Paquet B). Bloquant jusqu'à
+    /// stopRoute()/arrêt du script.
+    /// </summary>
+    public void route(Table steps)
+    {
+        if (steps == null) { avertir("[bot] route() : steps nil"); return; }
+        _routeStop = false;
+        var liste = new System.Collections.Generic.List<Table>();
+        foreach (var p in steps.Pairs)
+            if (p.Value.Type == DataType.Table) liste.Add(p.Value.Table);
+        if (liste.Count == 0) { avertir("[bot] route() : aucun step"); return; }
+        log($"[bot] route : {liste.Count} step(s), en boucle.");
+
+        while (!_ct.IsCancellationRequested && !_routeStop)
+        {
+            foreach (var st in liste)
+            {
+                if (_ct.IsCancellationRequested || _routeStop) return;
+
+                // custom() : fonction Lua perso (si fournie)
+                var cust = st.Get("custom");
+                if (cust.Type == DataType.Function)
+                    cust.Function.Call();
+
+                // PNJ + réponses
+                var npcV = st.Get("npc");
+                if (npcV.Type == DataType.Number)
+                {
+                    parler_pnj((int)npcV.Number);
+                    var ans = st.Get("answers");
+                    if (ans.Type == DataType.Table)
+                        foreach (var a in ans.Table.Values)
+                            if (a.Type == DataType.Number)
+                                Anka.Npc.reply((int)a.Number);
+                    quitter_dialogue();
+                }
+
+                // Récolte
+                var g = st.Get("gather");
+                if (g.Type == DataType.Boolean && g.Boolean) gatherAll();
+
+                // Combat : tant qu'il y a des monstres sur la map
+                var f = st.Get("fight");
+                if (f.Type == DataType.Boolean && f.Boolean)
+                {
+                    int garde = 0;
+                    while (hasMonstersOnMap() && garde++ < 20
+                           && !_ct.IsCancellationRequested && !_routeStop)
+                    { fight(); waitForFightEnd(); }
+                }
+
+                if (st.Get("npcBank").Type != DataType.Nil)
+                    avertir("[bot] npcBank : Paquet B (banque) — bientôt.");
+
+                // Sortie (path)
+                var path = st.Get("path");
+                if (path.Type == DataType.String)
+                {
+                    var ps = path.String.Trim();
+                    if (ps.StartsWith("zaap", StringComparison.OrdinalIgnoreCase))
+                        avertir("[bot] path zaap(...) : Paquet B — bientôt.");
+                    else if (int.TryParse(ps, out var pc))
+                        Anka.Map.sortie(pc);
+                    else
+                        changeMap(ps);
+                }
+                else if (path.Type == DataType.Number)
+                {
+                    Anka.Map.sortie((int)path.Number);
+                }
+            }
+        }
+        log("[bot] route : arrêtée.");
+    }
+    public void setBankRoute(Table steps)
+        => avertir("[bot] setBankRoute : Paquet B (banque) — bientôt.");
+    public void bankRoute(Table? steps = null)
+        => avertir("[bot] bankRoute : Paquet B (banque) — bientôt.");
+
+    // ---- Contrôle script / divers ---------------------------------------
+    public void finishScript() { _routeStop = true; }
+    public bool onMap(string coordsOrId)
+    {
+        var s = (coordsOrId ?? "").Trim();
+        return s == mapId || s == mapName || s == $"{pos_x()},{pos_y()}";
+    }
+    public string waitForMapChange(double timeout = 8000)
+    {
+        var avant = mapId; int reste = (int)timeout;
+        while (reste > 0 && mapId == avant && !_ct.IsCancellationRequested)
+        { attendre(150); reste -= 150; }
+        return mapId;
+    }
+    public bool hasChanged()
+    {
+        bool c = _wgLastMap != null && _wgLastMap != mapId;
+        _wgLastMap = mapId; return c;
+    }
+    private string? _wgLastMap;
+
+    // ---- Stubs nets (Paquet B/suivant) — n'arrête JAMAIS le script ------
+    public void useZaap(object dest) => avertir("[bot] useZaap : Paquet B — bientôt.");
+    public void zaap(object dest) => avertir("[bot] zaap : Paquet B — bientôt.");
+    public void saveZaap() => avertir("[bot] saveZaap : Paquet B — bientôt.");
+    public bool navigateTo(string target)
+    { avertir("[bot] navigateTo : Paquet B (navigation monde) — bientôt."); return false; }
+    /// <summary>Events WGRetro : enregistrés mais déclenchement = couche
+    /// suivante (intégration moteur). N'échoue pas.</summary>
+    public void on(string evt, object cb)
+        => log($"[bot] on('{evt}') enregistré (déclenchement : couche suivante).");
+    public void once(string evt, object cb)
+        => log($"[bot] once('{evt}') enregistré (déclenchement : couche suivante).");
 }
