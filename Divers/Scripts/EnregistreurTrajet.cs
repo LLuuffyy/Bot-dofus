@@ -107,21 +107,17 @@ public sealed class EnregistreurTrajet
             //   1) direction  (changement de carte global, robuste)
             //   2) cell       (se poser sur une case précise : PNJ/récolte —
             //                   PAS un changement de carte)
-            bool ga001Valide = !string.IsNullOrEmpty(l.CheminBrut)
-                && l.CheminBrut.StartsWith("GA001", StringComparison.Ordinal);
             if (!string.IsNullOrEmpty(l.Direction))
                 sb2.Append($", path = \"{l.Direction}\"");
-            // Carte de PURE TRANSITION (ni récolte ni combat) → on rejoue le
-            // GA001 EXACT capturé à la main : déjà accepté par le serveur,
-            // zéro pathfinder, zéro segmentation (segmenter le faisait refuser
-            // au 2ᵉ tronçon → secours direction → MAUVAISE carte). La cellule
-            // reste en SECOURS si le perso est entré ailleurs. Sur les cartes
-            // récolte/combat la case de départ varie → on garde la cellule.
-            else if (ga001Valide && !l.Gather && !l.Fight)
-            {
-                sb2.Append($", path = \"raw:{l.CheminBrut}\"");
-                if (l.Cellule > 0) sb2.Append($", cell = {l.Cellule}");
-            }
+            // Carte de PURE TRANSITION (ni récolte ni combat) : on émet la
+            // CELLULE de sortie seule. Le moteur route vers SortirCarteAsync
+            // qui est DIRECTION-first (déduit le côté est/ouest/sud/nord à
+            // partir de la cellule vs les cellules Transition de la map, puis
+            // ChangerMapDirectionAsync). Robuste depuis N'IMPORTE OÙ sur la
+            // map (comme SynFus/dyshay/cadernis). On ABANDONNE le raw:GA001 :
+            // il était capturé depuis la case EXACTE d'enregistrement → rejeu
+            // dépendant de la position de départ → ~13 s perdues à marcher
+            // vers la mauvaise case avant que le secours direction n'agisse.
             else if (l.Cellule > 0)
                 sb2.Append($", path = \"{l.Cellule}\"");
             sb2.Append($" }},   -- [{l.Coords}]");
