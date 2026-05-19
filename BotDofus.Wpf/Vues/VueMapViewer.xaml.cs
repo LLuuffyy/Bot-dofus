@@ -379,36 +379,34 @@ public partial class VueMapViewer : UserControl
 
             var couleur = CouleurCellule(cell);
 
-            // VOLUME 3D façon SynFus : PETITE épaisseur UNIFORME sous CHAQUE
-            // case (sol clair comme bloc sombre, même hauteur). Ce n'est pas
-            // une muraille — juste une fine tranche qui donne l'effet « dalle »
-            // propre et plat de SynFus. Deux faces (gauche claire / droite
-            // sombre) pour le relief.
-            if (couleur is SolidColorBrush sc)
-            {
-                // Le GRIS (obstacle/non-marchable) est une masse SURÉLEVÉE
-                // au-dessus du sol blanc (marche nette ≈ SynFus). Le sol garde
-                // une fine tranche. La différence de hauteur = le relief.
-                bool bloc = !cell.EstMarchable
+            // VOLUME 3D : le GRIS (obstacle/non-marchable) est un PLATEAU dont
+            // le DESSUS est remonté à l'écran (élévation) → il surplombe le sol
+            // blanc qui, lui, reste au niveau bas. La falaise (faces latérales)
+            // descend du dessus remonté jusqu'au niveau du sol → vraie marche.
+            bool blocCell = !cell.EstMarchable
                             || cell.Type == TypesCellule.Obstacle
                             || cell.Type == TypesCellule.LignDeVueSeule;
-                // Gris = bloc bien SURÉLEVÉ ; blanc = sol fin, nettement en
-                // dessous → grosse marche, le sol « s'enfonce » sous le gris.
-                double prof = bloc ? 26 : 3;
+            double elev = blocCell ? 20 : 0;  // hauteur du plateau gris
+            const double epais = 4;           // fine épaisseur commune (dalle)
 
-                var pG = new Point(cx - _largeurCellule, cy + _hauteurCellule); // gauche
-                var pB = new Point(cx, cy + _hauteurCellule * 2);               // bas
-                var pD = new Point(cx + _largeurCellule, cy + _hauteurCellule); // droite
+            if (couleur is SolidColorBrush sc)
+            {
+                // Sommets bas du losange, REMONTÉS de `elev` (dessus du plateau).
+                var pG = new Point(cx - _largeurCellule, cy + _hauteurCellule - elev);
+                var pB = new Point(cx, cy + _hauteurCellule * 2 - elev);
+                var pD = new Point(cx + _largeurCellule, cy + _hauteurCellule - elev);
+                // La falaise descend jusqu'au niveau du SOL (elev + épaisseur).
+                double bas = elev + epais;
 
                 var faceG = new Polygon
                 {
                     Points = new PointCollection
                     {
                         pG, pB,
-                        new Point(pB.X, pB.Y + prof),
-                        new Point(pG.X, pG.Y + prof),
+                        new Point(pB.X, pB.Y + bas),
+                        new Point(pG.X, pG.Y + bas),
                     },
-                    Fill = new SolidColorBrush(AssombrirCouleur(sc.Color, 0.80)),
+                    Fill = new SolidColorBrush(AssombrirCouleur(sc.Color, 0.78)),
                     IsHitTestVisible = false,
                 };
                 var faceD = new Polygon
@@ -416,10 +414,10 @@ public partial class VueMapViewer : UserControl
                     Points = new PointCollection
                     {
                         pB, pD,
-                        new Point(pD.X, pD.Y + prof),
-                        new Point(pB.X, pB.Y + prof),
+                        new Point(pD.X, pD.Y + bas),
+                        new Point(pB.X, pB.Y + bas),
                     },
-                    Fill = new SolidColorBrush(AssombrirCouleur(sc.Color, 0.65)),
+                    Fill = new SolidColorBrush(AssombrirCouleur(sc.Color, 0.62)),
                     IsHitTestVisible = false,
                 };
                 Canvas.SetZIndex(faceG, 1);
@@ -429,6 +427,10 @@ public partial class VueMapViewer : UserControl
             }
 
             var poly = CreerPolygoneCellule(cell, couleur, 0.8);
+            // Le DESSUS du gris est remonté de `elev` → il passe au-dessus du
+            // sol blanc (resté en bas) = effet de plateau / marche 3D.
+            if (elev > 0)
+                poly.RenderTransform = new System.Windows.Media.TranslateTransform(0, -elev);
             Canvas.SetZIndex(poly, 2);
             bool sol = cell.EstMarchable && cell.IdInteractif < 0
                        && cell.Type != TypesCellule.Transition;
@@ -468,7 +470,7 @@ public partial class VueMapViewer : UserControl
                 IsHitTestVisible = false,
             };
             Canvas.SetLeft(txt, cx - 8);
-            Canvas.SetTop(txt, cy + _hauteurCellule - 6);
+            Canvas.SetTop(txt, cy + _hauteurCellule - 6 - elev); // suit le plateau
             Canvas.SetZIndex(txt, 5);
             CanvasMap.Children.Add(txt);
         }
