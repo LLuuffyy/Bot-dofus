@@ -96,9 +96,10 @@ public partial class FenetreRoadCreator : Window
             CmbPnj.Items.Add(new ComboBoxItem
             {
                 Content = $"{nom} (id {p.IdGabarit}) cell {p.CellulePosition}",
-                // Texte sombre lisible (la liste déroulante a un fond clair).
-                Foreground = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(0x15, 0x20, 0x2B)),
+                // Pas de Foreground ici : un style sombre (fond gris foncé /
+                // texte blanc) est défini en XAML (ComboBox.Resources). Forcer
+                // la couleur ici (valeur locale) écraserait ce style → texte
+                // illisible sur fond sombre.
                 // On retient les DEUX : contextuel (DC live) + gabarit (script).
                 Tag = (p.Identifiant, p.IdGabarit)
             });

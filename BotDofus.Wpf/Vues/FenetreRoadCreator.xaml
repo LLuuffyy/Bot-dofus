@@ -64,8 +64,38 @@
                             Background="#FF34618C" Foreground="White" BorderThickness="0"
                             Cursor="Hand"/>
                     <ComboBox x:Name="CmbPnj" Padding="6,4"
-                              Background="#FFEDF1F6" Foreground="#FF15202B"
-                              FontWeight="SemiBold"/>
+                              Background="#FF2A313B" Foreground="White"
+                              BorderBrush="#FF3A4452" FontWeight="SemiBold">
+                        <ComboBox.Resources>
+                            <Style TargetType="ComboBoxItem">
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="Background" Value="#FF2A313B"/>
+                                <Setter Property="Padding" Value="8,5"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ComboBoxItem">
+                                            <Border x:Name="bd"
+                                                    Background="{TemplateBinding Background}"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter
+                                                    TextElement.Foreground="{TemplateBinding Foreground}"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsHighlighted" Value="True">
+                                                    <Setter TargetName="bd" Property="Background"
+                                                            Value="#FF34618C"/>
+                                                </Trigger>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter TargetName="bd" Property="Background"
+                                                            Value="#FF3A4452"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ComboBox.Resources>
+                    </ComboBox>
                 </DockPanel>
                 <!-- Dialogue en direct : question + réponses cliquables -->
                 <Border x:Name="BoxDialogue" Background="#FF1A2733" CornerRadius="6"
