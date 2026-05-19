@@ -441,13 +441,18 @@ public sealed class ApiBot
     }
 
     /// <summary>
-    /// Sortie « intelligente » à partir d'une cellule enregistrée. Si cette
-    /// cellule est une TRANSITION (donc un changement de carte), on n'essaie
-    /// PAS d'y marcher pile dessus (fragile : dépend du point de départ, des
-    /// mobs…). On en DÉDUIT le côté (est/ouest/nord/sud) et on déclenche la
-    /// sortie GLOBALE par direction — fiable depuis n'importe où sur la carte.
-    /// Sinon (cellule normale : récolte / PNJ sur place) → déplacement simple.
-    /// C'est ce qui rend TOUS les trajets déjà enregistrés (cell=…) robustes.
+    /// Sortie « intelligente » vers une cellule enregistrée.
+    ///
+    /// PRIORITÉ À LA CELLULE EXACTE : une carte peut avoir PLUSIEURS sorties
+    /// du même côté menant à des cartes DIFFÉRENTES (ex. 10302 : cell 327 →
+    /// 10354, cell 458 → 10338, toutes deux « sud »). Déduire une simple
+    /// direction est donc AMBIGU et envoyait vers la mauvaise carte. On vise
+    /// donc la cellule de transition EXACTE enregistrée (destination
+    /// déterministe) ; le pathfinder évite déjà les mobs et le GKK0 long
+    /// (case transition) déclenche le GDM → fiable depuis n'importe où.
+    ///
+    /// La sortie par DIRECTION ne sert plus que de SECOURS si la cellule
+    /// exacte n'a pas changé la carte (cellule injoignable / entrée ailleurs).
     /// </summary>
     public async Task<bool> SortirCarteAsync(int celluleCible, CancellationToken ct = default)
     {
@@ -458,36 +463,38 @@ public sealed class ApiBot
             return false;
         }
         var c = carte.Obtenir(celluleCible);
-        if (c != null
-            && c.Type == BotDofus.Divers.Cartes.TypesCellule.Transition)
-        {
-            var trans = carte.Cellules
-                .OfType<Cellule>()
-                .Where(t => t.Type == BotDofus.Divers.Cartes.TypesCellule.Transition)
-                .ToList();
-            if (trans.Count > 0)
-            {
-                double maxXmY = trans.Max(t => t.X - t.Y);
-                double minXmY = trans.Min(t => t.X - t.Y);
-                double maxXpY = trans.Max(t => t.X + t.Y);
-                double minXpY = trans.Min(t => t.X + t.Y);
-                double dE = maxXmY - (c.X - c.Y);   // distance au bord EST
-                double dO = (c.X - c.Y) - minXmY;   // …OUEST
-                double dS = maxXpY - (c.X + c.Y);   // …SUD
-                double dN = (c.X + c.Y) - minXpY;   // …NORD
-                double m = Math.Min(Math.Min(dE, dO), Math.Min(dS, dN));
-                string dir = m == dE ? "est"
-                           : m == dO ? "ouest"
-                           : m == dS ? "sud" : "nord";
-                Journaliseur.Info($"[MAP] cellule de sortie {celluleCible} = "
-                    + $"transition (côté {dir}) → sortie GLOBALE par direction.");
-                return await ChangerMapDirectionAsync(dir, ct)
-                    .ConfigureAwait(false);
-            }
-        }
-        // Pas une transition → vraie cellule (récolte / PNJ) : déplacement.
-        return await SeDeplacerVersCelluleAsync(celluleCible, ct)
-            .ConfigureAwait(false);
+        bool estTransition = c != null
+            && c.Type == BotDofus.Divers.Cartes.TypesCellule.Transition;
+        int mapAvant = _etat.Personnage.CarteCourante ?? 0;
+
+        // 1) Cellule EXACTE (sortie déterministe).
+        await SeDeplacerVersCelluleAsync(celluleCible, ct).ConfigureAwait(false);
+        await Task.Delay(400, ct).ConfigureAwait(false); // laisse venir le GDM
+        if (!estTransition || (_etat.Personnage.CarteCourante ?? 0) != mapAvant)
+            return (_etat.Personnage.CarteCourante ?? 0) != mapAvant
+                   || !estTransition;
+
+        // 2) SECOURS uniquement : la cellule exacte n'a pas fait changer de
+        //    carte → on tente la sortie par direction déduite de cette case.
+        var trans = carte.Cellules
+            .OfType<Cellule>()
+            .Where(t => t.Type == BotDofus.Divers.Cartes.TypesCellule.Transition)
+            .ToList();
+        if (trans.Count == 0 || c == null) return false;
+        double maxXmY = trans.Max(t => t.X - t.Y);
+        double minXmY = trans.Min(t => t.X - t.Y);
+        double maxXpY = trans.Max(t => t.X + t.Y);
+        double minXpY = trans.Min(t => t.X + t.Y);
+        double dE = maxXmY - (c.X - c.Y);
+        double dO = (c.X - c.Y) - minXmY;
+        double dS = maxXpY - (c.X + c.Y);
+        double dN = (c.X + c.Y) - minXpY;
+        double m = Math.Min(Math.Min(dE, dO), Math.Min(dS, dN));
+        string dir = m == dE ? "est" : m == dO ? "ouest"
+                   : m == dS ? "sud" : "nord";
+        Journaliseur.Avertir($"[MAP] cellule {celluleCible} n'a pas changé "
+            + $"la carte → SECOURS sortie par direction « {dir} ».");
+        return await ChangerMapDirectionAsync(dir, ct).ConfigureAwait(false);
     }
 
     /// <summary>
