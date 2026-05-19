@@ -388,6 +388,12 @@ public partial class VueMapViewer : UserControl
                             || cell.Type == TypesCellule.LignDeVueSeule;
             double elev = blocCell ? 20 : 0;  // hauteur du plateau gris
             const double epais = 4;           // fine épaisseur commune (dalle)
+            // Profondeur iso (peintre) : plus (x+y) est grand, plus la case
+            // est « devant ». On l'utilise pour empiler proprement :
+            //   sol < murs (falaises) < dessus gris  — chaque couche triée
+            // par profondeur. Sans ça, TOUS les murs (z=1) passaient sous
+            // TOUS les sols (z=2) → on voyait à travers la falaise de droite.
+            int prof = cell.X + cell.Y;
 
             if (couleur is SolidColorBrush sc)
             {
@@ -432,8 +438,11 @@ public partial class VueMapViewer : UserControl
                     faceG, System.Windows.Media.EdgeMode.Aliased);
                 System.Windows.Media.RenderOptions.SetEdgeMode(
                     faceD, System.Windows.Media.EdgeMode.Aliased);
-                Canvas.SetZIndex(faceG, 1);
-                Canvas.SetZIndex(faceD, 1);
+                // Murs AU-DESSUS de tous les sols (offset +100 > maxProf) →
+                // la falaise couvre le sol qui est devant elle (plus de
+                // « transparence » à droite), triée par profondeur entre murs.
+                Canvas.SetZIndex(faceG, prof + 100);
+                Canvas.SetZIndex(faceD, prof + 100);
                 CanvasMap.Children.Add(faceG);
                 CanvasMap.Children.Add(faceD);
             }
@@ -443,7 +452,6 @@ public partial class VueMapViewer : UserControl
             // sol blanc (resté en bas) = effet de plateau / marche 3D.
             if (elev > 0)
                 poly.RenderTransform = new System.Windows.Media.TranslateTransform(0, -elev);
-            Canvas.SetZIndex(poly, 2);
             bool sol = cell.EstMarchable && cell.IdInteractif < 0
                        && cell.Type != TypesCellule.Transition;
             // BORDURE sur TOUTES les cases grises (obstacle/non-marchable),
@@ -453,6 +461,11 @@ public partial class VueMapViewer : UserControl
             bool gris = !cell.EstMarchable
                         || cell.Type == TypesCellule.Obstacle
                         || cell.Type == TypesCellule.LignDeVueSeule;
+            // Dessus gris AU-DESSUS des murs (offset +200) → la surface du
+            // plateau est nette ; trié par profondeur pour qu'un bloc gris
+            // devant masque la falaise d'un bloc gris derrière. Le sol/les
+            // cases colorées restent en bas (z = prof) sous les falaises.
+            Canvas.SetZIndex(poly, gris ? prof + 200 : prof);
             if (gris && couleur is SolidColorBrush gc)
             {
                 poly.Stroke = new SolidColorBrush(AssombrirCouleur(gc.Color, 0.55));
@@ -483,7 +496,7 @@ public partial class VueMapViewer : UserControl
             };
             Canvas.SetLeft(txt, cx - 8);
             Canvas.SetTop(txt, cy + _hauteurCellule - 6 - elev); // suit le plateau
-            Canvas.SetZIndex(txt, 5);
+            Canvas.SetZIndex(txt, 320);
             CanvasMap.Children.Add(txt);
         }
     }
@@ -500,7 +513,7 @@ public partial class VueMapViewer : UserControl
             poly.MouseEnter += Poly_MouseEnter;
             poly.MouseLeave += Poly_MouseLeave;
             poly.MouseRightButtonDown += Poly_MouseRightButtonDown;
-            Canvas.SetZIndex(poly, 3);
+            Canvas.SetZIndex(poly, 300);
             CanvasMap.Children.Add(poly);
 
             var txt = new TextBlock
@@ -513,7 +526,7 @@ public partial class VueMapViewer : UserControl
             };
             Canvas.SetLeft(txt, cx - 8);
             Canvas.SetTop(txt, cy + _hauteurCellule - 7);
-            Canvas.SetZIndex(txt, 5);
+            Canvas.SetZIndex(txt, 320);
             CanvasMap.Children.Add(txt);
         }
     }
@@ -544,7 +557,7 @@ public partial class VueMapViewer : UserControl
         var poly = CreerPolygoneCellule(cell, new SolidColorBrush(fill), 1.5);
         poly.Stroke = new SolidColorBrush(stroke);
         poly.IsHitTestVisible = false;
-        Canvas.SetZIndex(poly, 6);
+        Canvas.SetZIndex(poly, 360);
         CanvasMap.Children.Add(poly);
     }
 
@@ -597,7 +610,7 @@ public partial class VueMapViewer : UserControl
             ellipse.MouseRightButtonDown += Entity_MouseRightButtonDown;
             Canvas.SetLeft(ellipse, cx - 8);
             Canvas.SetTop(ellipse, cy + _hauteurCellule - 8);
-            Canvas.SetZIndex(ellipse, 10);
+            Canvas.SetZIndex(ellipse, 340);
             CanvasMap.Children.Add(ellipse);
         }
     }
@@ -615,7 +628,7 @@ public partial class VueMapViewer : UserControl
             poly.Fill = new SolidColorBrush(Color.FromRgb(0xBB, 0xD3, 0xFF));
             poly.Stroke = new SolidColorBrush(Color.FromRgb(0x2D, 0x6C, 0xDF));
             poly.StrokeThickness = 1.4;
-            Canvas.SetZIndex(poly, 4);
+            Canvas.SetZIndex(poly, 350);
         }
 
         // Pion joueur : disque bleu net (style SynFus), sans halo pulsant.
@@ -629,7 +642,7 @@ public partial class VueMapViewer : UserControl
         };
         Canvas.SetLeft(marker, cx - 9);
         Canvas.SetTop(marker, cy + _hauteurCellule - 9);
-        Canvas.SetZIndex(marker, 20);
+        Canvas.SetZIndex(marker, 400);
         CanvasMap.Children.Add(marker);
 
         // Pas de scroll auto-centre car CanvasMap n'est pas dans un ScrollViewer (zoom only).
