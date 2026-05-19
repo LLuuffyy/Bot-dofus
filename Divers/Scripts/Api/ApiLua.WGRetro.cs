@@ -32,10 +32,8 @@ public sealed partial class ApiLua
     public int energyMax => _etat.Personnage.EnergieMax;
 
     // ---- Stats de combat -------------------------------------------------
-    // NB : pa()/pm()/kamas() existent déjà comme MÉTHODES dans ApiLua →
-    // pas de propriété homonyme (collision). Les scripts WGRetro qui font
-    // bot.pa/bot.kamas devront utiliser bot.pa()/bot.kamas() pour l'instant
-    // (sera unifié dans une passe ultérieure).
+    // bot.pa / bot.pm / bot.kamas : PROPRIÉTÉS définies dans ApiLua.cs
+    // (uniformisé WGRetro, plus de parenthèses).
     public int statsPoints => _etat.Personnage.PointsCaracteristiques;
 
     // ---- Pods ------------------------------------------------------------

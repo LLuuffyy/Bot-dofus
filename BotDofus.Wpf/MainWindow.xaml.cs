@@ -587,7 +587,7 @@ public partial class MainWindow : Window
         sb.AppendLine("  bot.intercepter_actif(bool)  -- kill-switch");
         sb.AppendLine();
         sb.AppendLine("API LUA (extrait) :");
-        sb.AppendLine("  bot.vie() bot.pa() bot.pm() bot.kamas()");
+        sb.AppendLine("  bot.hp bot.hpMax bot.pa bot.pm bot.kamas bot.pods (propriétés)");
         sb.AppendLine("  bot.carte() bot.position() bot.est_en_combat()");
         sb.AppendLine("  bot.deplacer(cell) bot.dire(canal,txt) bot.travel(x,y)");
         sb.AppendLine("  bot.config_combat_ajouter_sort_nom(nom,prio,cible)");

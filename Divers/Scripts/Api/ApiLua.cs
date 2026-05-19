@@ -75,9 +75,11 @@ public sealed partial class ApiLua
     public int vie() => _etat.Personnage.Vie;
     public int vie_max() => _etat.Personnage.VieMax;
     public double vie_pct() => _etat.Personnage.PourcentageVie;
-    public long kamas() => _etat.Personnage.Kamas;
-    public int pa() => _etat.Personnage.PA;
-    public int pm() => _etat.Personnage.PM;
+    // Uniformisé WGRetro : PROPRIÉTÉS (bot.kamas / bot.pa / bot.pm), plus de
+    // parenthèses. (Aucun code C# ne les appelait ; scripts : retirer le "()".)
+    public long kamas => _etat.Personnage.Kamas;
+    public int pa => _etat.Personnage.PA;
+    public int pm => _etat.Personnage.PM;
     public int? carte() => _etat.Personnage.CarteCourante;
     public int? position() => _etat.Personnage.CellulePosition;
     public int poids() => _etat.Personnage.PoidsActuel;
