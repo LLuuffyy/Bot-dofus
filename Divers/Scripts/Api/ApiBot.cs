@@ -1354,15 +1354,13 @@ public sealed class ApiBot
                     Journaliseur.Debogue($"[FARM] cell {c.Identifiant} sans loot après 17 s "
                         + "— GA500 ignoré ou récolte interrompue. Skip.");
             }
-            // Grace post-dépletion : laisse le serveur finir son cycle
-            // (GKK0 vrai client + flush OQ/IQ + transition d'état) avant
-            // d'envoyer le prochain GA001. Sans ce délai, le GA001 arrive
-            // pendant que le serveur considère le perso encore en « récolte
-            // ending » → rejet silencieux du déplacement → GA500 suivant
-            // frappe sur la position courante au lieu de la cellule cible.
-            // Constaté log 06:50:19 : cell 307 OK, cell 451 jamais atteinte.
-            try { await Task.Delay(800, ct).ConfigureAwait(false); }
-            catch (OperationCanceledException) { break; }
+            // Plus de grace 800 ms blind — la boucle d'attente ci-dessus
+            // sort sur OQ reçu (= server a confirmé la fin de l'action) OU
+            // sur 2 s sans OQ après dépletion (= autre joueur). Dans les
+            // deux cas, le serveur a fini son cycle au moment où on sort,
+            // on peut enchaîner immédiatement. Le bug cell 451 d'origine
+            // (06:50:19) venait du Pathfinder qui traversait les arbres,
+            // fix séparé via Cellule.IdInteractif dans Pathfinder.
             n++;
         }
         Journaliseur.Info($"[LUA] recolter_tout : {n} ressource(s) récoltée(s).");
