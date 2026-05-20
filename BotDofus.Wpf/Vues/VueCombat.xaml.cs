@@ -35,6 +35,8 @@ public partial class VueCombat : UserControl
         ListeSortsAppris.ItemsSource = SortsAppris;
         ListeCombattants.ItemsSource = CombattantsLive;
         CmbSort.ItemsSource = SortsAppris;
+        // ComboBox élément des conditions avancées (Aucun/Force/Intel/Chance/Agi/Neutre)
+        CmbElement.ItemsSource = System.Enum.GetValues(typeof(ElementSort));
     }
 
     public void Lier(ContexteCompte ctx)
@@ -240,44 +242,90 @@ public partial class VueCombat : UserControl
         Rafraichir();
     }
 
+    /// <summary>
+    /// Clic sur ⓘ d'une ligne du DataGrid maison : la <see cref="RegleSort"/>
+    /// du sort sélectionné devient le DataContext de <c>PanelConditions</c>
+    /// → les 22 conditions binées TwoWay reflètent l'état actuel et toute
+    /// modif est persistée via le debounce auto.
+    /// </summary>
     private void BtnInfo_Click(object sender, RoutedEventArgs e)
     {
-        // V1 — affiche les conditions actives du sort dans une boîte. À terme,
-        // ouvre une FenetreConditionsRegle modale avec les 5 catégories
-        // SynFus (Distance/Cible/Joueur/Situation/Avancé). Voir docs/ADR-001 §4.
         if (sender is not Button b || b.Tag is not SortConfigureVm vm) return;
-        var r = vm.Regle;
-        var sb = new System.Text.StringBuilder();
-        sb.AppendLine($"Sort #{r.IdSort} — {r.Nom}");
-        sb.AppendLine($"Focus = {r.Focus}");
-        sb.AppendLine($"Methode = {r.MethodeLancement}");
-        sb.AppendLine($"Priorite = {r.Priorite}");
-        sb.AppendLine($"Nombre / tour = {r.NombreParTour} (0 = max)");
-        sb.AppendLine($"Nombre / cible = {r.NombreParCible}");
-        sb.AppendLine();
-        sb.AppendLine("--- Distance ---");
-        if (r.DistanceMin.HasValue) sb.AppendLine($"  Min = {r.DistanceMin}");
-        if (r.DistanceMax.HasValue) sb.AppendLine($"  Max = {r.DistanceMax}");
-        if (r.IgnorerCAC) sb.AppendLine("  Ignorer CAC = oui");
-        if (r.SeulementCAC) sb.AppendLine("  Seulement CAC = oui");
-        sb.AppendLine("--- Cible ---");
-        if (r.CiblePvInfPourcent.HasValue) sb.AppendLine($"  PV cible < {r.CiblePvInfPourcent}%");
-        if (r.CiblePvSupPourcent.HasValue) sb.AppendLine($"  PV cible > {r.CiblePvSupPourcent}%");
-        if (r.CiblePlusFaible) sb.AppendLine("  Cible + faible = oui");
-        if (r.CiblePlusForte) sb.AppendLine("  Cible + forte = oui");
-        sb.AppendLine("--- Joueur ---");
-        if (r.MesPvInfPourcent.HasValue) sb.AppendLine($"  Mes PV < {r.MesPvInfPourcent}%");
-        if (r.MesPvSupPourcent.HasValue) sb.AppendLine($"  Mes PV > {r.MesPvSupPourcent}%");
-        if (r.SiInvocPresente) sb.AppendLine("  Si invoc presente = oui");
-        sb.AppendLine("--- Situation ---");
-        if (r.EnnemisMin.HasValue) sb.AppendLine($"  Ennemis >= {r.EnnemisMin}");
-        if (r.EnnemisMax.HasValue) sb.AppendLine($"  Ennemis <= {r.EnnemisMax}");
-        if (r.PremierTour) sb.AppendLine("  1er tour = oui");
-        sb.AppendLine("--- Avance ---");
-        if (r.TousLesNTours.HasValue) sb.AppendLine($"  Tous les {r.TousLesNTours} tours");
-        if (r.APartirDuTour.HasValue) sb.AppendLine($"  A partir du tour {r.APartirDuTour}");
-        MessageBox.Show(sb.ToString(), "Conditions du sort", MessageBoxButton.OK, MessageBoxImage.Information);
+        PanelConditions.DataContext = vm.Regle;
+        PanelConditions.IsEnabled = true;
+        TxtCondTitre.Text = $"« {vm.NomSort} » (sort #{vm.Regle.IdSort})";
+        // Scroll vers le panel pour confort visuel (rotation peut être longue).
+        PanelConditions.BringIntoView();
     }
+
+    // ---------------------------------------------------------------------
+    // Handlers conditions — toggle CheckBox = set valeur défaut / null sur
+    // les propriétés `int?` de RegleSort (cf. blueprint UIBLUEPRINT §6).
+    // Utilise reflection pour éviter 10 handlers explicites quasi-identiques.
+    // ---------------------------------------------------------------------
+
+    private static readonly System.Collections.Generic.Dictionary<string, (string prop, int defaut)> _mapChkNullable = new()
+    {
+        ["ChkDistMin"]      = ("DistanceMin", 1),
+        ["ChkDistMax"]      = ("DistanceMax", 8),
+        ["ChkCiblePvInf"]   = ("CiblePvInfPourcent", 50),
+        ["ChkCiblePvSup"]   = ("CiblePvSupPourcent", 50),
+        ["ChkMesPvInf"]     = ("MesPvInfPourcent", 50),
+        ["ChkMesPvSup"]     = ("MesPvSupPourcent", 50),
+        ["ChkEnnemisMin"]   = ("EnnemisMin", 1),
+        ["ChkEnnemisMax"]   = ("EnnemisMax", 8),
+        ["ChkTousLesN"]     = ("TousLesNTours", 2),
+        ["ChkAPartirTour"]  = ("APartirDuTour", 1),
+    };
+
+    private void ChkDistMin_Toggled(object sender, RoutedEventArgs e)        => ToggleNullable("ChkDistMin");
+    private void ChkDistMax_Toggled(object sender, RoutedEventArgs e)        => ToggleNullable("ChkDistMax");
+    private void ChkCiblePvInf_Toggled(object sender, RoutedEventArgs e)     => ToggleNullable("ChkCiblePvInf");
+    private void ChkCiblePvSup_Toggled(object sender, RoutedEventArgs e)     => ToggleNullable("ChkCiblePvSup");
+    private void ChkMesPvInf_Toggled(object sender, RoutedEventArgs e)       => ToggleNullable("ChkMesPvInf");
+    private void ChkMesPvSup_Toggled(object sender, RoutedEventArgs e)       => ToggleNullable("ChkMesPvSup");
+    private void ChkEnnemisMin_Toggled(object sender, RoutedEventArgs e)     => ToggleNullable("ChkEnnemisMin");
+    private void ChkEnnemisMax_Toggled(object sender, RoutedEventArgs e)     => ToggleNullable("ChkEnnemisMax");
+    private void ChkTousLesN_Toggled(object sender, RoutedEventArgs e)       => ToggleNullable("ChkTousLesN");
+    private void ChkAPartirTour_Toggled(object sender, RoutedEventArgs e)    => ToggleNullable("ChkAPartirTour");
+
+    private void ToggleNullable(string chkName)
+    {
+        if (PanelConditions?.DataContext is not RegleSort r) return;
+        if (!_mapChkNullable.TryGetValue(chkName, out var mapping)) return;
+        if (FindName(chkName) is not CheckBox cb) return;
+        var prop = typeof(RegleSort).GetProperty(mapping.prop);
+        if (prop == null) return;
+
+        if (cb.IsChecked == true)
+        {
+            // Coché : si null, set valeur par défaut (sinon laisser la valeur
+            // déjà tapée dans le TextBox).
+            if (prop.GetValue(r) is null)
+                prop.SetValue(r, (int?)mapping.defaut);
+        }
+        else
+        {
+            // Décoché : null = condition désactivée.
+            prop.SetValue(r, null);
+        }
+        // Force refresh des bindings TwoWay sur les TextBox associés
+        // (sans INotifyPropertyChanged sur RegleSort, c'est la solution la
+        // plus simple — toggle de DataContext en deux passes).
+        var ctx = PanelConditions.DataContext;
+        PanelConditions.DataContext = null;
+        PanelConditions.DataContext = ctx;
+        DemanderSauvegardeDebouncee();
+    }
+
+    /// <summary>Trigger debounce save quand un input numérique de condition change.</summary>
+    private void CondInt_TextChanged(object sender, TextChangedEventArgs e) => DemanderSauvegardeDebouncee();
+
+    /// <summary>Trigger debounce save quand une CheckBox booléenne (sans valeur défaut) toggle.</summary>
+    private void CondBool_Click(object sender, RoutedEventArgs e) => DemanderSauvegardeDebouncee();
+
+    /// <summary>Trigger debounce save quand l'ElementRequis change.</summary>
+    private void CmbElement_SelectionChanged(object sender, SelectionChangedEventArgs e) => DemanderSauvegardeDebouncee();
 
     private void BtnSupprimer_Click(object sender, RoutedEventArgs e)
     {

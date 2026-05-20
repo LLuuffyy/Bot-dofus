@@ -1,11 +1,30 @@
 <UserControl x:Class="BotDofus.Wpf.Vues.VueCombat"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:conv="clr-namespace:BotDofus.Wpf.Convertisseurs">
     <UserControl.Resources>
+        <conv:NullableIntToBoolConv x:Key="NullableIntToBoolConv"/>
+
         <Style x:Key="SectionBorderStyle" TargetType="Border" BasedOn="{StaticResource PanelBorderStyle}">
             <Setter Property="Padding" Value="16"/>
             <Setter Property="Margin" Value="0,0,0,14"/>
+        </Style>
+
+        <!-- GroupBox style pour les 5 catégories de conditions (Distance / Cible / Joueur / Situation / Avancé) -->
+        <Style x:Key="ConditionGroupBoxStyle" TargetType="GroupBox">
+            <Setter Property="Foreground" Value="#ECEFF5"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSoftBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrushSoft}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="#ECEFF5"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="11"/>
         </Style>
 
         <Style x:Key="SectionLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource MutedTextStyle}">
@@ -380,6 +399,182 @@
                             HorizontalAlignment="Left"
                             Margin="0,14,0,0"
                             Content="Ajouter a la rotation"/>
+                </StackPanel>
+            </Border>
+
+            <!-- ===== Section CONDITIONS du sort sélectionné (cf. blueprint UIBLUEPRINT §5) =====
+                 Le DataContext est positionné dynamiquement par BtnInfo_Click sur la
+                 Regle du sort cliqué. IsEnabled=false par défaut tant qu'aucun sort
+                 sélectionné. 22 conditions bindées TwoWay sur les propriétés nullable
+                 de RegleSort. Les Chk*_Toggled handlers (code-behind) gèrent le set
+                 valeur par défaut (coché) / null (décoché). -->
+            <Border x:Name="PanelConditions" Style="{StaticResource SectionBorderStyle}" IsEnabled="False">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,12">
+                        <TextBlock Text="CONDITIONS — "
+                                   Style="{StaticResource SectionTitleTextStyle}"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtCondTitre"
+                                   Text="(clic sur ⓘ d'un sort pour éditer ses conditions)"
+                                   Style="{StaticResource SectionTitleTextStyle}"
+                                   Foreground="{DynamicResource AccentBrush}"
+                                   VerticalAlignment="Center"/>
+                    </DockPanel>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Col 1 : Distance -->
+                        <GroupBox Grid.Column="0" Header="Distance" Margin="0,0,4,0" Style="{StaticResource ConditionGroupBoxStyle}">
+                            <StackPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkDistMin" Content="Min :" DockPanel.Dock="Left"
+                                              IsChecked="{Binding DistanceMin, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkDistMin_Toggled" Unchecked="ChkDistMin_Toggled"/>
+                                    <TextBox Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="DistanceMin"
+                                             Text="{Binding DistanceMin, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkDistMax" Content="Max :" DockPanel.Dock="Left"
+                                              IsChecked="{Binding DistanceMax, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkDistMax_Toggled" Unchecked="ChkDistMax_Toggled"/>
+                                    <TextBox Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="DistanceMax"
+                                             Text="{Binding DistanceMax, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <CheckBox Content="Ignorer CAC" Margin="0,0,0,6"
+                                          Click="CondBool_Click" Tag="IgnorerCAC"
+                                          IsChecked="{Binding IgnorerCAC, Mode=TwoWay}"/>
+                                <CheckBox Content="Seulement CAC"
+                                          Click="CondBool_Click" Tag="SeulementCAC"
+                                          IsChecked="{Binding SeulementCAC, Mode=TwoWay}"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- Col 2 : Cible -->
+                        <GroupBox Grid.Column="1" Header="Cible" Margin="4,0,4,0" Style="{StaticResource ConditionGroupBoxStyle}">
+                            <StackPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkCiblePvInf" Content="PV &lt;" DockPanel.Dock="Left"
+                                              IsChecked="{Binding CiblePvInfPourcent, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkCiblePvInf_Toggled" Unchecked="ChkCiblePvInf_Toggled"/>
+                                    <TextBlock Text="%" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                    <TextBox Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="CiblePvInfPourcent"
+                                             Text="{Binding CiblePvInfPourcent, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkCiblePvSup" Content="PV &gt;" DockPanel.Dock="Left"
+                                              IsChecked="{Binding CiblePvSupPourcent, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkCiblePvSup_Toggled" Unchecked="ChkCiblePvSup_Toggled"/>
+                                    <TextBlock Text="%" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                    <TextBox Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="CiblePvSupPourcent"
+                                             Text="{Binding CiblePvSupPourcent, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <CheckBox Content="Cible + faible" Margin="0,0,0,6"
+                                          Click="CondBool_Click" Tag="CiblePlusFaible"
+                                          IsChecked="{Binding CiblePlusFaible, Mode=TwoWay}"/>
+                                <CheckBox Content="Cible + forte"
+                                          Click="CondBool_Click" Tag="CiblePlusForte"
+                                          IsChecked="{Binding CiblePlusForte, Mode=TwoWay}"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- Col 3 : Joueur -->
+                        <GroupBox Grid.Column="2" Header="Joueur" Margin="4,0,4,0" Style="{StaticResource ConditionGroupBoxStyle}">
+                            <StackPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkMesPvInf" Content="PV &lt;" DockPanel.Dock="Left"
+                                              IsChecked="{Binding MesPvInfPourcent, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkMesPvInf_Toggled" Unchecked="ChkMesPvInf_Toggled"/>
+                                    <TextBlock Text="%" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                    <TextBox Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="MesPvInfPourcent"
+                                             Text="{Binding MesPvInfPourcent, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkMesPvSup" Content="PV &gt;" DockPanel.Dock="Left"
+                                              IsChecked="{Binding MesPvSupPourcent, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkMesPvSup_Toggled" Unchecked="ChkMesPvSup_Toggled"/>
+                                    <TextBlock Text="%" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                    <TextBox Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="MesPvSupPourcent"
+                                             Text="{Binding MesPvSupPourcent, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <CheckBox Content="Pas si taclé" Margin="0,0,0,6"
+                                          Click="CondBool_Click" Tag="PasSiTacle"
+                                          IsChecked="{Binding PasSiTacle, Mode=TwoWay}"/>
+                                <CheckBox Content="Si invoc. présente"
+                                          Click="CondBool_Click" Tag="SiInvocPresente"
+                                          IsChecked="{Binding SiInvocPresente, Mode=TwoWay}"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- Col 4 : Situation -->
+                        <GroupBox Grid.Column="3" Header="Situation" Margin="4,0,4,0" Style="{StaticResource ConditionGroupBoxStyle}">
+                            <StackPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkEnnemisMin" Content="Ennemis ≥" DockPanel.Dock="Left"
+                                              IsChecked="{Binding EnnemisMin, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkEnnemisMin_Toggled" Unchecked="ChkEnnemisMin_Toggled"/>
+                                    <TextBox Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="EnnemisMin"
+                                             Text="{Binding EnnemisMin, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkEnnemisMax" Content="Ennemis ≤" DockPanel.Dock="Left"
+                                              IsChecked="{Binding EnnemisMax, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkEnnemisMax_Toggled" Unchecked="ChkEnnemisMax_Toggled"/>
+                                    <TextBox Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="EnnemisMax"
+                                             Text="{Binding EnnemisMax, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <CheckBox Content="1er tour" Margin="0,0,0,6"
+                                          Click="CondBool_Click" Tag="PremierTour"
+                                          IsChecked="{Binding PremierTour, Mode=TwoWay}"/>
+                                <CheckBox Content="Dernier tour"
+                                          Click="CondBool_Click" Tag="DernierTour"
+                                          IsChecked="{Binding DernierTour, Mode=TwoWay}"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- Col 5 : Avancé -->
+                        <GroupBox Grid.Column="4" Header="Avancé" Margin="4,0,0,0" Style="{StaticResource ConditionGroupBoxStyle}">
+                            <StackPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkTousLesN" Content="Tous les" DockPanel.Dock="Left"
+                                              IsChecked="{Binding TousLesNTours, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkTousLesN_Toggled" Unchecked="ChkTousLesN_Toggled"/>
+                                    <TextBlock Text="t." DockPanel.Dock="Right" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                    <TextBox Width="36" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="TousLesNTours"
+                                             Text="{Binding TousLesNTours, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkAPartirTour" Content="A partir t." DockPanel.Dock="Left"
+                                              IsChecked="{Binding APartirDuTour, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkAPartirTour_Toggled" Unchecked="ChkAPartirTour_Toggled"/>
+                                    <TextBox Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="APartirDuTour"
+                                             Text="{Binding APartirDuTour, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <TextBlock Text="Élément :" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+                                    <ComboBox x:Name="CmbElement" Margin="6,0,0,0"
+                                              SelectionChanged="CmbElement_SelectionChanged"
+                                              SelectedItem="{Binding ElementRequis, Mode=TwoWay}"/>
+                                </DockPanel>
+                            </StackPanel>
+                        </GroupBox>
+                    </Grid>
                 </StackPanel>
             </Border>
 
