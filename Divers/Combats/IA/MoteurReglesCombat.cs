@@ -65,6 +65,28 @@ public static class MoteurReglesCombat
                 if (dejaLance >= regle.NombreParTour) continue;
             }
 
+            // === Conditions Joueur (bloc « Joueur » SynFus) ===
+            // Mes PV en % : seuils utilisés ex. pour sorts de soin / sorts panique.
+            if (moi.PVMax > 0)
+            {
+                int mesPvPct = 100 * moi.PV / moi.PVMax;
+                if (regle.MesPvInfPourcent.HasValue && mesPvPct >= regle.MesPvInfPourcent.Value) continue;
+                if (regle.MesPvSupPourcent.HasValue && mesPvPct <= regle.MesPvSupPourcent.Value) continue;
+            }
+            // Présence d'une invocation alliée vivante (ex. Sadida Surpuissante/Folle).
+            if (regle.SiInvocPresente && !combat.Allies.Any(a => a.EstInvocation && !a.EstMort)) continue;
+            // PasSiTacle : nécessite détection « tacle subi » (effets GAS/GA), TODO.
+
+            // === Conditions Situation (bloc « Situation » SynFus) ===
+            int nbEnnemisVivants = combat.Ennemis.Count(e => !e.EstMort && e.PV > 0 && e.PVMax > 0);
+            if (regle.EnnemisMin.HasValue && nbEnnemisVivants < regle.EnnemisMin.Value) continue;
+            if (regle.EnnemisMax.HasValue && nbEnnemisVivants > regle.EnnemisMax.Value) continue;
+            if (regle.PremierTour && combat.NumeroTour != 1) continue;
+            if (regle.APartirDuTour.HasValue && combat.NumeroTour < regle.APartirDuTour.Value) continue;
+            if (regle.TousLesNTours.HasValue && regle.TousLesNTours.Value > 0
+                && combat.NumeroTour % regle.TousLesNTours.Value != 0) continue;
+            // DernierTour : impossible à connaître a priori (pas d'info serveur).
+
             // Stats au niveau APPRIS (pas niv 1).
             var stats = sort.Stats(niveau);
             int coutPA = stats?.CoutPA ?? sort.CoutPA;
@@ -74,9 +96,26 @@ public static class MoteurReglesCombat
             // PA disponibles ?
             if (coutPA > 0 && moi.PA > 0 && coutPA > moi.PA) continue;
 
-            // Cible selon Focus.
-            var cible = ChoisirCible(regle.Focus, combat, moi);
+            // Cible selon Focus, avec overrides CiblePlusFaible / CiblePlusForte
+            // (= forcer la cible vivante ayant le min/max PV, peu importe le Focus).
+            Combattant? cible;
+            if (regle.CiblePlusFaible)
+                cible = combat.Ennemis.Where(e => !e.EstMort && e.PV > 0 && e.PVMax > 0)
+                    .OrderBy(e => e.PV).FirstOrDefault();
+            else if (regle.CiblePlusForte)
+                cible = combat.Ennemis.Where(e => !e.EstMort && e.PV > 0 && e.PVMax > 0)
+                    .OrderByDescending(e => e.PV).FirstOrDefault();
+            else
+                cible = ChoisirCible(regle.Focus, combat, moi);
             if (cible == null) continue;
+
+            // === Conditions Cible (bloc « Cible » SynFus) ===
+            if (cible.PVMax > 0)
+            {
+                int ciblePvPct = 100 * cible.PV / cible.PVMax;
+                if (regle.CiblePvInfPourcent.HasValue && ciblePvPct >= regle.CiblePvInfPourcent.Value) continue;
+                if (regle.CiblePvSupPourcent.HasValue && ciblePvPct <= regle.CiblePvSupPourcent.Value) continue;
+            }
 
             // Distance Chebyshev (= métrique Dofus pour portées). CAC = dist 1.
             int dist = DistanceDofus(moi.CellulePosition, cible.CellulePosition);
