@@ -300,13 +300,26 @@ public partial class VueMapViewer : UserControl
         _cellulesPolygons.Clear();
         DessinerGrille(carte);
         DessinerCellulesPlacement(carte);
-        if (ChkAfficherTransitions.IsChecked == true) DessinerTransitions(carte);
-        if (ChkAfficherEntites.IsChecked == true) DessinerEntites(carte);
-        // F.5 : en combat, dessine aussi les combattants alliés/ennemis sur leur
-        // cellule actuelle (positions à jour via GTM serveur + broadcasts GA;1).
-        if (_contexte.EtatJeu.Combat.Etat != BotDofus.Divers.Combats.Enums.EtatCombat.Inactif)
+
+        // G.5 (ADR-003) — en combat, cacher les entités overworld pour éviter
+        // le double-marqueur sur les combattants (cf. bug user 220806/220830 :
+        // OnCombattantsAbrak injecte dans BOTH Combat.Allies ET carte.Entites,
+        // donc DessinerEntites + DessinerCombattants dessinaient les mêmes
+        // pastilles, parasitant la lecture visuelle de la grille).
+        bool enCombat = _contexte.EtatJeu.Combat.Etat != BotDofus.Divers.Combats.Enums.EtatCombat.Inactif;
+        if (!enCombat)
+        {
+            if (ChkAfficherTransitions.IsChecked == true) DessinerTransitions(carte);
+            if (ChkAfficherEntites.IsChecked == true) DessinerEntites(carte);
+            DessinerJoueur();
+        }
+        else
+        {
+            // En combat, seuls les combattants vivants sont affichés (moi en
+            // bleu, alliés vert, ennemis rouge). Pas de marqueur overworld
+            // figé. Cf. F.5 commit d9ea637 + ADR-003.
             DessinerCombattants(carte);
-        DessinerJoueur();
+        }
         MettreAJourListeEntites(carte);
         CentrerSiNecessaire(carte);
     }
