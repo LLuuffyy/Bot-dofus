@@ -520,14 +520,33 @@ public sealed class TrameJeu : TrameBase
     private void OnMetiersSkills(MessageMetiersSkills msg)
     {
         var perso = _etat.Personnage;
-        // IMPORTANT : au level-up d'un métier, le serveur renvoie un JSK PARTIEL
-        // (uniquement le métier qui vient de up). Si on .Clear() ici, on perd les
-        // ~62 skills des autres métiers → la récolte casse (« je peux plus tout
-        // récolter ») et le farm s'arrête. On FUSIONNE : on écrase seulement les
-        // métiers présents dans ce JSK, puis on reconstruit SkillsConnus depuis
-        // TOUS les métiers connus (union).
+        // IMPORTANT : les JSK partiels du serveur Hystoria peuvent écraser un
+        // job avec une liste RÉDUITE (constaté log 08:48:07.234 : 2ᵉ JSK
+        // efface skill 53 de job#28 Céréale → Orge plus récoltable jusqu'au
+        // prochain JSK complet). Solution : on fait l'UNION par job au lieu
+        // d'écraser. Un perso ne perd JAMAIS un skill connu — seul level-up
+        // peut en AJOUTER. SkillsConnus reconstruit ensuite depuis l'union.
+        var bddSkills = Divers.Donnees.BaseDonnees.Instance;
         foreach (var kv in msg.Metiers)
-            perso.MetiersSkills[kv.Key] = kv.Value;
+        {
+            if (!perso.MetiersSkills.TryGetValue(kv.Key, out var existants))
+            {
+                perso.MetiersSkills[kv.Key] = new List<int>(kv.Value);
+                continue;
+            }
+            foreach (var s in kv.Value)
+            {
+                if (existants.Contains(s)) continue;
+                existants.Add(s);
+                // Nouveau skill débloqué (level-up → palier métier).
+                // Visible côté utilisateur : on saura tout de suite quelle
+                // ressource devient récoltable suite au level-up.
+                var nomVerbe = bddSkills.Skill(s);
+                Journaliseur.Info($"[ACTION] Nouveau skill débloqué : "
+                    + $"#{s} {(string.IsNullOrEmpty(nomVerbe) ? "(verbe inconnu)" : nomVerbe)} "
+                    + $"— ressources avec ce skill maintenant récoltables.");
+            }
+        }
 
         perso.SkillsConnus.Clear();
         foreach (var kv in perso.MetiersSkills)
