@@ -20,10 +20,13 @@ public static class CategorieLog
     private const string VertVif    = "#5CE08A"; // ACTION (story)
     private const string Rouge      = "#FF5370"; // erreurs
     private const string Orange     = "#FFA726"; // avertissements
-    private const string Ambre      = "#FFCA61"; // inventaire / banque
-    private const string Violet     = "#B388FF"; // script / lua / cmd
+    private const string Ambre      = "#FFCA61"; // inventaire
+    private const string AmbreClair = "#FFD988"; // banque / HDV (variante)
+    private const string Violet     = "#B388FF"; // script / lua
+    private const string VioletVif  = "#D0A2FF"; // commandes / cmd
     private const string Bleu       = "#5C9DFF"; // auth / connexion
-    private const string Jaune      = "#FFD54F"; // important / quête
+    private const string Jaune      = "#FFD54F"; // important
+    private const string JauneVif   = "#FFE57F"; // quête (variante)
     private const string Defaut     = "#E0E5EC"; // info neutre
 
     /// <summary>
@@ -42,15 +45,21 @@ public static class CategorieLog
         return tag switch
         {
             "ACTION" => new("Action", VertVif),
-            "RÉCOLTE" or "RECOLTE" or "RECOLTE " => new("Récolte", Vert),
-            "MAP" or "CARTE" or "ANKA" or "TRAJET" or "PF" => new("Trajet", Cyan),
-            "INV" or "BANQUE" or "HDV" or "CRAFT" => new("Inventaire", Ambre),
-            "LUA" or "SCRIPT" or "CMD" or "ANKA-LUA" => new("Script", Violet),
+            "RÉCOLTE" or "RECOLTE" or "RECOLTE " or "FARM"
+                => new("Récolte", Vert),
+            "MAP" or "CARTE" or "ANKA" or "TRAJET" or "PF" or "ROADREC"
+                => new("Trajet", Cyan),
+            "INV" => new("Inventaire", Ambre),
+            "BANQUE" or "HDV" or "CRAFT" => new("Banque", AmbreClair),
+            "CMD" or "COMMANDE" or "COMMANDES"
+                => new("Commandes", VioletVif),
+            "LUA" or "SCRIPT" or "ANKA-LUA"
+                => new("Script", Violet),
             "COMBAT" or "IA" or "SORT" => new("Combat", Rouge),
             "AUTH" or "CONNEXION" or "ORCH" or "LAUNCH" or "PILOTE"
                 => new("Auth", Bleu),
-            "IMPORTANT" or "QUETE" or "QUÊTE" or "INFO-JEU"
-                => new("Important", Jaune),
+            "QUETE" or "QUÊTE" => new("Quête", JauneVif),
+            "IMPORTANT" or "INFO-JEU" => new("Important", Jaune),
             "WD" or "REENC" or "CRYPT" or "OBS" or "OBS-BRUT" or "PKT"
                 or "VOCAB" or "CRACK" or "POLICY" or "CIPHER" or "INJ"
                 or "REENC C→S" or "OBS C→S '-'"

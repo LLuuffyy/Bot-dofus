@@ -169,9 +169,12 @@
                     <CheckBox x:Name="ChkCatRecolte"  Content="Récolte"    IsChecked="True"  Foreground="#7BD389" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
                     <CheckBox x:Name="ChkCatTrajet"   Content="Trajet"     IsChecked="True"  Foreground="#4FC3F7" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
                     <CheckBox x:Name="ChkCatInv"      Content="Inventaire" IsChecked="True"  Foreground="#FFCA61" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
+                    <CheckBox x:Name="ChkCatBanque"   Content="Banque"     IsChecked="True"  Foreground="#FFD988" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
+                    <CheckBox x:Name="ChkCatCmd"      Content="Commandes"  IsChecked="True"  Foreground="#D0A2FF" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
                     <CheckBox x:Name="ChkCatScript"   Content="Script"     IsChecked="True"  Foreground="#B388FF" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
                     <CheckBox x:Name="ChkCatCombat"   Content="Combat"     IsChecked="True"  Foreground="#FF7B7B" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
                     <CheckBox x:Name="ChkCatAuth"     Content="Auth"       IsChecked="True"  Foreground="#5C9DFF" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
+                    <CheckBox x:Name="ChkCatQuete"    Content="Quête"      IsChecked="True"  Foreground="#FFE57F" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
                     <CheckBox x:Name="ChkCatImportant" Content="Important" IsChecked="True"  Foreground="#FFD54F" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
                     <CheckBox x:Name="ChkCatReseau"   Content="Réseau"     IsChecked="False" Foreground="#9AA5B0" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
                     <CheckBox x:Name="ChkCatJeu"      Content="Jeu"        IsChecked="True"  Foreground="#A9B4BD" FontWeight="SemiBold" Margin="0,0,18,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>

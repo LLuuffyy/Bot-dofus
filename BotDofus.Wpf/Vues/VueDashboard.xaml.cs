@@ -230,9 +230,12 @@ public partial class VueDashboard : UserControl
             "Récolte"    => ChkCatRecolte?.IsChecked    == true,
             "Trajet"     => ChkCatTrajet?.IsChecked     == true,
             "Inventaire" => ChkCatInv?.IsChecked        == true,
+            "Banque"     => ChkCatBanque?.IsChecked     == true,
+            "Commandes"  => ChkCatCmd?.IsChecked        == true,
             "Script"     => ChkCatScript?.IsChecked     == true,
             "Combat"     => ChkCatCombat?.IsChecked     == true,
             "Auth"       => ChkCatAuth?.IsChecked       == true,
+            "Quête"      => ChkCatQuete?.IsChecked      == true,
             "Important"  => ChkCatImportant?.IsChecked  == true,
             "Réseau"     => ChkCatReseau?.IsChecked     == true,
             "Jeu"        => ChkCatJeu?.IsChecked        == true,
@@ -275,9 +278,12 @@ public partial class VueDashboard : UserControl
             ChkCatRecolte.IsChecked = true;
             ChkCatTrajet.IsChecked = true;
             ChkCatImportant.IsChecked = true;
+            ChkCatQuete.IsChecked = true;
+            ChkCatBanque.IsChecked = true;
+            ChkCatCmd.IsChecked = true;     // Cmd = Execution script.lua → utile en story
+            ChkCatCombat.IsChecked = true;  // combat = aussi de la story
             ChkCatInv.IsChecked = false;
             ChkCatScript.IsChecked = false;
-            ChkCatCombat.IsChecked = true;  // on garde combat = aussi de la story
             ChkCatAuth.IsChecked = false;
             ChkCatReseau.IsChecked = false;
             ChkCatJeu.IsChecked = false;
@@ -295,9 +301,12 @@ public partial class VueDashboard : UserControl
             ChkCatRecolte.IsChecked = valeur;
             ChkCatTrajet.IsChecked = valeur;
             ChkCatInv.IsChecked = valeur;
+            ChkCatBanque.IsChecked = valeur;
+            ChkCatCmd.IsChecked = valeur;
             ChkCatScript.IsChecked = valeur;
             ChkCatCombat.IsChecked = valeur;
             ChkCatAuth.IsChecked = valeur;
+            ChkCatQuete.IsChecked = valeur;
             ChkCatImportant.IsChecked = valeur;
             ChkCatReseau.IsChecked = valeur;
             ChkCatJeu.IsChecked = valeur;
