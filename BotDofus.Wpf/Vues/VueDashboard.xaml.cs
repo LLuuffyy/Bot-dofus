@@ -15,7 +15,11 @@ public partial class VueDashboard : UserControl
 {
     private ContexteCompte? _contexte;
     private readonly List<EntreeJournal> _toutesLignes = new();
-    private readonly ObservableCollection<LigneLog> _affichees = new();
+    // Deux collections séparées : Chat (messages in-game) et Console (tout
+    // le reste). Routage par tag à l'arrivée dans OnEntreeJournal. Plus de
+    // filtre catégorie : si tu veux la story → onglet Chat, sinon Console.
+    private readonly ObservableCollection<LigneLog> _afficheesChat = new();
+    private readonly ObservableCollection<LigneLog> _afficheesConsole = new();
     private const int LimiteLignes = 5000;
     private string _recherche = string.Empty;
     private readonly DispatcherTimer _tickStats;
@@ -24,7 +28,8 @@ public partial class VueDashboard : UserControl
     {
         InitializeComponent();
         Journaliseur.NiveauMinimum = NiveauJournal.Debug;
-        TxtLogs.ItemsSource = _affichees;
+        ListeChat.ItemsSource = _afficheesChat;
+        ListeConsole.ItemsSource = _afficheesConsole;
         Journaliseur.EntreeAjoutee += OnEntreeJournal;
 
         // Tick 1s pour rafraîchir le compteur "temps online" sans dépendre des paquets.
@@ -168,18 +173,45 @@ public partial class VueDashboard : UserControl
 
             if (Correspond(e.Entree))
             {
-                _affichees.Add(Construire(e.Entree));
-                while (_affichees.Count > LimiteLignes) _affichees.RemoveAt(0);
-                if (ChkAutoScrollConsole?.IsChecked == true && _affichees.Count > 0)
-                    TxtLogs.ScrollIntoView(_affichees[^1]);
+                var ligne = Construire(e.Entree);
+                // Routage par tag : Chat in-game ([:] [^] [%] $ ? # ! …) →
+                // onglet Chat. Tout le reste (bot, récolte, technique…) →
+                // Console. Pas de filtre catégorie : 1 ligne = 1 onglet.
+                bool estChat = EstChatJeu(e.Entree.Message);
+                var cible = estChat ? _afficheesChat : _afficheesConsole;
+                cible.Add(ligne);
+                while (cible.Count > LimiteLignes) cible.RemoveAt(0);
+                if (ChkAutoScrollConsole?.IsChecked == true)
+                {
+                    var liste = estChat ? ListeChat : ListeConsole;
+                    if (cible.Count > 0) liste.ScrollIntoView(cible[^1]);
+                }
             }
 
             if (TxtCount != null)
             {
-                TxtCount.Text = $"{ComptageVisible()} / {_toutesLignes.Count} lignes";
+                TxtCount.Text = $"Chat {_afficheesChat.Count} · Console {_afficheesConsole.Count} · Total {_toutesLignes.Count}";
             }
         }
         catch { /* un bug d'affichage de log ne doit jamais tuer le bot */ }
+    }
+
+    /// <summary>
+    /// Détecte si une entrée provient du chat in-game (joueur qui parle,
+    /// vente, annonce serveur). Format de message : commence par <c>[X]</c>
+    /// où X est le canal Dofus Retro (`:` général, `^` allié, `%` groupe,
+    /// `$` commerce, `?` recrutement, `#` admin, `!` privé). Aussi
+    /// <c>[SERVEUR]</c> pour les annonces serveur.
+    /// </summary>
+    private static bool EstChatJeu(string message)
+    {
+        if (string.IsNullOrEmpty(message) || message[0] != '[') return false;
+        var fin = message.IndexOf(']');
+        if (fin <= 1) return false;
+        var tag = message.Substring(1, fin - 1);
+        if (tag.Equals("SERVEUR", StringComparison.OrdinalIgnoreCase)) return true;
+        // Canaux de chat 1.29 : 1 caractère non alphanumérique.
+        return tag.Length == 1 && ":^%$?#!*".Contains(tag[0]);
     }
 
     /// <summary>Construit une ligne affichable colorée depuis l'entrée brute.</summary>
@@ -205,6 +237,11 @@ public partial class VueDashboard : UserControl
         };
     }
 
+    /// <summary>
+    /// Filtre commun aux 2 onglets : niveau (Info/Debug/Warn/Err) +
+    /// recherche texte. Le tri Chat vs Console se fait par tag d'entrée
+    /// dans OnEntreeJournal (pas par filtre — c'est un routage fixe).
+    /// </summary>
     private bool Correspond(EntreeJournal entree)
     {
         var passe = entree.Niveau switch
@@ -219,34 +256,6 @@ public partial class VueDashboard : UserControl
         };
         if (!passe) return false;
 
-        // Filtre par CATÉGORIE (chips colorés ligne 2 du header) : si la
-        // catégorie n'est pas activée, on cache. Erreur/Alerte sont déjà
-        // gérées par les niveaux ci-dessus ; "Info" (fallback inconnu)
-        // toujours affiché (sinon on perd des messages internes utiles).
-        var catNom = CategorieLog.Resoudre(entree.Message, entree.Niveau).Nom;
-        bool catPasse = catNom switch
-        {
-            "Action"     => ChkCatAction?.IsChecked     == true,
-            "Récolte"    => ChkCatRecolte?.IsChecked    == true,
-            "Trajet"     => ChkCatTrajet?.IsChecked     == true,
-            "Inventaire" => ChkCatInv?.IsChecked        == true,
-            "Banque"     => ChkCatBanque?.IsChecked     == true,
-            "Commandes"  => ChkCatCmd?.IsChecked        == true,
-            "Script"     => ChkCatScript?.IsChecked     == true,
-            "Combat"     => ChkCatCombat?.IsChecked     == true,
-            "Bot"        => ChkCatBot?.IsChecked        == true,
-            "Auth"       => ChkCatAuth?.IsChecked       == true,
-            "Server"     => ChkCatServer?.IsChecked     == true,
-            "Network"    => ChkCatNetwork?.IsChecked    == true,
-            "Game"       => ChkCatGame?.IsChecked       == true,
-            "Quête"      => ChkCatQuete?.IsChecked      == true,
-            "Important"  => ChkCatImportant?.IsChecked  == true,
-            "Réseau"     => ChkCatReseau?.IsChecked     == true,
-            "Jeu"        => ChkCatJeu?.IsChecked        == true,
-            _            => true,  // Info / Erreur / Alerte : laissés au filtre niveau
-        };
-        if (!catPasse) return false;
-
         if (!string.IsNullOrEmpty(_recherche)
             && entree.Message.IndexOf(_recherche, StringComparison.OrdinalIgnoreCase) < 0)
         {
@@ -255,139 +264,43 @@ public partial class VueDashboard : UserControl
         return true;
     }
 
-    // ── Filtres par CATÉGORIE (chips colorés) ──────────────────────────
-    private bool _ignorerFiltreCatChange;
-
-    private void FiltreCat_Toggle(object sender, RoutedEventArgs e)
+    /// <summary>Quand l'utilisateur change d'onglet, on (re)scroll en bas
+    /// de l'onglet visible si auto-scroll est activé.</summary>
+    private void TabLogs_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_ignorerFiltreCatChange) return;
-        RecalculerTexte();
+        if (ChkAutoScrollConsole?.IsChecked != true) return;
+        if (_afficheesChat.Count > 0 && ListeChat.IsVisible)
+            ListeChat.ScrollIntoView(_afficheesChat[^1]);
+        if (_afficheesConsole.Count > 0 && ListeConsole.IsVisible)
+            ListeConsole.ScrollIntoView(_afficheesConsole[^1]);
     }
 
-    private void BtnCatTout_Click(object sender, RoutedEventArgs e)
-        => DefinirToutesCategories(true);
-
-    private void BtnCatAucun_Click(object sender, RoutedEventArgs e)
-        => DefinirToutesCategories(false);
-
-    /// <summary>« Scénario » = seulement la story du bot (Action / Récolte /
-    /// Trajet / Important). Coupe le bruit Debug / Réseau / Jeu pour voir
-    /// uniquement ce que le bot FAIT, pas comment.</summary>
-    /// <summary>Mode « Chat » = la story du bot (équivalent du Chat MoonBot).
-    /// Affiche les events lisibles : récolte, trajet, combat, banque, etc.
-    /// Masque tout le debug technique (réseau bas niveau, métiers JSK…).</summary>
-    private void BtnCatScenario_Click(object sender, RoutedEventArgs e)
-    {
-        _ignorerFiltreCatChange = true;
-        try
-        {
-            // ── Story ON ──
-            ChkCatAction.IsChecked = true;
-            ChkCatRecolte.IsChecked = true;
-            ChkCatTrajet.IsChecked = true;
-            ChkCatInv.IsChecked = true;     // OK voir l'inventaire dans le chat
-            ChkCatBanque.IsChecked = true;
-            ChkCatCmd.IsChecked = true;     // execution de script
-            ChkCatCombat.IsChecked = true;
-            ChkCatGame.IsChecked = true;    // entrée jeu / dialogue / zaap = story
-            ChkCatQuete.IsChecked = true;
-            ChkCatImportant.IsChecked = true;
-            // ── Technique OFF ──
-            ChkCatScript.IsChecked = false;
-            ChkCatBot.IsChecked = false;
-            ChkCatAuth.IsChecked = false;
-            ChkCatServer.IsChecked = false;
-            ChkCatNetwork.IsChecked = false;
-            ChkCatReseau.IsChecked = false;
-            ChkCatJeu.IsChecked = false;
-        }
-        finally { _ignorerFiltreCatChange = false; }
-        RecalculerTexte();
-    }
-
-    /// <summary>Mode « Console » = inverse du Chat. Affiche uniquement le
-    /// debug technique (lifecycle bot, réseau, métiers JSK, internals…)
-    /// pour quand on diagnostique un problème.</summary>
-    private void BtnCatConsole_Click(object sender, RoutedEventArgs e)
-    {
-        _ignorerFiltreCatChange = true;
-        try
-        {
-            // ── Story OFF ──
-            ChkCatAction.IsChecked = false;
-            ChkCatRecolte.IsChecked = false;
-            ChkCatTrajet.IsChecked = false;
-            ChkCatInv.IsChecked = false;
-            ChkCatBanque.IsChecked = false;
-            ChkCatCmd.IsChecked = false;
-            ChkCatCombat.IsChecked = false;
-            ChkCatGame.IsChecked = false;
-            ChkCatQuete.IsChecked = false;
-            ChkCatImportant.IsChecked = false;
-            // ── Technique ON ──
-            ChkCatScript.IsChecked = true;
-            ChkCatBot.IsChecked = true;
-            ChkCatAuth.IsChecked = true;
-            ChkCatServer.IsChecked = true;
-            ChkCatNetwork.IsChecked = true;
-            ChkCatReseau.IsChecked = true;
-            ChkCatJeu.IsChecked = true;
-        }
-        finally { _ignorerFiltreCatChange = false; }
-        RecalculerTexte();
-    }
-
-    private void DefinirToutesCategories(bool valeur)
-    {
-        _ignorerFiltreCatChange = true;
-        try
-        {
-            ChkCatAction.IsChecked = valeur;
-            ChkCatRecolte.IsChecked = valeur;
-            ChkCatTrajet.IsChecked = valeur;
-            ChkCatInv.IsChecked = valeur;
-            ChkCatBanque.IsChecked = valeur;
-            ChkCatCmd.IsChecked = valeur;
-            ChkCatScript.IsChecked = valeur;
-            ChkCatCombat.IsChecked = valeur;
-            ChkCatBot.IsChecked = valeur;
-            ChkCatAuth.IsChecked = valeur;
-            ChkCatServer.IsChecked = valeur;
-            ChkCatNetwork.IsChecked = valeur;
-            ChkCatGame.IsChecked = valeur;
-            ChkCatQuete.IsChecked = valeur;
-            ChkCatImportant.IsChecked = valeur;
-            ChkCatReseau.IsChecked = valeur;
-            ChkCatJeu.IsChecked = valeur;
-        }
-        finally { _ignorerFiltreCatChange = false; }
-        RecalculerTexte();
-    }
-
-    private int ComptageVisible()
-    {
-        var n = 0;
-        foreach (var l in _toutesLignes) if (Correspond(l)) n++;
-        return n;
-    }
-
-    /// <summary>Reconstruit la liste affichée (colorée) depuis _toutesLignes filtré.</summary>
+    /// <summary>Reconstruit les 2 listes (Chat / Console) depuis _toutesLignes
+    /// filtré. Appelée quand le filtre niveau ou la recherche change.</summary>
     private void RecalculerTexte()
     {
-        if (TxtLogs == null || TxtCount == null) return;
+        if (TxtCount == null) return;
 
-        _affichees.Clear();
+        _afficheesChat.Clear();
+        _afficheesConsole.Clear();
         foreach (var l in _toutesLignes)
         {
             if (!Correspond(l)) continue;
-            _affichees.Add(Construire(l));
+            var ligne = Construire(l);
+            if (EstChatJeu(l.Message))
+                _afficheesChat.Add(ligne);
+            else
+                _afficheesConsole.Add(ligne);
         }
-        while (_affichees.Count > LimiteLignes) _affichees.RemoveAt(0);
-        TxtCount.Text = $"{ComptageVisible()} / {_toutesLignes.Count} lignes";
+        while (_afficheesChat.Count > LimiteLignes) _afficheesChat.RemoveAt(0);
+        while (_afficheesConsole.Count > LimiteLignes) _afficheesConsole.RemoveAt(0);
 
-        if (ChkAutoScrollConsole?.IsChecked == true && _affichees.Count > 0)
+        TxtCount.Text = $"Chat {_afficheesChat.Count} · Console {_afficheesConsole.Count} · Total {_toutesLignes.Count}";
+
+        if (ChkAutoScrollConsole?.IsChecked == true)
         {
-            TxtLogs.ScrollIntoView(_affichees[^1]);
+            if (_afficheesChat.Count > 0) ListeChat.ScrollIntoView(_afficheesChat[^1]);
+            if (_afficheesConsole.Count > 0) ListeConsole.ScrollIntoView(_afficheesConsole[^1]);
         }
     }
 
@@ -402,8 +315,9 @@ public partial class VueDashboard : UserControl
     private void BtnEffacer_Click(object sender, RoutedEventArgs e)
     {
         _toutesLignes.Clear();
-        _affichees.Clear();
-        if (TxtCount != null) TxtCount.Text = "0 / 0 lignes";
+        _afficheesChat.Clear();
+        _afficheesConsole.Clear();
+        if (TxtCount != null) TxtCount.Text = "Chat 0 · Console 0 · Total 0";
     }
 }
 
