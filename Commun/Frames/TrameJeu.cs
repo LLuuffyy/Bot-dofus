@@ -1010,7 +1010,7 @@ public sealed class TrameJeu : TrameBase
                 int pminVL = stVL?.PorteeMin ?? sortVise.PorteeMin;
                 int pmaxVL = stVL?.PorteeMax ?? sortVise.PorteeMax;
 
-                var resApproche = TrouverApprocheCombat(perso, combat, ennemi, sortVise);
+                var resApproche = TrouverApprocheCombat(perso, combat, ennemi, sortVise, _compte.ConfigCombat);
                 if (resApproche.HasValue)
                 {
                     var (chemin, distApres) = resApproche.Value;
@@ -1110,18 +1110,28 @@ public sealed class TrameJeu : TrameBase
     ///
     /// Renvoie (chemin, distApresMove) ou null si rien d'atteignable.
     /// </summary>
+    /// <remarks>
+    /// Refondue 20/05/2026 pour respecter <c>cfg.Mode</c> (cf. ADR-001 §3) :
+    /// la cellule cible n'est plus juste « la plus proche en pas » mais celle qui
+    /// minimise le score selon le mode (Agressif → dist=1 / Eloigne → dist=portéeMax /
+    /// Equilibre → |dist - DistancePref| / Fuyard → idem Eloigne en cast). Tie-break
+    /// sur nbPas A* (économise PM pour casts suivants).
+    /// </remarks>
     private (System.Collections.Generic.List<BotDofus.Divers.Cartes.Cellule> chemin, int distFinale)?
         TrouverApprocheCombat(
             BotDofus.Divers.Jeu.Personnage.Personnage perso,
             BotDofus.Divers.Combats.Combat combat,
             BotDofus.Divers.Combats.Combattants.Combattant ennemi,
-            BotDofus.Divers.Jeu.Personnage.Spells.InfoSort sort)
+            BotDofus.Divers.Jeu.Personnage.Spells.InfoSort sort,
+            BotDofus.Divers.Combats.IA.ConfigCombat? cfg)
     {
         var carte = _etat.CarteCourante;
         if (carte == null || perso.CellulePosition is not int maCellId) return null;
         var depart = carte.Obtenir(maCellId);
         if (depart == null) return null;
 
+        var mode = cfg?.Mode ?? BotDofus.Divers.Combats.IA.ModeCombat.Equilibre;
+        int distPref = cfg?.DistancePreferee ?? 5;
         int pmMax = perso.PM > 0 ? perso.PM : 3;
         // Stats du sort au NIVEAU appris (XML dyshay). Ronce niv 5 = 1-8 / PA 4.
         int niveauSort = perso.SortsAppris.TryGetValue(sort.Identifiant, out var nivS) ? nivS : 0;
@@ -1152,9 +1162,11 @@ public sealed class TrameJeu : TrameBase
 
         // Énumère les candidates : cells marchables, non interactif, non
         // occupées par un combattant, dist Chebyshev à l'ennemi dans [min, max].
+        // Sélection guidée par le Mode (cf. ScoreCelluleMode) + tie-break nbPas.
         BotDofus.Divers.Cartes.Cellule? meilleureCible = null;
         System.Collections.Generic.List<BotDofus.Divers.Cartes.Cellule>? meilleurChemin = null;
-        int meilleurNbPas = int.MaxValue;
+        double meilleurScore = double.MaxValue;
+        int meilleurNbPasTie = int.MaxValue;
         int meilleureDist = -1;
         foreach (var c in carte.Cellules)
         {
@@ -1176,9 +1188,13 @@ public sealed class TrameJeu : TrameBase
             int nbPas = chemin.Count - 1;
             if (nbPas == 0) continue; // déjà à cette case (sort aurait dû passer plus tôt)
             if (nbPas > pmMax) continue;
-            if (nbPas < meilleurNbPas)
+
+            double score = ScoreCelluleMode(d, mode, porteeMax, distPref);
+            // Sélection : score min, tie-break nbPas A* min (économise PM).
+            if (score < meilleurScore || (score == meilleurScore && nbPas < meilleurNbPasTie))
             {
-                meilleurNbPas = nbPas;
+                meilleurScore = score;
+                meilleurNbPasTie = nbPas;
                 meilleureCible = c;
                 meilleurChemin = chemin;
                 meilleureDist = d;
@@ -1187,6 +1203,29 @@ public sealed class TrameJeu : TrameBase
 
         if (meilleurChemin == null) return null;
         return (meilleurChemin, meilleureDist);
+    }
+
+    /// <summary>
+    /// Score d'une cellule cible candidate selon le <see cref="BotDofus.Divers.Combats.IA.ModeCombat"/>
+    /// (plus bas = meilleur). Algorithme aligné dyshay <c>FightExtensions.get_Mover</c>
+    /// et ADR-001 §3.
+    /// </summary>
+    private static double ScoreCelluleMode(int distEnnemi, BotDofus.Divers.Combats.IA.ModeCombat mode,
+                                            int porteeMax, int distancePreferee)
+    {
+        return mode switch
+        {
+            // Agressif : dist=1 (CAC) parfait → score 0. Sinon pénalité = dist-1.
+            BotDofus.Divers.Combats.IA.ModeCombat.Agressif => System.Math.Max(0, distEnnemi - 1),
+            // Eloigne : dist=porteeMax parfait → score 0. Pénalité = porteeMax-dist.
+            BotDofus.Divers.Combats.IA.ModeCombat.Eloigne => System.Math.Max(0, porteeMax - distEnnemi),
+            // Fuyard en cast (sans fuite active) : comportement Eloigne. La fuite
+            // active (PV%<seuil) est gérée en amont dans JouerTourCombatAsync.
+            BotDofus.Divers.Combats.IA.ModeCombat.Fuyard => System.Math.Max(0, porteeMax - distEnnemi),
+            // Equilibre : on s'approche de la DistancePreferee (clamp dans la portée).
+            BotDofus.Divers.Combats.IA.ModeCombat.Equilibre => System.Math.Abs(distEnnemi - distancePreferee),
+            _ => 0
+        };
     }
 
     /// <summary>

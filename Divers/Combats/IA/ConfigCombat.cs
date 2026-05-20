@@ -17,6 +17,14 @@ public sealed class ConfigCombat
 {
     // === Onglet « General » SynFus ===
 
+    /// <summary>
+    /// Mode de combat = profil de POSITIONNEMENT pendant le combat (cf. ADR-001).
+    /// 4 valeurs : Agressif (CAC) / Eloigne (max portée) / Fuyard (max dist + fuite)
+    /// / Equilibre (tient DistancePreferee, défaut). Distinct de Strategie qui
+    /// reste un profil style/sorts.
+    /// </summary>
+    public ModeCombat Mode { get; set; } = ModeCombat.Equilibre;
+
     /// <summary>Positionnement en début de combat (déplacement initial).</summary>
     public PositionnementCombat Positionnement { get; set; } = PositionnementCombat.PasDeDeplacement;
 
