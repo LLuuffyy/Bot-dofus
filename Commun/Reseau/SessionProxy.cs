@@ -61,6 +61,7 @@ public sealed class SessionProxy : IDisposable
     private readonly object _verrouCs = new();
     private int _idxCs = -1;
     private int _dernierIdxClient = -1;   // dernier index d'en-tête client vu (détection reset réel)
+    private bool _akRenegocie;            // un AK S→C est réapparu APRÈS amorce = vraie réinit rotation serveur (preuve positive, lève l'ambiguïté wrap 15→1)
     private int _obsReenc;
     private const int ObsReencMax = 40;
 
@@ -181,23 +182,42 @@ public sealed class SessionProxy : IDisposable
             // client (on abandonne le décalage d'injection, légitime ici).
             // Sinon (index continu, même après GC1) on garde le compteur
             // monotone — droper le décalage casserait la séquence serveur.
-            bool resetReel = !injecte
+            // Saut arrière de l'index client (valeur moyenne → ≤2) = candidat
+            // « vraie réinit serveur ». Deux cas :
+            //  • franc (dernier idx ≠ 15) : impossible que ce soit le wrap
+            //    naturel 15→1 → vraie réinit. INCHANGÉ (zéro régression).
+            //  • ambigu (dernier idx = 15) : 15→1 peut être le wrap naturel OU
+            //    une réinit tombée pile sur 15. On ne tranche QUE sur preuve
+            //    positive (_akRenegocie : un AK S→C a été rejoué) — sinon on
+            //    considère wrap naturel et on garde le compteur monotone.
+            bool sautArriere = !injecte
                 && idxClient is >= 1 and <= 2
-                && _dernierIdxClient >= 4
-                && _dernierIdxClient != n - 1;
+                && _dernierIdxClient >= 4;
+            bool resetReel =
+                sautArriere && (_dernierIdxClient != n - 1 || _akRenegocie);
 
             if (_idxCs < 0 || resetReel)
             {
                 _idxCs = (idxClient is >= 1 and <= 15) ? idxClient : 1;
                 if (resetReel)
                     Journaliseur.Info($"[REENC C→S] reset rotation détecté "
-                        + $"(idxClient {_dernierIdxClient}→{idxClient}) → ré-amorce idx={_idxCs}");
+                        + $"(idxClient {_dernierIdxClient}→{idxClient}, "
+                        + $"akRenégocié={_akRenegocie}) → ré-amorce idx={_idxCs}");
             }
             else
             {
+                // Compteur monotone : AVANCE pour TOUT paquet (relayé OU
+                // injecté) hors amorce/reset. C'est ce qui garde la séquence
+                // serveur cohérente — ne JAMAIS retirer cet incrément.
                 _idxCs++;
                 if (_idxCs > n - 1) _idxCs = 1;
             }
+            // Le signal AK n'est consommé que par un paquet CLIENT relayé
+            // (qu'il ait ou non déclenché le reset) : un paquet injecté ne
+            // doit pas l'éteindre, sinon il disparaît avant le vrai paquet
+            // client post-réinit → faux négatif réintroduit. Une fois vu par
+            // un paquet relayé, on le désarme pour éviter un reset fantôme.
+            if (!injecte) _akRenegocie = false;
             if (!injecte && idxClient >= 0) _dernierIdxClient = idxClient;
 
             var chiffre = _canalAbrak.Chiffrer(clair, _idxCs);
@@ -429,6 +449,21 @@ public sealed class SessionProxy : IDisposable
         {
             try { _canalAbrak.EnregistrerDepuisAK(brut); } catch (Exception ex)
             { Journaliseur.Avertir($"[CRYPT] AK : {ex.Message}"); }
+            // Un AK qui réapparaît APRÈS amorce (_idxCs déjà ≥ 0) = le serveur
+            // a renégocié/réinitialisé la rotation '-' (vraie réinit). C'est la
+            // preuve POSITIVE qui lève l'ambiguïté du wrap 15→1 dans resetReel
+            // (sinon faux négatif : réinit ratée quand dernier idx client = 15
+            // → proxy reste +1 / serveur remis à zéro → décrypt corrompu →
+            // GA001 tronqué à 1 case → boucle « saut sans progrès »).
+            lock (_verrouCs)
+            {
+                if (_idxCs >= 0)
+                {
+                    _akRenegocie = true;
+                    Journaliseur.Info("[REENC C→S] AK renégocié S→C après amorce "
+                        + "→ vraie réinit rotation serveur armée (resetReel au prochain paquet client).");
+                }
+            }
             // continue le traitement normal (AK est relayé/loggué via la suite)
         }
 
