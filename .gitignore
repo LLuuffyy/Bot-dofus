@@ -1,4 +1,4 @@
-# Build artifacts
+﻿# Build artifacts
 bin/
 obj/
 out/
@@ -44,16 +44,16 @@ _ReSharper*/
 Thumbs.db
 desktop.ini
 
-# Ressources binaires non versionnées
+# Ressources binaires non versionnÃ©es
 *.mp3
 *.ico.bak
 
-# Le fichier accounts.bot contient des identifiants en clair : éviter
-# de commiter des copies supplémentaires (backup auto, test, etc.)
+# Le fichier accounts.bot contient des identifiants en clair : Ã©viter
+# de commiter des copies supplÃ©mentaires (backup auto, test, etc.)
 accounts.bot.*
 accounts.bak
 
-# Localisations Dofus (non gérées ici)
+# Localisations Dofus (non gÃ©rÃ©es ici)
 cs/
 de/
 es/
@@ -67,3 +67,9 @@ ru/
 tr/
 zh-Hans/
 zh-Hant/
+.claude-flow/
+.mcp.json
+CLAUDE.md
+.claude/
+ 
+ 
