@@ -1024,43 +1024,81 @@ public sealed class TrameJeu : TrameBase
                     var (chemin, distApres) = resApproche.Value;
                     int nbPasMove = chemin.Count - 1;
                     int cellArrivee = chemin[^1].Identifiant;
+                    int cellAvantMv = maCell;
                     var cellsTrace = string.Join("→", chemin.Select(c => c.Identifiant.ToString()));
                     var paquetDep = BotDofus.Divers.Cartes.Deplacement.Pathfinder.PaquetDeplacement(chemin);
                     var modeStr = _compte.ConfigCombat?.Mode.ToString() ?? "Equilibre";
                     Journaliseur.Info($"[PATHFINDING] Mode={modeStr} | départ cell {maCell} → arrivée cell {cellArrivee} | {nbPasMove} pas | dist après={distApres} | sort « {sortVise.Nom} » niv{nivVise} portée {pminVL}-{pmaxVL} | chemin: {cellsTrace}");
-                    Journaliseur.Info($"[ACTION-MV] Envoi GA001 → '{paquetDep}' (cells {chemin[0].Identifiant}→{cellArrivee})");
+                    Journaliseur.Info($"[ACTION-MV] Envoi GA001 → '{paquetDep}' (cells {cellAvantMv}→{cellArrivee})");
+
+                    // Pipeline event-based ADR-002 §3.3 : on envoie GA001 puis on
+                    // attend le broadcast GA;0/1;<monId> via Combat.MouvementBotConfirme.
+                    // Timeout = 2.5s + marge nbPas (pour cartes laggy).
+                    int idMoi = _etat.Personnage.Identifiant;
+                    int timeoutMs = System.Math.Max(2500, nbPasMove * 450 + 1000);
                     await _session.EnvoyerAuServeurAsync(paquetDep).ConfigureAwait(false);
 
-                    // Attente animation déplacement : ~330 ms par case + 200 ms
-                    // buffer (réf. wukzu cadernis #1585 : `wait(distance * 330)`).
-                    int dureeDeplacement = nbPasMove * 330 + 200;
-                    await Task.Delay(dureeDeplacement).ConfigureAwait(false);
+                    var resultat = await Divers.Combats.IA.PipelineDeplacementCombat
+                        .AttendreMouvementOuTimeoutAsync(_etat.Combat, idMoi, cellArrivee, timeoutMs, default)
+                        .ConfigureAwait(false);
 
-                    // OPTIMISTIC UPDATE : on suppose que le serveur a accepté le
-                    // GA001 et déplace le perso vers la cell d'arrivée. Si le
-                    // serveur a rejeté en silence (≠proxy(décalé) sur cipher),
-                    // le GTM du tour suivant corrigera la position. Mais en
-                    // attendant, le cast utilise la NOUVELLE position pour
-                    // calculer la portée correctement (fix log 20:36-20:37 où le
-                    // bot croyait toujours être à 326/193 entre les tours).
-                    int cellAvantMv = maCell;
-                    _etat.Personnage.CellulePosition = cellArrivee;
-                    maCell = cellArrivee;
-                    Journaliseur.Info($"[ACTION-MV] Position optimiste mise à jour : cell {cellAvantMv} → {cellArrivee} (en attente confirmation serveur GA;1;)");
+                    bool deplacementValide = false;
+                    int distApresMove = distApres;
+                    switch (resultat)
+                    {
+                        case Divers.Combats.IA.ResultatDeplacementCombat.Confirme:
+                            // perso.CellulePosition déjà mis à jour par OnActionJeu
+                            maCell = _etat.Personnage.CellulePosition ?? cellArrivee;
+                            Journaliseur.Info($"[ACTION-MV] Mouvement CONFIRMÉ serveur : cell {cellAvantMv}→{maCell}");
+                            deplacementValide = true;
+                            break;
 
-                    // GKK0 = ack action déplacement (capture vrai client : ~150 ms
-                    // après l'arrivée). Sans, le serveur attend toujours et bloque
-                    // la suite du tour.
-                    Journaliseur.Info($"[ACTION-MV] Envoi GKK0 (ack déplacement)");
-                    await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
-                    await Task.Delay(System.Random.Shared.Next(300, 500)).ConfigureAwait(false);
+                        case Divers.Combats.IA.ResultatDeplacementCombat.ConfirmePartiel:
+                            // Serveur a tronqué le chemin (cell occupée mid-path)
+                            maCell = _etat.Personnage.CellulePosition ?? cellAvantMv;
+                            distApresMove = DistanceDofus(maCell, ennemi.CellulePosition);
+                            Journaliseur.Avertir($"[ACTION-MV] Mouvement PARTIEL : visé cell {cellArrivee}, atteint {maCell} (dist réelle {distApresMove}, portée {pminVL}-{pmaxVL})");
+                            // Cast possible si la dist reste dans la portée du sort
+                            deplacementValide = distApresMove >= pminVL && (pmaxVL <= 0 || distApresMove <= pmaxVL);
+                            break;
 
-                    // Le sort est maintenant en portée → on l'utilise.
-                    sort = sortVise;
-                    sortCoutPA = paVL;
-                    sortPorteeMin = pminVL;
-                    sortPorteeMax = pmaxVL;
-                    distEnnemi = distApres;
+                        case Divers.Combats.IA.ResultatDeplacementCombat.TimeoutSilencieux:
+                            // Aucune confirmation = serveur a refusé. Soit on tente
+                            // le cast aveugle (mode secours, comportement legacy
+                            // = pré-ADR-002), soit on abandonne le tour (sûr).
+                            bool secours = _compte.ConfigCombat?.ModeDeplacementOptimisteSecours ?? true;
+                            if (secours)
+                            {
+                                Journaliseur.Avertir($"[ACTION-MV] Timeout {timeoutMs}ms (pas de broadcast GA;0/1) → mode SECOURS optimiste activé (cast aveugle, perso supposé cell {cellArrivee})");
+                                _etat.Personnage.CellulePosition = cellArrivee;
+                                maCell = cellArrivee;
+                                deplacementValide = true;
+                            }
+                            else
+                            {
+                                Journaliseur.Erreur($"[ACTION-MV] Mouvement REFUSÉ silencieux (timeout {timeoutMs}ms) : perso reste cell {cellAvantMv}, abandon tour");
+                                await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
+                                return;
+                            }
+                            break;
+                    }
+
+                    if (deplacementValide)
+                    {
+                        // GKK0 d'ack action (en mode secours, on ack quand même
+                        // pour matcher le comportement legacy ; idéalement à
+                        // skipper quand serveur a vraiment refusé).
+                        Journaliseur.Info($"[ACTION-MV] Envoi GKK0 (ack déplacement)");
+                        await Task.Delay(System.Random.Shared.Next(150, 300)).ConfigureAwait(false);
+                        await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
+                        await Task.Delay(System.Random.Shared.Next(300, 500)).ConfigureAwait(false);
+
+                        sort = sortVise;
+                        sortCoutPA = paVL;
+                        sortPorteeMin = pminVL;
+                        sortPorteeMax = pmaxVL;
+                        distEnnemi = distApresMove;
+                    }
                 }
                 else
                 {

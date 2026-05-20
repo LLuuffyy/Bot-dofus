@@ -86,6 +86,16 @@ public sealed class ConfigCombat
     /// <summary>Délai entre actions IA combat (ms) — humanise les casts.</summary>
     public int DelaiEntreActionsMs { get; set; } = 800;
 
+    /// <summary>
+    /// FLAG ROLLOUT — si <c>true</c>, en cas de <see cref="ResultatDeplacementCombat.TimeoutSilencieux"/>
+    /// (aucun broadcast GA;0/1 reçu après envoi GA001) le bot continue quand
+    /// même le cast en mode optimistic (= comportement pré-ADR-002).
+    /// Si <c>false</c>, le bot passe son tour (Gt direct, plus safe).
+    /// Par défaut <c>true</c> pour ne pas casser les combats existants tant
+    /// que le pipeline event-based n'a pas été validé en live (cf. ADR-002 §5).
+    /// </summary>
+    public bool ModeDeplacementOptimisteSecours { get; set; } = true;
+
     // ---------------------------------------------------------------
     // Sérialisation JSON
     // ---------------------------------------------------------------
