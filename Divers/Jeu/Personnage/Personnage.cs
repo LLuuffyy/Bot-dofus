@@ -29,6 +29,15 @@ public sealed class Personnage
     public long Kamas { get; set; }
 
     public int PointsCaracteristiques { get; set; }
+
+    /// <summary>
+    /// Compteur monotone d'OQ (loot quantité) reçus du serveur — incrémenté
+    /// à chaque OQ dans TrameJeu.OnObjetQuantite. Permet à la récolte de
+    /// détecter « notre cell a effectivement looté » vs « un autre joueur
+    /// sur la map a pris la cell avant nous » (cf. log 11:55-11:57 :
+    /// 25 GA500 → 1 seul OQ car autre joueur récolte la même map).
+    /// </summary>
+    public long NbLootsRecus { get; set; }
     public int PointsSorts { get; set; }
 
     public int PA { get; set; }

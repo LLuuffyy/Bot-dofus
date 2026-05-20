@@ -1311,14 +1311,46 @@ public sealed class ApiBot
                 skillCellule = Divers.Donnees.CatalogueInteractifs.Skill(gfx);
             int skill = skillCellule > 0 ? skillCellule : 45;
             _recolteCooldown[c.Identifiant] = DateTime.UtcNow + CooldownRecolte;
+            // Snapshot du compteur OQ AVANT l'envoi : si NbLootsRecus
+            // a incrémenté au cours de la fenêtre → notre récolte a réussi
+            // (le serveur nous a envoyé un OQ pour ce perso). Sinon une
+            // GDF qui dépeuple la cell vient d'un AUTRE joueur sur la map
+            // → notre GA500 a été ignoré → inutile d'attendre 17 s.
+            long lootsAvant = _etat.Personnage.NbLootsRecus;
             await RecolterAsync(c.Identifiant, c.IdInteractif, skill, ct).ConfigureAwait(false);
             // Récolte blé Retro ≈ 12 s (capture manuelle 20:14 : GA500 →
-            // GDF;3 + OQ/IQ à +12 s). Plafond 9 s = bot partait trop tôt
-            // → récolte annulée, aucun loot. On attend l'épuisement, ~17 s.
-            for (int i = 0; i < 34 && c.RessourceDisponible
-                                   && !ct.IsCancellationRequested; i++)
+            // GDF;3 + OQ/IQ à +12 s). Plafond 17 s. Stratégie :
+            //  - boucle MIN 3 s pour laisser le serveur démarrer la récolte
+            //    (évite skip prématuré sur GDF d'autre joueur juste avant) ;
+            //  - puis on attend l'épuisement (GDF state 3 → !RessourceDisponible)
+            //    OU l'arrivée d'un OQ pour ce perso, max 17 s.
+            //  - si exit avec OQ → succès. Sans OQ → cell prise par autre
+            //    joueur → on enchaîne sans gaspiller.
+            int i = 0;
+            // Min 3 s
+            for (; i < 6 && !ct.IsCancellationRequested; i++)
                 await Task.Delay(500, ct).ConfigureAwait(false);
+            // Puis attente épuisement OU loot reçu
+            for (; i < 34 && c.RessourceDisponible
+                          && _etat.Personnage.NbLootsRecus == lootsAvant
+                          && !ct.IsCancellationRequested; i++)
+                await Task.Delay(500, ct).ConfigureAwait(false);
+            bool aLoote = _etat.Personnage.NbLootsRecus > lootsAvant;
             if (!c.RessourceDisponible) _recolteCooldown.Remove(c.Identifiant);
+            if (!aLoote && c.RessourceDisponible)
+            {
+                // Échec : pas de loot ET cell toujours dispo (timeout). Probable
+                // que la cell a été prise par un autre joueur côté serveur sans
+                // GDF arrivé jusqu'à nous, ou notre GA500 ignoré.
+                Journaliseur.Debogue($"[FARM] cell {c.Identifiant} sans loot — "
+                    + "soit autre joueur, soit GA500 ignoré. Skip.");
+            }
+            else if (!aLoote && !c.RessourceDisponible)
+            {
+                // Cell dépletée mais pas par nous → un autre joueur l'a prise.
+                Journaliseur.Debogue($"[FARM] cell {c.Identifiant} épuisée par "
+                    + "un autre joueur (pas d'OQ pour nous). Skip.");
+            }
             // Grace post-dépletion : laisse le serveur finir son cycle
             // (GKK0 vrai client + flush OQ/IQ + transition d'état) avant
             // d'envoyer le prochain GA001. Sans ce délai, le GA001 arrive

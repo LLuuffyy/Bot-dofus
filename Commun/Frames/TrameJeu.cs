@@ -670,6 +670,10 @@ public sealed class TrameJeu : TrameBase
                 var nom = Divers.Donnees.BaseDonnees.Instance.Item(existant.IdTemplate)?.Nom
                           ?? $"Item #{existant.IdTemplate}";
                 Journaliseur.Info($"[ACTION] +{delta} {nom} (total {msg.NouvelleQuantite})");
+                // Signale aux boucles de récolte : un loot vient d'arriver
+                // pour CE perso → la récolte courante a réussi (cf. cas
+                // map partagée avec un autre joueur).
+                _etat.Personnage.NbLootsRecus++;
             }
             _etat.Personnage.NotifierInventaireChange();
         }
