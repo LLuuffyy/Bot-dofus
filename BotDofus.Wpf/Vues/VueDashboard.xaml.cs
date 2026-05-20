@@ -219,12 +219,91 @@ public partial class VueDashboard : UserControl
         };
         if (!passe) return false;
 
+        // Filtre par CATÉGORIE (chips colorés ligne 2 du header) : si la
+        // catégorie n'est pas activée, on cache. Erreur/Alerte sont déjà
+        // gérées par les niveaux ci-dessus ; "Info" (fallback inconnu)
+        // toujours affiché (sinon on perd des messages internes utiles).
+        var catNom = CategorieLog.Resoudre(entree.Message, entree.Niveau).Nom;
+        bool catPasse = catNom switch
+        {
+            "Action"     => ChkCatAction?.IsChecked     == true,
+            "Récolte"    => ChkCatRecolte?.IsChecked    == true,
+            "Trajet"     => ChkCatTrajet?.IsChecked     == true,
+            "Inventaire" => ChkCatInv?.IsChecked        == true,
+            "Script"     => ChkCatScript?.IsChecked     == true,
+            "Combat"     => ChkCatCombat?.IsChecked     == true,
+            "Auth"       => ChkCatAuth?.IsChecked       == true,
+            "Important"  => ChkCatImportant?.IsChecked  == true,
+            "Réseau"     => ChkCatReseau?.IsChecked     == true,
+            "Jeu"        => ChkCatJeu?.IsChecked        == true,
+            _            => true,  // Info / Erreur / Alerte : laissés au filtre niveau
+        };
+        if (!catPasse) return false;
+
         if (!string.IsNullOrEmpty(_recherche)
             && entree.Message.IndexOf(_recherche, StringComparison.OrdinalIgnoreCase) < 0)
         {
             return false;
         }
         return true;
+    }
+
+    // ── Filtres par CATÉGORIE (chips colorés) ──────────────────────────
+    private bool _ignorerFiltreCatChange;
+
+    private void FiltreCat_Toggle(object sender, RoutedEventArgs e)
+    {
+        if (_ignorerFiltreCatChange) return;
+        RecalculerTexte();
+    }
+
+    private void BtnCatTout_Click(object sender, RoutedEventArgs e)
+        => DefinirToutesCategories(true);
+
+    private void BtnCatAucun_Click(object sender, RoutedEventArgs e)
+        => DefinirToutesCategories(false);
+
+    /// <summary>« Scénario » = seulement la story du bot (Action / Récolte /
+    /// Trajet / Important). Coupe le bruit Debug / Réseau / Jeu pour voir
+    /// uniquement ce que le bot FAIT, pas comment.</summary>
+    private void BtnCatScenario_Click(object sender, RoutedEventArgs e)
+    {
+        _ignorerFiltreCatChange = true;
+        try
+        {
+            ChkCatAction.IsChecked = true;
+            ChkCatRecolte.IsChecked = true;
+            ChkCatTrajet.IsChecked = true;
+            ChkCatImportant.IsChecked = true;
+            ChkCatInv.IsChecked = false;
+            ChkCatScript.IsChecked = false;
+            ChkCatCombat.IsChecked = true;  // on garde combat = aussi de la story
+            ChkCatAuth.IsChecked = false;
+            ChkCatReseau.IsChecked = false;
+            ChkCatJeu.IsChecked = false;
+        }
+        finally { _ignorerFiltreCatChange = false; }
+        RecalculerTexte();
+    }
+
+    private void DefinirToutesCategories(bool valeur)
+    {
+        _ignorerFiltreCatChange = true;
+        try
+        {
+            ChkCatAction.IsChecked = valeur;
+            ChkCatRecolte.IsChecked = valeur;
+            ChkCatTrajet.IsChecked = valeur;
+            ChkCatInv.IsChecked = valeur;
+            ChkCatScript.IsChecked = valeur;
+            ChkCatCombat.IsChecked = valeur;
+            ChkCatAuth.IsChecked = valeur;
+            ChkCatImportant.IsChecked = valeur;
+            ChkCatReseau.IsChecked = valeur;
+            ChkCatJeu.IsChecked = valeur;
+        }
+        finally { _ignorerFiltreCatChange = false; }
+        RecalculerTexte();
     }
 
     private int ComptageVisible()

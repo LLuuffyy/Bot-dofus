@@ -130,31 +130,56 @@
                 Style="{StaticResource PanelBorderStyle}"
                 Padding="12"
                 Margin="0,0,0,10">
-            <DockPanel LastChildFill="False">
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                    <TextBlock Text="Console"
-                               Style="{StaticResource SectionTitleTextStyle}"
-                               VerticalAlignment="Center"
-                               Margin="0,0,16,0"/>
-                    <CheckBox x:Name="ChkInfo"     Content="Logs"          IsChecked="True"  Margin="0,0,12,0" Checked="Filtre_Toggle" Unchecked="Filtre_Toggle"/>
-                    <CheckBox x:Name="ChkDebug"   Content="Debug"          IsChecked="False" Margin="0,0,12,0" Checked="Filtre_Toggle" Unchecked="Filtre_Toggle"/>
-                    <CheckBox x:Name="ChkWarn"    Content="Avertissements" IsChecked="True"  Margin="0,0,12,0" Checked="Filtre_Toggle" Unchecked="Filtre_Toggle"/>
-                    <CheckBox x:Name="ChkErr"     Content="Erreurs"        IsChecked="True"  Margin="0,0,18,0" Checked="Filtre_Toggle" Unchecked="Filtre_Toggle"/>
-                    <TextBox x:Name="TxtRecherche"
-                             Width="200"
-                             materialDesign:HintAssist.Hint="Filtrer par texte / [TAG]"
-                             TextChanged="TxtRecherche_TextChanged"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
-                    <CheckBox x:Name="ChkAutoScrollConsole"
-                              Content="Auto-scroll"
-                              IsChecked="True"
-                              VerticalAlignment="Center"
-                              Margin="0,0,14,0"/>
-                    <TextBlock x:Name="TxtCount" Text="0 lignes" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                    <Button Click="BtnEffacer_Click" Style="{StaticResource TopNavButtonStyle}" Content="Effacer"/>
-                </StackPanel>
-            </DockPanel>
+            <StackPanel>
+                <DockPanel LastChildFill="False">
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                        <TextBlock Text="Console"
+                                   Style="{StaticResource SectionTitleTextStyle}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,16,0"/>
+                        <CheckBox x:Name="ChkInfo"     Content="Logs"          IsChecked="True"  Margin="0,0,12,0" Checked="Filtre_Toggle" Unchecked="Filtre_Toggle"/>
+                        <CheckBox x:Name="ChkDebug"   Content="Debug"          IsChecked="False" Margin="0,0,12,0" Checked="Filtre_Toggle" Unchecked="Filtre_Toggle"/>
+                        <CheckBox x:Name="ChkWarn"    Content="Avertissements" IsChecked="True"  Margin="0,0,12,0" Checked="Filtre_Toggle" Unchecked="Filtre_Toggle"/>
+                        <CheckBox x:Name="ChkErr"     Content="Erreurs"        IsChecked="True"  Margin="0,0,18,0" Checked="Filtre_Toggle" Unchecked="Filtre_Toggle"/>
+                        <TextBox x:Name="TxtRecherche"
+                                 Width="200"
+                                 materialDesign:HintAssist.Hint="Filtrer par texte / [TAG]"
+                                 TextChanged="TxtRecherche_TextChanged"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                        <CheckBox x:Name="ChkAutoScrollConsole"
+                                  Content="Auto-scroll"
+                                  IsChecked="True"
+                                  VerticalAlignment="Center"
+                                  Margin="0,0,14,0"/>
+                        <TextBlock x:Name="TxtCount" Text="0 lignes" Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                        <Button Click="BtnEffacer_Click" Style="{StaticResource TopNavButtonStyle}" Content="Effacer"/>
+                    </StackPanel>
+                </DockPanel>
+
+                <!-- Ligne 2 : filtres par CATÉGORIE (chips colorés par couleur
+                     d'accent MoonBot). Décocher Réseau coupe tout le bruit
+                     [REENC]/[VOCAB]/[OBS] etc. Visuel : Foreground = couleur
+                     de la catégorie pour identification instantanée. -->
+                <WrapPanel Orientation="Horizontal" Margin="0,10,0,0">
+                    <TextBlock Text="Catégories :"
+                               Foreground="{DynamicResource MutedTextBrush}"
+                               VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <CheckBox x:Name="ChkCatAction"   Content="Action"     IsChecked="True"  Foreground="#5CE08A" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
+                    <CheckBox x:Name="ChkCatRecolte"  Content="Récolte"    IsChecked="True"  Foreground="#7BD389" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
+                    <CheckBox x:Name="ChkCatTrajet"   Content="Trajet"     IsChecked="True"  Foreground="#4FC3F7" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
+                    <CheckBox x:Name="ChkCatInv"      Content="Inventaire" IsChecked="True"  Foreground="#FFCA61" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
+                    <CheckBox x:Name="ChkCatScript"   Content="Script"     IsChecked="True"  Foreground="#B388FF" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
+                    <CheckBox x:Name="ChkCatCombat"   Content="Combat"     IsChecked="True"  Foreground="#FF7B7B" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
+                    <CheckBox x:Name="ChkCatAuth"     Content="Auth"       IsChecked="True"  Foreground="#5C9DFF" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
+                    <CheckBox x:Name="ChkCatImportant" Content="Important" IsChecked="True"  Foreground="#FFD54F" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
+                    <CheckBox x:Name="ChkCatReseau"   Content="Réseau"     IsChecked="False" Foreground="#9AA5B0" FontWeight="SemiBold" Margin="0,0,10,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
+                    <CheckBox x:Name="ChkCatJeu"      Content="Jeu"        IsChecked="True"  Foreground="#A9B4BD" FontWeight="SemiBold" Margin="0,0,18,4" Checked="FiltreCat_Toggle" Unchecked="FiltreCat_Toggle"/>
+                    <Button Click="BtnCatTout_Click"   Style="{StaticResource TopNavButtonStyle}" Content="Tout"    Margin="0,0,6,0"/>
+                    <Button Click="BtnCatAucun_Click"  Style="{StaticResource TopNavButtonStyle}" Content="Aucun"   Margin="0,0,6,0"/>
+                    <Button Click="BtnCatScenario_Click" Style="{StaticResource TopNavButtonStyle}" Content="Scénario" ToolTip="Action + Récolte + Trajet + Important : la 'story' du bot, masque le debug"/>
+                </WrapPanel>
+            </StackPanel>
         </Border>
 
         <!-- Console colorée (style MoonBot) : ListBox VIRTUALISÉE → scroll
