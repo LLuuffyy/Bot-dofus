@@ -1201,6 +1201,13 @@ public sealed class TrameJeu : TrameBase
             + $"{r.CoutPA} PA, portée {r.PorteeMin}-{r.PorteeMax})");
         await _session.EnvoyerAuServeurAsync(paquet).ConfigureAwait(false);
 
+        // Incrémente le compteur NombreParTour de la règle (clé = idSort). Lu par
+        // MoteurReglesCombat au prochain appel pour empêcher de relancer ce sort
+        // au-delà de RegleSort.NombreParTour pendant le même tour (limite SynFus).
+        var combat = _etat.Combat;
+        combat.CompteursRegleParTour[r.Sort.Identifiant] =
+            (combat.CompteursRegleParTour.TryGetValue(r.Sort.Identifiant, out var cnt) ? cnt : 0) + 1;
+
         // Séquence capture user 16:22 : GA300 → 376 ms → GKK0 → ~1.3 s → Gt
         await Task.Delay(System.Random.Shared.Next(300, 500)).ConfigureAwait(false);
         await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);

@@ -22,6 +22,14 @@ public sealed class Combat
     public List<int> PositionsEquipe2 { get; } = new();
     public int EquipePlacement { get; private set; } = -1;
 
+    /// <summary>
+    /// Compteur de lancements par sort pour le TOUR courant. Reset à chaque
+    /// <see cref="NouveauTour"/>. Utilisé par <see cref="IA.MoteurReglesCombat"/>
+    /// pour appliquer <see cref="IA.RegleSort.NombreParTour"/> (limite SynFus :
+    /// « lancer ce sort au max N fois par tour »).
+    /// </summary>
+    public Dictionary<int, int> CompteursRegleParTour { get; } = new();
+
     public event EventHandler<EtatCombat>? EtatChange;
     public event EventHandler<int>? TourChange;
     public event EventHandler? PositionsChangees;
@@ -40,6 +48,7 @@ public sealed class Combat
     {
         NumeroTour++;
         IdentifiantCombattantActuel = identifiantCombattant;
+        CompteursRegleParTour.Clear();
         TourChange?.Invoke(this, identifiantCombattant);
     }
 
@@ -63,6 +72,7 @@ public sealed class Combat
         EquipePlacement = -1;
         NumeroTour = 0;
         IdentifiantCombattantActuel = 0;
+        CompteursRegleParTour.Clear();
         ChangerEtat(EtatCombat.Inactif);
         PositionsChangees?.Invoke(this, EventArgs.Empty);
     }

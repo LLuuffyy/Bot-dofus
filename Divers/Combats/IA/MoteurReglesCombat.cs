@@ -34,7 +34,8 @@ public static class MoteurReglesCombat
 
     /// <summary>
     /// Évalue les règles dans l'ordre de priorité décroissante et retourne la
-    /// première utilisable (sort appris, PA OK, portée OK, cible valide).
+    /// première utilisable (sort appris, PA OK, portée OK, cible valide,
+    /// conditions distance/méthode satisfaites, compteur NombreParTour OK).
     /// Retourne null si aucune règle ne convient → TrameJeu fait le fallback
     /// (déplacement vers ennemi le plus proche ou Gt).
     /// </summary>
@@ -56,6 +57,14 @@ public static class MoteurReglesCombat
             // Sort réellement appris par le perso ? (paquet SL)
             if (!sortsAppris.TryGetValue(regle.IdSort, out int niveau) || niveau <= 0) continue;
 
+            // Compteur NombreParTour : la règle a-t-elle déjà été lancée
+            // le nombre max de fois autorisé ce tour ? (limite SynFus)
+            if (regle.NombreParTour > 0)
+            {
+                int dejaLance = combat.CompteursRegleParTour.TryGetValue(regle.IdSort, out var cnt) ? cnt : 0;
+                if (dejaLance >= regle.NombreParTour) continue;
+            }
+
             // Stats au niveau APPRIS (pas niv 1).
             var stats = sort.Stats(niveau);
             int coutPA = stats?.CoutPA ?? sort.CoutPA;
@@ -69,10 +78,21 @@ public static class MoteurReglesCombat
             var cible = ChoisirCible(regle.Focus, combat, moi);
             if (cible == null) continue;
 
-            // Distance Chebyshev (= métrique Dofus pour portées).
+            // Distance Chebyshev (= métrique Dofus pour portées). CAC = dist 1.
             int dist = DistanceDofus(moi.CellulePosition, cible.CellulePosition);
             if (dist < porteeMin) continue;
             if (porteeMax > 0 && dist > porteeMax) continue;
+
+            // Conditions de distance SynFus (bloc « Distance »).
+            if (regle.DistanceMin.HasValue && dist < regle.DistanceMin.Value) continue;
+            if (regle.DistanceMax.HasValue && dist > regle.DistanceMax.Value) continue;
+            if (regle.IgnorerCAC && dist <= 1) continue;     // pas en CAC autorisé
+            if (regle.SeulementCAC && dist > 1) continue;    // CAC uniquement
+
+            // Méthode de lancement SynFus : CAC = adjacent / Distance = pas
+            // adjacent / LesDeux = pas de filtre. Aligné dyshay MetodoLanzamiento.
+            if (regle.MethodeLancement == MethodeLancement.CAC && dist > 1) continue;
+            if (regle.MethodeLancement == MethodeLancement.Distance && dist <= 1) continue;
 
             return new ResultatRegle(regle, sort, cible, dist, coutPA, porteeMin, porteeMax, niveau);
         }
