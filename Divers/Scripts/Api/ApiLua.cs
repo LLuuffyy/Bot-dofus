@@ -175,6 +175,50 @@ public sealed partial class ApiLua
     public int recolter_tout()
         => _api.RecolterToutAsync(_ct).GetAwaiter().GetResult();
 
+    /// <summary>
+    /// Récolte filtré par métier (« bois », « blé », « plante », « minerai »,
+    /// « poisson »). Sur Hystoria la BDD interactifs est vide → ce filtre +
+    /// la détection gfx (7500-7510 = bois, 7511 = blé…) empêche de taper un
+    /// arbre avec skill 45 (Faucher). Ex Lua : <c>recolter_tout_metier("bois")</c>.
+    /// </summary>
+    public int recolter_tout_metier(string nom)
+    {
+        var skills = ApiBot.SkillsMetier(nom);
+        if (skills.Length == 0)
+        {
+            Journaliseur.Avertir($"[LUA] recolter_tout_metier : métier '{nom}' inconnu "
+                + "(attendu : bois | blé | plante | minerai | poisson)");
+            return 0;
+        }
+        return _api.RecolterToutAsync(skills, _ct).GetAwaiter().GetResult();
+    }
+
+    /// <summary>Alias rapide : récolte uniquement les arbres (skill 6/101).</summary>
+    public int recolter_tout_bois() => recolter_tout_metier("bois");
+
+    /// <summary>Alias rapide : récolte uniquement le blé/céréales (skill 45/47/122).</summary>
+    public int recolter_tout_ble() => recolter_tout_metier("blé");
+
+    /// <summary>Alias rapide : récolte uniquement les plantes (skill 23/27/68…).</summary>
+    public int recolter_tout_plante() => recolter_tout_metier("plante");
+
+    /// <summary>Alias rapide : récolte uniquement les minerais (skill 11-21, 142-149).</summary>
+    public int recolter_tout_minerai() => recolter_tout_metier("minerai");
+
+    /// <summary>
+    /// Téléporte via le Zaap présent sur la carte courante vers la map
+    /// cible (id Dofus). Protocole Hystoria : approche → <c>GA500;114</c>
+    /// → attente menu <c>WC</c> → <c>WU&lt;mapDest&gt;</c>. Renvoie true si
+    /// la téléportation a réussi (changement de map confirmé sous 6 s).
+    /// Ex Lua : <c>zaap(10297)</c> pour Astrub berges. La carte de départ
+    /// doit contenir une cellule zaap (gfx 7000).
+    /// </summary>
+    public bool zaap(int mapDestination)
+        => _api.UtiliserZaapAsync(mapDestination, _ct).GetAwaiter().GetResult();
+
+    /// <summary>Alias anglais : identique à <see cref="zaap(int)"/>.</summary>
+    public bool useZaap(int mapDestination) => zaap(mapDestination);
+
     /// <summary>Nombre de ressources récoltables par ce perso ici.</summary>
     public int nb_recoltables() => _api.NbRecoltables();
 

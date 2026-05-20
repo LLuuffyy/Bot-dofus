@@ -579,6 +579,8 @@ public sealed class ApiBot
             {
                 Journaliseur.Info($"[MAP] Sortie « {direction} » OK → carte "
                     + $"{_etat.Personnage.CarteCourante}");
+                Journaliseur.Info($"[ACTION] Changement de carte vers le {direction} "
+                    + $"→ map #{_etat.Personnage.CarteCourante}");
                 return true;
             }
             Journaliseur.Avertir($"[MAP] cellule {cible.Identifiant} n'a pas "
@@ -654,6 +656,72 @@ public sealed class ApiBot
     }
 
     /// <summary>
+    /// Skill de récolte déduit du <c>gfx</c> d'une cellule interactive quand
+    /// la BDD interactifs Hystoria est vide. Lookup PRÉCIS dans le catalogue
+    /// dyshay (53 entrées récoltables 1.29, chaque arbre/minerai/poisson son
+    /// skill exact) ; sinon 0 (inconnu). Ancienne table « 7500-7510 → 6 »
+    /// était fausse : Érable=37, Châtaignier=39, Chêne=10… pas 6 partout.
+    /// </summary>
+    private static int SkillDepuisGfx(int gfx)
+        => Divers.Donnees.CatalogueInteractifs.Skill(gfx);
+
+    /// <summary>
+    /// Liste des skills standard d'un métier (alias texte pour scripts Lua).
+    /// Couvre les jobs récolte Retro 1.29 (cf. JXK serveur, capture in vivo).
+    /// </summary>
+    /// <summary>
+    /// Tables skills par verbe d'action — source : SynFus
+    /// <c>Resources/data/skills_hystoria.json</c> (149 skills 1.29 Hystoria).
+    /// On regroupe par verbe (Couper, Faucher, Cueillir, Pêcher, Collecter)
+    /// = toutes les variantes possibles d'un métier de récolte.
+    /// </summary>
+    internal static int[] SkillsMetier(string nom) => nom.ToLowerInvariant() switch
+    {
+        // « Couper » = Bûcheron (arbres). Skill 101 = « Scier » (craft, gardé sans risque).
+        "bois" or "bucheron" or "bûcheron" or "couper"
+            => new[] { 6, 10, 33, 34, 35, 37, 38, 39, 40, 41,
+                       139, 141, 154, 155, 158, 174, 101 },
+        // « Faucher » + « Moudre » + « Egrener » = Paysan (céréales).
+        "ble" or "blé" or "paysan" or "cereale" or "céréale" or "faucher"
+            => new[] { 45, 46, 50, 52, 53, 54, 57, 58, 159, 47, 122 },
+        // « Cueillir » + « Collecter » + « Préparer Potion » = Alchimiste/Plantes.
+        "plante" or "alchimiste" or "alchi" or "cueillir"
+            => new[] { 68, 69, 71, 72, 73, 74, 160,
+                       23, 24, 25, 26, 28, 29, 30, 31, 55, 56, 161, 162,
+                       27, 109 },
+        // « Pêcher » = Pêcheur.
+        "poisson" or "pecheur" or "pêcheur" or "peche" or "pêche" or "pecher" or "pêcher"
+            => new[] { 124, 125, 126, 127, 128, 129, 130, 131, 136, 140, 152 },
+        // « Collecter » = Mineur (Fer/Étain/Cuivre/Bronze/Manganèse/Kobalt/
+        // Argent/Or/Bauxite). Source dyshay/interactivos.xml gfx 7520-7528.
+        "minerai" or "mineur" or "mine"
+            => new[] { 24, 25, 26, 28, 29, 30, 31, 55, 56 },
+        // Divers récolte « Ramasser/Fouiller » (rare, ex. patate 7510=42).
+        "ramasser" or "divers"
+            => new[] { 42, 190, 153 },
+        // Zaap / téléport = « Se faire transporter ».
+        "zaap" or "teleport" or "téléport"
+            => new[] { 157 },
+        _ => System.Array.Empty<int>(),
+    };
+
+    /// <summary>
+    /// Nom lisible d'une ressource à partir du skill de récolte (logs
+    /// d'action propres). IDs skills Dofus Retro 1.29 confirmés (jobs/SL).
+    /// </summary>
+    private static string NomRessourceSkill(int skill) => skill switch
+    {
+        2 or 6 or 101 => "Bois (Bûcheron)",
+        45 or 47 or 122 => "Blé / Céréale (Paysan)",
+        24 or 25 or 27 or 109 => "Plante (Alchimiste)",
+        26 or 23 or 68 => "Plante (Alchimiste)",
+        36 or 124 or 128 or 133 or 136 or 140 => "Poisson (Pêcheur)",
+        16 or 11 or 12 or 13 or 14 or 15 or 17 or 18 or 19 or 20 or 21
+            or 142 or 143 or 144 or 145 or 146 or 147 or 148 or 149 => "Minerai (Mineur)",
+        _ => $"Ressource (skill {skill})",
+    };
+
+    /// <summary>
     /// Récolte un élément interactif (arbre, minerai, blé…) : approche au
     /// contact puis envoie le VRAI paquet d'interaction capturé en jeu manuel :
     /// <c>GA500&lt;cellule&gt;;&lt;skillId&gt;</c> (capture : <c>GA500168;45</c>,
@@ -698,6 +766,13 @@ public sealed class ApiBot
             + $"GA001+« {paquet} » collés (skill {skillId}). Si la ressource n'est "
             + "pas du blé, le skill diffère (Couper=bois, Cueillir=plantes, "
             + "Pêcher=poisson) : surcharge skillId.");
+        // Nom précis si gfx connu du catalogue (« Châtaignier », « Orge »…),
+        // sinon générique par skill (« Bois (Bûcheron) »).
+        var nomCatalogue = Divers.Donnees.CatalogueInteractifs.Nom(idInteractif);
+        var nomAction = !string.IsNullOrEmpty(nomCatalogue)
+            ? nomCatalogue
+            : NomRessourceSkill(skillId);
+        Journaliseur.Info($"[ACTION] Récolte : {nomAction} (cellule {cellule})");
 
         // GA500 collé au GA001 (pas d'attente entre les deux).
         await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
@@ -713,6 +788,94 @@ public sealed class ApiBot
         // ne touche plus à rien : la récolte se termine, le loot OQ/IQ
         // arrive, et RecolterTout attend l'épuisement réel (GDF).
         _ = dureeMarche; // (gardé pour le log ; plus de GKK0 injecté)
+    }
+
+    /// <summary>
+    /// Utilise un Zaap sur la carte courante pour téléporter vers <paramref
+    /// name="mapDestination"/>. Protocole Hystoria capturé en jeu manuel
+    /// (log 06:55:23-33, 2026-05-20) :
+    /// <list type="number">
+    /// <item>Se déplacer adjacent à la cellule zaap (gfx 7000, skill 114).</item>
+    /// <item>Envoyer <c>GA500&lt;cell&gt;;114</c> (skill 114 = « Utiliser »
+    ///       sur Hystoria — la doc dyshay disait 157 mais c'est faux ici).</item>
+    /// <item>Attendre que le serveur envoie le menu <c>WC|mapId;cost|…</c>.</item>
+    /// <item>Envoyer <c>WU&lt;mapDestination&gt;</c>.</item>
+    /// <item>Serveur confirme : nouveau <c>GDM</c> sur la map cible + <c>WV</c>.</item>
+    /// </list>
+    /// Renvoie true si la map a effectivement changé pour <paramref name="mapDestination"/>.
+    /// </summary>
+    public async Task<bool> UtiliserZaapAsync(int mapDestination, CancellationToken ct = default)
+    {
+        if (_session is null || _etat.CarteCourante is null) return false;
+        var carte = _etat.CarteCourante;
+
+        // 1) Localiser la cellule zaap sur la carte courante (gfx 7000).
+        int celluleZaap = -1;
+        foreach (var c in carte.Cellules)
+        {
+            if (c is null) continue;
+            int gfx = c.LayerObjet2 > 0 ? c.LayerObjet2
+                    : c.LayerObjet1 > 0 ? c.LayerObjet1
+                    : c.IdInteractif;
+            if (gfx == 7000) { celluleZaap = c.Identifiant; break; }
+        }
+        if (celluleZaap < 0)
+        {
+            Journaliseur.Avertir("[ZAAP] aucune cellule zaap (gfx 7000) sur la "
+                + $"carte courante #{carte.Identifiant}.");
+            return false;
+        }
+
+        var mapDepart = _etat.Personnage.CarteCourante;
+        Journaliseur.Info($"[ACTION] Zaap : carte #{mapDepart} → carte #{mapDestination} "
+            + $"(via zaap cellule {celluleZaap})");
+
+        // 2) S'approcher du zaap (case ADJACENTE, pas dessus). Le serveur
+        // refuse de marcher SUR la cellule zaap (interactif) → on calcule
+        // un chemin qui s'arrête 1 case avant via Pathfinder (arreterDevant).
+        // Cf. log 09:53:14 — saut sans progrès cell 282 → 297 car le bot
+        // tentait de marcher sur le zaap directement. GA500;114 marche aussi
+        // depuis adjacent (le zaap accepte l'interaction de la case voisine).
+        if (_etat.Personnage.CellulePosition is int pcZ && pcZ != celluleZaap)
+        {
+            var depZ = carte.Obtenir(pcZ);
+            var arrZ = carte.Obtenir(celluleZaap);
+            if (depZ != null && arrZ != null)
+            {
+                var cheminZ = Pathfinder.Trouver(carte, depZ, arrZ,
+                    arreterDevant: true, distanceArret: 1);
+                if (cheminZ is { Count: >= 2 })
+                    await EnvoyerHumaniseAsync(Pathfinder.PaquetDeplacement(cheminZ), ct)
+                        .ConfigureAwait(false);
+                // Laisse arriver l'écho serveur du déplacement (proportionnel
+                // à la longueur du chemin, plafonné).
+                int dureeMarche = Math.Clamp(((cheminZ?.Count ?? 1) - 1) * 180, 250, 3000);
+                await Task.Delay(dureeMarche, ct).ConfigureAwait(false);
+            }
+        }
+        await Task.Delay(300, ct).ConfigureAwait(false);
+
+        // 3) Activer le zaap.
+        await EnvoyerHumaniseAsync($"GA500{celluleZaap};114", ct).ConfigureAwait(false);
+
+        // 4) Laisser le serveur envoyer le menu WC (capture manuelle ≈ 2 s).
+        await Task.Delay(1500, ct).ConfigureAwait(false);
+
+        // 5) Demander la destination.
+        await EnvoyerHumaniseAsync($"WU{mapDestination}", ct).ConfigureAwait(false);
+
+        // 6) Attendre le changement de carte effectif (jusqu'à 6 s).
+        for (int i = 0; i < 24 && !ct.IsCancellationRequested; i++)
+        {
+            await Task.Delay(250, ct).ConfigureAwait(false);
+            if (_etat.Personnage.CarteCourante == mapDestination)
+            {
+                Journaliseur.Info($"[ZAAP] téléportation OK → carte #{mapDestination}.");
+                return true;
+            }
+        }
+        Journaliseur.Avertir($"[ZAAP] timeout (6 s) — pas de GDM #{mapDestination}.");
+        return false;
     }
 
     /// <summary>Ouvre un dialogue avec un PNJ, puis enchaîne les réponses indiquées.</summary>
@@ -941,14 +1104,15 @@ public sealed class ApiBot
     private readonly Dictionary<int, DateTime> _recolteCooldown = new();
     private static readonly TimeSpan CooldownRecolte = TimeSpan.FromSeconds(25);
 
-    private List<Cellule> CellulesRecoltables()
+    private List<Cellule> CellulesRecoltables(IReadOnlyCollection<int>? filtreSkills = null)
     {
         var carte = _etat.CarteCourante;
         if (carte == null) return new List<Cellule>();
         var bdd = Divers.Donnees.BaseDonnees.Instance;
-        var skills = _etat.Personnage.SkillsConnus;
+        var skillsPerso = _etat.Personnage.SkillsConnus;
         var moi = _etat.Personnage.CellulePosition;
         var maintenant = DateTime.UtcNow;
+        bool aFiltreScript = filtreSkills != null && filtreSkills.Count > 0;
 
         var liste = new List<Cellule>();
         foreach (var c in carte.Cellules)
@@ -956,27 +1120,68 @@ public sealed class ApiBot
             if (c is not { IdInteractif: >= 0, RessourceDisponible: true }) continue;
             if (_recolteCooldown.TryGetValue(c.Identifiant, out var jusqua)
                 && jusqua > maintenant) continue;                     // récoltée récemment
+
             var io = bdd.Interactif(c.IdInteractif);
-            // La BDD interactifs Hystoria est VIDE (« 0 interactifs » au
-            // chargement) → bdd.Interactif() renvoie toujours null. L'ancien
-            // « if (io is not { IdSkill: > 0 }) continue; » jetait alors
-            // TOUTES les cellules → CellulesRecoltables() toujours vide →
-            // recolter_tout : 0 sur toutes les maps (récolte impossible).
-            // Désormais : si io connu, on filtre par métier ; si io null
-            // (BDD vide), on GARDE la cellule — RecolterAsync utilisera le
-            // skill par défaut (45 = Faucher). Le garde-fou reste la dispo
-            // GDF (RessourceDisponible, ligne ci-dessus) + le cooldown.
-            if (io is { IdSkill: > 0 })
+            // Hystoria : IdInteractif = gfx (cf. logs). Fallback chain
+            // LayerObjet2 → LayerObjet1 → IdInteractif pour robustesse.
+            int gfx = c.LayerObjet2 > 0 ? c.LayerObjet2
+                    : c.LayerObjet1 > 0 ? c.LayerObjet1
+                    : c.IdInteractif;
+
+            // Résolution skill (multi-skills aware) :
+            //   1. BDD apprise (la plus précise pour ce perso) si dispo
+            //   2. Catalogue MULTI : on prend le 1ᵉʳ skill du gfx que le
+            //      perso possède (Lin {68,50} → 68 si Alchi, 50 si Paysan)
+            //   3. Catalogue primaire (fallback générique)
+            int skillCellule = io is { IdSkill: > 0 } ? io.IdSkill
+                : (skillsPerso.Count > 0
+                    ? Divers.Donnees.CatalogueInteractifs.SkillCompatible(gfx, skillsPerso)
+                    : 0);
+            if (skillCellule == 0)
+                skillCellule = Divers.Donnees.CatalogueInteractifs.Skill(gfx);
+
+            // 1) Filtre EXPLICITE du script (recolter_tout_bois etc.) :
+            //    cellule au skill inconnu = rejetée (évite GA500 mauvais skill).
+            if (aFiltreScript)
             {
-                if (skills.Count > 0 && !skills.Contains(io.IdSkill))
-                    continue;                                         // pas le métier
+                if (skillCellule <= 0 || !filtreSkills!.Contains(skillCellule))
+                { _filtresGfxIgnores.Add(gfx); continue; }
             }
+            // 2) Filtre métier perso : skill résolu DOIT être dans les
+            //    SkillsConnus. Skill inconnu = filet de sécurité (on tente).
+            else if (skillCellule > 0 && skillsPerso.Count > 0
+                  && !skillsPerso.Contains(skillCellule))
+            {
+                _filtresGfxIgnores.Add(gfx);
+                continue;
+            }
+
             liste.Add(c);
         }
         liste.Sort((a, b) => DistanceCarte(moi, a.Identifiant)
             .CompareTo(DistanceCarte(moi, b.Identifiant)));
+
+        // Diagnostic : on a filtré des cellules → log explicite avec nom/gfx
+        // pour que l'utilisateur voie immédiatement si une ressource (ex.
+        // Lin) est mal catégorisée ou si son perso n'a pas le skill requis.
+        if (_filtresGfxIgnores.Count > 0)
+        {
+            var bilan = new System.Text.StringBuilder();
+            foreach (var g in _filtresGfxIgnores)
+            {
+                if (bilan.Length > 0) bilan.Append(", ");
+                var nom = Divers.Donnees.CatalogueInteractifs.Nom(g);
+                bilan.Append(string.IsNullOrEmpty(nom) ? $"gfx {g}" : $"{nom} (gfx {g})");
+            }
+            Journaliseur.Info($"[LUA] recolter_tout : {_filtresGfxIgnores.Count} "
+                + $"cellule(s) ignorée(s) (skill métier absent) : {bilan}");
+            _filtresGfxIgnores.Clear();
+        }
         return liste;
     }
+
+    /// <summary>Gfx des cellules ignorées au dernier filtre (diagnostic, vidé après log).</summary>
+    private readonly HashSet<int> _filtresGfxIgnores = new();
 
     /// <summary>
     /// Boucle de récolte : récolte toutes les ressources exploitables de la
@@ -1058,7 +1263,16 @@ public sealed class ApiBot
     /// courante (snapshot au début), en attendant l'épuisement de chacune.
     /// Renvoie le nombre récolté. Utilisé par les scripts Lua de trajet.
     /// </summary>
-    public async Task<int> RecolterToutAsync(CancellationToken ct = default)
+    public Task<int> RecolterToutAsync(CancellationToken ct = default)
+        => RecolterToutAsync(filtreSkills: null, ct);
+
+    /// <summary>
+    /// Variante avec filtre de skills (ex. {6,101} = Bois). Si <paramref
+    /// name="filtreSkills"/> est non vide, seules les cellules dont le
+    /// skill résolu (BDD ou gfx) correspond sont récoltées.
+    /// </summary>
+    public async Task<int> RecolterToutAsync(IReadOnlyCollection<int>? filtreSkills,
+                                             CancellationToken ct = default)
     {
         int n = 0;
         // Le serveur envoie le GDF (dispo des ressources) ~30-300 ms APRÈS
@@ -1067,18 +1281,32 @@ public sealed class ApiBot
         // (log 21:32:14 : « recolter_tout : 0 » 63 ms après l'entrée).
         // On attend que des ressources apparaissent (jusqu'à ~4 s) avant
         // de figer le snapshot.
-        for (int w = 0; w < 16 && CellulesRecoltables().Count == 0
+        for (int w = 0; w < 16 && CellulesRecoltables(filtreSkills).Count == 0
                               && !ct.IsCancellationRequested; w++)
             await Task.Delay(250, ct).ConfigureAwait(false);
-        var cibles = CellulesRecoltables();
+        var cibles = CellulesRecoltables(filtreSkills);
         Journaliseur.Info($"[LUA] recolter_tout : {cibles.Count} ressource(s) "
+            + (filtreSkills is { Count: > 0 } ? $"(filtre skills {string.Join(",", filtreSkills)}) " : "")
             + "détectée(s) sur la carte.");
         foreach (var c in cibles)
         {
             if (ct.IsCancellationRequested) break;
             if (_etat.Combat.Etat != EtatCombat.Inactif) break;
             var io = Divers.Donnees.BaseDonnees.Instance.Interactif(c.IdInteractif);
-            int skill = io?.IdSkill ?? 45;
+            int gfx = c.LayerObjet2 > 0 ? c.LayerObjet2
+                    : c.LayerObjet1 > 0 ? c.LayerObjet1
+                    : c.IdInteractif;
+            // Multi-skills aware : pour Lin/Chanvre, choisit Cueillir si
+            // perso Alchimiste / Faucher si Paysan. Garantit cohérence
+            // avec ce que CellulesRecoltables a accepté.
+            var skillsPerso = _etat.Personnage.SkillsConnus;
+            int skillCellule = io is { IdSkill: > 0 } ? io.IdSkill
+                : (skillsPerso.Count > 0
+                    ? Divers.Donnees.CatalogueInteractifs.SkillCompatible(gfx, skillsPerso)
+                    : 0);
+            if (skillCellule == 0)
+                skillCellule = Divers.Donnees.CatalogueInteractifs.Skill(gfx);
+            int skill = skillCellule > 0 ? skillCellule : 45;
             _recolteCooldown[c.Identifiant] = DateTime.UtcNow + CooldownRecolte;
             await RecolterAsync(c.Identifiant, c.IdInteractif, skill, ct).ConfigureAwait(false);
             // Récolte blé Retro ≈ 12 s (capture manuelle 20:14 : GA500 →
@@ -1088,9 +1316,21 @@ public sealed class ApiBot
                                    && !ct.IsCancellationRequested; i++)
                 await Task.Delay(500, ct).ConfigureAwait(false);
             if (!c.RessourceDisponible) _recolteCooldown.Remove(c.Identifiant);
+            // Grace post-dépletion : laisse le serveur finir son cycle
+            // (GKK0 vrai client + flush OQ/IQ + transition d'état) avant
+            // d'envoyer le prochain GA001. Sans ce délai, le GA001 arrive
+            // pendant que le serveur considère le perso encore en « récolte
+            // ending » → rejet silencieux du déplacement → GA500 suivant
+            // frappe sur la position courante au lieu de la cellule cible.
+            // Constaté log 06:50:19 : cell 307 OK, cell 451 jamais atteinte.
+            try { await Task.Delay(800, ct).ConfigureAwait(false); }
+            catch (OperationCanceledException) { break; }
             n++;
         }
         Journaliseur.Info($"[LUA] recolter_tout : {n} ressource(s) récoltée(s).");
+        if (n > 0)
+            Journaliseur.Info($"[ACTION] Récolte terminée sur la carte : "
+                + $"{n} ressource(s) collectée(s).");
         return n;
     }
 
