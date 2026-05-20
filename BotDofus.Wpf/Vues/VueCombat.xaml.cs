@@ -194,24 +194,89 @@ public partial class VueCombat : UserControl
         if (_contexte == null || CmbSort.SelectedItem is not SortItemVm sortVm) return;
 
         var info = sortVm.Info;
+        // Mapping CmbCible (6 items) → FocusSort. Évite le cast direct par index
+        // pour rester robuste si l'ordre des ComboBoxItem change dans le XAML.
+        FocusSort focus = CmbCible.SelectedIndex switch
+        {
+            0 => FocusSort.EnnemiLePlusProche,
+            1 => FocusSort.EnnemiLePlusFaible,
+            2 => FocusSort.EnnemiLePlusFort,
+            3 => FocusSort.Moi,
+            4 => FocusSort.AllieLePlusBlesse,
+            5 => FocusSort.CelluleVide,
+            _ => FocusSort.EnnemiLePlusProche
+        };
+        // CmbMethode : 0=CAC, 1=Distance, 2=LesDeux (matche l'ordre XAML)
+        MethodeLancement methode = CmbMethode.SelectedIndex switch
+        {
+            0 => MethodeLancement.CAC,
+            1 => MethodeLancement.Distance,
+            _ => MethodeLancement.LesDeux
+        };
+
         var regle = new RegleSort
         {
             IdSort = sortVm.Identifiant,
+            Nom = info?.Nom ?? sortVm.Affichage,
             Priorite = int.TryParse(TxtPriorite.Text, out var p) ? p : 5,
             CoutPA = info?.CoutPA ?? 4,
             PorteeMin = info?.PorteeMin ?? 1,
             PorteeMax = info?.PorteeMax ?? 6,
-            Cible = (CibleSort)CmbCible.SelectedIndex,
+            Focus = focus,
+            MethodeLancement = methode,
+            NombreParTour = int.TryParse(TxtFoisTour.Text, out var nt) ? nt : 1,
+            NombreParCible = int.TryParse(TxtFoisCible.Text, out var nc) ? nc : 0,
         };
 
         _contexte.ConfigCombat.Regles.Add(regle);
+        DemanderSauvegardeDebouncee();
         Rafraichir();
     }
 
     private void BtnViderTout_Click(object sender, RoutedEventArgs e)
     {
         _contexte?.ConfigCombat.Regles.Clear();
+        DemanderSauvegardeDebouncee();
         Rafraichir();
+    }
+
+    private void BtnInfo_Click(object sender, RoutedEventArgs e)
+    {
+        // V1 — affiche les conditions actives du sort dans une boîte. À terme,
+        // ouvre une FenetreConditionsRegle modale avec les 5 catégories
+        // SynFus (Distance/Cible/Joueur/Situation/Avancé). Voir docs/ADR-001 §4.
+        if (sender is not Button b || b.Tag is not SortConfigureVm vm) return;
+        var r = vm.Regle;
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"Sort #{r.IdSort} — {r.Nom}");
+        sb.AppendLine($"Focus = {r.Focus}");
+        sb.AppendLine($"Methode = {r.MethodeLancement}");
+        sb.AppendLine($"Priorite = {r.Priorite}");
+        sb.AppendLine($"Nombre / tour = {r.NombreParTour} (0 = max)");
+        sb.AppendLine($"Nombre / cible = {r.NombreParCible}");
+        sb.AppendLine();
+        sb.AppendLine("--- Distance ---");
+        if (r.DistanceMin.HasValue) sb.AppendLine($"  Min = {r.DistanceMin}");
+        if (r.DistanceMax.HasValue) sb.AppendLine($"  Max = {r.DistanceMax}");
+        if (r.IgnorerCAC) sb.AppendLine("  Ignorer CAC = oui");
+        if (r.SeulementCAC) sb.AppendLine("  Seulement CAC = oui");
+        sb.AppendLine("--- Cible ---");
+        if (r.CiblePvInfPourcent.HasValue) sb.AppendLine($"  PV cible < {r.CiblePvInfPourcent}%");
+        if (r.CiblePvSupPourcent.HasValue) sb.AppendLine($"  PV cible > {r.CiblePvSupPourcent}%");
+        if (r.CiblePlusFaible) sb.AppendLine("  Cible + faible = oui");
+        if (r.CiblePlusForte) sb.AppendLine("  Cible + forte = oui");
+        sb.AppendLine("--- Joueur ---");
+        if (r.MesPvInfPourcent.HasValue) sb.AppendLine($"  Mes PV < {r.MesPvInfPourcent}%");
+        if (r.MesPvSupPourcent.HasValue) sb.AppendLine($"  Mes PV > {r.MesPvSupPourcent}%");
+        if (r.SiInvocPresente) sb.AppendLine("  Si invoc presente = oui");
+        sb.AppendLine("--- Situation ---");
+        if (r.EnnemisMin.HasValue) sb.AppendLine($"  Ennemis >= {r.EnnemisMin}");
+        if (r.EnnemisMax.HasValue) sb.AppendLine($"  Ennemis <= {r.EnnemisMax}");
+        if (r.PremierTour) sb.AppendLine("  1er tour = oui");
+        sb.AppendLine("--- Avance ---");
+        if (r.TousLesNTours.HasValue) sb.AppendLine($"  Tous les {r.TousLesNTours} tours");
+        if (r.APartirDuTour.HasValue) sb.AppendLine($"  A partir du tour {r.APartirDuTour}");
+        MessageBox.Show(sb.ToString(), "Conditions du sort", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private void BtnSupprimer_Click(object sender, RoutedEventArgs e)
@@ -219,6 +284,7 @@ public partial class VueCombat : UserControl
         if (sender is Button b && b.Tag is SortConfigureVm vm && _contexte != null)
         {
             _contexte.ConfigCombat.Regles.Remove(vm.Regle);
+            DemanderSauvegardeDebouncee();
             Rafraichir();
         }
     }
@@ -460,6 +526,26 @@ public sealed class SortConfigureVm
 
     public string NomSort => Info?.Nom ?? $"Sort #{Regle.IdSort}";
     public string InfoSort => Info != null ? $"PA {Info.CoutPA} | portee {Info.PorteeMin}-{Info.PorteeMax}" : $"PA {Regle.CoutPA}";
+    /// <summary>Focus du sort (SynFus colonne « Focus »).</summary>
+    public string FocusTexte => Regle.Focus switch
+    {
+        FocusSort.EnnemiLePlusProche => "Ennemi + proche",
+        FocusSort.EnnemiLePlusFaible => "Ennemi + faible",
+        FocusSort.EnnemiLePlusFort   => "Ennemi + fort",
+        FocusSort.Moi                => "Moi",
+        FocusSort.AllieLePlusBlesse  => "Allie + blesse",
+        FocusSort.CelluleVide        => "Cellule vide",
+        _ => "-"
+    };
+    /// <summary>Méthode de lancement (SynFus colonne « Lancement »).</summary>
+    public string MethodeTexte => Regle.MethodeLancement switch
+    {
+        MethodeLancement.CAC      => "CAC",
+        MethodeLancement.Distance => "Distance",
+        MethodeLancement.LesDeux  => "Les deux",
+        _ => "-"
+    };
+    public string NombreParTourTexte => Regle.NombreParTour > 0 ? $"x{Regle.NombreParTour}" : "max";
     public string CibleTexte => Regle.Cible switch
     {
         CibleSort.EnnemiPlusProche => "Ennemi le plus proche",

@@ -213,20 +213,21 @@
                                 Content="Vider tout"/>
                     </DockPanel>
 
+                    <!-- En-tête colonnes alignées SynFus : # / Sort / Focus / Methode / N tour / Actions -->
                     <Grid Margin="0,0,0,8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="42"/>
-                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition Width="150"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="170"/>
                             <ColumnDefinition Width="110"/>
-                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition Width="140"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="#" Style="{StaticResource MutedTextStyle}" FontWeight="SemiBold"/>
-                        <TextBlock Grid.Column="1" Text="Sort" Style="{StaticResource MutedTextStyle}" FontWeight="SemiBold"/>
-                        <TextBlock Grid.Column="2" Text="Cible" Style="{StaticResource MutedTextStyle}" FontWeight="SemiBold"/>
-                        <TextBlock Grid.Column="3" Text="Infos" Style="{StaticResource MutedTextStyle}" FontWeight="SemiBold"/>
-                        <TextBlock Grid.Column="4" Text="Conditions" Style="{StaticResource MutedTextStyle}" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="0" Text="#"       Style="{StaticResource MutedTextStyle}" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="1" Text="Sort"    Style="{StaticResource MutedTextStyle}" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="2" Text="Focus"   Style="{StaticResource MutedTextStyle}" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="3" Text="Lancement" Style="{StaticResource MutedTextStyle}" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="4" Text="x Tour"  Style="{StaticResource MutedTextStyle}" FontWeight="SemiBold"/>
                     </Grid>
 
                     <ItemsControl x:Name="ListeSortsConfig">
@@ -241,11 +242,11 @@
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="42"/>
-                                            <ColumnDefinition Width="140"/>
+                                            <ColumnDefinition Width="150"/>
                                             <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="170"/>
                                             <ColumnDefinition Width="110"/>
-                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="70"/>
+                                            <ColumnDefinition Width="140"/>
                                         </Grid.ColumnDefinitions>
 
                                         <Border Grid.Column="0"
@@ -267,17 +268,17 @@
                                         </StackPanel>
 
                                         <TextBlock Grid.Column="2"
-                                                   Text="{Binding CibleTexte}"
+                                                   Text="{Binding FocusTexte}"
                                                    VerticalAlignment="Center"
                                                    Foreground="{DynamicResource MutedTextBrush}"/>
 
                                         <TextBlock Grid.Column="3"
-                                                   Text="{Binding InfoSort}"
+                                                   Text="{Binding MethodeTexte}"
                                                    VerticalAlignment="Center"
                                                    Foreground="{DynamicResource MutedTextBrush}"/>
 
                                         <TextBlock Grid.Column="4"
-                                                   Text="{Binding ConditionsTexte}"
+                                                   Text="{Binding NombreParTourTexte}"
                                                    VerticalAlignment="Center"
                                                    Foreground="{DynamicResource FaintTextBrush}"/>
 
@@ -285,13 +286,16 @@
                                                     Orientation="Horizontal"
                                                     HorizontalAlignment="Right"
                                                     VerticalAlignment="Center">
-                                            <Button Click="BtnMonter_Click" Tag="{Binding}" Style="{StaticResource GhostIconButtonStyle}">
+                                            <Button Click="BtnMonter_Click" Tag="{Binding}" Style="{StaticResource GhostIconButtonStyle}" ToolTip="Monter dans la rotation">
                                                 <materialDesign:PackIcon Kind="ArrowUp" Width="16" Height="16"/>
                                             </Button>
-                                            <Button Click="BtnDescendre_Click" Tag="{Binding}" Style="{StaticResource GhostIconButtonStyle}">
+                                            <Button Click="BtnDescendre_Click" Tag="{Binding}" Style="{StaticResource GhostIconButtonStyle}" ToolTip="Descendre dans la rotation">
                                                 <materialDesign:PackIcon Kind="ArrowDown" Width="16" Height="16"/>
                                             </Button>
-                                            <Button Click="BtnSupprimer_Click" Tag="{Binding}" Style="{StaticResource GhostIconButtonStyle}" Foreground="{DynamicResource DangerBrush}">
+                                            <Button Click="BtnInfo_Click" Tag="{Binding}" Style="{StaticResource GhostIconButtonStyle}" ToolTip="Editer les conditions de ce sort">
+                                                <materialDesign:PackIcon Kind="InformationOutline" Width="16" Height="16"/>
+                                            </Button>
+                                            <Button Click="BtnSupprimer_Click" Tag="{Binding}" Style="{StaticResource GhostIconButtonStyle}" Foreground="{DynamicResource DangerBrush}" ToolTip="Supprimer">
                                                 <materialDesign:PackIcon Kind="DeleteOutline" Width="16" Height="16"/>
                                             </Button>
                                         </StackPanel>
@@ -335,27 +339,37 @@
                         </StackPanel>
 
                         <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0,0,12">
-                            <TextBlock Text="CIBLE" Style="{StaticResource SectionLabelStyle}"/>
+                            <TextBlock Text="FOCUS" Style="{StaticResource SectionLabelStyle}"/>
                             <ComboBox x:Name="CmbCible" SelectedIndex="0">
                                 <ComboBoxItem Content="Ennemi le plus proche"/>
                                 <ComboBoxItem Content="Ennemi le plus faible"/>
                                 <ComboBoxItem Content="Ennemi le plus fort"/>
                                 <ComboBoxItem Content="Soi"/>
                                 <ComboBoxItem Content="Allie le plus blesse"/>
+                                <ComboBoxItem Content="Cellule vide (invocation)"/>
                             </ComboBox>
                         </StackPanel>
 
                         <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,10,12">
+                            <TextBlock Text="METHODE DE LANCEMENT" Style="{StaticResource SectionLabelStyle}"/>
+                            <ComboBox x:Name="CmbMethode" SelectedIndex="2">
+                                <ComboBoxItem Content="CAC (corps a corps)"/>
+                                <ComboBoxItem Content="Distance"/>
+                                <ComboBoxItem Content="Les deux"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="1" Grid.Column="1" Margin="10,0,0,12">
                             <TextBlock Text="X FOIS / TOUR" Style="{StaticResource SectionLabelStyle}"/>
                             <TextBox x:Name="TxtFoisTour" Text="1" materialDesign:HintAssist.Hint="0 = max"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Row="1" Grid.Column="1" Margin="10,0,0,12">
+                        <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,10,12">
                             <TextBlock Text="X FOIS / CIBLE" Style="{StaticResource SectionLabelStyle}"/>
                             <TextBox x:Name="TxtFoisCible" Text="0" materialDesign:HintAssist.Hint="0 = max"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,10,0">
+                        <StackPanel Grid.Row="2" Grid.Column="1" Margin="10,0,0,0">
                             <TextBlock Text="PRIORITE" Style="{StaticResource SectionLabelStyle}"/>
                             <TextBox x:Name="TxtPriorite" Text="5"/>
                         </StackPanel>
