@@ -70,7 +70,11 @@ public sealed class MessageJeuCreer : MessageDofus, IMessageVersServeur
 /// <summary>GE : finir son tour en combat.</summary>
 public sealed class MessageJeuFinirTour : MessageDofus, IMessageVersServeur
 {
-    public override string Prefixe => "GE";
+    // Capture user 12:41:18 (combat manuel) : « Gt » (g minuscule, t minuscule)
+    // = pass turn. L'ancien préfixe « GE » était faux (Game Event peut-être ?)
+    // — n'aurait JAMAIS passé le tour côté serveur, le bot serait resté bloqué
+    // à tourner en rond. Corrigé via la capture du combat manuel utilisateur.
+    public override string Prefixe => "Gt";
     public override DirectionPaquet Direction => DirectionPaquet.VersServeur;
     public override void Desserialiser(string charge) { Charge = charge; }
 }

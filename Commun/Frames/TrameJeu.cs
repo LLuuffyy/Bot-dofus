@@ -87,10 +87,29 @@ public sealed class TrameJeu : TrameBase
             _compte.ChangerEtat(EtatsCompte.EnJeu);
             Journaliseur.Info("[COMBAT] Combat terminé");
         });
-        Ecouter<MessageTourCombat>(msg =>
+        Ecouter<MessageTourCombat>(async msg =>
         {
             _etat.Combat.NouveauTour(msg.IdentifiantCombattant);
             _compte.ChangerEtat(EtatsCompte.EnCombat);
+            // IA combat basique (capture user 12:41:11) : à mon tour, je cast
+            // le sort offensif de plus haut niveau sur l'ennemi le plus
+            // proche, puis je passe le tour. Si je n'ai aucun sort ou aucun
+            // ennemi → pass turn direct. Pas de déplacement, pas de tactique
+            // — l'IA avancée viendra dans un commit séparé.
+            if (_session is null) return;
+            if (msg.IdentifiantCombattant != _etat.Personnage.Identifiant) return;
+            try
+            {
+                await JouerTourCombatAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Journaliseur.Avertir($"[COMBAT] erreur IA tour : {ex.Message}");
+                // Fail-safe : on passe le tour quoi qu'il arrive pour ne pas
+                // bloquer le combat (sinon GTS timeout 45 s et perte de tour).
+                try { await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false); }
+                catch { /* swallow */ }
+            }
         });
 
         Ecouter<MessagePingMoyen>(_ => { /* silence ping */ });
@@ -793,5 +812,87 @@ public sealed class TrameJeu : TrameBase
         }
 
         Journaliseur.Info($"[COMBAT] {_etat.Combat.Allies.Count} allié(s) vs {_etat.Combat.Ennemis.Count} ennemi(s)");
+    }
+
+    /// <summary>
+    /// IA combat basique (capture user 12:41:11) : cast le sort offensif
+    /// le plus puissant connu sur l'ennemi le plus proche, puis pass turn.
+    /// Aligné sur la séquence manuelle du joueur (GA300sort;cell + Gt).
+    /// Fallback : si aucun sort utilisable ou aucun ennemi → Gt direct.
+    /// Cas concret : protecteur de ressource à partir du niv 20 métier.
+    /// </summary>
+    private async Task JouerTourCombatAsync()
+    {
+        var perso = _etat.Personnage;
+        var combat = _etat.Combat;
+
+        // 1) Ennemi le plus proche (par id-cellule manhattan approximatif).
+        var ennemi = combat.Ennemis
+            .Where(e => !e.EstMort)
+            .OrderBy(e => DistanceCellManhattan(perso.CellulePosition ?? 0, e.CellulePosition))
+            .FirstOrDefault();
+        if (ennemi == null)
+        {
+            Journaliseur.Info("[ACTION] Mon tour : aucun ennemi → passe");
+            await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
+            return;
+        }
+
+        // 2) Sort offensif de plus haut niveau parmi ceux appris. Itère
+        //    SortsAppris (id→niveau), filtre via BaseSorts.SortsOffensifs.
+        var bdd = Divers.Donnees.BaseDonnees.Instance;
+        var idsAppris = perso.SortsAppris.Keys;
+        var offensifs = Divers.Jeu.Personnage.Spells.BaseSorts.Instance.SortsOffensifs(idsAppris).ToList();
+        // Trier par niveau perso desc puis CoutPA asc (préfère sorts boostés).
+        offensifs.Sort((a, b) =>
+        {
+            int nivA = perso.SortsAppris.TryGetValue(a.Identifiant, out var na) ? na : 0;
+            int nivB = perso.SortsAppris.TryGetValue(b.Identifiant, out var nb) ? nb : 0;
+            if (nivA != nivB) return nivB.CompareTo(nivA);
+            return a.CoutPA.CompareTo(b.CoutPA);
+        });
+
+        var sort = offensifs.FirstOrDefault(s =>
+        {
+            int dist = DistanceCellManhattan(perso.CellulePosition ?? 0, ennemi.CellulePosition);
+            // Vérifie portée (min/max) — laxiste si la base n'a pas de range.
+            if (s.PorteeMax > 0 && dist > s.PorteeMax) return false;
+            if (dist < s.PorteeMin) return false;
+            if (s.CoutPA > 0 && perso.PA > 0 && s.CoutPA > perso.PA) return false;
+            return true;
+        });
+
+        if (sort == null)
+        {
+            Journaliseur.Info($"[ACTION] Mon tour : aucun sort utilisable sur « {ennemi.Nom} » "
+                + $"cell {ennemi.CellulePosition} (PA={perso.PA}, dist≈"
+                + $"{DistanceCellManhattan(perso.CellulePosition ?? 0, ennemi.CellulePosition)}) → passe");
+            await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
+            return;
+        }
+
+        // 3) Cast — format GA300<idSort>;<celluleCible> (cf. capture user).
+        var paquetSort = $"GA300{sort.Identifiant};{ennemi.CellulePosition}";
+        Journaliseur.Info($"[ACTION] Sort « {sort.Nom} » (#{sort.Identifiant}) sur cellule "
+            + $"{ennemi.CellulePosition} (cible « {ennemi.Nom} »)");
+        await _session.EnvoyerAuServeurAsync(paquetSort).ConfigureAwait(false);
+
+        // Petite pause pour laisser le serveur traiter le sort (animation,
+        // dégâts, effets). Sans ça le Gt peut arriver pendant que le serveur
+        // est encore en train de calculer l'action.
+        await Task.Delay(800).ConfigureAwait(false);
+
+        // 4) Pass turn — capture user 12:41:18 : « Gt » (g et t minuscules).
+        Journaliseur.Info("[ACTION] Passe le tour");
+        await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
+    }
+
+    /// <summary>Distance Manhattan approximative entre 2 cellules (grille 14×N).</summary>
+    private static int DistanceCellManhattan(int idA, int idB)
+    {
+        const int largeur = 14;
+        int xA = idA % largeur, yA = idA / largeur;
+        int xB = idB % largeur, yB = idB / largeur;
+        return System.Math.Abs(xA - xB) + System.Math.Abs(yA - yB);
     }
 }
