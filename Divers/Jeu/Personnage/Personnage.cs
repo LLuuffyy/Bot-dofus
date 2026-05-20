@@ -116,7 +116,9 @@ public sealed class Personnage
 
 public sealed class ObjetInventaire
 {
-    public int Identifiant { get; set; }
+    // UID d'instance objet Hystoria : dépasse Int32 (ex. 0x1dc7e9d08 =
+    // 7 994 252 552). DOIT être long sinon overflow → objet jamais ajouté.
+    public long Identifiant { get; set; }
     public int IdTemplate { get; set; }
     public int Quantite { get; set; } = 1;
     public int Position { get; set; }

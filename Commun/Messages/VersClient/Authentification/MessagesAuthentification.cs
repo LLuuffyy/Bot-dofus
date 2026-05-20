@@ -260,10 +260,15 @@ public sealed class MessageSelectionPersonnage : MessageDofus, IMessageVersClien
             {
                 var ip = item.Split('~');
                 if (ip.Length < 4) continue;
-                var idObj = ParseHex(ip[0]);
-                var tpl = ParseHex(ip[1]);
-                var qty = ParseHex(ip[2]);
-                var pos = ip[3].Length > 0 ? ParseHex(ip[3]) : 63;
+                // Hystoria peut préfixer l'UID d'un 'O' littéral (cf. OAK).
+                var uidBrut = ip[0];
+                if (uidBrut.Length > 1 && !EstHex(uidBrut[0])) uidBrut = uidBrut[1..];
+                // UID = long (dépasse Int32 : ex. 0x1daa081ab). Ancien int
+                // → overflow → idObj=0 → inventaire initial JAMAIS chargé.
+                var idObj = ParseHex(uidBrut);
+                var tpl = (int)ParseHex(ip[1]);
+                var qty = (int)ParseHex(ip[2]);
+                var pos = ip[3].Length > 0 ? (int)ParseHex(ip[3]) : 63;
                 if (idObj > 0 && tpl > 0)
                     liste.Add(new VersClient.Objet.ObjetParse(idObj, tpl, qty == 0 ? 1 : qty, pos));
             }
@@ -272,8 +277,11 @@ public sealed class MessageSelectionPersonnage : MessageDofus, IMessageVersClien
         ObjetsInitiaux = liste;
     }
 
-    private static int ParseHex(string s)
-        => int.TryParse(s, System.Globalization.NumberStyles.HexNumber,
+    private static bool EstHex(char c)
+        => c is (>= '0' and <= '9') or (>= 'a' and <= 'f') or (>= 'A' and <= 'F');
+
+    private static long ParseHex(string s)
+        => long.TryParse(s, System.Globalization.NumberStyles.HexNumber,
             System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : 0;
 }
 

@@ -284,7 +284,7 @@ public sealed class ApiAnka
         public string objectName(int gid) => itemNameId(gid);
         public int objectPosition(int gid)
             => _a._etat.Personnage.Inventaire.FirstOrDefault(o => o.IdTemplate == gid)?.Position ?? -1;
-        public int objectUid(int gid)
+        public long objectUid(int gid)
             => _a._etat.Personnage.Inventaire.FirstOrDefault(o => o.IdTemplate == gid)?.Identifiant ?? -1;
         public void useObject(int gid) => Stub("inventory.useObject");
         public void deleteObject(int gid, int n) => Stub("inventory.deleteObject");

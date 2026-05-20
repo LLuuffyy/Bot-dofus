@@ -31,11 +31,16 @@ public sealed class MessageObjetAjout : MessageDofus, IMessageVersClient
             var parts = bloc.Split('~');
             if (parts.Length < 4) continue;
 
-            // IDs en hexa, qty/pos parfois aussi.
-            var id = ParseHex(parts[0]);
-            var template = ParseHex(parts[1]);
-            var qty = ParseHex(parts[2]);
-            var pos = parts[3].Length > 0 ? ParseHex(parts[3]) : 63;
+            // Hystoria préfixe l'UID d'un marqueur littéral 'O' (ex.
+            // "O1dc7e9d08"). Non hexa → le retirer sinon ParseHex=0 → jeté.
+            var uidBrut = parts[0];
+            if (uidBrut.Length > 1 && !EstHex(uidBrut[0])) uidBrut = uidBrut[1..];
+
+            // UID = long (dépasse Int32). template/qty/pos restent int.
+            var id = ParseHexLong(uidBrut);
+            var template = (int)ParseHexLong(parts[1]);
+            var qty = (int)ParseHexLong(parts[2]);
+            var pos = parts[3].Length > 0 ? (int)ParseHexLong(parts[3]) : 63;
 
             if (id <= 0 || template <= 0) continue;
             liste.Add(new ObjetParse(id, template, qty == 0 ? 1 : qty, pos));
@@ -43,40 +48,53 @@ public sealed class MessageObjetAjout : MessageDofus, IMessageVersClient
         ObjetsParse = liste;
     }
 
-    private static int ParseHex(string s)
-        => int.TryParse(s, System.Globalization.NumberStyles.HexNumber,
+    private static bool EstHex(char c)
+        => c is (>= '0' and <= '9') or (>= 'a' and <= 'f') or (>= 'A' and <= 'F');
+
+    internal static long ParseHexLong(string s)
+        => long.TryParse(s, System.Globalization.NumberStyles.HexNumber,
             System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : 0;
 }
 
-/// <summary>Représentation parsée d'un objet d'inventaire (info de base).</summary>
-public readonly record struct ObjetParse(int Identifiant, int IdTemplate, int Quantite, int Position);
+/// <summary>Représentation parsée d'un objet d'inventaire (info de base). UID = long (Hystoria > Int32).</summary>
+public readonly record struct ObjetParse(long Identifiant, int IdTemplate, int Quantite, int Position);
 
 /// <summary>OR : retrait d'un objet de l'inventaire (id).</summary>
 public sealed class MessageObjetRetrait : MessageDofus, IMessageVersClient
 {
     public override string Prefixe => "OR";
     public override DirectionPaquet Direction => DirectionPaquet.VersClient;
-    public int IdentifiantObjet { get; private set; }
+    public long IdentifiantObjet { get; private set; }
     public override void Desserialiser(string charge)
     {
         Charge = charge;
-        int.TryParse(charge, out var id);
+        // Hystoria : "OR<charGID>|<uid>" (parfois juste "<uid>"). On prend
+        // le dernier segment et l'UID est un long (> Int32).
+        var s = charge;
+        var p = s.LastIndexOf('|');
+        if (p >= 0) s = s[(p + 1)..];
+        long.TryParse(s, out var id);
         IdentifiantObjet = id;
     }
 }
 
-/// <summary>Oq : changement de quantité d'un objet (id,nouvelleQte).</summary>
+/// <summary>OQ : loot/maj quantité d'un objet. Hystoria : "OQ&lt;charGID&gt;|&lt;uid&gt;,&lt;qty&gt;".</summary>
 public sealed class MessageObjetQuantite : MessageDofus, IMessageVersClient
 {
-    public override string Prefixe => "Oq";
+    public override string Prefixe => "OQ";
     public override DirectionPaquet Direction => DirectionPaquet.VersClient;
-    public int IdentifiantObjet { get; private set; }
+    public long IdentifiantObjet { get; private set; }
     public int NouvelleQuantite { get; private set; }
     public override void Desserialiser(string charge)
     {
         Charge = charge;
-        var parts = charge.Split('|');
-        if (parts.Length > 0 && int.TryParse(parts[0], out var id)) IdentifiantObjet = id;
+        // Format réel (cf. capture récolte) : "<charGID>|<uid>,<qty>"
+        // ex. "401770|7994252552,3". L'UID est DÉCIMAL ici (pas hexa) et
+        // dépasse Int32 → long. Ancien parsing "<id>|<qty>" = faux.
+        var ap = charge.LastIndexOf('|');
+        var corps = ap >= 0 ? charge[(ap + 1)..] : charge;
+        var parts = corps.Split(',');
+        if (parts.Length > 0 && long.TryParse(parts[0], out var id)) IdentifiantObjet = id;
         if (parts.Length > 1 && int.TryParse(parts[1], out var q)) NouvelleQuantite = q;
     }
 }

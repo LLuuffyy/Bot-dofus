@@ -161,7 +161,7 @@ public static class FabriqueMessages
         // --- VersClient : Objet ---
         EnregistrerVersClient<VersClient.Objet.MessageObjetAjout>("OAK");
         EnregistrerVersClient<VersClient.Objet.MessageObjetRetrait>("OR");
-        EnregistrerVersClient<VersClient.Objet.MessageObjetQuantite>("Oq");
+        EnregistrerVersClient<VersClient.Objet.MessageObjetQuantite>("OQ");
         EnregistrerVersClient<VersClient.Objet.MessageObjetPoids>("Ow");
         EnregistrerVersClient<VersClient.Objet.MessageObjetDeplacement>("OM");
 
