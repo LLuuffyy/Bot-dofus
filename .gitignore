@@ -70,5 +70,7 @@ zh-Hant/
 .claude-flow/
 .mcp.json
 .claude/
+.swarm/
+ruvector.db
  
  

@@ -172,7 +172,40 @@ Modèle complet SynFus/dyshay porté dans `ConfigCombat` + `RegleSort` :
 - **Sorts** : List<RegleSort> ordonnée — chaque règle a Focus, NombreParTour, MethodeLancement (CAC/Distance/LesDeux), 18 conditions optionnelles (Distance/Cible/Joueur/Situation/Avancées)
 - **Consommable de soin** : ConsommableSoinIdTemplate + seuils PV % + délais ms
 
-⚠️ Pour l'instant l'IA TrameJeu n'utilise PAS encore toutes ces conditions — c'est sur la roadmap (décideur refondu).
+### Moteur de règles SynFus (`Divers/Combats/IA/MoteurReglesCombat.cs`)
+
+Pipeline depuis le commit `043b0c0` (Phase 3) :
+
+```
+ContexteCompte charge JSON → compte.ConfigCombat
+   ↓
+TrameJeu.JouerTourCombatAsync (sur GTS<moi>)
+   ↓
+MoteurReglesCombat.Evaluer(combat, cfg, sortsAppris)
+   itère les règles par Priorite décroissante :
+     1. sort connu (BaseSorts) + appris (niv > 0) ?
+     2. NombreParTour : compteur Combat.CompteursRegleParTour pas atteint
+     3. Joueur : MesPv%, SiInvocPresente
+     4. Situation : EnnemisMin/Max, PremierTour, APartirDuTour, TousLesNTours
+     5. PA disponibles (au niveau appris XML dyshay)
+     6. Choix cible selon Focus (avec override CiblePlusFaible/Forte)
+     7. Cible : CiblePv%
+     8. Portée (au niveau appris) + Distance SynFus
+     9. IgnorerCAC / SeulementCAC / MethodeLancement
+   → ResultatRegle (sort, cible, dist, stats au niveau) OU null
+   ↓
+si ResultatRegle → ExecuterRegleAsync : GA300 → GKK0 → Gt (timing humain)
+                   + Combat.CompteursRegleParTour[idSort]++
+sinon            → fallback legacy (ennemi le plus proche + sort haut niv + déplacement A*)
+```
+
+**Conditions reportées** (non implémentées Phase 3) :
+- `PasSiTacle` : besoin détection effet tacle GAS/GA
+- `DernierTour` : pas d'info serveur a priori
+- `ElementRequis` : besoin scan effets sort
+- `EviterZone` : besoin grille combat
+
+→ couvre ~80% des cas SynFus standard. UI WPF onglet Combat à venir pour éditer sans toucher `peleas/<perso>.json` à la main.
 
 ## 🌳 Récolte
 
@@ -282,7 +315,7 @@ dotnet build BotDofus.Wpf/BotDofus.Wpf.csproj -c Debug --nologo -v minimal
 - [x] Stats par niveau (XML dyshay)
 - [x] Déplacement combat (move + cast)
 - [x] Mode passif global
-- [ ] Décideur IA refondu avec toutes les conditions SynFus (Focus, NombreParTour, conditions)
+- [x] Décideur IA refondu avec conditions SynFus (Focus, NombreParTour, Distance, Méthode, PV%, tours, ennemis) — moteur règles `MoteurReglesCombat` Phase 1/2/3
 - [ ] UI WPF onglet Combat (équivalent SynFus : tableau sorts + form conditions + consommable soin)
 - [ ] Multi-cast par tour (drain PA, respecte maxParTour)
 - [ ] LDV (Bresenham) avant cast si NecessiteLOS
