@@ -9,33 +9,73 @@ using BotDofus.Utilitaires.Journaux;
 namespace BotDofus.Divers.Combats.IA;
 
 /// <summary>
-/// Configuration combat persistée par compte/personnage. Stocke la stratégie
-/// globale et la liste ordonnée de règles de sorts à appliquer.
-///
-/// Sérialisée en JSON dans <c>peleas/&lt;perso&gt;.json</c>.
+/// Configuration combat persistée par perso. Modèle SynFus/dyshay complet :
+/// stratégie globale, positionnement, règles de sorts, consommable de soin.
+/// Persistée en JSON dans peleas/&lt;perso&gt;.json.
 /// </summary>
 public sealed class ConfigCombat
 {
-    /// <summary>Stratégie globale de l'IA.</summary>
-    public StrategieCombat Strategie { get; set; } = StrategieCombat.Agressif;
+    // === Onglet « General » SynFus ===
+
+    /// <summary>Positionnement en début de combat (déplacement initial).</summary>
+    public PositionnementCombat Positionnement { get; set; } = PositionnementCombat.PasDeDeplacement;
+
+    /// <summary>Style de jeu (Tactique = priorité distance, Agressif = priorité dégâts).</summary>
+    public StrategieCombat Strategie { get; set; } = StrategieCombat.Tactique;
+
+    /// <summary>Distance préférée à maintenir avec l'ennemi (pour le mode Tactique).</summary>
+    public int DistancePreferee { get; set; } = 5;
+
+    /// <summary>« Bloquer le combat » : si true, empêche les ennemis de passer derrière nous.</summary>
+    public bool BloquerLeCombat { get; set; } = false;
+
+    /// <summary>Désactiver le mode spectateur (= dyshay desactivar_espectador).</summary>
+    public bool DesactiverModeSpectateur { get; set; } = false;
+
+    /// <summary>Utiliser la monture (dragodinde) en combat (= dyshay utilizar_dragopavo).</summary>
+    public bool UtiliserMonture { get; set; } = false;
+
+    // === Onglet « Sorts » SynFus ===
 
     /// <summary>
-    /// Liste ordonnée des règles de sorts. L'ordre N'EST PAS la priorité
-    /// (on utilise <see cref="RegleSort.Priorite"/>) mais c'est l'ordre
-    /// d'affichage dans l'UI.
+    /// Liste ORDONNÉE des règles de sorts (l'ordre = priorité d'essai, du haut
+    /// vers le bas). En plus, chaque règle a son champ <see cref="RegleSort.Priorite"/>
+    /// pour fine-tuning ; mais en pratique l'ordre suffit.
     /// </summary>
     public List<RegleSort> Regles { get; set; } = new();
 
-    /// <summary>Cellule de placement préférée en début de combat (-1 = première dispo).</summary>
+    // === Onglet « Consommable de soin » SynFus ===
+
+    /// <summary>ID du template d'objet à utiliser pour se soigner (0 = aucun).</summary>
+    public int ConsommableSoinIdTemplate { get; set; } = 0;
+
+    /// <summary>Nom affiché (pour l'UI), pas critique pour la logique.</summary>
+    public string ConsommableSoinNom { get; set; } = string.Empty;
+
+    /// <summary>Utiliser le consommable si PV ≤ X% (= dyshay iniciar_regeneracion).</summary>
+    public int ConsommableUtiliserSiPvInfPct { get; set; } = 50;
+
+    /// <summary>Jusqu'à Y% PV (= dyshay detener_regeneracion).</summary>
+    public int ConsommableJusquaPvSupPct { get; set; } = 100;
+
+    /// <summary>Délai min (ms) entre deux utilisations du consommable.</summary>
+    public int ConsommableDelaiMinMs { get; set; } = 150;
+
+    /// <summary>Délai max (ms) entre deux utilisations du consommable.</summary>
+    public int ConsommableDelaiMaxMs { get; set; } = 400;
+
+    // === Cellule de placement préférée (legacy) ===
+    /// <summary>Cellule de placement préférée en début de combat (-1 = auto).</summary>
     public int CellulePlacementPrefere { get; set; } = -1;
 
-    /// <summary>Si true, fuit dès que PV &lt; SeuilFuitePv%.</summary>
+    // === Fuite ===
+    /// <summary>Si true, fuit dès que PV &lt; SeuilFuitePv% (mode FUGITIVA).</summary>
     public bool FuirSiPvBas { get; set; } = false;
 
     /// <summary>Seuil PV (0-100) pour déclencher la fuite.</summary>
     public int SeuilFuitePv { get; set; } = 20;
 
-    /// <summary>Délai entre actions (ms) — pour humaniser les casts.</summary>
+    /// <summary>Délai entre actions IA combat (ms) — humanise les casts.</summary>
     public int DelaiEntreActionsMs { get; set; } = 800;
 
     // ---------------------------------------------------------------
@@ -60,7 +100,10 @@ public sealed class ConfigCombat
         {
             var json = File.ReadAllText(cheminFichier);
             var cfg = JsonSerializer.Deserialize<ConfigCombat>(json, Options) ?? new ConfigCombat();
-            Journaliseur.Info($"[CFG-COMBAT] Chargé : strategie={cfg.Strategie}, {cfg.Regles.Count} règles");
+            Journaliseur.Info(
+                $"[CFG-COMBAT] Chargé : style={cfg.Strategie}, placement={cfg.Positionnement}, "
+                + $"distance={cfg.DistancePreferee}, {cfg.Regles.Count} règles, "
+                + $"soin={(cfg.ConsommableSoinIdTemplate > 0 ? cfg.ConsommableSoinNom : "aucun")}");
             return cfg;
         }
         catch (System.Exception ex)
@@ -71,15 +114,13 @@ public sealed class ConfigCombat
     }
 
     /// <summary>
-    /// Génère une config de combat par défaut à partir des sorts OFFENSIFS
-    /// réellement appris par le perso (scan SL). Règle par sort : cible =
-    /// ennemi le plus proche, priorité = portée (les sorts longue portée
-    /// d'abord), portées/PA repris de la base. À utiliser plus tard pour
-    /// proposer une config auto dans l'UI — NON appliqué automatiquement.
+    /// Génère une config par défaut depuis les sorts offensifs appris (scan SL).
+    /// Pour chaque sort offensif, crée une règle "EnnemiLePlusProche" / méthode
+    /// LesDeux / 1 cast par tour. L'utilisateur peut ensuite affiner via l'UI.
     /// </summary>
     public static ConfigCombat GenererParDefaut(IEnumerable<int> sortsApprisIds)
     {
-        var cfg = new ConfigCombat { Strategie = StrategieCombat.Agressif };
+        var cfg = new ConfigCombat { Strategie = StrategieCombat.Tactique };
         var offensifs = BaseSorts.Instance.SortsOffensifs(sortsApprisIds);
         int prio = 100;
         foreach (var s in offensifs)
@@ -87,11 +128,11 @@ public sealed class ConfigCombat
             cfg.Regles.Add(new RegleSort
             {
                 IdSort = s.Identifiant,
+                Nom = s.Nom,
+                Focus = FocusSort.EnnemiLePlusProche,
+                NombreParTour = 1,
+                MethodeLancement = MethodeLancement.LesDeux,
                 Priorite = prio,
-                CoutPA = s.CoutPA,
-                PorteeMin = s.PorteeMin,
-                PorteeMax = s.PorteeMax <= 0 ? 1 : s.PorteeMax,
-                Cible = CibleSort.EnnemiPlusProche,
             });
             prio -= 5;
         }
@@ -109,4 +150,17 @@ public sealed class ConfigCombat
         File.WriteAllText(cheminFichier, json);
         Journaliseur.Info($"[CFG-COMBAT] Sauvegardé : {cheminFichier}");
     }
+}
+
+/// <summary>
+/// Positionnement en début de combat (= dyshay PosicionamientoInicioPelea).
+/// </summary>
+public enum PositionnementCombat
+{
+    /// <summary>Pas de déplacement initial (= dyshay INMOVIL).</summary>
+    PasDeDeplacement,
+    /// <summary>Se rapprocher des ennemis (= dyshay CERCA_DE_ENEMIGOS).</summary>
+    PresDesEnnemis,
+    /// <summary>S'éloigner des ennemis (= dyshay LEJOS_DE_ENEMIGOS).</summary>
+    LoinDesEnnemis
 }

@@ -95,6 +95,10 @@ public sealed class ContexteCompte : IDisposable
         EtatJeu = new EtatJeu();
         Api = new ApiBot(compte, EtatJeu);
         ConfigCombat = ConfigCombat.Charger(Path.Combine("peleas", $"{compte.Identifiant}.json"));
+        // Expose la config au Compte pour que TrameJeu y accède au moment
+        // de jouer le tour (le décideur IA en a besoin pour appliquer les
+        // règles de sorts, focus, conditions — modèle dyshay/SynFus).
+        compte.ConfigCombat = ConfigCombat;
         ApiLua = new ApiLua(Api, EtatJeu, ConfigCombat, Interception);
         Scripts = new GestionnaireScripts(compte, Api);
         Lua = new MoteurLuaInteractif(ApiLua);

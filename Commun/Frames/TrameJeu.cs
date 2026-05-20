@@ -905,6 +905,24 @@ public sealed class TrameJeu : TrameBase
             return;
         }
 
+        // === Phase 1 moteur règles SynFus/dyshay ===
+        // Si l'user a configuré des règles dans peleas/<perso>.json, on les
+        // évalue dans l'ordre de priorité décroissante. Si une règle passe
+        // (sort appris + PA OK + cible valide + portée OK), on la cast direct.
+        // Sinon, fallback sur le comportement legacy (ennemi le plus proche
+        // + sort de plus haut niveau + déplacement si hors portée).
+        var cfg = _compte.ConfigCombat;
+        if (cfg != null && cfg.Regles.Count > 0)
+        {
+            var resultat = Divers.Combats.IA.MoteurReglesCombat.Evaluer(combat, cfg, perso.SortsAppris);
+            if (resultat != null)
+            {
+                await ExecuterRegleAsync(resultat).ConfigureAwait(false);
+                return;
+            }
+            Journaliseur.Info($"[COMBAT] Aucune règle SynFus en portée ({cfg.Regles.Count} règle(s) configurée(s)) → fallback legacy");
+        }
+
         var ennemi = ennemisVivants
             .OrderBy(e => DistanceDofus(maCell, e.CellulePosition))
             .First();
@@ -1157,5 +1175,37 @@ public sealed class TrameJeu : TrameBase
 
         if (meilleurChemin == null) return null;
         return (meilleurChemin, meilleureDist);
+    }
+
+    /// <summary>
+    /// Exécute une règle SynFus déjà validée par <see cref="Divers.Combats.IA.MoteurReglesCombat"/>
+    /// (sort appris, PA OK, portée OK, cible valide). Envoie la séquence
+    /// <c>GA300&lt;id&gt;;&lt;cell&gt;</c> → GKK0 → Gt avec les timings humanisés
+    /// capturés du vrai client (cf. capture user passif 16:21-16:22).
+    /// </summary>
+    /// <remarks>
+    /// Phase 1 du moteur règles : pas encore de déplacement intégré (le moteur
+    /// rejette les règles hors portée → fallback legacy). Le multi-cast par
+    /// tour viendra en Phase 2 (drain PA, respecte NombreParTour).
+    /// </remarks>
+    private async Task ExecuterRegleAsync(Divers.Combats.IA.MoteurReglesCombat.ResultatRegle r)
+    {
+        Journaliseur.Info($"[COMBAT] Règle SynFus appliquée : « {r.Sort.Nom} » "
+            + $"(#{r.Sort.Identifiant} niv{r.NiveauAppris}) focus={r.Regle.Focus}, "
+            + $"cible « {r.Cible.Nom} » cell {r.Cible.CellulePosition} "
+            + $"(dist={r.Distance}, {r.CoutPA} PA, portée {r.PorteeMin}-{r.PorteeMax})");
+
+        var paquet = $"GA300{r.Sort.Identifiant};{r.Cible.CellulePosition}";
+        Journaliseur.Info($"[ACTION] Sort « {r.Sort.Nom} » niv{r.NiveauAppris} "
+            + $"sur cell {r.Cible.CellulePosition} (cible « {r.Cible.Nom} », "
+            + $"{r.CoutPA} PA, portée {r.PorteeMin}-{r.PorteeMax})");
+        await _session.EnvoyerAuServeurAsync(paquet).ConfigureAwait(false);
+
+        // Séquence capture user 16:22 : GA300 → 376 ms → GKK0 → ~1.3 s → Gt
+        await Task.Delay(System.Random.Shared.Next(300, 500)).ConfigureAwait(false);
+        await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
+        await Task.Delay(System.Random.Shared.Next(1000, 1500)).ConfigureAwait(false);
+        Journaliseur.Info("[ACTION] Passe le tour (Gt)");
+        await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
     }
 }

@@ -36,6 +36,15 @@ public sealed class Compte : IEffacable
     /// </summary>
     public bool ModePassif { get; set; }
 
+    /// <summary>
+    /// Config combat persistée (peleas/&lt;perso&gt;.json) — règles de sorts,
+    /// stratégie, positionnement, consommable de soin. Set par
+    /// <see cref="BotDofus.Divers.ContexteCompte"/> au démarrage et exposée
+    /// ici pour que <see cref="BotDofus.Commun.Frames.TrameJeu"/> y accède
+    /// au moment de jouer le tour (modèle dyshay/SynFus).
+    /// </summary>
+    public BotDofus.Divers.Combats.IA.ConfigCombat? ConfigCombat { get; set; }
+
     /// <summary>Déclenché à chaque changement d'état, utilisé par l'UI pour se rafraîchir.</summary>
     public event EventHandler<EtatsCompte>? EtatChange;
 

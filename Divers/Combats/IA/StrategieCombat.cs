@@ -19,5 +19,8 @@ public enum StrategieCombat
     Soutien,
 
     /// <summary>Aucune décision automatique — passe le tour à chaque fois.</summary>
-    Passif
+    Passif,
+
+    /// <summary>Reste loin, fuit si engagé (= dyshay FUGITIVA).</summary>
+    Fugitif
 }

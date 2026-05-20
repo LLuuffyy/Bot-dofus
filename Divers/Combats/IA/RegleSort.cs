@@ -28,6 +28,48 @@ public sealed class RegleSort
     /// <summary>Méthode de lancement = dyshay MetodoLanzamiento</summary>
     public MethodeLancement MethodeLancement { get; set; } = MethodeLancement.LesDeux;
 
+    // -----------------------------------------------------------------
+    // Compat ascendante (ancien modèle) — utilisés par DecideurCombat/ApiLua.
+    // À terme, ces stats devraient être lues depuis BaseSorts.Instance.Trouver(IdSort).Stats(niv)
+    // mais on les garde redondants pour faciliter la transition.
+    // -----------------------------------------------------------------
+    public int CoutPA { get; set; }
+    public int PorteeMin { get; set; } = 1;
+    public int PorteeMax { get; set; } = 6;
+
+    /// <summary>Compat : alias direct de <see cref="Focus"/> sous l'ancien nom.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public CibleSort Cible
+    {
+        get => Focus switch
+        {
+            FocusSort.EnnemiLePlusProche => CibleSort.EnnemiPlusProche,
+            FocusSort.EnnemiLePlusFaible => CibleSort.EnnemiPlusFaible,
+            FocusSort.EnnemiLePlusFort   => CibleSort.EnnemiPlusFort,
+            FocusSort.Moi                => CibleSort.Soi,
+            FocusSort.AllieLePlusBlesse  => CibleSort.AlliePlusBlesse,
+            _                            => CibleSort.EnnemiPlusProche
+        };
+        set => Focus = value switch
+        {
+            CibleSort.EnnemiPlusProche  => FocusSort.EnnemiLePlusProche,
+            CibleSort.EnnemiPlusFaible  => FocusSort.EnnemiLePlusFaible,
+            CibleSort.EnnemiPlusFort    => FocusSort.EnnemiLePlusFort,
+            CibleSort.Soi               => FocusSort.Moi,
+            CibleSort.AlliePlusBlesse   => FocusSort.AllieLePlusBlesse,
+            _                           => FocusSort.EnnemiLePlusProche
+        };
+    }
+
+    /// <summary>Compat : seuils PV anciens (synonymes des nouveaux *PvInfPourcent).</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public int? SeuilPvAllie { get => CiblePvInfPourcent; set => CiblePvInfPourcent = value; }
+    [System.Text.Json.Serialization.JsonIgnore]
+    public int? SeuilPvSoi   { get => MesPvInfPourcent;   set => MesPvInfPourcent   = value; }
+
+    /// <summary>Compat : recast si échec (ancien flag).</summary>
+    public bool RecastSiEchec { get; set; } = true;
+
     /// <summary>
     /// Priorité décroissante (un nombre plus élevé = essayé en premier).
     /// L'ordre dans la liste reflète aussi la priorité dans l'UI SynFus.
