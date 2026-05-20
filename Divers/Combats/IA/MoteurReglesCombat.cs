@@ -39,7 +39,12 @@ public static class MoteurReglesCombat
     /// Retourne null si aucune règle ne convient → TrameJeu fait le fallback
     /// (déplacement vers ennemi le plus proche ou Gt).
     /// </summary>
-    public static ResultatRegle? Evaluer(Combat combat, ConfigCombat cfg, IReadOnlyDictionary<int, int> sortsAppris)
+    /// <param name="mapWidth">
+    /// Largeur de la carte (= <see cref="Cartes.Carte.Largeur"/>). Hystoria utilise 15
+    /// par défaut. Hardcodez JAMAIS — un mismatch produit des distances fausses
+    /// (cf. bug du 20/05/2026 sur le combat test).
+    /// </param>
+    public static ResultatRegle? Evaluer(Combat combat, ConfigCombat cfg, IReadOnlyDictionary<int, int> sortsAppris, int mapWidth)
     {
         if (cfg.Regles.Count == 0) return null;
 
@@ -106,7 +111,7 @@ public static class MoteurReglesCombat
                 cible = combat.Ennemis.Where(e => !e.EstMort && e.PV > 0 && e.PVMax > 0)
                     .OrderByDescending(e => e.PV).FirstOrDefault();
             else
-                cible = ChoisirCible(regle.Focus, combat, moi);
+                cible = ChoisirCible(regle.Focus, combat, moi, mapWidth);
             if (cible == null) continue;
 
             // === Conditions Cible (bloc « Cible » SynFus) ===
@@ -118,7 +123,7 @@ public static class MoteurReglesCombat
             }
 
             // Distance Chebyshev (= métrique Dofus pour portées). CAC = dist 1.
-            int dist = DistanceDofus(moi.CellulePosition, cible.CellulePosition);
+            int dist = DistanceDofus(moi.CellulePosition, cible.CellulePosition, mapWidth);
             if (dist < porteeMin) continue;
             if (porteeMax > 0 && dist > porteeMax) continue;
 
@@ -143,7 +148,7 @@ public static class MoteurReglesCombat
     /// Filtre robuste : on jette les combattants à PV=0/PVMax=0 (non initialisés
     /// par un GTM complet — cf. fix log 18:27:09 du bot ciblant un cadavre).
     /// </summary>
-    private static Combattant? ChoisirCible(FocusSort focus, Combat combat, Combattant moi)
+    private static Combattant? ChoisirCible(FocusSort focus, Combat combat, Combattant moi, int mapWidth)
     {
         var ennemisVivants = combat.Ennemis.Where(e => !e.EstMort && e.PV > 0 && e.PVMax > 0);
         var alliesVivants = combat.Allies.Where(a => !a.EstMort && a.PVMax > 0);
@@ -151,7 +156,7 @@ public static class MoteurReglesCombat
         return focus switch
         {
             FocusSort.EnnemiLePlusProche => ennemisVivants
-                .OrderBy(e => DistanceDofus(moi.CellulePosition, e.CellulePosition))
+                .OrderBy(e => DistanceDofus(moi.CellulePosition, e.CellulePosition, mapWidth))
                 .FirstOrDefault(),
             FocusSort.EnnemiLePlusFaible => ennemisVivants
                 .OrderBy(e => e.PV)
@@ -170,14 +175,15 @@ public static class MoteurReglesCombat
     }
 
     /// <summary>
-    /// Distance « cases Dofus » entre 2 cell-id (grille iso 14×N).
-    /// Dupliquée de TrameJeu pour rester stateless ; à terme déplacer dans
-    /// <see cref="Cellule"/>.
+    /// Distance « cases Dofus » entre 2 cell-id sur grille iso. La largeur de la
+    /// carte (<paramref name="mapWidth"/>) est OBLIGATOIRE — hardcoder 14 quand
+    /// la carte Hystoria est 15 produit des coords incohérentes (cf. bug fixé
+    /// le 20/05/2026 sur le combat test).
     /// </summary>
-    private static int DistanceDofus(int idA, int idB)
+    private static int DistanceDofus(int idA, int idB, int mapWidth)
     {
-        var (xA, yA) = Cellule.CalculerCoordonnees(idA, 14);
-        var (xB, yB) = Cellule.CalculerCoordonnees(idB, 14);
+        var (xA, yA) = Cellule.CalculerCoordonnees(idA, mapWidth);
+        var (xB, yB) = Cellule.CalculerCoordonnees(idB, mapWidth);
         return System.Math.Max(System.Math.Abs(xA - xB), System.Math.Abs(yA - yB));
     }
 }

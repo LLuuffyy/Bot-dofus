@@ -914,7 +914,8 @@ public sealed class TrameJeu : TrameBase
         var cfg = _compte.ConfigCombat;
         if (cfg != null && cfg.Regles.Count > 0)
         {
-            var resultat = Divers.Combats.IA.MoteurReglesCombat.Evaluer(combat, cfg, perso.SortsAppris);
+            int mwCombat = _etat.CarteCourante?.Largeur ?? BotDofus.Divers.Cartes.Carte.LargeurParDefaut;
+            var resultat = Divers.Combats.IA.MoteurReglesCombat.Evaluer(combat, cfg, perso.SortsAppris, mwCombat);
             if (resultat != null)
             {
                 await ExecuterRegleAsync(resultat).ConfigureAwait(false);
@@ -1076,17 +1077,25 @@ public sealed class TrameJeu : TrameBase
     }
 
     /// <summary>
-    /// Distance « cases Dofus » entre 2 cell-id (grille iso 14×N).
-    /// Utilise <see cref="BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees"/>
+    /// Distance « cases Dofus » entre 2 cell-id (grille iso). Utilise
+    /// <see cref="BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees"/>
     /// (formule dyshay) + Chebyshev — c'est cette métrique que Dofus utilise
     /// pour la portée des sorts (cases adjacentes en diagonale = distance 1).
-    /// L'ancienne « manhattan sur id linéaire » était fausse : id=222 vs id=285
-    /// donnait dist=63 alors qu'en réalité c'est ~5 cases.
     /// </summary>
-    private static int DistanceDofus(int idA, int idB)
+    /// <remarks>
+    /// ⚠ Bug majeur fixé le 20/05/2026 : on hardcodait <c>mapWidth=14</c> alors
+    /// que les cartes Hystoria sont 15×17 (<see cref="BotDofus.Divers.Cartes.Carte.LargeurParDefaut"/>=15).
+    /// Les <see cref="BotDofus.Divers.Cartes.Cellule.X"/>/<c>Y</c> de la carte
+    /// étaient en mw=15 (construits par <see cref="BotDofus.Divers.Cartes.Carte"/>)
+    /// mais les recalculs ad-hoc en mw=14 produisaient des coords incohérentes
+    /// → distance fausse, bot mal positionné (log 19:47-19:53 du 20/05). Désormais
+    /// on lit la largeur de la carte courante.
+    /// </remarks>
+    private int DistanceDofus(int idA, int idB)
     {
-        var (xA, yA) = BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees(idA, 14);
-        var (xB, yB) = BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees(idB, 14);
+        int mw = _etat.CarteCourante?.Largeur ?? BotDofus.Divers.Cartes.Carte.LargeurParDefaut;
+        var (xA, yA) = BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees(idA, mw);
+        var (xB, yB) = BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees(idB, mw);
         return System.Math.Max(System.Math.Abs(xA - xB), System.Math.Abs(yA - yB));
     }
 
@@ -1135,8 +1144,11 @@ public sealed class TrameJeu : TrameBase
             if (c != null) interdites.Add(c);
         }
 
-        // Coordonnées (x,y) de l'ennemi (référence portée).
-        var (xE, yE) = BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees(ennemi.CellulePosition, 14);
+        // Coordonnées (x,y) de l'ennemi (référence portée). On utilise la largeur
+        // RÉELLE de la carte courante (15 sur Hystoria, pas 14) — sinon mismatch
+        // avec c.X/c.Y qui sont stockés par Carte avec sa Largeur propre.
+        int mw = carte.Largeur > 0 ? carte.Largeur : BotDofus.Divers.Cartes.Carte.LargeurParDefaut;
+        var (xE, yE) = BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees(ennemi.CellulePosition, mw);
 
         // Énumère les candidates : cells marchables, non interactif, non
         // occupées par un combattant, dist Chebyshev à l'ennemi dans [min, max].
