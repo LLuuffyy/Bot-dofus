@@ -39,13 +39,15 @@ public static class MoteurReglesCombat
     /// Retourne null si aucune règle ne convient → TrameJeu fait le fallback
     /// (déplacement vers ennemi le plus proche ou Gt).
     /// </summary>
-    /// <param name="mapWidth">
-    /// Largeur de la carte (= <see cref="Cartes.Carte.Largeur"/>). Hystoria utilise 15
-    /// par défaut. Hardcodez JAMAIS — un mismatch produit des distances fausses
-    /// (cf. bug du 20/05/2026 sur le combat test).
+    /// <param name="carte">
+    /// Carte courante (<see cref="Cartes.Carte"/>). Donne la largeur réelle pour
+    /// le calcul distance (Hystoria=15, pas 14 — bug fixé 20/05/2026) ET sert
+    /// au test LOS Bresenham (cf. <see cref="Cartes.LigneVisuelle"/>) quand
+    /// le sort a <c>NecessiteLOS=true</c>.
     /// </param>
-    public static ResultatRegle? Evaluer(Combat combat, ConfigCombat cfg, IReadOnlyDictionary<int, int> sortsAppris, int mapWidth)
+    public static ResultatRegle? Evaluer(Combat combat, ConfigCombat cfg, IReadOnlyDictionary<int, int> sortsAppris, Carte carte)
     {
+        int mapWidth = carte.Largeur > 0 ? carte.Largeur : Carte.LargeurParDefaut;
         if (cfg.Regles.Count == 0) return null;
 
         var moi = combat.Allies.FirstOrDefault(c => c.Identifiant == combat.IdentifiantAllie);
@@ -137,6 +139,27 @@ public static class MoteurReglesCombat
             // adjacent / LesDeux = pas de filtre. Aligné dyshay MetodoLanzamiento.
             if (regle.MethodeLancement == MethodeLancement.CAC && dist > 1) continue;
             if (regle.MethodeLancement == MethodeLancement.Distance && dist <= 1) continue;
+
+            // LOS Bresenham — si le sort nécessite une ligne de vue, vérifier
+            // qu'aucun combattant n'est sur la trajectoire (cf. anti-pattern #4
+            // REFERENCE : sans test, le serveur répond GAF échec et la même
+            // règle est retentée indéfiniment).
+            if (stats?.NecessiteLOS == true && dist > 1)
+            {
+                var celluleMoi = carte.Obtenir(moi.CellulePosition);
+                var celluleCible = carte.Obtenir(cible.CellulePosition);
+                if (celluleMoi != null && celluleCible != null)
+                {
+                    var occupees = new HashSet<int>();
+                    foreach (var a in combat.Allies)
+                        if (!a.EstMort && a.Identifiant != moi.Identifiant) occupees.Add(a.CellulePosition);
+                    foreach (var e in combat.Ennemis)
+                        if (!e.EstMort && e.Identifiant != cible.Identifiant) occupees.Add(e.CellulePosition);
+
+                    if (LigneVisuelle.EstObstruee(carte, celluleMoi, celluleCible, occupees))
+                        continue;
+                }
+            }
 
             return new ResultatRegle(regle, sort, cible, dist, coutPA, porteeMin, porteeMax, niveau);
         }

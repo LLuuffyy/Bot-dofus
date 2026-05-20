@@ -912,10 +912,9 @@ public sealed class TrameJeu : TrameBase
         // Sinon, fallback sur le comportement legacy (ennemi le plus proche
         // + sort de plus haut niveau + déplacement si hors portée).
         var cfg = _compte.ConfigCombat;
-        if (cfg != null && cfg.Regles.Count > 0)
+        if (cfg != null && cfg.Regles.Count > 0 && _etat.CarteCourante != null)
         {
-            int mwCombat = _etat.CarteCourante?.Largeur ?? BotDofus.Divers.Cartes.Carte.LargeurParDefaut;
-            var resultat = Divers.Combats.IA.MoteurReglesCombat.Evaluer(combat, cfg, perso.SortsAppris, mwCombat);
+            var resultat = Divers.Combats.IA.MoteurReglesCombat.Evaluer(combat, cfg, perso.SortsAppris, _etat.CarteCourante);
             if (resultat != null)
             {
                 await ExecuterRegleAsync(resultat).ConfigureAwait(false);
