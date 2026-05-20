@@ -7,7 +7,12 @@ namespace BotDofus.Commun.Messages.VersServeur.Jeu;
 // Actions que le bot envoie au serveur durant le gameplay.
 // =====================================================================
 
-/// <summary>GR : signale que le client est prêt (chargement carte terminé, prêt à jouer).</summary>
+/// <summary>
+/// GR : signale que le client est prêt en combat (avant placement) ou
+/// annule. Capture user passif 16:21:42 → « GR1 » (avec 1, pas K). L'ancien
+/// « GRK »/« GRF » était une déduction des docs Dofus 2.0, FAUX sur Retro 1.29
+/// Hystoria : le serveur attend « GR1 » (prêt) ou « GR0 » (annule).
+/// </summary>
 public sealed class MessageJeuPret : MessageDofus, IMessageVersServeur
 {
     public override string Prefixe => "GR";
@@ -15,7 +20,7 @@ public sealed class MessageJeuPret : MessageDofus, IMessageVersServeur
     public bool Pret { get; set; } = true;
 
     public override void Desserialiser(string charge) { Charge = charge; }
-    public override string Serialiser() => Prefixe + (Pret ? "K" : "F");
+    public override string Serialiser() => Prefixe + (Pret ? "1" : "0");
 }
 
 /// <summary>
@@ -79,10 +84,17 @@ public sealed class MessageJeuFinirTour : MessageDofus, IMessageVersServeur
     public override void Desserialiser(string charge) { Charge = charge; }
 }
 
-/// <summary>GP : se placer sur une case de départ avant combat.</summary>
+/// <summary>
+/// Gp : se placer sur une case de départ avant combat. Capture user passif
+/// 16:22:11 → « Gp299 » (g majuscule + p MINUSCULE). L'ancien « GP » (deux
+/// majuscules) venait des docs Dofus 2.0 et était FAUX sur Retro 1.29
+/// Hystoria — le serveur rejette « GP299 ». Casse-tête classique du proto
+/// Dofus : chaque commande a sa propre convention (Gt minuscule, GR
+/// majuscule, Gp mixte).
+/// </summary>
 public sealed class MessageJeuPosition : MessageDofus, IMessageVersServeur
 {
-    public override string Prefixe => "GP";
+    public override string Prefixe => "Gp";
     public override DirectionPaquet Direction => DirectionPaquet.VersServeur;
     public int CaseDepart { get; set; }
 

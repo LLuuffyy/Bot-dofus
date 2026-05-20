@@ -24,6 +24,18 @@ public sealed class Compte : IEffacable
 
     public EtatsCompte Etat { get; set; }
 
+    /// <summary>
+    /// MODE PASSIF GLOBAL — quand true, le bot N'AGIT JAMAIS automatiquement :
+    /// pas d'IA combat, pas de script Lua, pas de récolte auto, pas de réponses
+    /// de placement, rien. Le bot devient un sniffer pur : il observe le trafic
+    /// et c'est tout. Sert pour les sessions de capture protocole où l'utilisateur
+    /// joue à la main et veut un log propre sans interférence du bot.
+    ///
+    /// Miroir de ContexteCompte.ModePassif (qui contrôle aussi l'humaniseur).
+    /// Lu par TrameJeu.JouerTourCombatAsync pour skip l'IA combat.
+    /// </summary>
+    public bool ModePassif { get; set; }
+
     /// <summary>Déclenché à chaque changement d'état, utilisé par l'UI pour se rafraîchir.</summary>
     public event EventHandler<EtatsCompte>? EtatChange;
 

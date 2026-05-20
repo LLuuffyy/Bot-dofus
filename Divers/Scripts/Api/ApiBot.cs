@@ -66,9 +66,60 @@ public sealed class ApiBot
     /// (les boucles auto-stats/scripts s'arrêtent au lieu de crasher l'UI).</summary>
     public bool SessionMorte { get; private set; }
 
+    /// <summary>
+    /// Test « ce paquet est légitime en combat ». Match EXACT par préfixe
+    /// pour éviter qu'un truc comme « GK » laisse passer « GKK0 ». Le
+    /// premier filet (whitelist via StartsWith) a kické le bot au tour 1
+    /// (log 16:05:06) car « GKK0 ».StartsWith(« GK ») = true. Le GKK0 est
+    /// un ack d'action overworld qui ne doit JAMAIS arriver pendant un
+    /// combat, sinon le serveur kick.
+    ///
+    /// Paquets COMBAT autorisés :
+    ///   GA300...   cast sort  (ex : GA300183;323)
+    ///   GA001...   déplacement combat (chemin compressé)
+    ///   Gt         pass turn  (capture user 12:41:18)
+    ///   GP123      placement (123 = case)
+    ///   GR (K/F)   prêt / annule prêt (MessageJeuPret)
+    ///   GQ         quitter combat
+    /// </summary>
+    private static bool EstPaquetCombatAutorise(string paquet)
+    {
+        if (paquet.StartsWith("GA300")) return true;     // cast sort
+        if (paquet.StartsWith("GA001")) return true;     // déplacement
+        if (paquet == "Gt")             return true;     // pass turn (minuscule)
+        if (paquet == "GT")             return true;     // turn ready ack (MAJUSCULE)
+        if (paquet.StartsWith("GTR"))   return true;     // GTR<id> (turn ready)
+        if (paquet.StartsWith("Gp"))    return true;     // placement Hystoria « Gp<cell> »
+        if (paquet.StartsWith("GP"))    return true;     // placement legacy
+        if (paquet.StartsWith("GR"))    return true;     // prêt GR1/GR0
+        if (paquet == "GKK0")           return true;     // ack action générique (cf cadernis wukzu)
+        if (paquet == "GQ")             return true;     // quitter combat
+        return false;
+    }
+
     private async Task EnvoyerHumaniseAsync(string paquet, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(paquet) || SessionMorte) return;
+        // Mode passif global : le bot n'envoie RIEN en auto. Toute fonction
+        // d'API (récolte, zaap, déplacement, agression) devient un no-op.
+        // Permet à l'utilisateur de jouer à la main sans aucune interférence.
+        if (_compte.ModePassif)
+        {
+            Journaliseur.Debogue($"[PASSIF] paquet « {paquet[..Math.Min(20, paquet.Length)]}… » "
+                + "ignoré (mode passif actif).");
+            return;
+        }
+        // Filet de sécurité combat : si on est en combat et que le script
+        // Lua tente d'envoyer un paquet overworld (récolte GA500, zaap WU,
+        // ack GKK0, …), on bloque. Évite tous les kicks serveur « action
+        // interdite pendant combat » (cf. log 15:34 et 16:05).
+        if (_etat.Combat.Etat != EtatCombat.Inactif
+            && !EstPaquetCombatAutorise(paquet))
+        {
+            Journaliseur.Debogue($"[COMBAT] paquet « {paquet[..Math.Min(20, paquet.Length)]}… » "
+                + $"bloqué (état combat = {_etat.Combat.Etat}) — script Lua mis en pause.");
+            return;
+        }
         try
         {
             await Humaniseur.RespecterCadenceAsync(ct).ConfigureAwait(false);

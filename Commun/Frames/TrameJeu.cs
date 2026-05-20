@@ -98,6 +98,11 @@ public sealed class TrameJeu : TrameBase
             // — l'IA avancée viendra dans un commit séparé.
             if (_session is null) return;
             if (msg.IdentifiantCombattant != _etat.Personnage.Identifiant) return;
+            if (_compte.ModePassif)
+            {
+                Journaliseur.Info("[COMBAT] mode passif actif → IA désactivée.");
+                return;
+            }
             try
             {
                 await JouerTourCombatAsync().ConfigureAwait(false);
@@ -132,7 +137,7 @@ public sealed class TrameJeu : TrameBase
         // GTM = liste combattants+cellules ; GTS = à qui le tour. C'est ICI
         // qu'on récupère enfin les entités positionnées (pour l'IA combat).
         Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageCombattantsAbrak>(OnCombattantsAbrak);
-        Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageTourCombatAbrak>(msg =>
+        Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageTourCombatAbrak>(async msg =>
         {
             if (!msg.EstTour) return; // GTSX (sorts) — pas un tour
             _etat.Combat.IdentifiantAllie = _etat.Personnage.Identifiant;
@@ -141,6 +146,32 @@ public sealed class TrameJeu : TrameBase
             _compte.ChangerEtat(EtatsCompte.EnCombat);
             Journaliseur.Info($"[COMBAT] Tour de #{msg.IdentifiantCombattant} (tour {msg.NumeroTour})"
                 + (msg.IdentifiantCombattant == _etat.Personnage.Identifiant ? " ← MOI" : ""));
+
+            // IA combat : capture user 12:41:18. Hystoria utilise le format
+            // Abrak (GTS<id>|<temps>|<num>) → le handler classique GTSx ligne
+            // 90 ne se déclenche JAMAIS sur ce serveur. C'est ICI qu'il faut
+            // brancher l'IA, sinon le bot reste 45 s muet par tour (cf. log
+            // 13:09 → 6 tours sans le moindre GA300).
+            if (_session is null) return;
+            if (msg.IdentifiantCombattant != _etat.Personnage.Identifiant) return;
+            // Mode passif global : le bot n'agit jamais en auto (capture
+            // protocole, observation, ou simplement « stop ! »). L'utilisateur
+            // joue à la main, on n'interfère pas.
+            if (_compte.ModePassif)
+            {
+                Journaliseur.Info("[COMBAT] mode passif actif → IA désactivée, à toi de jouer.");
+                return;
+            }
+            try
+            {
+                await JouerTourCombatAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Journaliseur.Avertir($"[COMBAT] erreur IA tour : {ex.Message}");
+                try { await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false); }
+                catch { /* swallow */ }
+            }
         });
     }
 
@@ -149,6 +180,23 @@ public sealed class TrameJeu : TrameBase
         if (msg.Combattants.Count == 0) return;
 
         _etat.Combat.IdentifiantAllie = _etat.Personnage.Identifiant;
+
+        // CRITIQUE : le GTM est la liste AUTORITATIVE des combattants engagés.
+        // Avant ce patch, Combat.Ennemis contenait aussi les mobs de la carte
+        // ajoutés par PeuplerCombatDepuisCarte (groupes overworld pas encore
+        // agressés). Au combat 15:03 (log 14:48), 5 mobs map en plus du vrai
+        // protecteur → l'IA ciblait « Petit Tournesol Sauvage » #-3081 cell
+        // 175 (groupe map à 5 cases) au lieu du protecteur #-1 cell 192
+        // (combat réel à 8 cases). Cast GA300183;175 sur cell vide → serveur
+        // kick (ObjectDisposedException sur NetworkStream).
+        //
+        // Fix : à chaque GTM reçu, on purge les entrées dont l'ID n'est PAS
+        // dans le paquet — resync complète, conserve les vrais combattants
+        // (qui sont updatés par le foreach ci-dessous).
+        var idsRecus = new System.Collections.Generic.HashSet<int>(
+            msg.Combattants.Select(c => c.Id));
+        _etat.Combat.Allies.RemoveAll(a => !idsRecus.Contains(a.Identifiant));
+        _etat.Combat.Ennemis.RemoveAll(e => !idsRecus.Contains(e.Identifiant));
 
         foreach (var c in msg.Combattants)
         {
@@ -825,24 +873,45 @@ public sealed class TrameJeu : TrameBase
     {
         var perso = _etat.Personnage;
         var combat = _etat.Combat;
+        int maCell = perso.CellulePosition ?? 0;
 
-        // 1) Ennemi le plus proche (par id-cellule manhattan approximatif).
-        var ennemi = combat.Ennemis
-            .Where(e => !e.EstMort)
-            .OrderBy(e => DistanceCellManhattan(perso.CellulePosition ?? 0, e.CellulePosition))
-            .FirstOrDefault();
-        if (ennemi == null)
+        // Délai de réaction humanisé. Capture user passif 16:21-16:22 montre :
+        //   - Tour 6 : GTS 16:21:58.058 → GA300 16:21:59.754 = 1696 ms
+        //   - Tour 7 : GTS 16:22:02.921 → GA300 16:22:04.494 = 1573 ms
+        // Vrais humains : 1.5-1.7 s entre voir le tour et cliquer un sort
+        // (déplacer souris vers la barre, viser la cible, double-clic). Notre
+        // ancien Random(600, 1200) était encore trop rapide. Random(1400, 2100)
+        // colle au timing réel sans être suspect.
+        int delaiReaction = System.Random.Shared.Next(1400, 2100);
+        await Task.Delay(delaiReaction).ConfigureAwait(false);
+
+        // Log diag : voir EXACTEMENT ce que le bot perçoit du combat.
+        Journaliseur.Info($"[COMBAT] >>> Mon tour : cell {maCell}, PA={perso.PA}, PM={perso.PM}, "
+            + $"alliés={combat.Allies.Count}, ennemis={combat.Ennemis.Count} "
+            + $"(vivants : {combat.Ennemis.Count(e => !e.EstMort)})");
+
+        // 1) Ennemi le plus proche (distance iso Dofus = Chebyshev sur (x,y)).
+        var ennemisVivants = combat.Ennemis.Where(e => !e.EstMort).ToList();
+        if (ennemisVivants.Count == 0)
         {
-            Journaliseur.Info("[ACTION] Mon tour : aucun ennemi → passe");
+            Journaliseur.Info("[ACTION] Aucun ennemi vivant → Gt");
             await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
             return;
         }
 
-        // 2) Sort offensif de plus haut niveau parmi ceux appris. Itère
-        //    SortsAppris (id→niveau), filtre via BaseSorts.SortsOffensifs.
-        var bdd = Divers.Donnees.BaseDonnees.Instance;
+        var ennemi = ennemisVivants
+            .OrderBy(e => DistanceDofus(maCell, e.CellulePosition))
+            .First();
+        int distEnnemi = DistanceDofus(maCell, ennemi.CellulePosition);
+        Journaliseur.Info($"[COMBAT] Cible : « {ennemi.Nom} » #{ennemi.Identifiant} "
+            + $"cell {ennemi.CellulePosition} (PV={ennemi.PV}/{ennemi.PVMax}, dist={distEnnemi})");
+
+        // 2) Sort offensif de plus haut niveau parmi ceux appris.
         var idsAppris = perso.SortsAppris.Keys;
         var offensifs = Divers.Jeu.Personnage.Spells.BaseSorts.Instance.SortsOffensifs(idsAppris).ToList();
+        Journaliseur.Info($"[COMBAT] Sorts offensifs disponibles : {offensifs.Count} "
+            + $"(sur {idsAppris.Count} sorts appris)");
+
         // Trier par niveau perso desc puis CoutPA asc (préfère sorts boostés).
         offensifs.Sort((a, b) =>
         {
@@ -852,47 +921,221 @@ public sealed class TrameJeu : TrameBase
             return a.CoutPA.CompareTo(b.CoutPA);
         });
 
-        var sort = offensifs.FirstOrDefault(s =>
+        // Cherche d'abord un sort lançable IMMÉDIATEMENT (sans bouger).
+        // Les stats du sort viennent du XML dyshay (StatsParNiveau[niv]) qui
+        // donne les vraies valeurs au niveau APPRIS du perso. Fallback sur les
+        // champs legacy (= niv 1) si XML pas chargé.
+        Divers.Jeu.Personnage.Spells.InfoSort? sort = null;
+        int sortCoutPA = 0; int sortPorteeMin = 0; int sortPorteeMax = 0;
+        foreach (var s in offensifs)
         {
-            int dist = DistanceCellManhattan(perso.CellulePosition ?? 0, ennemi.CellulePosition);
-            // Vérifie portée (min/max) — laxiste si la base n'a pas de range.
-            if (s.PorteeMax > 0 && dist > s.PorteeMax) return false;
-            if (dist < s.PorteeMin) return false;
-            if (s.CoutPA > 0 && perso.PA > 0 && s.CoutPA > perso.PA) return false;
-            return true;
-        });
+            int niv = perso.SortsAppris.TryGetValue(s.Identifiant, out var n) ? n : 0;
+            var statsNiv = s.Stats(niv);
+            int coutPA = statsNiv?.CoutPA ?? s.CoutPA;
+            int porteeMin = statsNiv?.PorteeMin ?? s.PorteeMin;
+            int porteeMax = statsNiv?.PorteeMax ?? s.PorteeMax;
+            if (coutPA > 0 && perso.PA > 0 && coutPA > perso.PA)
+            {
+                Journaliseur.Debogue($"[COMBAT] rejet « {s.Nom} » (#{s.Identifiant} niv{niv}) : PA {coutPA} > {perso.PA}");
+                continue;
+            }
+            if (porteeMax > 0 && distEnnemi > porteeMax)
+            {
+                Journaliseur.Debogue($"[COMBAT] rejet « {s.Nom} » (#{s.Identifiant} niv{niv}) : portée {distEnnemi} > max {porteeMax}");
+                continue;
+            }
+            if (distEnnemi < porteeMin)
+            {
+                Journaliseur.Debogue($"[COMBAT] rejet « {s.Nom} » (#{s.Identifiant} niv{niv}) : portée {distEnnemi} < min {porteeMin}");
+                continue;
+            }
+            sort = s;
+            sortCoutPA = coutPA;
+            sortPorteeMin = porteeMin;
+            sortPorteeMax = porteeMax;
+            break;
+        }
+
+        // 2bis) DÉPLACEMENT si aucun sort en portée. On essaie de se rapprocher
+        // jusqu'à ce qu'un sort soit utilisable, en respectant les PM dispos.
+        if (sort == null && perso.PM > 0)
+        {
+            // On part du meilleur sort (PA OK au niveau appris) sans contrainte
+            // de portée. Stats par niveau via XML dyshay.
+            Divers.Jeu.Personnage.Spells.InfoSort? sortVise = null;
+            foreach (var s in offensifs)
+            {
+                int nivV = perso.SortsAppris.TryGetValue(s.Identifiant, out var nVv) ? nVv : 0;
+                var stV = s.Stats(nivV);
+                int pa = stV?.CoutPA ?? s.CoutPA;
+                int rmaxV = stV?.PorteeMax ?? s.PorteeMax;
+                if (pa > 0 && perso.PA > 0 && pa > perso.PA) continue;
+                if (rmaxV <= 0) continue;
+                sortVise = s;
+                break;
+            }
+            if (sortVise != null)
+            {
+                var resApproche = TrouverApprocheCombat(perso, combat, ennemi, sortVise);
+                if (resApproche.HasValue)
+                {
+                    var (chemin, distApres) = resApproche.Value;
+                    int nbPasMove = chemin.Count - 1;
+                    Journaliseur.Info($"[ACTION] Hors portée → déplacement {nbPasMove} case(s) vers cell {chemin[^1].Identifiant} (dist après = {distApres}, sort « {sortVise.Nom} » portée {sortVise.PorteeMin}-{sortVise.PorteeMax})");
+                    var paquetDep = BotDofus.Divers.Cartes.Deplacement.Pathfinder.PaquetDeplacement(chemin);
+                    await _session.EnvoyerAuServeurAsync(paquetDep).ConfigureAwait(false);
+
+                    // Attente animation déplacement : ~330 ms par case + 200 ms
+                    // buffer (réf. wukzu cadernis #1585 : `wait(distance * 330)`).
+                    int dureeDeplacement = nbPasMove * 330 + 200;
+                    await Task.Delay(dureeDeplacement).ConfigureAwait(false);
+
+                    // GKK0 = ack action déplacement (capture vrai client : ~150 ms
+                    // après l'arrivée). Sans, le serveur attend toujours et bloque
+                    // la suite du tour.
+                    await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
+                    await Task.Delay(System.Random.Shared.Next(300, 500)).ConfigureAwait(false);
+
+                    // Le sort est maintenant en portée → on l'utilise.
+                    sort = sortVise;
+                    // Mise à jour distance pour le log de cast (informatif).
+                    distEnnemi = distApres;
+                }
+            }
+        }
 
         if (sort == null)
         {
-            Journaliseur.Info($"[ACTION] Mon tour : aucun sort utilisable sur « {ennemi.Nom} » "
-                + $"cell {ennemi.CellulePosition} (PA={perso.PA}, dist≈"
-                + $"{DistanceCellManhattan(perso.CellulePosition ?? 0, ennemi.CellulePosition)}) → passe");
+            Journaliseur.Info($"[ACTION] Aucun sort utilisable (dist={distEnnemi}, PA={perso.PA}, PM={perso.PM}) → Gt");
             await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
             return;
         }
 
-        // 3) Cast — format GA300<idSort>;<celluleCible> (cf. capture user).
+        // 3) Cast — format GA300<idSort>;<celluleCible>.
+        // Séquence exacte du vrai client Dofus (capture user passif 16:21:59) :
+        //   GA300<id>;<cell>  → 300-400 ms  → GKK0  → 1-1.5 s  → Gt
+        // Le GKK0 = ack d'action (confirmé wukzu cadernis #1585 : GKK0 utilisé
+        // après chaque action overworld ET combat pour débloquer la séquence).
+        // Sans le GKK0, notre IA précédente envoyait GA300 → Gt en 800 ms et
+        // le serveur kickait au tour 1 (log 16:05:06).
         var paquetSort = $"GA300{sort.Identifiant};{ennemi.CellulePosition}";
-        Journaliseur.Info($"[ACTION] Sort « {sort.Nom} » (#{sort.Identifiant}) sur cellule "
-            + $"{ennemi.CellulePosition} (cible « {ennemi.Nom} »)");
+        int nivChoisi = perso.SortsAppris.TryGetValue(sort.Identifiant, out var nv) ? nv : 0;
+        Journaliseur.Info($"[ACTION] Sort « {sort.Nom} » (#{sort.Identifiant} niv{nivChoisi}) "
+            + $"sur cell {ennemi.CellulePosition} (cible « {ennemi.Nom} », {sortCoutPA} PA, portée {sortPorteeMin}-{sortPorteeMax})");
         await _session.EnvoyerAuServeurAsync(paquetSort).ConfigureAwait(false);
 
-        // Petite pause pour laisser le serveur traiter le sort (animation,
-        // dégâts, effets). Sans ça le Gt peut arriver pendant que le serveur
-        // est encore en train de calculer l'action.
-        await Task.Delay(800).ConfigureAwait(false);
+        // GKK0 : capture user 16:22:00.130 → 376 ms après GA300. Random 300-500.
+        await Task.Delay(System.Random.Shared.Next(300, 500)).ConfigureAwait(false);
+        await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
 
-        // 4) Pass turn — capture user 12:41:18 : « Gt » (g et t minuscules).
-        Journaliseur.Info("[ACTION] Passe le tour");
+        // Gt : capture user montre que le serveur termine le tour ~1.5 s après
+        // GKK0 quand le client a vidé ses PA. Pour rester sûr, on envoie Gt
+        // explicite après 1-1.5 s (humanisé). Si le serveur a déjà fermé le
+        // tour (GTF reçu), Gt est inoffensif (le serveur l'ignore).
+        await Task.Delay(System.Random.Shared.Next(1000, 1500)).ConfigureAwait(false);
+        Journaliseur.Info("[ACTION] Passe le tour (Gt)");
         await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
     }
 
-    /// <summary>Distance Manhattan approximative entre 2 cellules (grille 14×N).</summary>
-    private static int DistanceCellManhattan(int idA, int idB)
+    /// <summary>
+    /// Distance « cases Dofus » entre 2 cell-id (grille iso 14×N).
+    /// Utilise <see cref="BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees"/>
+    /// (formule dyshay) + Chebyshev — c'est cette métrique que Dofus utilise
+    /// pour la portée des sorts (cases adjacentes en diagonale = distance 1).
+    /// L'ancienne « manhattan sur id linéaire » était fausse : id=222 vs id=285
+    /// donnait dist=63 alors qu'en réalité c'est ~5 cases.
+    /// </summary>
+    private static int DistanceDofus(int idA, int idB)
     {
-        const int largeur = 14;
-        int xA = idA % largeur, yA = idA / largeur;
-        int xB = idB % largeur, yB = idB / largeur;
-        return System.Math.Abs(xA - xB) + System.Math.Abs(yA - yB);
+        var (xA, yA) = BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees(idA, 14);
+        var (xB, yB) = BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees(idB, 14);
+        return System.Math.Max(System.Math.Abs(xA - xB), System.Math.Abs(yA - yB));
+    }
+
+    /// <summary>
+    /// Trouve un chemin combat qui rapproche le perso jusqu'à mettre l'ennemi
+    /// en portée du sort visé, en respectant les PM dispos et en évitant les
+    /// combattants (alliés + ennemis vivants).
+    ///
+    /// Stratégie : on enumère les cellules dont la distance Chebyshev à
+    /// l'ennemi est dans [PorteeMin, PorteeMax], puis on garde la plus PROCHE
+    /// de notre position (= chemin Pathfinder le plus court &lt;= PM).
+    ///
+    /// Renvoie (chemin, distApresMove) ou null si rien d'atteignable.
+    /// </summary>
+    private (System.Collections.Generic.List<BotDofus.Divers.Cartes.Cellule> chemin, int distFinale)?
+        TrouverApprocheCombat(
+            BotDofus.Divers.Jeu.Personnage.Personnage perso,
+            BotDofus.Divers.Combats.Combat combat,
+            BotDofus.Divers.Combats.Combattants.Combattant ennemi,
+            BotDofus.Divers.Jeu.Personnage.Spells.InfoSort sort)
+    {
+        var carte = _etat.CarteCourante;
+        if (carte == null || perso.CellulePosition is not int maCellId) return null;
+        var depart = carte.Obtenir(maCellId);
+        if (depart == null) return null;
+
+        int pmMax = perso.PM > 0 ? perso.PM : 3;
+        // Stats du sort au NIVEAU appris (XML dyshay). Ronce niv 5 = 1-8 / PA 4.
+        int niveauSort = perso.SortsAppris.TryGetValue(sort.Identifiant, out var nivS) ? nivS : 0;
+        var statsApp = sort.Stats(niveauSort);
+        int porteeMin = statsApp?.PorteeMin ?? sort.PorteeMin;
+        int porteeMax = statsApp?.PorteeMax ?? (sort.PorteeMax > 0 ? sort.PorteeMax : 6);
+
+        // Cellules occupées par les combattants (sauf moi) = obstacles.
+        var interdites = new System.Collections.Generic.HashSet<BotDofus.Divers.Cartes.Cellule>();
+        foreach (var a in combat.Allies)
+        {
+            if (a.Identifiant == perso.Identifiant) continue;
+            var c = carte.Obtenir(a.CellulePosition);
+            if (c != null) interdites.Add(c);
+        }
+        foreach (var e in combat.Ennemis)
+        {
+            if (e.EstMort) continue;
+            var c = carte.Obtenir(e.CellulePosition);
+            if (c != null) interdites.Add(c);
+        }
+
+        // Coordonnées (x,y) de l'ennemi (référence portée).
+        var (xE, yE) = BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees(ennemi.CellulePosition, 14);
+
+        // Énumère les candidates : cells marchables, non interactif, non
+        // occupées par un combattant, dist Chebyshev à l'ennemi dans [min, max].
+        BotDofus.Divers.Cartes.Cellule? meilleureCible = null;
+        System.Collections.Generic.List<BotDofus.Divers.Cartes.Cellule>? meilleurChemin = null;
+        int meilleurNbPas = int.MaxValue;
+        int meilleureDist = -1;
+        foreach (var c in carte.Cellules)
+        {
+            if (c == null) continue;
+            if (!c.EstMarchable) continue;
+            if (c.IdInteractif >= 0) continue;
+            if (interdites.Contains(c)) continue;
+            int d = System.Math.Max(System.Math.Abs(c.X - xE), System.Math.Abs(c.Y - yE));
+            if (d < porteeMin || d > porteeMax) continue;
+            // Estimation Chebyshev de notre déplacement (borne basse) — on
+            // jette les candidats hors de portée PM AVANT l'A* coûteux.
+            int dEstimee = System.Math.Max(
+                System.Math.Abs(c.X - depart.X), System.Math.Abs(c.Y - depart.Y));
+            if (dEstimee > pmMax) continue;
+
+            var chemin = BotDofus.Divers.Cartes.Deplacement.Pathfinder.Trouver(
+                carte, depart, c, interdites);
+            if (chemin == null) continue;
+            int nbPas = chemin.Count - 1;
+            if (nbPas == 0) continue; // déjà à cette case (sort aurait dû passer plus tôt)
+            if (nbPas > pmMax) continue;
+            if (nbPas < meilleurNbPas)
+            {
+                meilleurNbPas = nbPas;
+                meilleureCible = c;
+                meilleurChemin = chemin;
+                meilleureDist = d;
+            }
+        }
+
+        if (meilleurChemin == null) return null;
+        return (meilleurChemin, meilleureDist);
     }
 }

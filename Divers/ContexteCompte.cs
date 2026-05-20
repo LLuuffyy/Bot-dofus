@@ -65,6 +65,9 @@ public sealed class ContexteCompte : IDisposable
         {
             _modePassif = value;
             Api.Humaniseur.Actif = !value;
+            // Miroir sur Compte pour que TrameJeu (qui n'a pas accès au
+            // ContexteCompte) puisse aussi bloquer son IA combat auto.
+            Compte.ModePassif = value;
         }
     }
 
@@ -125,12 +128,12 @@ public sealed class ContexteCompte : IDisposable
         EtatJeu.Combat.EtatChange += async (_, etat) =>
         {
             if (ModePassif) return;
-            // EN MITM (fenêtre Dofus ouverte) : le bot NE joue PAS le combat
-            // (il a juste engagé via GA907). Le JOUEUR joue le combat à la
-            // main. L'auto-combat (GR1/GT/GA300) ne tourne qu'en mode CLIENT
-            // AUTONOME (émetteur unique, pas de fenêtre) → plus de conflit
-            // bot↔joueur ni de désync « impossible d'agir pendant le combat ».
-            if (SessionJeuActive != null) return;
+            // En mode ACTIF (passif=false), le bot fait TOUT : placement, ready,
+            // IA combat. Pas de check MITM séparé : si le user veut jouer à la
+            // main il toggle le ModePassif. Si conflit (les 2 cliquent ready),
+            // le serveur ignore le 2ème. User feedback 16:46 : bot ne plaçait/
+            // ready pas en MITM ; cause = ancien check « SessionJeuActive != null
+            // → return ». Retiré : mode actif = bot full auto.
             if (etat == BotDofus.Divers.Combats.Enums.EtatCombat.Placement && !_combatPretEnvoye)
             {
                 _combatPretEnvoye = true;
@@ -159,18 +162,18 @@ public sealed class ContexteCompte : IDisposable
             }
         };
 
-        // Mon tour : l'IA calcule l'action (démontre l'intelligence sur l'état
-        // réel déchiffré) PUIS on passe le tour en clair (GT). Le déplacement/
-        // sort exact passe par le canal chiffré (Shield) — non injectable —
-        // mais passer suffit : les 8 alliés leech tuent le groupe.
+        // Mon tour : DÉSACTIVÉ — la vraie IA combat est dans TrameJeu.JouerTourCombatAsync
+        // (handler MessageTourCombatAbrak, déjà branché pour Hystoria). Le code ci-dessous
+        // déclenche le DecideurCombat legacy qui faisait du double-jeu avec la nouvelle IA :
+        // log 17:20:28 montre les 2 IA qui parlent à 1.5 s d'écart, l'une décidant
+        // « passer », l'autre tentant un déplacement, GT bloqué entre temps → kick.
+        // On garde le squelette pour la migration future mais on sort tôt :
         EtatJeu.Combat.TourChange += async (_, idCombattant) =>
         {
+            return;
+            #pragma warning disable CS0162 // code mort assumé : on garde la logique pour référence
             if (idCombattant != EtatJeu.Personnage.Identifiant) return;
             if (EtatJeu.Combat.Etat != BotDofus.Divers.Combats.Enums.EtatCombat.EnCours) return;
-            // MITM : on ne joue le tour à la place du client humain QUE si le
-            // Farm Auto est actif (= le bot pilote la session). En MITM manuel
-            // pur (sans farm) on laisse le joueur jouer.
-            if (SessionJeuActive != null && !Api.FarmActif) return;
             try
             {
                 // Auto-génère les règles offensives depuis les sorts RÉELLEMENT
