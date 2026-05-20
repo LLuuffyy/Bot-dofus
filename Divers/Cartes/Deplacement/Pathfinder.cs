@@ -87,6 +87,18 @@ public static class Pathfinder
                 // clic sur case jaune ne faisait rien.
                 if (!voisin.EstMarchable && voisin != arrivee) continue;
                 if (voisin.EstCelluleTeleport() && voisin != arrivee) continue;
+                // INTERACTIF (arbre/minerai/etc.) NON traversable pour le
+                // transit, même épuisé : sur Retro la souche/le bloc reste
+                // bloquant côté serveur tant que la cellule a un objet (cf.
+                // log 08:13:05 — perso STUCK cell 321 car path passait par
+                // cell 307 = arbre épuisé, serveur refusait de transiter).
+                //
+                // NB : on filtre sur `IdInteractif >= 0` (le VRAI marqueur
+                // d'objet posé) et PAS sur `Type == Interactif` car le
+                // décodeur Dofus 1.29 (DecompresseurMapData) laisse ces
+                // cellules en Type=Marchable, il pose juste IdInteractif.
+                // L'ancien check sur Type ne matchait JAMAIS → pas d'effet.
+                if (voisin.IdInteractif >= 0 && voisin != arrivee) continue;
 
                 int gTemporaire = courante.CouG + Distance(voisin, courante);
 
