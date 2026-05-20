@@ -526,8 +526,13 @@ public sealed class TrameJeu : TrameBase
 
         if (moi)
         {
+            int? avant = _etat.Personnage.CellulePosition;
             _etat.Personnage.CellulePosition = cell;
             _etat.CarteCourante?.SignalerRechargee();
+            // En combat, c'est la CONFIRMATION serveur de notre déplacement
+            // (cf. optimistic update post-GA001 dans JouerTourCombatAsync).
+            if (_etat.Combat.Etat != Divers.Combats.Enums.EtatCombat.Inactif)
+                Journaliseur.Info($"[ACTION-MV] Position confirmée par serveur : cell {avant} → {cell} (broadcast GA;1;)");
         }
         else
         {
@@ -1014,8 +1019,12 @@ public sealed class TrameJeu : TrameBase
                 {
                     var (chemin, distApres) = resApproche.Value;
                     int nbPasMove = chemin.Count - 1;
-                    Journaliseur.Info($"[ACTION] Hors portée → déplacement {nbPasMove} case(s) vers cell {chemin[^1].Identifiant} (dist après = {distApres}, sort « {sortVise.Nom} » niv{nivVise} portée {pminVL}-{pmaxVL})");
+                    int cellArrivee = chemin[^1].Identifiant;
+                    var cellsTrace = string.Join("→", chemin.Select(c => c.Identifiant.ToString()));
                     var paquetDep = BotDofus.Divers.Cartes.Deplacement.Pathfinder.PaquetDeplacement(chemin);
+                    var modeStr = _compte.ConfigCombat?.Mode.ToString() ?? "Equilibre";
+                    Journaliseur.Info($"[PATHFINDING] Mode={modeStr} | départ cell {maCell} → arrivée cell {cellArrivee} | {nbPasMove} pas | dist après={distApres} | sort « {sortVise.Nom} » niv{nivVise} portée {pminVL}-{pmaxVL} | chemin: {cellsTrace}");
+                    Journaliseur.Info($"[ACTION-MV] Envoi GA001 → '{paquetDep}' (cells {chemin[0].Identifiant}→{cellArrivee})");
                     await _session.EnvoyerAuServeurAsync(paquetDep).ConfigureAwait(false);
 
                     // Attente animation déplacement : ~330 ms par case + 200 ms
@@ -1023,21 +1032,35 @@ public sealed class TrameJeu : TrameBase
                     int dureeDeplacement = nbPasMove * 330 + 200;
                     await Task.Delay(dureeDeplacement).ConfigureAwait(false);
 
+                    // OPTIMISTIC UPDATE : on suppose que le serveur a accepté le
+                    // GA001 et déplace le perso vers la cell d'arrivée. Si le
+                    // serveur a rejeté en silence (≠proxy(décalé) sur cipher),
+                    // le GTM du tour suivant corrigera la position. Mais en
+                    // attendant, le cast utilise la NOUVELLE position pour
+                    // calculer la portée correctement (fix log 20:36-20:37 où le
+                    // bot croyait toujours être à 326/193 entre les tours).
+                    int cellAvantMv = maCell;
+                    _etat.Personnage.CellulePosition = cellArrivee;
+                    maCell = cellArrivee;
+                    Journaliseur.Info($"[ACTION-MV] Position optimiste mise à jour : cell {cellAvantMv} → {cellArrivee} (en attente confirmation serveur GA;1;)");
+
                     // GKK0 = ack action déplacement (capture vrai client : ~150 ms
                     // après l'arrivée). Sans, le serveur attend toujours et bloque
                     // la suite du tour.
+                    Journaliseur.Info($"[ACTION-MV] Envoi GKK0 (ack déplacement)");
                     await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
                     await Task.Delay(System.Random.Shared.Next(300, 500)).ConfigureAwait(false);
 
-                    // Le sort est maintenant en portée → on l'utilise. On met à
-                    // jour aussi sortCoutPA/PorteeMin/PorteeMax pour que le log
-                    // de cast affiche les BONNES stats (avant le fix, on voyait
-                    // « 0 PA, portée 0-0 » après une approche).
+                    // Le sort est maintenant en portée → on l'utilise.
                     sort = sortVise;
                     sortCoutPA = paVL;
                     sortPorteeMin = pminVL;
                     sortPorteeMax = pmaxVL;
                     distEnnemi = distApres;
+                }
+                else
+                {
+                    Journaliseur.Info($"[PATHFINDING] AUCUNE cellule cible trouvée pour atteindre l'ennemi (cell {ennemi.CellulePosition}) en {perso.PM} PM avec sort « {sortVise.Nom} » portée {pminVL}-{pmaxVL}. Mode={_compte.ConfigCombat?.Mode}. Possible : ennemi inaccessible / PM insuffisants / toutes cells candidates bloquées par combattants.");
                 }
             }
         }
