@@ -34,6 +34,29 @@ public sealed class Combat
     public event EventHandler<int>? TourChange;
     public event EventHandler? PositionsChangees;
 
+    /// <summary>
+    /// Émis quand le serveur BROADCAST un déplacement de combat pour MON perso
+    /// (broadcast <c>GA;0/1;&lt;monId&gt;;&lt;chemin&gt;</c> reçu). Signal
+    /// décisif pour confirmer qu'un GA001 envoyé par l'IA a été accepté
+    /// (cf. ADR-002 §4.1). <see cref="IA.PipelineDeplacementCombat"/> écoute
+    /// cet event pour résoudre le <see cref="System.Threading.Tasks.TaskCompletionSource{TResult}"/>
+    /// de l'attente bloquante avec timeout.
+    /// </summary>
+    public event EventHandler<MouvementBotArgs>? MouvementBotConfirme;
+
+    /// <summary>
+    /// Déclenche l'event <see cref="MouvementBotConfirme"/>. Appelé par
+    /// <see cref="Commun.Frames.TrameJeu.OnActionJeu"/> quand un broadcast
+    /// <c>GA;0/1</c> est reçu et que l'acteur correspond à <see cref="IdentifiantAllie"/>.
+    /// </summary>
+    public void DeclencherMouvementBot(int idActeur, int cellArrivee, string cheminEncode)
+        => MouvementBotConfirme?.Invoke(this, new MouvementBotArgs
+        {
+            IdActeur = idActeur,
+            CellArrivee = cellArrivee,
+            CheminEncode = cheminEncode
+        });
+
     public void Demarrer()
     {
         ChangerEtat(EtatCombat.Placement);
@@ -92,4 +115,17 @@ public sealed class Combat
         Etat = nouveau;
         EtatChange?.Invoke(this, nouveau);
     }
+}
+
+/// <summary>
+/// Args portés par <see cref="Combat.MouvementBotConfirme"/> : id du combattant,
+/// cellule d'arrivée annoncée par le broadcast serveur, chemin encodé (utile
+/// pour comparer à ce que le bot a envoyé et détecter une troncature serveur
+/// = <see cref="IA.ResultatDeplacementCombat.ConfirmePartiel"/>).
+/// </summary>
+public sealed class MouvementBotArgs : EventArgs
+{
+    public int IdActeur { get; init; }
+    public int CellArrivee { get; init; }
+    public string CheminEncode { get; init; } = string.Empty;
 }

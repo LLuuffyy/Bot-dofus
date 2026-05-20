@@ -529,10 +529,14 @@ public sealed class TrameJeu : TrameBase
             int? avant = _etat.Personnage.CellulePosition;
             _etat.Personnage.CellulePosition = cell;
             _etat.CarteCourante?.SignalerRechargee();
-            // En combat, c'est la CONFIRMATION serveur de notre déplacement
-            // (cf. optimistic update post-GA001 dans JouerTourCombatAsync).
+            // En combat, c'est la CONFIRMATION serveur du déplacement. Émet
+            // l'event Combat.MouvementBotConfirme pour que PipelineDeplacementCombat
+            // résolve l'attente bloquante de JouerTourCombatAsync (cf. ADR-002 §4.2).
             if (_etat.Combat.Etat != Divers.Combats.Enums.EtatCombat.Inactif)
-                Journaliseur.Info($"[ACTION-MV] Position confirmée par serveur : cell {avant} → {cell} (broadcast GA;1;)");
+            {
+                Journaliseur.Info($"[ACTION-MV] Position confirmée par serveur : cell {avant} → {cell} (broadcast GA;{p[0]};)");
+                _etat.Combat.DeclencherMouvementBot(acteurId, cell, chemin);
+            }
         }
         else
         {
