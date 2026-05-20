@@ -272,12 +272,28 @@ public sealed class SessionProxy : IDisposable
         _ => -1
     };
 
-    private static byte[] EncoderPaquet(string message)
+    /// <summary>
+    /// Encode un paquet Dofus 1.29 pour le wire.
+    /// Terminateur par défaut : <c>"\n\0"</c> — c'est ce que le client réel
+    /// et dyshay/SynFus envoient (cf. dyshay/Comun/Network/TCPClient.cs
+    /// ligne 124 : <c>packet += "\n\x00"</c>). Sans le <c>\n</c>, le serveur
+    /// Hystoria IGNORE silencieusement les paquets en clair injectés par le
+    /// bot (Gt, GR1, GT) — symptôme observé : tour combat finit par timeout
+    /// 45 s au lieu de partir immédiatement après <c>Gt</c>.
+    /// Le canal cipher '-' ajoutait déjà <c>\n\0</c> (cf. EnvoyerCsVersServeur),
+    /// d'où l'asymétrie : cipher OK, clair muet.
+    /// <paramref name="ajouterSautLigne"/>=false uniquement pour la réponse
+    /// Flash policy-file-request (qui attend strictement <c>\0</c>).
+    /// </summary>
+    private static byte[] EncoderPaquet(string message, bool ajouterSautLigne = true)
     {
         var brut = Encoding.UTF8.GetBytes(message);
-        var avecTerminaison = new byte[brut.Length + 1];
+        int extra = ajouterSautLigne ? 2 : 1;
+        var avecTerminaison = new byte[brut.Length + extra];
         Buffer.BlockCopy(brut, 0, avecTerminaison, 0, brut.Length);
-        avecTerminaison[^1] = 0x00;
+        int p = brut.Length;
+        if (ajouterSautLigne) avecTerminaison[p++] = (byte)'\n';
+        avecTerminaison[p] = 0x00;
         return avecTerminaison;
     }
 
@@ -434,7 +450,7 @@ public sealed class SessionProxy : IDisposable
             && brut.StartsWith("<policy-file-request", StringComparison.Ordinal))
         {
             Journaliseur.Info("[POLICY] Requete Flash policy-file-request recue, reponse locale.");
-            _ = _coteClient.GetStream().WriteAsync(EncoderPaquet(PolicyResponse), _annulation.Token).AsTask();
+            _ = _coteClient.GetStream().WriteAsync(EncoderPaquet(PolicyResponse, ajouterSautLigne: false), _annulation.Token).AsTask();
             return null;
         }
 
