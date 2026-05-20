@@ -273,28 +273,65 @@ public partial class VueDashboard : UserControl
     /// <summary>« Scénario » = seulement la story du bot (Action / Récolte /
     /// Trajet / Important). Coupe le bruit Debug / Réseau / Jeu pour voir
     /// uniquement ce que le bot FAIT, pas comment.</summary>
+    /// <summary>Mode « Chat » = la story du bot (équivalent du Chat MoonBot).
+    /// Affiche les events lisibles : récolte, trajet, combat, banque, etc.
+    /// Masque tout le debug technique (réseau bas niveau, métiers JSK…).</summary>
     private void BtnCatScenario_Click(object sender, RoutedEventArgs e)
     {
         _ignorerFiltreCatChange = true;
         try
         {
+            // ── Story ON ──
             ChkCatAction.IsChecked = true;
             ChkCatRecolte.IsChecked = true;
             ChkCatTrajet.IsChecked = true;
-            ChkCatImportant.IsChecked = true;
-            ChkCatQuete.IsChecked = true;
+            ChkCatInv.IsChecked = true;     // OK voir l'inventaire dans le chat
             ChkCatBanque.IsChecked = true;
-            ChkCatCmd.IsChecked = true;
+            ChkCatCmd.IsChecked = true;     // execution de script
             ChkCatCombat.IsChecked = true;
-            ChkCatBot.IsChecked = true;      // lifecycle (connexion compte / launcher) = utile
-            ChkCatGame.IsChecked = true;     // entrée en jeu / sélection perso / zaap = story
-            ChkCatInv.IsChecked = false;
+            ChkCatGame.IsChecked = true;    // entrée jeu / dialogue / zaap = story
+            ChkCatQuete.IsChecked = true;
+            ChkCatImportant.IsChecked = true;
+            // ── Technique OFF ──
             ChkCatScript.IsChecked = false;
+            ChkCatBot.IsChecked = false;
             ChkCatAuth.IsChecked = false;
             ChkCatServer.IsChecked = false;
             ChkCatNetwork.IsChecked = false;
             ChkCatReseau.IsChecked = false;
             ChkCatJeu.IsChecked = false;
+        }
+        finally { _ignorerFiltreCatChange = false; }
+        RecalculerTexte();
+    }
+
+    /// <summary>Mode « Console » = inverse du Chat. Affiche uniquement le
+    /// debug technique (lifecycle bot, réseau, métiers JSK, internals…)
+    /// pour quand on diagnostique un problème.</summary>
+    private void BtnCatConsole_Click(object sender, RoutedEventArgs e)
+    {
+        _ignorerFiltreCatChange = true;
+        try
+        {
+            // ── Story OFF ──
+            ChkCatAction.IsChecked = false;
+            ChkCatRecolte.IsChecked = false;
+            ChkCatTrajet.IsChecked = false;
+            ChkCatInv.IsChecked = false;
+            ChkCatBanque.IsChecked = false;
+            ChkCatCmd.IsChecked = false;
+            ChkCatCombat.IsChecked = false;
+            ChkCatGame.IsChecked = false;
+            ChkCatQuete.IsChecked = false;
+            ChkCatImportant.IsChecked = false;
+            // ── Technique ON ──
+            ChkCatScript.IsChecked = true;
+            ChkCatBot.IsChecked = true;
+            ChkCatAuth.IsChecked = true;
+            ChkCatServer.IsChecked = true;
+            ChkCatNetwork.IsChecked = true;
+            ChkCatReseau.IsChecked = true;
+            ChkCatJeu.IsChecked = true;
         }
         finally { _ignorerFiltreCatChange = false; }
         RecalculerTexte();
