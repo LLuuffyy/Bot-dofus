@@ -52,7 +52,10 @@ public sealed class TrameJeu : TrameBase
         Ecouter<MessageStats>(OnStats);
         Ecouter<BotDofus.Commun.Messages.VersClient.Authentification.MessageListeSorts>(msg =>
         {
-            foreach (var kv in msg.Sorts) _etat.Personnage.SortsAppris[kv.Key] = kv.Value;
+            // G.1 — passer par AjouterOuMajSort pour DÉCLENCHER l'event
+            // Personnage.SortsChanges (sinon CmbSort de VueCombat reste vide à vie
+            // car l'event n'est jamais invoqué par l'écriture directe du Dictionary).
+            foreach (var kv in msg.Sorts) _etat.Personnage.AjouterOuMajSort(kv.Key, kv.Value);
             Journaliseur.Info($"[SORTS] {msg.Sorts.Count} sort(s) scanné(s) : "
                 + string.Join(", ", msg.Sorts.Select(s => $"#{s.Key} niv{s.Value}")));
         });

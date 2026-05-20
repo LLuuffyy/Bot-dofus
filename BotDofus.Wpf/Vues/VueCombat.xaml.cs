@@ -24,6 +24,14 @@ public partial class VueCombat : UserControl
     private DispatcherTimer? _timerSauvegarde;
     /// <summary>true pendant l'init des contrôles UI depuis ConfigCombat (évite déclencher les Changed).</summary>
     private bool _initEnCours;
+    /// <summary>
+    /// Timer de polling défensif des sorts appris (G.1) : si le paquet SL
+    /// arrive APRÈS que la vue soit liée, l'event SortsChanges peut être
+    /// manqué selon le timing UI. Ce timer re-tente RafraichirSortsAppris
+    /// pendant 30s tant que la collection est vide.
+    /// </summary>
+    private DispatcherTimer? _timerSortsPoll;
+    private int _tentativesSortsPoll;
     public ObservableCollection<SortItemVm> SortsAppris { get; } = new();
     public ObservableCollection<SortConfigureVm> SortsConfig { get; } = new();
     public ObservableCollection<CombattantVm> CombattantsLive { get; } = new();
@@ -162,6 +170,41 @@ public partial class VueCombat : UserControl
         }
 
         TxtSortsAppris.Text = $"SORTS APPRIS ({SortsAppris.Count})";
+
+        // G.1 — defensive polling : si la collection est vide après attach,
+        // c'est probablement que le paquet SL n'a pas encore été reçu. Relancer
+        // un timer 1s qui re-tente jusqu'à ce que ce soit peuplé (max 30s).
+        if (SortsAppris.Count == 0)
+            DemarrerPollSortsAppris();
+        else
+            ArreterPollSortsAppris();
+    }
+
+    private void DemarrerPollSortsAppris()
+    {
+        if (_timerSortsPoll != null) return;
+        _tentativesSortsPoll = 0;
+        _timerSortsPoll = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        _timerSortsPoll.Tick += (_, _) =>
+        {
+            _tentativesSortsPoll++;
+            if (_contexte == null || _tentativesSortsPoll > 30)
+            {
+                ArreterPollSortsAppris();
+                return;
+            }
+            if (_contexte.EtatJeu.Personnage.SortsAppris.Count > 0)
+            {
+                RafraichirSortsAppris();  // peuple + arrête le timer
+            }
+        };
+        _timerSortsPoll.Start();
+    }
+
+    private void ArreterPollSortsAppris()
+    {
+        _timerSortsPoll?.Stop();
+        _timerSortsPoll = null;
     }
 
     private void Rafraichir()

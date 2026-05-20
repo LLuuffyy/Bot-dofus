@@ -350,7 +350,7 @@
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
                                             <Ellipse Width="12" Height="12" Fill="{Binding CouleurBrush}" Margin="0,0,8,0"/>
-                                            <TextBlock Text="{Binding Affichage}"/>
+                                            <TextBlock Text="{Binding Affichage}" Foreground="#F2F4F8"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </ComboBox.ItemTemplate>
@@ -360,12 +360,12 @@
                         <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0,0,12">
                             <TextBlock Text="FOCUS" Style="{StaticResource SectionLabelStyle}"/>
                             <ComboBox x:Name="CmbCible" SelectedIndex="0">
-                                <ComboBoxItem Content="Ennemi le plus proche"/>
-                                <ComboBoxItem Content="Ennemi le plus faible"/>
-                                <ComboBoxItem Content="Ennemi le plus fort"/>
-                                <ComboBoxItem Content="Soi"/>
-                                <ComboBoxItem Content="Allie le plus blesse"/>
-                                <ComboBoxItem Content="Cellule vide (invocation)"/>
+                                <ComboBoxItem><TextBlock Text="Ennemi le plus proche" Foreground="#F2F4F8"/></ComboBoxItem>
+                                <ComboBoxItem><TextBlock Text="Ennemi le plus faible" Foreground="#F2F4F8"/></ComboBoxItem>
+                                <ComboBoxItem><TextBlock Text="Ennemi le plus fort"   Foreground="#F2F4F8"/></ComboBoxItem>
+                                <ComboBoxItem><TextBlock Text="Soi"                   Foreground="#F2F4F8"/></ComboBoxItem>
+                                <ComboBoxItem><TextBlock Text="Allie le plus blesse"  Foreground="#F2F4F8"/></ComboBoxItem>
+                                <ComboBoxItem><TextBlock Text="Cellule vide (invocation)" Foreground="#F2F4F8"/></ComboBoxItem>
                             </ComboBox>
                         </StackPanel>
 
