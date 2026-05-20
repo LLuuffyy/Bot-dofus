@@ -416,17 +416,33 @@ public sealed class TrameJeu : TrameBase
 
         // GARDE : un chemin de déplacement compressé n'utilise QUE l'alphabet
         // hash Dofus (alphanumérique + '-' '_'). Les GA0 « non déplacement »
-        // (résultat de récolte ex. '168,11900,201', animations, etc.) contiennent
-        // des virgules / caractères hors alphabet : on les ignore ici, sinon on
-        // décodait '01' → cellule bidon 3381 qui CORROMPAIT la position perso et
-        // rendait la carte interactive inutilisable jusqu'à un clic dans Dofus.exe.
+        // (ex. '168,11900,201' = ACTION SUR INTERACTIF) contiennent des
+        // virgules / caractères hors alphabet : on les ignore comme path,
+        // mais on en TIRE des infos utiles (durée d'action serveur, type).
         foreach (var ch in chemin)
         {
             if (BotDofus.Utilitaires.Crypto.HashCarte.IndexCar(ch) < 0)
             {
-                Journaliseur.Info(
-                    $"[GA0] payload non-déplacement ignoré (acteur p[2]={p[2]}, " +
+                Journaliseur.Debogue(
+                    $"[GA0] payload non-déplacement (acteur p[2]={p[2]}, " +
                     $"charge='{chemin}')");
+                // Format Retro : « <cell>,<durationMs>,<actionStatus> »
+                // actionStatus = 201 (interactif/récolte), 200 (combat),
+                // etc. Si c'est NOUS qui sommes l'acteur ET status=201 →
+                // c'est notre récolte qui démarre, on annonce la durée.
+                if (acteurId == _etat.Personnage.Identifiant)
+                {
+                    var parts = chemin.Split(',');
+                    if (parts.Length >= 3
+                        && int.TryParse(parts[0], out var cellAct)
+                        && int.TryParse(parts[1], out var dureeMs)
+                        && parts[2] == "201" && dureeMs > 0)
+                    {
+                        Journaliseur.Info(
+                            $"[ACTION] Récolte en cours : cellule {cellAct} "
+                            + $"(durée serveur ~{dureeMs / 1000.0:F1}s)");
+                    }
+                }
                 return;
             }
         }
