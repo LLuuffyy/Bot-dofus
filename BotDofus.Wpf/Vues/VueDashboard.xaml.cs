@@ -234,7 +234,11 @@ public partial class VueDashboard : UserControl
             "Commandes"  => ChkCatCmd?.IsChecked        == true,
             "Script"     => ChkCatScript?.IsChecked     == true,
             "Combat"     => ChkCatCombat?.IsChecked     == true,
+            "Bot"        => ChkCatBot?.IsChecked        == true,
             "Auth"       => ChkCatAuth?.IsChecked       == true,
+            "Server"     => ChkCatServer?.IsChecked     == true,
+            "Network"    => ChkCatNetwork?.IsChecked    == true,
+            "Game"       => ChkCatGame?.IsChecked       == true,
             "Quête"      => ChkCatQuete?.IsChecked      == true,
             "Important"  => ChkCatImportant?.IsChecked  == true,
             "Réseau"     => ChkCatReseau?.IsChecked     == true,
@@ -280,11 +284,15 @@ public partial class VueDashboard : UserControl
             ChkCatImportant.IsChecked = true;
             ChkCatQuete.IsChecked = true;
             ChkCatBanque.IsChecked = true;
-            ChkCatCmd.IsChecked = true;     // Cmd = Execution script.lua → utile en story
-            ChkCatCombat.IsChecked = true;  // combat = aussi de la story
+            ChkCatCmd.IsChecked = true;
+            ChkCatCombat.IsChecked = true;
+            ChkCatBot.IsChecked = true;      // lifecycle (connexion compte / launcher) = utile
+            ChkCatGame.IsChecked = true;     // entrée en jeu / sélection perso / zaap = story
             ChkCatInv.IsChecked = false;
             ChkCatScript.IsChecked = false;
             ChkCatAuth.IsChecked = false;
+            ChkCatServer.IsChecked = false;
+            ChkCatNetwork.IsChecked = false;
             ChkCatReseau.IsChecked = false;
             ChkCatJeu.IsChecked = false;
         }
@@ -305,7 +313,11 @@ public partial class VueDashboard : UserControl
             ChkCatCmd.IsChecked = valeur;
             ChkCatScript.IsChecked = valeur;
             ChkCatCombat.IsChecked = valeur;
+            ChkCatBot.IsChecked = valeur;
             ChkCatAuth.IsChecked = valeur;
+            ChkCatServer.IsChecked = valeur;
+            ChkCatNetwork.IsChecked = valeur;
+            ChkCatGame.IsChecked = valeur;
             ChkCatQuete.IsChecked = valeur;
             ChkCatImportant.IsChecked = valeur;
             ChkCatReseau.IsChecked = valeur;

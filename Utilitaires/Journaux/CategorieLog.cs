@@ -14,19 +14,23 @@ public static class CategorieLog
     public readonly record struct Categorie(string Nom, string CouleurHex);
 
     // Palette sombre alignée sur le rendu MoonBot souhaité.
-    private const string GrisReseau = "#7F8C9A"; // réseau bas niveau
+    private const string GrisReseau = "#7F8C9A"; // réseau cipher/paquets (REENC/VOCAB)
+    private const string Indigo     = "#7986CB"; // network TCP/WD/policy
     private const string Cyan       = "#4FC3F7"; // déplacement / map
+    private const string Emeraude   = "#26D07C"; // game (events serveur jeu)
     private const string Vert       = "#7BD389"; // récolte
     private const string VertVif    = "#5CE08A"; // ACTION (story)
     private const string Rouge      = "#FF5370"; // erreurs
     private const string Orange     = "#FFA726"; // avertissements
+    private const string Corail     = "#FF8A65"; // bot lifecycle (orch/launch/pilote)
     private const string Ambre      = "#FFCA61"; // inventaire
-    private const string AmbreClair = "#FFD988"; // banque / HDV (variante)
+    private const string AmbreClair = "#FFD988"; // banque / HDV
+    private const string Brun       = "#BCAAA4"; // server selection / liste serveurs
     private const string Violet     = "#B388FF"; // script / lua
     private const string VioletVif  = "#D0A2FF"; // commandes / cmd
-    private const string Bleu       = "#5C9DFF"; // auth / connexion
+    private const string Bleu       = "#5C9DFF"; // auth / haapi / login
     private const string Jaune      = "#FFD54F"; // important
-    private const string JauneVif   = "#FFE57F"; // quête (variante)
+    private const string JauneVif   = "#FFE57F"; // quête
     private const string Defaut     = "#E0E5EC"; // info neutre
 
     /// <summary>
@@ -56,15 +60,33 @@ public static class CategorieLog
             "LUA" or "SCRIPT" or "ANKA-LUA"
                 => new("Script", Violet),
             "COMBAT" or "IA" or "SORT" => new("Combat", Rouge),
-            "AUTH" or "CONNEXION" or "ORCH" or "LAUNCH" or "PILOTE"
+            // « Bot » = lifecycle / orchestration côté bot (lance le jeu,
+            // patche le client, redirige les paquets, contexte compte…).
+            // Distinct d'« Auth » qui couvre les paquets login/HAAPI/ticket.
+            "ORCH" or "LAUNCH" or "PILOTE" or "AUTO" or "AUTO-ADD"
+                or "PATCH" or "SWF" or "BOT"
+                => new("Bot", Corail),
+            "AUTH" or "CONNEXION" or "CRYPT" or "CIPHER"
                 => new("Auth", Bleu),
             "QUETE" or "QUÊTE" => new("Quête", JauneVif),
             "IMPORTANT" or "INFO-JEU" => new("Important", Jaune),
-            "WD" or "REENC" or "CRYPT" or "OBS" or "OBS-BRUT" or "PKT"
-                or "VOCAB" or "CRACK" or "POLICY" or "CIPHER" or "INJ"
+            // « Network » = couche TCP/Windivert/policy (connexion, redirection).
+            // Distinct de « Réseau » (paquets cipher déjà parsés).
+            "WD" or "POLICY" or "TCP" or "NET" or "NETWORK"
+                => new("Network", Indigo),
+            // « Server » = liste serveurs, sélection, redirection AYK.
+            "SERVER" or "SERVEURS" or "AYK"
+                => new("Server", Brun),
+            // « Game » = events haut niveau du serveur de jeu (entrée en
+            // jeu, changement de map, sélection perso, dialogue…).
+            "GAME" or "JEU" or "DIALOGUE" or "GA0" or "ZAAP"
+                => new("Game", Emeraude),
+            "REENC" or "OBS" or "OBS-BRUT" or "PKT" or "VOCAB"
+                or "CRACK" or "INJ"
                 or "REENC C→S" or "OBS C→S '-'"
                 => new("Réseau", GrisReseau),
             "MÉTIERS" or "METIERS" or "ENT" or "SORTS" or "BDD"
+                or "AS" or "STATS"
                 => new("Jeu", GrisReseau),
             _ => new("Info", Defaut),
         };
