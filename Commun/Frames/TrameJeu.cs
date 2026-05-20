@@ -1088,13 +1088,13 @@ public sealed class TrameJeu : TrameBase
 
                     if (deplacementValide)
                     {
-                        // GKK0 d'ack action (en mode secours, on ack quand même
-                        // pour matcher le comportement legacy ; idéalement à
-                        // skipper quand serveur a vraiment refusé).
-                        Journaliseur.Info($"[ACTION-MV] Envoi GKK0 (ack déplacement)");
+                        // G.4 (dyshay) — PAS de GKK0 proactif après GA001 combat.
+                        // Dyshay laisse le serveur émettre GA;0/1 puis GAF, et
+                        // c'est MapFrame.GAF qui renvoie GKK<n> en réaction.
+                        // L'ancien GKK0 forcé pouvait être une autre cause du
+                        // rejet silent côté serveur. Cf. agent REFPLACE BUG #4
+                        // + docs/REFERENCE-PLACEMENT-DEPLACEMENT-DYSHAY.md §2.1.
                         await Task.Delay(System.Random.Shared.Next(150, 300)).ConfigureAwait(false);
-                        await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
-                        await Task.Delay(System.Random.Shared.Next(300, 500)).ConfigureAwait(false);
 
                         sort = sortVise;
                         sortCoutPA = paVL;
@@ -1249,8 +1249,12 @@ public sealed class TrameJeu : TrameBase
                 System.Math.Abs(c.X - depart.X), System.Math.Abs(c.Y - depart.Y));
             if (dEstimee > pmMax) continue;
 
+            // combat:true → pathfinder utilise 4 dirs ortho strictes (dyshay
+            // PeleasPathfinder). En 8-dir le serveur 1.29 rejette silencieusement
+            // les GA001 contenant une diagonale → bot reste figé (bug identifié
+            // par agent REFPLACE 22:30, cf. docs/REFERENCE-PLACEMENT-DEPLACEMENT-DYSHAY.md §2).
             var chemin = BotDofus.Divers.Cartes.Deplacement.Pathfinder.Trouver(
-                carte, depart, c, interdites);
+                carte, depart, c, interdites, combat: true);
             if (chemin == null) continue;
             int nbPas = chemin.Count - 1;
             if (nbPas == 0) continue; // déjà à cette case (sort aurait dû passer plus tôt)

@@ -34,7 +34,8 @@ public static class Pathfinder
         Cellule arrivee,
         ICollection<Cellule>? cellulesInterdites = null,
         bool arreterDevant = false,
-        int distanceArret = 1)
+        int distanceArret = 1,
+        bool combat = false)
     {
         if (depart == null || arrivee == null) return null;
 
@@ -78,7 +79,7 @@ public static class Pathfinder
             ouvertes.RemoveAt(idx);
             fermees.Add(courante);
 
-            foreach (var voisin in VoisinsAdjacents(carte, courante))
+            foreach (var voisin in VoisinsAdjacents(carte, courante, combat))
             {
                 if (fermees.Contains(voisin)) continue;
                 // On AUTORISE la case d'ARRIVÉE même si non « marchable »
@@ -192,16 +193,26 @@ public static class Pathfinder
     }
 
     /// <summary>
-    /// Voisins 8-directions (4 orthogonaux + 4 diagonaux) dans la carte.
-    /// On utilise les coordonnées (x, y) calculées par <see cref="Cellule"/>.
+    /// Voisins 8-directions (overworld) ou 4 orthogonales (combat) dans la carte.
+    /// Dyshay : <c>pelea no utiliza diagonales</c> (`PeleasPathfinder.get_Celdas_Adyecentes`)
+    /// → le serveur 1.29 REJETTE silencieusement les chemins GA001 incluant
+    /// une direction diagonale en combat. Bug majeur identifié par agent
+    /// REFPLACE 22:30 (cf. docs/REFERENCE-PLACEMENT-DEPLACEMENT-DYSHAY.md §2).
     /// </summary>
-    private static IEnumerable<Cellule> VoisinsAdjacents(Carte carte, Cellule centre)
+    private static IEnumerable<Cellule> VoisinsAdjacents(Carte carte, Cellule centre, bool combat = false)
     {
-        var deltas = new (int dx, int dy)[]
-        {
-            ( 1,  0), (-1,  0), ( 0,  1), ( 0, -1),
-            ( 1,  1), ( 1, -1), (-1,  1), (-1, -1),
-        };
+        // En combat : 4 ortho strictes (matche dyshay PeleasPathfinder).
+        // Hors combat : 8 dirs (overworld permet les diagonales).
+        var deltas = combat
+            ? new (int dx, int dy)[]
+            {
+                ( 1,  0), (-1,  0), ( 0,  1), ( 0, -1),
+            }
+            : new (int dx, int dy)[]
+            {
+                ( 1,  0), (-1,  0), ( 0,  1), ( 0, -1),
+                ( 1,  1), ( 1, -1), (-1,  1), (-1, -1),
+            };
 
         foreach (var (dx, dy) in deltas)
         {

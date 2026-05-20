@@ -143,6 +143,13 @@ public sealed class ContexteCompte : IDisposable
                 _combatPretEnvoye = true;
                 try
                 {
+                    // G.3 — Placement initial selon Mode (cf. dyshay
+                    // get_Celda_Mas_Cercana_O_Lejana). Avant GR1, on choisit
+                    // une cell parmi PositionsEquipe1/2 (mon équipe) qui
+                    // matche le Mode configuré (Agressif=min dist, Eloigne/
+                    // Fuyard=max dist, Equilibre=DistancePreferee).
+                    await System.Threading.Tasks.Task.Delay(800);
+                    ChoisirEtEnvoyerPlacementInitial();
                     await System.Threading.Tasks.Task.Delay(1400);
                     // Garde anti-reconnexion-mid-combat : si on rejoint un combat
                     // DÉJÀ en cours (le serveur rejoue le placement puis enchaîne
@@ -604,5 +611,90 @@ public sealed class ContexteCompte : IDisposable
         try { Proxy.Dispose(); } catch { }
         try { Compte.EtatChange -= OnEtatCompteChange; } catch { }
         try { Compte.Dispose(); } catch { }
+    }
+
+    /// <summary>
+    /// G.3 — Placement initial avant GR1, selon <see cref="Combats.IA.ModeCombat"/>.
+    /// Aligné dyshay <c>Fight.get_Celda_Mas_Cercana_O_Lejana</c> + <c>MapFrame</c>
+    /// ligne 106-126 : on choisit une cell parmi <c>Combat.PositionsEquipe1/2</c>
+    /// (mon équipe) qui matche le Mode configuré, puis on envoie <c>Gp&lt;cell&gt;</c>
+    /// si la cell est différente de notre position actuelle. Le serveur répond
+    /// <c>GIC</c> (confirmation placement) puis on enchaîne le <c>GR1</c>.
+    /// </summary>
+    private void ChoisirEtEnvoyerPlacementInitial()
+    {
+        try
+        {
+            var combat = EtatJeu.Combat;
+            if (combat.PositionsEquipe1.Count == 0 && combat.PositionsEquipe2.Count == 0) return;
+            var carte = EtatJeu.CarteCourante;
+            if (carte == null) return;
+
+            int monEquipe = combat.EquipePlacement;
+            var maTeamCells = monEquipe == 1 ? combat.PositionsEquipe2 : combat.PositionsEquipe1;
+            var ennemisCells = monEquipe == 1 ? combat.PositionsEquipe1 : combat.PositionsEquipe2;
+            if (maTeamCells.Count == 0 || ennemisCells.Count == 0) return;
+
+            var cfg = ConfigCombat;
+            var mode = cfg?.Mode ?? Combats.IA.ModeCombat.Equilibre;
+            int distPref = cfg?.DistancePreferee ?? 5;
+            int mw = carte.Largeur > 0 ? carte.Largeur : Cartes.Carte.LargeurParDefaut;
+
+            // Helper dist Manhattan (= dyshay GetDistanceBetweenCells, dist cells
+            // en combat 4-dir où Manhattan == Chebyshev car pas de diagonale).
+            int Manhattan(int idA, int idB)
+            {
+                var (xA, yA) = Cartes.Cellule.CalculerCoordonnees(idA, mw);
+                var (xB, yB) = Cartes.Cellule.CalculerCoordonnees(idB, mw);
+                return System.Math.Abs(xA - xB) + System.Math.Abs(yA - yB);
+            }
+            int SommeDistEnnemis(int cellId)
+            {
+                int s = 0;
+                foreach (var e in ennemisCells) s += Manhattan(cellId, e);
+                return s;
+            }
+
+            int meilleureCell = -1;
+            double meilleurScore = double.MaxValue;
+            foreach (var cell in maTeamCells)
+            {
+                double score = mode switch
+                {
+                    Combats.IA.ModeCombat.Agressif => SommeDistEnnemis(cell),                 // minimise
+                    Combats.IA.ModeCombat.Eloigne  => -SommeDistEnnemis(cell),                // maximise (=min de -dist)
+                    Combats.IA.ModeCombat.Fuyard   => -SommeDistEnnemis(cell),                // idem Eloigne en placement
+                    Combats.IA.ModeCombat.Equilibre => System.Math.Abs(
+                        ennemisCells.Count > 0
+                            ? Manhattan(cell, ennemisCells[0]) - distPref
+                            : 0),
+                    _ => 0
+                };
+                if (score < meilleurScore)
+                {
+                    meilleurScore = score;
+                    meilleureCell = cell;
+                }
+            }
+
+            int? maCell = EtatJeu.Personnage.CellulePosition;
+            if (meilleureCell < 0) return;
+            if (maCell.HasValue && meilleureCell == maCell.Value)
+            {
+                Journaliseur.Info(
+                    $"[PLACEMENT-DEBUT] Mode={mode}, déjà sur la cell optimale {meilleureCell} → pas de Gp");
+                return;
+            }
+            Journaliseur.Info(
+                $"[PLACEMENT-DEBUT] Mode={mode}, {maTeamCells.Count} cells dispo, "
+                + $"ennemis cells=[{string.Join(",", ennemisCells)}], "
+                + $"cell choisie={meilleureCell} (vs ma cell {maCell})");
+            // Format : Gp<cellId_decimal> (PAS de hash 2-char) — confirmé dyshay MapFrame.cs:115
+            _ = Api.EnvoyerPaquetBrutAsync($"Gp{meilleureCell}");
+        }
+        catch (Exception ex)
+        {
+            Journaliseur.Avertir($"[PLACEMENT-DEBUT] Erreur : {ex.Message}");
+        }
     }
 }
