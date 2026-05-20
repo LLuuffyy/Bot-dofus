@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Threading;
 using BotDofus.Commun.Reseau;
 using BotDofus.Divers;
@@ -14,6 +15,7 @@ public partial class VueDashboard : UserControl
 {
     private ContexteCompte? _contexte;
     private readonly List<EntreeJournal> _toutesLignes = new();
+    private readonly ObservableCollection<LigneLog> _affichees = new();
     private const int LimiteLignes = 5000;
     private string _recherche = string.Empty;
     private readonly DispatcherTimer _tickStats;
@@ -22,6 +24,7 @@ public partial class VueDashboard : UserControl
     {
         InitializeComponent();
         Journaliseur.NiveauMinimum = NiveauJournal.Debug;
+        TxtLogs.ItemsSource = _affichees;
         Journaliseur.EntreeAjoutee += OnEntreeJournal;
 
         // Tick 1s pour rafraîchir le compteur "temps online" sans dépendre des paquets.
@@ -30,40 +33,8 @@ public partial class VueDashboard : UserControl
         _tickStats.Start();
     }
 
-    private void TxtLogs_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
-    {
-        // La molette doit VRAIMENT scroller (le TextBox readonly imbriqué ne le
-        // faisait pas — un parent captait l'event). On scrolle le ScrollViewer
-        // interne nous-mêmes, on coupe l'auto-scroll si on remonte, et on le
-        // réactive automatiquement dès qu'on revient en bas.
-        // Méthode bulletproof : on scrolle le TextBox via SES PROPRES méthodes
-        // (LineUp/LineDown) — pas de dépendance au ScrollViewer interne ni au
-        // timing du template, et e.Handled empêche un parent de voler l'event.
-        int crans = 3; // lignes par cran de molette
-        if (e.Delta > 0) { for (int i = 0; i < crans; i++) TxtLogs.LineUp(); }
-        else { for (int i = 0; i < crans; i++) TxtLogs.LineDown(); }
-        e.Handled = true;
-
-        if (ChkAutoScrollConsole != null)
-        {
-            var sv = TrouverScrollViewer(TxtLogs);
-            bool enBas = sv == null || sv.VerticalOffset >= sv.ScrollableHeight - 2;
-            ChkAutoScrollConsole.IsChecked = enBas; // re-suit le texte seulement si collé en bas
-        }
-    }
-
-    private static System.Windows.Controls.ScrollViewer? TrouverScrollViewer(System.Windows.DependencyObject? racine)
-    {
-        if (racine == null) return null;
-        if (racine is System.Windows.Controls.ScrollViewer sv) return sv;
-        int n = System.Windows.Media.VisualTreeHelper.GetChildrenCount(racine);
-        for (int i = 0; i < n; i++)
-        {
-            var r = TrouverScrollViewer(System.Windows.Media.VisualTreeHelper.GetChild(racine, i));
-            if (r != null) return r;
-        }
-        return null;
-    }
+    // (Ancien hack molette LineUp/LineDown + TrouverScrollViewer supprimés :
+    //  la ListBox virtualisée a un ScrollViewer natif fiable.)
 
     public void Lier(ContexteCompte contexte)
     {
@@ -197,7 +168,10 @@ public partial class VueDashboard : UserControl
 
             if (Correspond(e.Entree))
             {
-                AjouterLigneAuTextBox(e.Entree);
+                _affichees.Add(Construire(e.Entree));
+                while (_affichees.Count > LimiteLignes) _affichees.RemoveAt(0);
+                if (ChkAutoScrollConsole?.IsChecked == true && _affichees.Count > 0)
+                    TxtLogs.ScrollIntoView(_affichees[^1]);
             }
 
             if (TxtCount != null)
@@ -208,17 +182,27 @@ public partial class VueDashboard : UserControl
         catch { /* un bug d'affichage de log ne doit jamais tuer le bot */ }
     }
 
-    private void AjouterLigneAuTextBox(EntreeJournal entree)
+    /// <summary>Construit une ligne affichable colorée depuis l'entrée brute.</summary>
+    private static LigneLog Construire(EntreeJournal e)
     {
-        if (TxtLogs == null) return;
-        var ligne = $"[{entree.Horodatage:HH:mm:ss.fff}] {AbreviationNiveau(entree.Niveau)} {entree.Message}\r\n";
-        TxtLogs.AppendText(ligne);
-
-        // Auto-scroll si la checkbox est cochée — TxtLogs.ScrollToEnd est éprouvé et fiable.
-        if (ChkAutoScrollConsole?.IsChecked == true)
+        var cat = CategorieLog.Resoudre(e.Message, e.Niveau);
+        Brush pinceau;
+        try
         {
-            TxtLogs.ScrollToEnd();
+            var col = (Color)ColorConverter.ConvertFromString(cat.CouleurHex);
+            var b = new SolidColorBrush(col);
+            b.Freeze();
+            pinceau = b;
         }
+        catch { pinceau = Brushes.Gainsboro; }
+
+        return new LigneLog
+        {
+            Heure = e.Horodatage.ToString("HH:mm:ss.fff"),
+            CategorieNom = cat.Nom,
+            Message = e.Message,
+            Pinceau = pinceau,
+        };
     }
 
     private bool Correspond(EntreeJournal entree)
@@ -250,24 +234,23 @@ public partial class VueDashboard : UserControl
         return n;
     }
 
-    /// <summary>Reconstruit complètement le contenu du TextBox depuis _toutesLignes filtré.</summary>
+    /// <summary>Reconstruit la liste affichée (colorée) depuis _toutesLignes filtré.</summary>
     private void RecalculerTexte()
     {
         if (TxtLogs == null || TxtCount == null) return;
 
-        var sb = new StringBuilder();
+        _affichees.Clear();
         foreach (var l in _toutesLignes)
         {
             if (!Correspond(l)) continue;
-            sb.Append('[').Append(l.Horodatage.ToString("HH:mm:ss.fff")).Append("] ")
-              .Append(AbreviationNiveau(l.Niveau)).Append(' ').Append(l.Message).Append("\r\n");
+            _affichees.Add(Construire(l));
         }
-        TxtLogs.Text = sb.ToString();
+        while (_affichees.Count > LimiteLignes) _affichees.RemoveAt(0);
         TxtCount.Text = $"{ComptageVisible()} / {_toutesLignes.Count} lignes";
 
-        if (ChkAutoScrollConsole?.IsChecked == true)
+        if (ChkAutoScrollConsole?.IsChecked == true && _affichees.Count > 0)
         {
-            TxtLogs.ScrollToEnd();
+            TxtLogs.ScrollIntoView(_affichees[^1]);
         }
     }
 
@@ -282,18 +265,16 @@ public partial class VueDashboard : UserControl
     private void BtnEffacer_Click(object sender, RoutedEventArgs e)
     {
         _toutesLignes.Clear();
-        if (TxtLogs != null) TxtLogs.Clear();
+        _affichees.Clear();
         if (TxtCount != null) TxtCount.Text = "0 / 0 lignes";
     }
+}
 
-    private static string AbreviationNiveau(NiveauJournal n) => n switch
-    {
-        NiveauJournal.Trace => "TRC",
-        NiveauJournal.Debug => "DBG",
-        NiveauJournal.Info => "INF",
-        NiveauJournal.Avertissement => "WRN",
-        NiveauJournal.Erreur => "ERR",
-        NiveauJournal.Critique => "CRT",
-        _ => "???",
-    };
+/// <summary>Ligne de log affichable et colorée (binding ListBox console).</summary>
+public sealed class LigneLog
+{
+    public string Heure { get; init; } = string.Empty;
+    public string CategorieNom { get; init; } = string.Empty;
+    public string Message { get; init; } = string.Empty;
+    public Brush Pinceau { get; init; } = Brushes.Gainsboro;
 }

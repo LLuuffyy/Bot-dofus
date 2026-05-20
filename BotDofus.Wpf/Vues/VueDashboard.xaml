@@ -157,25 +157,58 @@
             </DockPanel>
         </Border>
 
-        <!-- Console : TextBox readonly multi-lignes — scroll WPF natif éprouvé.
-             On perd la couleur par niveau mais la fiabilité du scroll est non-négociable. -->
+        <!-- Console colorée (style MoonBot) : ListBox VIRTUALISÉE → scroll
+             ScrollViewer natif fiable + perf à 5000 lignes, couleur par
+             catégorie via binding (CategorieLog). Remplace l'ancien TextBox
+             (couleur impossible) + supprime le hack molette LineUp/LineDown. -->
         <Border Grid.Row="4"
                 Style="{StaticResource PanelBorderStyle}"
                 Padding="0">
-            <TextBox x:Name="TxtLogs"
-                     IsReadOnly="True"
-                     IsReadOnlyCaretVisible="True"
+            <ListBox x:Name="TxtLogs"
                      Background="Transparent"
                      BorderThickness="0"
                      Foreground="#E0E5EC"
                      FontFamily="Consolas"
                      FontSize="12"
-                     TextWrapping="NoWrap"
-                     AcceptsReturn="True"
-                     VerticalScrollBarVisibility="Visible"
-                     HorizontalScrollBarVisibility="Auto"
-                     PreviewMouseWheel="TxtLogs_PreviewMouseWheel"
-                     Padding="6"/>
+                     HorizontalContentAlignment="Stretch"
+                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                     ScrollViewer.VerticalScrollBarVisibility="Visible"
+                     VirtualizingStackPanel.IsVirtualizing="True"
+                     VirtualizingStackPanel.VirtualizationMode="Recycling"
+                     Padding="6">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Margin" Value="0,1,0,0"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Focusable" Value="False"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <ContentPresenter/>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Heure}"
+                                       Foreground="#5A6472"
+                                       Margin="0,0,8,0"/>
+                            <TextBlock Text="{Binding CategorieNom}"
+                                       Foreground="{Binding Pinceau}"
+                                       FontWeight="SemiBold"
+                                       Width="74"/>
+                            <TextBlock Text="{Binding Message}"
+                                       Foreground="{Binding Pinceau}"
+                                       TextWrapping="NoWrap"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
         </Border>
     </Grid>
 </UserControl>

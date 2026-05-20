@@ -20,7 +20,13 @@ public partial class VueInventaire : UserControl
     public VueInventaire()
     {
         InitializeComponent();
-        GridObjets.ItemsSource = Lignes;
+        // Regroupement « jeu » par catégorie (Équipement / Consommables /
+        // Ressources / Quête / Divers) : vue groupée sur Lignes, en-têtes
+        // de groupe rendus via DataGrid.GroupStyle (XAML).
+        var vue = new System.Windows.Data.CollectionViewSource { Source = Lignes };
+        vue.GroupDescriptions.Add(
+            new System.Windows.Data.PropertyGroupDescription(nameof(LigneObjet.Categorie)));
+        GridObjets.ItemsSource = vue.View;
     }
 
     public void Lier(ContexteCompte ctx)
@@ -74,6 +80,7 @@ public partial class VueInventaire : UserControl
                 IdTemplate = obj.IdTemplate,
                 Nom = nom,
                 Type = type,
+                Categorie = CategorieItem(info?.IdType ?? 0),
                 Niveau = info?.Niveau ?? 0,
                 Quantite = obj.Quantite,
                 PoidsUnitaire = poidsUnitaire,
@@ -132,6 +139,19 @@ public partial class VueInventaire : UserControl
         15 => "Bouclier",
         63 => "Sac",
         _ => $"Pos {position}"
+    };
+
+    /// <summary>Catégorie « jeu » (onglets Dofus) déduite du type d'item.</summary>
+    private static string CategorieItem(int type) => type switch
+    {
+        1 or 2 or 3 or 4 or 5 or 6 or 7 or 8 or 9 or 10 or 11 or 16 or 17
+            or 19 or 20 or 21 or 22 or 82 => "Équipement",
+        18 => "Familiers",
+        23 => "Dofus",
+        33 or 34 or 36 => "Consommables",
+        35 => "Ressources",
+        24 => "Quête",
+        _ => "Divers",
     };
 
     private static string NomTypeItem(int type) => type switch
@@ -210,10 +230,11 @@ public partial class VueInventaire : UserControl
 
 public sealed class LigneObjet
 {
-    public int Identifiant { get; set; }
+    public long Identifiant { get; set; }   // UID objet Hystoria > Int32
     public int IdTemplate { get; set; }
     public string Nom { get; set; } = "";
     public string Type { get; set; } = "";
+    public string Categorie { get; set; } = "Divers";
     public int Niveau { get; set; }
     public int Quantite { get; set; }
     public int PoidsUnitaire { get; set; }

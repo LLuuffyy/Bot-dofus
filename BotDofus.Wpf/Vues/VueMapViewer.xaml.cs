@@ -22,7 +22,12 @@ public partial class VueMapViewer : UserControl
     private ContexteCompte? _contexte;
     private ContexteCompte? _contexteLie;
     private BotDofus.Utilitaires.Auto.CalibrationClic? _calibration;
-    public ObservableCollection<string> EntitesAffichees { get; } = new();
+    // Panneau droit catégorisé (style MoonBot).
+    public ObservableCollection<string> Monstres { get; } = new();
+    public ObservableCollection<string> Pnjs { get; } = new();
+    public ObservableCollection<string> Joueurs { get; } = new();
+    public ObservableCollection<string> Ressources { get; } = new();
+    public ObservableCollection<string> Sorties { get; } = new();
 
     private double _largeurCellule = 32;
     private double _hauteurCellule = 16;
@@ -46,7 +51,11 @@ public partial class VueMapViewer : UserControl
     public VueMapViewer()
     {
         InitializeComponent();
-        ListeEntites.ItemsSource = EntitesAffichees;
+        ListeMonstres.ItemsSource = Monstres;
+        ListePnj.ItemsSource = Pnjs;
+        ListeJoueurs.ItemsSource = Joueurs;
+        ListeRessources.ItemsSource = Ressources;
+        ListeSorties.ItemsSource = Sorties;
     }
 
     public void Lier(ContexteCompte contexte)
@@ -671,29 +680,64 @@ public partial class VueMapViewer : UserControl
 
     private void MettreAJourListeEntites(Carte carte)
     {
-        EntitesAffichees.Clear();
-        var nbJoueurs = 0;
-        var nbMonstres = 0;
-        var nbPnjs = 0;
+        Monstres.Clear();
+        Pnjs.Clear();
+        Joueurs.Clear();
+        Ressources.Clear();
+        Sorties.Clear();
 
         foreach (var ent in System.Linq.Enumerable.ToList(carte.Entites.Values))
         {
-            var typeNom = ent.GetType().Name.Replace("Entite", "");
-            var info = ent is EntiteMonstre m ? $" Lv{m.NiveauGroupe} (id:{m.IdGabarit})" : "";
-            EntitesAffichees.Add($"{typeNom} #{ent.Identifiant} cell {ent.CellulePosition}{info} - {ent.Nom}");
-            if (ent is EntiteJoueur) nbJoueurs++;
-            else if (ent is EntiteMonstre) nbMonstres++;
-            else if (ent is EntitePNJ) nbPnjs++;
+            switch (ent)
+            {
+                case EntiteMonstre m:
+                    Monstres.Add($"{(string.IsNullOrWhiteSpace(m.Nom) ? "Groupe" : m.Nom)} "
+                        + $"Lv.{m.NiveauGroupe} [{m.CellulePosition}]");
+                    break;
+                case EntitePNJ p:
+                    Pnjs.Add($"{(string.IsNullOrWhiteSpace(p.Nom) ? "PNJ" : p.Nom)} "
+                        + $"#{p.Identifiant} cell:{p.CellulePosition} gfx:{p.IdGabarit}");
+                    break;
+                case EntiteJoueur j:
+                    Joueurs.Add($"{j.Nom} [{j.CellulePosition}]"
+                        + (j.Niveau > 0 ? $" niv.{j.Niveau}" : ""));
+                    break;
+            }
         }
 
-        if (EntitesAffichees.Count == 0)
+        // Ressources / interactifs + sorties (transitions) depuis les cellules.
+        foreach (var cell in carte.Cellules)
         {
-            EntitesAffichees.Add("Aucune entite detectee sur cette map");
+            if (cell == null) continue;
+
+            if (cell.Type == TypesCellule.Transition)
+            {
+                Sorties.Add($"Sortie cell:{cell.Identifiant} ({cell.X},{cell.Y})");
+                continue;
+            }
+
+            bool aObjet = cell.IdInteractif >= 0 || cell.LayerObjet2 > 0;
+            if (!aObjet) continue;
+
+            int gfx = cell.LayerObjet2 > 0 ? cell.LayerObjet2 : cell.LayerObjet1;
+            string nom = cell.IdInteractif >= 0
+                ? (BotDofus.Divers.Donnees.BaseDonnees.Instance
+                       .Interactif(cell.IdInteractif)?.Nom ?? "Interactif")
+                : "Ressource";
+            Ressources.Add($"{nom} cell:{cell.Identifiant} gfx:{gfx}");
         }
-        else
-        {
-            EntitesAffichees.Insert(0, $"{nbJoueurs} joueur(s) | {nbMonstres} groupe(s) mob | {nbPnjs} PNJ");
-        }
+
+        if (TxtNbMonstres != null) TxtNbMonstres.Text = Monstres.Count.ToString();
+        if (TxtNbPnj != null) TxtNbPnj.Text = Pnjs.Count.ToString();
+        if (TxtNbJoueurs != null) TxtNbJoueurs.Text = Joueurs.Count.ToString();
+        if (TxtNbRessources != null) TxtNbRessources.Text = Ressources.Count.ToString();
+        if (TxtNbSorties != null) TxtNbSorties.Text = Sorties.Count.ToString();
+
+        if (Monstres.Count == 0) Monstres.Add("Aucun");
+        if (Pnjs.Count == 0) Pnjs.Add("Aucun");
+        if (Joueurs.Count == 0) Joueurs.Add("Aucun");
+        if (Ressources.Count == 0) Ressources.Add("Aucune");
+        if (Sorties.Count == 0) Sorties.Add("Aucune");
     }
 
     private (double, double) ProjeterIso(int x, int y)

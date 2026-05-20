@@ -53,6 +53,24 @@
             </Grid>
         </Border>
         <DataGrid x:Name="GridObjets" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" RowHeight="46" CanUserSortColumns="True" GridLinesVisibility="Horizontal">
+            <DataGrid.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <Border Background="#1FFFFFFF" Padding="10,5" Margin="0,6,0,2"
+                                    CornerRadius="4">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold"
+                                               FontSize="12" Foreground="#FFCA61"/>
+                                    <TextBlock Text="{Binding ItemCount, StringFormat=' ({0})'}"
+                                               FontSize="12" Opacity="0.6"
+                                               Margin="2,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+            </DataGrid.GroupStyle>
             <DataGrid.Columns>
                 <DataGridTemplateColumn Header="Objet" Width="2.2*">
                     <DataGridTemplateColumn.CellTemplate>
