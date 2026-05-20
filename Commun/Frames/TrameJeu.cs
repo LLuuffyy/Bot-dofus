@@ -1144,31 +1144,24 @@ public sealed class TrameJeu : TrameBase
     }
 
     /// <summary>
-    /// Distance « cases Dofus » entre 2 cell-id (grille iso).
-    /// - <b>Combat</b> (par défaut depuis 22:48 — bug user log 224044) : MANHATTAN
-    ///   `|dx|+|dy|` car le serveur 1.29 n'autorise QUE les 4 directions ortho
-    ///   en combat (cf. dyshay PeleasPathfinder + REFPLACE BUG #3). Chebyshev
-    ///   sous-estimait la dist d'un facteur √2 sur les chemins en escalier →
-    ///   bot castait un sort à dist Chebyshev=8 alors que Manhattan=9 > portée
-    ///   max 8 → serveur rejetait → tour perdu (cell 312→206 log 22:45:10).
-    /// - <b>Hors combat</b> : Chebyshev `max(|dx|,|dy|)` car overworld
-    ///   autorise les 8 directions.
+    /// Distance « cases Dofus » entre 2 cell-id (grille iso) — utilise CHEBYSHEV
+    /// `max(|dx|, |dy|)` qui est la métrique canonique des PORTÉES de sorts Dofus
+    /// (cases diagonales = distance 1). Vérifié log 22:40 : bot rejette portée
+    /// Chebyshev=9 puis bouge 1 case → dist=8 = portée max Ronce → cast accepté
+    /// par le serveur (broadcast GA;0; reçu).
     /// </summary>
-    /// <param name="combat">true en combat (par défaut, le pipeline IA tourne
-    /// uniquement en combat).</param>
     /// <remarks>
-    /// Le calcul utilise la largeur RÉELLE de la carte (= <see cref="BotDofus.Divers.Cartes.Carte.Largeur"/>)
-    /// pour les <see cref="BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees"/>.
-    /// Hystoria utilise 15 par défaut.
+    /// Pour le PATHFINDER 4-dir (estimation PM consommée) utiliser Manhattan
+    /// `|dx|+|dy|` (cf. <c>TrouverApprocheCombat.dEstimee</c>). Mais la PORTÉE
+    /// elle-même reste Chebyshev — sinon le bot rejette des cells valides
+    /// (ex. dist Chebyshev=5 mais Manhattan=10 sur diagonale).
     /// </remarks>
-    private int DistanceDofus(int idA, int idB, bool combat = true)
+    private int DistanceDofus(int idA, int idB)
     {
         int mw = _etat.CarteCourante?.Largeur ?? BotDofus.Divers.Cartes.Carte.LargeurParDefaut;
         var (xA, yA) = BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees(idA, mw);
         var (xB, yB) = BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees(idB, mw);
-        int dx = System.Math.Abs(xA - xB);
-        int dy = System.Math.Abs(yA - yB);
-        return combat ? (dx + dy) : System.Math.Max(dx, dy);
+        return System.Math.Max(System.Math.Abs(xA - xB), System.Math.Abs(yA - yB));
     }
 
     /// <summary>
@@ -1246,13 +1239,13 @@ public sealed class TrameJeu : TrameBase
             if (!c.EstMarchable) continue;
             if (c.IdInteractif >= 0) continue;
             if (interdites.Contains(c)) continue;
-            // H.1 — Distance MANHATTAN en combat (4-dir ortho) au lieu de Chebyshev.
-            // Le serveur 1.29 vérifie la portée en Manhattan ; Chebyshev sous-évaluait
-            // donc on castait à 8 alors qu'en réalité c'était 9 → rejet serveur.
-            int d = System.Math.Abs(c.X - xE) + System.Math.Abs(c.Y - yE);
+            // Portée de sort = CHEBYSHEV (= métrique canonique Dofus, cases diag = 1).
+            // Rollback H.1 partiel : analyse DIAG224 a montré que Manhattan était
+            // contre-productif sur la portée — Chebyshev est correct.
+            int d = System.Math.Max(System.Math.Abs(c.X - xE), System.Math.Abs(c.Y - yE));
             if (d < porteeMin || d > porteeMax) continue;
-            // Estimation Manhattan de notre déplacement (borne basse 4-dir) —
-            // on jette les candidats hors de portée PM AVANT l'A* coûteux.
+            // Estimation MANHATTAN du déplacement (4-dir combat = chemin sans diag)
+            // — borne basse PM réaliste sans payer le coût d'A*.
             int dEstimee = System.Math.Abs(c.X - depart.X) + System.Math.Abs(c.Y - depart.Y);
             if (dEstimee > pmMax) continue;
 

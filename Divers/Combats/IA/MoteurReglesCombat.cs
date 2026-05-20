@@ -198,16 +198,15 @@ public static class MoteurReglesCombat
     }
 
     /// <summary>
-    /// Distance « cases Dofus » entre 2 cell-id en COMBAT (4-dir ortho) → MANHATTAN
-    /// `|dx|+|dy|`. Le serveur 1.29 n'autorise que les 4 directions ortho en
-    /// combat (cf. dyshay PeleasPathfinder), donc la métrique canonique est
-    /// Manhattan et non Chebyshev (fix H.1 du 22:48, cf. log 22:45:10
-    /// cell 312→206 castait à Manhattan=9 alors que Chebyshev=8 → serveur refuse).
+    /// Distance Chebyshev `max(|dx|, |dy|)` — métrique canonique pour la PORTÉE
+    /// des sorts Dofus 1.29 (cases diagonales = distance 1). Vérifié log 22:40.
+    /// Le déplacement combat utilise Manhattan (pathfinder 4-dir), mais la
+    /// portée de cast reste Chebyshev.
     /// </summary>
     private static int DistanceDofus(int idA, int idB, int mapWidth)
     {
         var (xA, yA) = Cellule.CalculerCoordonnees(idA, mapWidth);
         var (xB, yB) = Cellule.CalculerCoordonnees(idB, mapWidth);
-        return System.Math.Abs(xA - xB) + System.Math.Abs(yA - yB);
+        return System.Math.Max(System.Math.Abs(xA - xB), System.Math.Abs(yA - yB));
     }
 }
