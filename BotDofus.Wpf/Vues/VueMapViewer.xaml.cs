@@ -64,13 +64,33 @@ public partial class VueMapViewer : UserControl
         if (_contexteLie != null)
         {
             _contexteLie.PaquetRecu -= OnPaquet;
+            // Détache les events combat de l'ancien contexte (changement de compte).
+            var oldCombat = _contexteLie.EtatJeu.Combat;
+            oldCombat.PositionsChangees -= OnCombatChange;
+            oldCombat.TourChange       -= OnCombatTourChange;
+            oldCombat.EtatChange       -= OnCombatEtatChange;
         }
 
         _contexteLie = contexte;
         _contexte = contexte;
         contexte.PaquetRecu += OnPaquet;
+        // F.5 : rafraîchissement temps réel pendant le combat. Sans ces hooks
+        // la carte restait figée sur l'état initial du combat (combattants pas
+        // affichés sur la grille comme observé sur screenshot user 203910.png).
+        var combat = contexte.EtatJeu.Combat;
+        combat.PositionsChangees += OnCombatChange;
+        combat.TourChange       += OnCombatTourChange;
+        combat.EtatChange       += OnCombatEtatChange;
         Rafraichir();
     }
+
+    // Refresh thread-safe (events combat viennent du thread réseau).
+    private void OnCombatChange(object? sender, EventArgs e)
+        => Dispatcher.BeginInvoke(new Action(Rafraichir));
+    private void OnCombatTourChange(object? sender, int idActeur)
+        => Dispatcher.BeginInvoke(new Action(Rafraichir));
+    private void OnCombatEtatChange(object? sender, BotDofus.Divers.Combats.Enums.EtatCombat etat)
+        => Dispatcher.BeginInvoke(new Action(Rafraichir));
 
     private int _dialoguePnjId;
     private int _dialogueQuestionId;
@@ -282,6 +302,10 @@ public partial class VueMapViewer : UserControl
         DessinerCellulesPlacement(carte);
         if (ChkAfficherTransitions.IsChecked == true) DessinerTransitions(carte);
         if (ChkAfficherEntites.IsChecked == true) DessinerEntites(carte);
+        // F.5 : en combat, dessine aussi les combattants alliés/ennemis sur leur
+        // cellule actuelle (positions à jour via GTM serveur + broadcasts GA;1).
+        if (_contexte.EtatJeu.Combat.Etat != BotDofus.Divers.Combats.Enums.EtatCombat.Inactif)
+            DessinerCombattants(carte);
         DessinerJoueur();
         MettreAJourListeEntites(carte);
         CentrerSiNecessaire(carte);
@@ -607,6 +631,74 @@ public partial class VueMapViewer : UserControl
             Tag = cell,
             Cursor = Cursors.Hand,
         };
+    }
+
+    /// <summary>
+    /// F.5 — Dessine les combattants alliés (vert) et ennemis (rouge) sur leur
+    /// cellule de combat actuelle. Refresh à chaque GTM serveur via les events
+    /// <see cref="BotDofus.Divers.Combats.Combat.PositionsChangees"/> /
+    /// <see cref="BotDofus.Divers.Combats.Combat.TourChange"/>.
+    /// Surcouche aux entités hors-combat de <see cref="DessinerEntites"/> :
+    /// distincte car le modèle combat utilise <c>Combat.Allies/Ennemis</c> au
+    /// lieu de <c>Carte.Entites</c>.
+    /// </summary>
+    private void DessinerCombattants(Carte carte)
+    {
+        var combat = _contexte?.EtatJeu.Combat;
+        if (combat == null) return;
+        int idMoi = combat.IdentifiantAllie;
+
+        void DessinerOne(BotDofus.Divers.Combats.Combattants.Combattant cmb, Color fill, Color stroke, bool epais)
+        {
+            if (cmb.EstMort) return;
+            var cell = carte.Obtenir(cmb.CellulePosition);
+            if (cell == null) return;
+            var (cx, cy) = ProjeterIso(cell.X, cell.Y);
+            var rect = new System.Windows.Shapes.Rectangle
+            {
+                Width = 22, Height = 22,
+                Fill = new SolidColorBrush(fill),
+                Stroke = new SolidColorBrush(stroke),
+                StrokeThickness = epais ? 2.5 : 1.5,
+                RadiusX = 4, RadiusY = 4,
+                IsHitTestVisible = false,
+            };
+            Canvas.SetLeft(rect, cx - 11);
+            Canvas.SetTop(rect, cy + _hauteurCellule - 11);
+            Canvas.SetZIndex(rect, 410);
+            CanvasMap.Children.Add(rect);
+
+            // Affichage PV au-dessus si non plein
+            if (cmb.PVMax > 0 && cmb.PV < cmb.PVMax)
+            {
+                var pct = (int)(100.0 * cmb.PV / cmb.PVMax);
+                var pvText = new TextBlock
+                {
+                    Text = $"{pct}%",
+                    Foreground = new SolidColorBrush(Color.FromRgb(0xF2, 0xF4, 0xF8)),
+                    FontSize = 9,
+                    FontWeight = FontWeights.SemiBold,
+                };
+                Canvas.SetLeft(pvText, cx - 12);
+                Canvas.SetTop(pvText, cy + _hauteurCellule - 25);
+                Canvas.SetZIndex(pvText, 420);
+                CanvasMap.Children.Add(pvText);
+            }
+        }
+
+        // Alliés (vert) — moi surligné plus épais (bleu).
+        foreach (var allie in combat.Allies)
+        {
+            bool moi = allie.Identifiant == idMoi;
+            var fill = moi ? Color.FromArgb(220, 70, 130, 255) : Color.FromArgb(210, 60, 176, 85);
+            var stroke = moi ? Color.FromRgb(20, 60, 200) : Color.FromRgb(20, 130, 50);
+            DessinerOne(allie, fill, stroke, moi);
+        }
+        // Ennemis (rouge sombre)
+        foreach (var ennemi in combat.Ennemis)
+        {
+            DessinerOne(ennemi, Color.FromArgb(220, 200, 50, 50), Color.FromRgb(160, 20, 20), false);
+        }
     }
 
     private void DessinerEntites(Carte carte)
