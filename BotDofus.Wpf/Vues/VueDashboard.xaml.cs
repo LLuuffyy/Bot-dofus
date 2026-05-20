@@ -197,11 +197,13 @@ public partial class VueDashboard : UserControl
     }
 
     /// <summary>
-    /// Détecte si une entrée provient du chat in-game (joueur qui parle,
-    /// vente, annonce serveur). Format de message : commence par <c>[X]</c>
-    /// où X est le canal Dofus Retro (`:` général, `^` allié, `%` groupe,
-    /// `$` commerce, `?` recrutement, `#` admin, `!` privé). Aussi
-    /// <c>[SERVEUR]</c> pour les annonces serveur.
+    /// Détecte si une entrée doit aller dans l'onglet « Chat ». Inclut :
+    ///  • Le chat in-game : canaux <c>[:]</c> général, <c>[^]</c> allié,
+    ///    <c>[%]</c> groupe, <c>[$]</c> commerce, <c>[?]</c> recrutement,
+    ///    <c>[#]</c> admin, <c>[!]</c> privé, <c>[*]</c>. Plus <c>[SERVEUR]</c>.
+    ///  • Les actions du bot avec tag <c>[ACTION]</c> (story lisible :
+    ///    récolte, combat, changement de carte, zaap, level-up…).
+    /// Tout le reste va dans « Console ».
     /// </summary>
     private static bool EstChatJeu(string message)
     {
@@ -209,8 +211,11 @@ public partial class VueDashboard : UserControl
         var fin = message.IndexOf(']');
         if (fin <= 1) return false;
         var tag = message.Substring(1, fin - 1);
+        // Bot actions = story du bot → Chat.
+        if (tag.Equals("ACTION", StringComparison.OrdinalIgnoreCase)) return true;
+        // Annonces serveur (« Bienvenue sur DOFUS Retro », maintenance…).
         if (tag.Equals("SERVEUR", StringComparison.OrdinalIgnoreCase)) return true;
-        // Canaux de chat 1.29 : 1 caractère non alphanumérique.
+        // Canaux de chat in-game 1.29 : 1 caractère non alphanumérique.
         return tag.Length == 1 && ":^%$?#!*".Contains(tag[0]);
     }
 
