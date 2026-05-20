@@ -68,11 +68,44 @@
             </Style.Triggers>
         </Style>
 
+        <!-- H.2 — RadioButton avec indicateur visible (point bleu quand sélectionné).
+             Material Design surcharge le template par défaut → l'utilisateur ne
+             voyait pas quel mode était sélectionné. ControlTemplate explicite : un
+             cercle bordure + un disque intérieur qui apparaît seulement IsChecked. -->
         <Style TargetType="RadioButton">
             <Setter Property="Foreground" Value="#ECEFF5"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Padding" Value="6,2,0,2"/>
             <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border Background="{TemplateBinding Background}" Padding="2">
+                            <StackPanel Orientation="Horizontal">
+                                <Grid Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center">
+                                    <Ellipse Stroke="{DynamicResource BorderSoftBrush}" StrokeThickness="2"
+                                             Fill="{DynamicResource SurfaceBrushSoft}"/>
+                                    <Ellipse x:Name="Coche" Width="9" Height="9"
+                                             Fill="{DynamicResource AccentBrush}"
+                                             Visibility="Collapsed"/>
+                                </Grid>
+                                <ContentPresenter VerticalAlignment="Center"
+                                                  TextElement.Foreground="{TemplateBinding Foreground}"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Coche" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="GhostIconButtonStyle" TargetType="Button">

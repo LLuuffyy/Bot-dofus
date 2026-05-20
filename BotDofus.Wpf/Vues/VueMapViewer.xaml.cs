@@ -301,23 +301,31 @@ public partial class VueMapViewer : UserControl
         DessinerGrille(carte);
         DessinerCellulesPlacement(carte);
 
-        // G.5 (ADR-003) — en combat, cacher les entités overworld pour éviter
-        // le double-marqueur sur les combattants (cf. bug user 220806/220830 :
-        // OnCombattantsAbrak injecte dans BOTH Combat.Allies ET carte.Entites,
-        // donc DessinerEntites + DessinerCombattants dessinaient les mêmes
-        // pastilles, parasitant la lecture visuelle de la grille).
-        bool enCombat = _contexte.EtatJeu.Combat.Etat != BotDofus.Divers.Combats.Enums.EtatCombat.Inactif;
-        if (!enCombat)
+        // G.5 + H.4 (ADR-003) — switch 3 états : Inactif / Placement / EnCours+Termine.
+        var etatCombat = _contexte.EtatJeu.Combat.Etat;
+        if (etatCombat == BotDofus.Divers.Combats.Enums.EtatCombat.Inactif)
         {
+            // Hors combat : tout affichage normal overworld.
             if (ChkAfficherTransitions.IsChecked == true) DessinerTransitions(carte);
+            if (ChkAfficherEntites.IsChecked == true) DessinerEntites(carte);
+            DessinerJoueur();
+        }
+        else if (etatCombat == BotDofus.Divers.Combats.Enums.EtatCombat.Placement)
+        {
+            // H.4 — Pendant la phase Placement, Combat.Allies/Ennemis est encore
+            // VIDE (le GTM autoritatif n'arrive qu'après les 2 GR1). Mais les
+            // EntiteMonstre du groupe agressé sont déjà dans carte.Entites
+            // (depuis GM préfixe '~'). On les affiche pour que le user voie
+            // immédiatement contre quoi il va se battre (= demande user).
             if (ChkAfficherEntites.IsChecked == true) DessinerEntites(carte);
             DessinerJoueur();
         }
         else
         {
-            // En combat, seuls les combattants vivants sont affichés (moi en
-            // bleu, alliés vert, ennemis rouge). Pas de marqueur overworld
-            // figé. Cf. F.5 commit d9ea637 + ADR-003.
+            // EnCours / Termine — seuls les combattants vivants (Combat.Allies/
+            // Ennemis peuplé par GTM) sont affichés. Pas de marqueur overworld
+            // figé, pas de cells de placement résiduelles (cf. H.4
+            // DessinerCellulesPlacement gate Placement only).
             DessinerCombattants(carte);
         }
         MettreAJourListeEntites(carte);
@@ -600,6 +608,9 @@ public partial class VueMapViewer : UserControl
     {
         var combat = _contexte?.EtatJeu.Combat;
         if (combat == null) return;
+        // H.4 — n'afficher les cells bleu/rouge QUE pendant la phase Placement.
+        // Avant : persistait pendant EnCours → confusion visuelle (signalé user).
+        if (combat.Etat != BotDofus.Divers.Combats.Enums.EtatCombat.Placement) return;
         if (combat.PositionsEquipe1.Count == 0 && combat.PositionsEquipe2.Count == 0) return;
 
         foreach (var id in combat.PositionsEquipe1)

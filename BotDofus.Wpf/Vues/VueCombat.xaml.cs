@@ -332,33 +332,44 @@ public partial class VueCombat : UserControl
     private void ChkTousLesN_Toggled(object sender, RoutedEventArgs e)       => ToggleNullable("ChkTousLesN");
     private void ChkAPartirTour_Toggled(object sender, RoutedEventArgs e)    => ToggleNullable("ChkAPartirTour");
 
+    private bool _enToggleCondition;
     private void ToggleNullable(string chkName)
     {
-        if (PanelConditions?.DataContext is not RegleSort r) return;
-        if (!_mapChkNullable.TryGetValue(chkName, out var mapping)) return;
-        if (FindName(chkName) is not CheckBox cb) return;
-        var prop = typeof(RegleSort).GetProperty(mapping.prop);
-        if (prop == null) return;
+        // H.3 — Évite cascade infinie : si on est déjà en train de modifier
+        // un toggle (déclenché par le user), on ignore les events réflectifs
+        // qui pourraient cascader (refresh binding → IsChecked re-set → event).
+        if (_enToggleCondition) return;
+        _enToggleCondition = true;
+        try
+        {
+            if (PanelConditions?.DataContext is not RegleSort r) return;
+            if (!_mapChkNullable.TryGetValue(chkName, out var mapping)) return;
+            if (FindName(chkName) is not CheckBox cb) return;
+            var prop = typeof(RegleSort).GetProperty(mapping.prop);
+            if (prop == null) return;
 
-        if (cb.IsChecked == true)
-        {
-            // Coché : si null, set valeur par défaut (sinon laisser la valeur
-            // déjà tapée dans le TextBox).
-            if (prop.GetValue(r) is null)
-                prop.SetValue(r, (int?)mapping.defaut);
+            if (cb.IsChecked == true)
+            {
+                if (prop.GetValue(r) is null)
+                    prop.SetValue(r, (int?)mapping.defaut);
+            }
+            else
+            {
+                prop.SetValue(r, null);
+            }
+            // H.3 — Plus de toggle DataContext (cascade → crash quand l'user
+            // coche/décoche vite). Le TextBox bindé TwoWay reflète la valeur
+            // quand l'user clique dedans/perd le focus. Pas idéal pour le
+            // refresh immédiat de la valeur écrite, mais évite le crash.
+            // Long-terme : implémenter INotifyPropertyChanged sur RegleSort.
+            DemanderSauvegardeDebouncee();
         }
-        else
+        catch (Exception ex)
         {
-            // Décoché : null = condition désactivée.
-            prop.SetValue(r, null);
+            BotDofus.Utilitaires.Journaux.Journaliseur.Avertir(
+                $"[UI-COMBAT] ToggleNullable({chkName}) error : {ex.Message}");
         }
-        // Force refresh des bindings TwoWay sur les TextBox associés
-        // (sans INotifyPropertyChanged sur RegleSort, c'est la solution la
-        // plus simple — toggle de DataContext en deux passes).
-        var ctx = PanelConditions.DataContext;
-        PanelConditions.DataContext = null;
-        PanelConditions.DataContext = ctx;
-        DemanderSauvegardeDebouncee();
+        finally { _enToggleCondition = false; }
     }
 
     /// <summary>Trigger debounce save quand un input numérique de condition change.</summary>

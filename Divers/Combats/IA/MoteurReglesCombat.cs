@@ -198,15 +198,16 @@ public static class MoteurReglesCombat
     }
 
     /// <summary>
-    /// Distance « cases Dofus » entre 2 cell-id sur grille iso. La largeur de la
-    /// carte (<paramref name="mapWidth"/>) est OBLIGATOIRE — hardcoder 14 quand
-    /// la carte Hystoria est 15 produit des coords incohérentes (cf. bug fixé
-    /// le 20/05/2026 sur le combat test).
+    /// Distance « cases Dofus » entre 2 cell-id en COMBAT (4-dir ortho) → MANHATTAN
+    /// `|dx|+|dy|`. Le serveur 1.29 n'autorise que les 4 directions ortho en
+    /// combat (cf. dyshay PeleasPathfinder), donc la métrique canonique est
+    /// Manhattan et non Chebyshev (fix H.1 du 22:48, cf. log 22:45:10
+    /// cell 312→206 castait à Manhattan=9 alors que Chebyshev=8 → serveur refuse).
     /// </summary>
     private static int DistanceDofus(int idA, int idB, int mapWidth)
     {
         var (xA, yA) = Cellule.CalculerCoordonnees(idA, mapWidth);
         var (xB, yB) = Cellule.CalculerCoordonnees(idB, mapWidth);
-        return System.Math.Max(System.Math.Abs(xA - xB), System.Math.Abs(yA - yB));
+        return System.Math.Abs(xA - xB) + System.Math.Abs(yA - yB);
     }
 }
