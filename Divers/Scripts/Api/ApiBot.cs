@@ -762,10 +762,12 @@ public sealed class ApiBot
             }
         }
 
-        Journaliseur.Info($"[UI] Récolte cell {cellule} objet #{idInteractif} : "
-            + $"GA001+« {paquet} » collés (skill {skillId}). Si la ressource n'est "
-            + "pas du blé, le skill diffère (Couper=bois, Cueillir=plantes, "
-            + "Pêcher=poisson) : surcharge skillId.");
+        // Niveau Debug (pas Info) : c'est une trace TECHNIQUE du paquet
+        // envoyé. L'utilisateur veut voir « Récolte : Frêne » dans le Chat,
+        // pas le détail du GA001 collé. Reste accessible en activant le
+        // filtre Debug + chip Jeu pour le diagnostic.
+        Journaliseur.Debogue($"[UI] Récolte cell {cellule} objet #{idInteractif} : "
+            + $"GA001+« {paquet} » collés (skill {skillId}).");
         // Nom précis si gfx connu du catalogue (« Châtaignier », « Orge »…),
         // sinon générique par skill (« Bois (Bûcheron) »).
         var nomCatalogue = Divers.Donnees.CatalogueInteractifs.Nom(idInteractif);
@@ -1049,7 +1051,7 @@ public sealed class ApiBot
                 var mob = MonstreLePlusProche();
                 if (mob == null)
                 {
-                    Journaliseur.Info("[FARM] pas de monstre — attente (carte vide / repop).");
+                    Journaliseur.Info("[ACTION] Recherche d'un nouveau combat (aucun monstre, attente repop)");
                     await Task.Delay(5000, ct).ConfigureAwait(false);
                     continue;
                 }
@@ -1057,7 +1059,8 @@ public sealed class ApiBot
                 // Engage DIRECT (GA001+GA907 collés, le serveur marche puis
                 // lance le combat) — flux SynFus, plus de pause visible.
                 int dist = DistanceCarte(_etat.Personnage.CellulePosition, mob.CellulePosition);
-                Journaliseur.Info($"[FARM] cible #{mob.Identifiant} « {mob.Nom} » cell {mob.CellulePosition} "
+                Journaliseur.Info($"[ACTION] Combat ciblé : « {mob.Nom} » (cellule {mob.CellulePosition})");
+                Journaliseur.Debogue($"[FARM] cible #{mob.Identifiant} « {mob.Nom} » cell {mob.CellulePosition} "
                     + $"(perso {_etat.Personnage.CellulePosition}, dist {dist}) → engage direct");
 
                 await EngagerGroupeAsync(mob.CellulePosition, mob.Identifiant, ct).ConfigureAwait(false);

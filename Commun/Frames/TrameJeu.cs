@@ -608,14 +608,21 @@ public sealed class TrameJeu : TrameBase
     private void OnObjetAjout(MessageObjetAjout msg)
     {
         var inv = _etat.Personnage.Inventaire;
+        var bddItems = Divers.Donnees.BaseDonnees.Instance;
         foreach (var o in msg.ObjetsParse)
         {
             // Évite les doublons : si l'id existe déjà, on remplace quantité/position.
             var existant = inv.FirstOrDefault(x => x.Identifiant == o.Identifiant);
             if (existant != null)
             {
+                int delta = o.Quantite - existant.Quantite;
                 existant.Quantite = o.Quantite;
                 existant.Position = o.Position;
+                if (delta > 0)
+                {
+                    var nom = bddItems.Item(o.IdTemplate)?.Nom ?? $"Item #{o.IdTemplate}";
+                    Journaliseur.Info($"[ACTION] +{delta} {nom} (total {o.Quantite})");
+                }
             }
             else
             {
@@ -626,6 +633,11 @@ public sealed class TrameJeu : TrameBase
                     Quantite = o.Quantite,
                     Position = o.Position
                 });
+                if (o.Quantite > 0 && o.Position == 63)  // 63 = sac (récolte fraîche)
+                {
+                    var nom = bddItems.Item(o.IdTemplate)?.Nom ?? $"Item #{o.IdTemplate}";
+                    Journaliseur.Info($"[ACTION] +{o.Quantite} {nom} (nouveau)");
+                }
             }
         }
         Journaliseur.Debogue($"[INV] +{msg.ObjetsParse.Count} objets (total = {inv.Count})");
@@ -648,8 +660,17 @@ public sealed class TrameJeu : TrameBase
         var existant = _etat.Personnage.Inventaire.FirstOrDefault(x => x.Identifiant == msg.IdentifiantObjet);
         if (existant != null)
         {
+            int delta = msg.NouvelleQuantite - existant.Quantite;
             existant.Quantite = msg.NouvelleQuantite;
             Journaliseur.Debogue($"[INV] objet {msg.IdentifiantObjet} → qty {msg.NouvelleQuantite}");
+            // [ACTION] visible dans le Chat : « +1 Frêne (total 18) »
+            // Ne déclenche que si gain positif (loot, pas dépose / vente).
+            if (delta > 0)
+            {
+                var nom = Divers.Donnees.BaseDonnees.Instance.Item(existant.IdTemplate)?.Nom
+                          ?? $"Item #{existant.IdTemplate}";
+                Journaliseur.Info($"[ACTION] +{delta} {nom} (total {msg.NouvelleQuantite})");
+            }
             _etat.Personnage.NotifierInventaireChange();
         }
     }

@@ -34,8 +34,23 @@ public sealed class TrameCombat : TrameBase
     protected override void EnregistrerGestionnaires()
     {
         Ecouter<MessagePositionsCombat>(OnPositions);
-        Ecouter<MessageDebutCombat>(_ => { Journaliseur.Info("Début du combat"); _compte.ChangerEtat(EtatsCompte.EnCombat); });
-        Ecouter<MessageFinCombat>(_ => { Journaliseur.Info("Fin du combat"); _combat.Reinitialiser(); });
+        Ecouter<MessageDebutCombat>(_ =>
+        {
+            // Compte rapide des ennemis pour avoir un libellé clair.
+            int nbEnnemis = _combat.Ennemis.Count;
+            Journaliseur.Info(nbEnnemis > 0
+                ? $"[ACTION] Combat démarré ({nbEnnemis} ennemi(s))"
+                : "[ACTION] Combat démarré");
+            _compte.ChangerEtat(EtatsCompte.EnCombat);
+        });
+        Ecouter<MessageFinCombat>(_ =>
+        {
+            // Win/lose détaillé pas trivial à déduire sans parser GE/Im :
+            // on log juste « Combat terminé », l'enchaînement « Recherche
+            // d'un nouveau combat » ou « +XP » indique implicitement le résultat.
+            Journaliseur.Info($"[ACTION] Combat terminé (tour {_combat.NumeroTour})");
+            _combat.Reinitialiser();
+        });
         Ecouter<MessageTourCombat>(OnTour);
         Ecouter<MessageActionJeu>(OnAction);
     }
@@ -45,7 +60,7 @@ public sealed class TrameCombat : TrameBase
         if (msg.PositionsDisponibles.Count == 0) return;
         _combat.DefinirPositionsPlacement(msg.PositionsEquipe1, msg.PositionsEquipe2, msg.EquipeCourante);
         var caseChoisie = msg.PositionsDisponibles[0];
-        Journaliseur.Info($"Placement sur la case {caseChoisie}");
+        Journaliseur.Info($"[ACTION] Placement combat sur cellule {caseChoisie}");
         try
         {
             await _session.EnvoyerAuServeurAsync(new MessageJeuPosition { CaseDepart = caseChoisie }.Serialiser()).ConfigureAwait(false);

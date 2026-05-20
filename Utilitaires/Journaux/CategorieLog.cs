@@ -77,16 +77,22 @@ public static class CategorieLog
             // « Server » = liste serveurs, sélection, redirection AYK.
             "SERVER" or "SERVEURS" or "AYK"
                 => new("Server", Brun),
-            // « Game » = events haut niveau du serveur de jeu (entrée en
-            // jeu, changement de map, sélection perso, dialogue…).
-            "GAME" or "JEU" or "DIALOGUE" or "GA0" or "ZAAP"
+            // « Game » = events HAUT NIVEAU du serveur de jeu (entrée en
+            // jeu, sélection perso, zaap user-facing). PAS les détails
+            // (GA0/GDF/CARTE/UI sont techniques → catégorie Jeu).
+            "GAME" or "JEU-HIGH" or "ZAAP"
                 => new("Game", Emeraude),
             "REENC" or "OBS" or "OBS-BRUT" or "PKT" or "VOCAB"
                 or "CRACK" or "INJ"
                 or "REENC C→S" or "OBS C→S '-'"
                 => new("Réseau", GrisReseau),
+            // « Jeu » = données protocole/runtime techniques (rafraîchissements
+            // de carte, échos GA0, GDF état interactif, snapshots d'entités,
+            // métiers JSK, base de données apprises, stats As). Logique
+            // technique qu'on veut hors du Chat — utile en debug uniquement.
             "MÉTIERS" or "METIERS" or "ENT" or "SORTS" or "BDD"
-                or "AS" or "STATS"
+                or "AS" or "STATS" or "GA0" or "GDF" or "CARTE"
+                or "UI" or "DIALOGUE" or "MAP"
                 => new("Jeu", GrisReseau),
             _ => new("Info", Defaut),
         };
