@@ -329,6 +329,56 @@
 
             <Border Style="{StaticResource SectionBorderStyle}">
                 <StackPanel>
+                    <TextBlock Text="MODE DE COMBAT"
+                               Style="{StaticResource SectionTitleTextStyle}"
+                               Margin="0,0,0,14"/>
+                    <UniformGrid Columns="4" Margin="0,0,0,16">
+                        <RadioButton x:Name="RbModeAgressif"  GroupName="ModeCombat" Tag="Agressif"
+                                     Content="Agressif"  Margin="0,0,8,0" Checked="ModeCombat_Checked"/>
+                        <RadioButton x:Name="RbModeEloigne"   GroupName="ModeCombat" Tag="Eloigne"
+                                     Content="Eloigne"   Margin="0,0,8,0" Checked="ModeCombat_Checked"/>
+                        <RadioButton x:Name="RbModeFuyard"    GroupName="ModeCombat" Tag="Fuyard"
+                                     Content="Fuyard"    Margin="0,0,8,0" Checked="ModeCombat_Checked"/>
+                        <RadioButton x:Name="RbModeEquilibre" GroupName="ModeCombat" Tag="Equilibre"
+                                     Content="Equilibre" IsChecked="True"  Checked="ModeCombat_Checked"/>
+                    </UniformGrid>
+
+                    <Grid Margin="0,4,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <DockPanel>
+                                <TextBlock Text="DISTANCE PREFEREE" Style="{StaticResource SectionLabelStyle}" DockPanel.Dock="Left"/>
+                                <TextBlock x:Name="TxtDistancePref" Text="5" DockPanel.Dock="Right" HorizontalAlignment="Right"/>
+                            </DockPanel>
+                            <Slider x:Name="SldDistancePref" Minimum="1" Maximum="12" TickFrequency="1"
+                                    IsSnapToTickEnabled="True" Value="5" ValueChanged="SldDistancePref_Changed"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                            <DockPanel>
+                                <TextBlock Text="SEUIL FUITE (PV %)" Style="{StaticResource SectionLabelStyle}" DockPanel.Dock="Left"/>
+                                <TextBlock x:Name="TxtSeuilFuite" Text="20" DockPanel.Dock="Right" HorizontalAlignment="Right"/>
+                            </DockPanel>
+                            <Slider x:Name="SldSeuilFuite" Minimum="0" Maximum="100" TickFrequency="5"
+                                    IsSnapToTickEnabled="True" Value="20" ValueChanged="SldSeuilFuite_Changed"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <DockPanel>
+                                <TextBlock Text="DELAI ACTIONS (MS)" Style="{StaticResource SectionLabelStyle}" DockPanel.Dock="Left"/>
+                                <TextBlock x:Name="TxtDelaiActions" Text="800" DockPanel.Dock="Right" HorizontalAlignment="Right"/>
+                            </DockPanel>
+                            <Slider x:Name="SldDelaiActions" Minimum="200" Maximum="2500" TickFrequency="100"
+                                    IsSnapToTickEnabled="True" Value="800" ValueChanged="SldDelaiActions_Changed"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource SectionBorderStyle}">
+                <StackPanel>
                     <TextBlock Text="TACTIQUE GLOBALE"
                                Style="{StaticResource SectionTitleTextStyle}"
                                Margin="0,0,0,14"/>
@@ -347,6 +397,7 @@
                                 <ComboBoxItem Content="Defensif"/>
                                 <ComboBoxItem Content="Soutien"/>
                                 <ComboBoxItem Content="Passif"/>
+                                <ComboBoxItem Content="Fugitif"/>
                             </ComboBox>
                         </StackPanel>
 

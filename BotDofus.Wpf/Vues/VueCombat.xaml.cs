@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 using BotDofus.Commun.Reseau;
 using BotDofus.Divers;
 using BotDofus.Divers.Combats;
@@ -19,6 +20,10 @@ public partial class VueCombat : UserControl
     private ContexteCompte? _contexte;
     private Personnage? _personnageLie;
     private Combat? _combatLie;
+    /// <summary>Timer debounce de la sauvegarde auto config combat (800 ms, ADR-001 §5).</summary>
+    private DispatcherTimer? _timerSauvegarde;
+    /// <summary>true pendant l'init des contrôles UI depuis ConfigCombat (évite déclencher les Changed).</summary>
+    private bool _initEnCours;
     public ObservableCollection<SortItemVm> SortsAppris { get; } = new();
     public ObservableCollection<SortConfigureVm> SortsConfig { get; } = new();
     public ObservableCollection<CombattantVm> CombattantsLive { get; } = new();
@@ -46,7 +51,7 @@ public partial class VueCombat : UserControl
         _contexte = ctx;
         _personnageLie = ctx.EtatJeu.Personnage;
         _combatLie = ctx.EtatJeu.Combat;
-        CmbStrategie.SelectedIndex = (int)ctx.ConfigCombat.Strategie;
+        InitialiserModeEtTactique(ctx.ConfigCombat);
         ctx.PaquetRecu += OnPaquetRecu;
         _personnageLie.SortsChanges += OnSortsChanges;
         _combatLie.EtatChange += OnCombatChange;
@@ -275,6 +280,102 @@ public partial class VueCombat : UserControl
         if (_contexte == null) return;
         await _contexte.Api.EnvoyerPaquetBrutAsync("Gv",
             System.Threading.CancellationToken.None);
+    }
+
+    // ---------------------------------------------------------------------
+    // Section Mode de combat & Tactique (ADR-001 §4)
+    // ---------------------------------------------------------------------
+
+    /// <summary>
+    /// Initialise les radios Mode et les sliders depuis la <see cref="ConfigCombat"/>
+    /// chargée au démarrage (peleas/&lt;perso&gt;.json). Pose <see cref="_initEnCours"/>
+    /// pour empêcher les handlers de déclencher une sauvegarde pendant le set.
+    /// </summary>
+    private void InitialiserModeEtTactique(ConfigCombat cfg)
+    {
+        _initEnCours = true;
+        try
+        {
+            CmbStrategie.SelectedIndex = (int)cfg.Strategie;
+            switch (cfg.Mode)
+            {
+                case ModeCombat.Agressif:  RbModeAgressif.IsChecked  = true; break;
+                case ModeCombat.Eloigne:   RbModeEloigne.IsChecked   = true; break;
+                case ModeCombat.Fuyard:    RbModeFuyard.IsChecked    = true; break;
+                default:                   RbModeEquilibre.IsChecked = true; break;
+            }
+            SldDistancePref.Value = cfg.DistancePreferee;
+            TxtDistancePref.Text  = cfg.DistancePreferee.ToString();
+            SldSeuilFuite.Value   = cfg.SeuilFuitePv;
+            TxtSeuilFuite.Text    = cfg.SeuilFuitePv.ToString();
+            SldDelaiActions.Value = cfg.DelaiEntreActionsMs;
+            TxtDelaiActions.Text  = cfg.DelaiEntreActionsMs.ToString();
+        }
+        finally
+        {
+            _initEnCours = false;
+        }
+    }
+
+    private void ModeCombat_Checked(object sender, RoutedEventArgs e)
+    {
+        if (_initEnCours || _contexte == null || sender is not RadioButton rb || rb.Tag is not string tag) return;
+        if (System.Enum.TryParse<ModeCombat>(tag, out var mode))
+        {
+            _contexte.ConfigCombat.Mode = mode;
+            DemanderSauvegardeDebouncee();
+        }
+    }
+
+    private void SldDistancePref_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        int v = (int)e.NewValue;
+        if (TxtDistancePref != null) TxtDistancePref.Text = v.ToString();
+        if (_initEnCours || _contexte == null) return;
+        _contexte.ConfigCombat.DistancePreferee = v;
+        DemanderSauvegardeDebouncee();
+    }
+
+    private void SldSeuilFuite_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        int v = (int)e.NewValue;
+        if (TxtSeuilFuite != null) TxtSeuilFuite.Text = v.ToString();
+        if (_initEnCours || _contexte == null) return;
+        _contexte.ConfigCombat.SeuilFuitePv = v;
+        DemanderSauvegardeDebouncee();
+    }
+
+    private void SldDelaiActions_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        int v = (int)e.NewValue;
+        if (TxtDelaiActions != null) TxtDelaiActions.Text = v.ToString();
+        if (_initEnCours || _contexte == null) return;
+        _contexte.ConfigCombat.DelaiEntreActionsMs = v;
+        DemanderSauvegardeDebouncee();
+    }
+
+    /// <summary>
+    /// (Re)déclenche le timer debounce de sauvegarde à 800 ms (ADR-001 §5).
+    /// Chaque modif UI repousse l'écriture JSON ; quand l'user arrête de
+    /// toucher, le timer tick et persiste. Évite d'écrire à chaque
+    /// glissement de slider.
+    /// </summary>
+    private void DemanderSauvegardeDebouncee()
+    {
+        if (_contexte == null) return;
+        if (_timerSauvegarde == null)
+        {
+            _timerSauvegarde = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(800) };
+            _timerSauvegarde.Tick += (_, _) =>
+            {
+                _timerSauvegarde!.Stop();
+                if (_contexte == null) return;
+                var chemin = Path.Combine("peleas", $"{_contexte.Compte.Identifiant}.json");
+                _contexte.ConfigCombat.Sauvegarder(chemin);
+            };
+        }
+        _timerSauvegarde.Stop();
+        _timerSauvegarde.Start();
     }
 }
 
