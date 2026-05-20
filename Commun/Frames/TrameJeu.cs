@@ -891,7 +891,13 @@ public sealed class TrameJeu : TrameBase
             + $"(vivants : {combat.Ennemis.Count(e => !e.EstMort)})");
 
         // 1) Ennemi le plus proche (distance iso Dofus = Chebyshev sur (x,y)).
-        var ennemisVivants = combat.Ennemis.Where(e => !e.EstMort).ToList();
+        // Filtre robuste : on jette les cibles « fantômes » (PV<=0 OU PVMax<=0
+        // = non encore initialisées par un GTM complet). Sans ce filtre, le bot
+        // peut cibler un Monstre #0 PV=0/0 (cas reproduit log 18:27:09) → cast
+        // sur cadavre → GAF échec côté serveur → tour perdu.
+        var ennemisVivants = combat.Ennemis
+            .Where(e => !e.EstMort && e.PV > 0 && e.PVMax > 0)
+            .ToList();
         if (ennemisVivants.Count == 0)
         {
             Journaliseur.Info("[ACTION] Aucun ennemi vivant → Gt");
@@ -976,12 +982,21 @@ public sealed class TrameJeu : TrameBase
             }
             if (sortVise != null)
             {
+                // Stats par niveau XML dyshay pour le log (sinon affichait
+                // valeurs legacy niv 1 = trompeur, ex « portée 1-6 » alors
+                // que Ronce niv 5 est 1-8).
+                int nivVise = perso.SortsAppris.TryGetValue(sortVise.Identifiant, out var nVL) ? nVL : 0;
+                var stVL = sortVise.Stats(nivVise);
+                int paVL = stVL?.CoutPA ?? sortVise.CoutPA;
+                int pminVL = stVL?.PorteeMin ?? sortVise.PorteeMin;
+                int pmaxVL = stVL?.PorteeMax ?? sortVise.PorteeMax;
+
                 var resApproche = TrouverApprocheCombat(perso, combat, ennemi, sortVise);
                 if (resApproche.HasValue)
                 {
                     var (chemin, distApres) = resApproche.Value;
                     int nbPasMove = chemin.Count - 1;
-                    Journaliseur.Info($"[ACTION] Hors portée → déplacement {nbPasMove} case(s) vers cell {chemin[^1].Identifiant} (dist après = {distApres}, sort « {sortVise.Nom} » portée {sortVise.PorteeMin}-{sortVise.PorteeMax})");
+                    Journaliseur.Info($"[ACTION] Hors portée → déplacement {nbPasMove} case(s) vers cell {chemin[^1].Identifiant} (dist après = {distApres}, sort « {sortVise.Nom} » niv{nivVise} portée {pminVL}-{pmaxVL})");
                     var paquetDep = BotDofus.Divers.Cartes.Deplacement.Pathfinder.PaquetDeplacement(chemin);
                     await _session.EnvoyerAuServeurAsync(paquetDep).ConfigureAwait(false);
 
@@ -996,9 +1011,14 @@ public sealed class TrameJeu : TrameBase
                     await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
                     await Task.Delay(System.Random.Shared.Next(300, 500)).ConfigureAwait(false);
 
-                    // Le sort est maintenant en portée → on l'utilise.
+                    // Le sort est maintenant en portée → on l'utilise. On met à
+                    // jour aussi sortCoutPA/PorteeMin/PorteeMax pour que le log
+                    // de cast affiche les BONNES stats (avant le fix, on voyait
+                    // « 0 PA, portée 0-0 » après une approche).
                     sort = sortVise;
-                    // Mise à jour distance pour le log de cast (informatif).
+                    sortCoutPA = paVL;
+                    sortPorteeMin = pminVL;
+                    sortPorteeMax = pmaxVL;
                     distEnnemi = distApres;
                 }
             }
