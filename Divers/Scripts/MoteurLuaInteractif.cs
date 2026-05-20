@@ -340,6 +340,25 @@ public sealed class MoteurLuaInteractif : IDisposable
         if (lcustom.Type == DataType.Function) _script!.Call(lcustom);
         // 5) npcBank (protocole banque pas encore branché)
         if (B("npcBank")) Journaliseur.Avertir("[ANKA] npcBank non supporté (ignoré)");
+        // 5b) ZAAP — sortie via téléportation (capturée par RoadCreator).
+        // Protocole Hystoria : GA500<cellZaap>;114 + WU<mapDest> (cf.
+        // tech_zaap_protocole_hystoria.md). Si la téléportation aboutit,
+        // on a déjà changé de carte → on saute le bloc path/door normal.
+        var zaapV = row.Get("zaap");
+        if (zaapV.Type == DataType.Number && (int)zaapV.Number > 0)
+        {
+            int mapDest = (int)zaapV.Number;
+            int avant = anka.Map.currentMapId();
+            Journaliseur.Info($"[ANKA] zaap vers map #{mapDest} (depuis #{avant})");
+            bool ok = _api.zaap(mapDest);
+            if (ok)
+            {
+                AttendreChangementCarte(avant, ct);
+                return; // sortie réussie, zaap remplace path/cell/direction
+            }
+            Journaliseur.Avertir($"[ANKA] zaap #{mapDest} échoué → fallback path classique.");
+            // (on continue vers le bloc path/cell ci-dessous)
+        }
         // 6) Changement de carte (path)
         var path = S("path");
         if (path.Length > 0)

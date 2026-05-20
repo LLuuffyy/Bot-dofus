@@ -26,6 +26,7 @@ public partial class FenetreRoadCreator : Window
     private int _dernierMapPrepare = -1;
     private string _dernierGa001 = "";   // dernier déplacement C→S fait à la main
     private int _celluleDepartGa001;     // cellule du perso AU MOMENT de ce GA001 (garde-fou rejeu fidèle)
+    private int _dernierZaapDest;        // mapId du dernier WU<N> C→S capturé (zaap utilisé à la main)
     private readonly List<int> _reponses = new();
 
     public event EventHandler<EnregistreurTrajet.Ligne>? Validee;
@@ -67,6 +68,7 @@ public partial class FenetreRoadCreator : Window
             _reponses.Clear();
             _dernierGa001 = ""; // nouveau terrain : on repart sans chemin brut
             _celluleDepartGa001 = 0;
+            _dernierZaapDest = 0; // zaap consommé / nouvelle carte
             BoxDialogue.Visibility = Visibility.Collapsed;
             TxtDlgEnregistre.Text = "";
         }
@@ -144,6 +146,17 @@ public partial class FenetreRoadCreator : Window
                 // le perso → CellulePosition est encore la case de départ.
                 _celluleDepartGa001 =
                     _ctx?.EtatJeu.Personnage.CellulePosition ?? 0;
+            }
+            // ZAAP capturé à la main — tu cliques le zaap puis choisis la map
+            // dans le menu → le client envoie « WU<mapId> ». On stocke la
+            // destination pour que ConstruireLigneAuto marque cette ligne
+            // comme zaap. (Protocole Hystoria : GA500;114 + WU<map>, cf.
+            // tech_zaap_protocole_hystoria.md.)
+            else if (cs.StartsWith("WU", StringComparison.Ordinal)
+                     && cs.Length > 2
+                     && int.TryParse(cs.AsSpan(2), out var mapDest))
+            {
+                _dernierZaapDest = mapDest;
             }
             // ENREGISTREMENT PASSIF : tu parles au PNJ DANS LE JEU →
             // « DC<perso>,<ctx> ». On capture le PNJ tout seul (plus besoin
@@ -308,6 +321,11 @@ public partial class FenetreRoadCreator : Window
             Gather = ChkRecolte.IsChecked == true,
         };
         if (celluleSortie > 0) l.Cellule = celluleSortie; // fallback
+        // ZAAP : si tu viens d'utiliser un zaap (WU<mapId> capturé), c'est
+        // la SORTIE prioritaire pour cette carte → on inscrit la destination,
+        // le rejeu utilisera GA500;114+WU au lieu de marcher.
+        if (_dernierZaapDest > 0)
+            l.ZaapDestination = _dernierZaapDest;
         // Chemin EXACT que tu viens de faire à la main → rejeu fidèle,
         // serveur-valide (plus de rollback/pathfinder qui se trompe).
         if (!string.IsNullOrEmpty(_dernierGa001))
@@ -320,12 +338,13 @@ public partial class FenetreRoadCreator : Window
             l.Npc = _npcTemplate;
             l.Answers.AddRange(_reponses);
         }
-        // On consomme le PNJ/les réponses/le chemin (rattachés à cette carte).
+        // On consomme le PNJ/les réponses/le chemin/le zaap (rattachés à cette carte).
         _npcChoisi = 0;
         _npcTemplate = 0;
         _reponses.Clear();
         _dernierGa001 = "";
         _celluleDepartGa001 = 0;
+        _dernierZaapDest = 0;
         return l;
     }
 

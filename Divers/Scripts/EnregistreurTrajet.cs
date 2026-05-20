@@ -26,6 +26,7 @@ public sealed class EnregistreurTrajet
         public int Npc;              // dialogue PNJ (optionnel)
         public List<int> Answers = new();
         public string CheminBrut = ""; // GA001 EXACT capturé à la main (rejeu fidèle)
+        public int ZaapDestination;    // map cible si zaap utilisé (WU<mapId> capturé) ; 0 = pas de zaap
     }
 
     private readonly List<Ligne> _lignes = new();
@@ -44,11 +45,14 @@ public sealed class EnregistreurTrajet
     public void AjouterLigne(Ligne l)
     {
         _lignes.Add(l);
+        string sortie = l.ZaapDestination > 0
+            ? $"zaap→{l.ZaapDestination}"
+            : (l.Cellule > 0 ? "cell " + l.Cellule : l.Direction);
         Journaliseur.Info(
             $"[ROADREC] +carte {l.Coords} (id {l.MapId}) "
             + $"{(l.Fight ? "combat " : "")}{(l.Gather ? "récolte " : "")}"
             + $"{(l.Npc > 0 ? $"pnj#{l.Npc} " : "")}"
-            + $"sortie={(l.Cellule > 0 ? "cell " + l.Cellule : l.Direction)}"
+            + $"sortie={sortie}"
             + $" — {_lignes.Count} waypoint(s)");
     }
 
@@ -110,7 +114,12 @@ public sealed class EnregistreurTrajet
             //                   PAS un changement de carte)
             bool ga001Valide = !string.IsNullOrEmpty(l.CheminBrut)
                 && l.CheminBrut.StartsWith("GA001", StringComparison.Ordinal);
-            if (!string.IsNullOrEmpty(l.Direction))
+            // ZAAP prioritaire — si tu as utilisé un zaap pendant l'enregistrement
+            // (capture WU<mapId> C→S), on TÉLÉPORTE au rejeu via GA500;114 + WU.
+            // C'est la sortie la plus rapide possible (saut direct, pas de marche).
+            if (l.ZaapDestination > 0)
+                sb2.Append($", zaap = {l.ZaapDestination}");
+            else if (!string.IsNullOrEmpty(l.Direction))
                 sb2.Append($", path = \"{l.Direction}\"");
             // Carte de PURE TRANSITION (ni récolte ni combat) → raw:GA001
             // CONDITIONNEL. Le GA001 brut capturé à la main est un chemin
