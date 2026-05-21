@@ -90,8 +90,12 @@ public sealed class PiloteBanque
             Journaliseur.Avertir($"[BANQUE] Dépôt incomplet (poids={_perso.PourcentagePoids:F1}% > cible {_cfg.CiblePoidsPct}%)");
         }
 
-        // 3) Retour vers la map de farm (si configuré et map sauvegardée).
-        if (_cfg.RetourFarmApresDepot && carteFarmAvant.HasValue && carteFarmAvant.Value != _cfg.MapBanqueId)
+        // 3) Retour vers la map de farm (zaap aller-retour — skip si banque mobile).
+        if (_cfg.OuvertureDirecte)
+        {
+            Journaliseur.Info("[BANQUE] Étape 3/4 : OuvertureDirecte=true — pas de retour zaap, perso reste sur place");
+        }
+        else if (_cfg.RetourFarmApresDepot && carteFarmAvant.HasValue && carteFarmAvant.Value != _cfg.MapBanqueId)
         {
             Journaliseur.Info($"[BANQUE] Étape 3/4 : zaap retour vers map {carteFarmAvant.Value}");
             bool retourOk = await _api.UtiliserZaapAsync(carteFarmAvant.Value, ct).ConfigureAwait(false);

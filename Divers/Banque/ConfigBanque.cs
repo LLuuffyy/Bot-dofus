@@ -34,11 +34,13 @@ public sealed class ConfigBanque
     public int MapBanqueId { get; set; } = 10306;
 
     /// <summary>
-    /// Si true, sauter complètement l'étape zaap : envoyer <c>ApS</c> directement
-    /// depuis la position actuelle. Utile quand l'user positionne lui-même son
-    /// perso devant le coffre (workflow manuel) ou si le zaap n'est pas dispo.
+    /// Si true (par défaut), sauter complètement l'étape zaap : envoyer
+    /// <c>ApS</c> directement depuis la position actuelle. C'est le mode
+    /// recommandé pour la <b>banque mobile</b> (coffre artisan posé sur n'importe
+    /// quelle map) — le perso DOIT être à proximité du coffre. Décocher pour
+    /// activer le mode zaap (le bot ira lui-même à <see cref="MapBanqueId"/>).
     /// </summary>
-    public bool OuvertureDirecte { get; set; } = false;
+    public bool OuvertureDirecte { get; set; } = true;
 
     /// <summary>GFX du PNJ banquier OU du coffre interactif (utile pour le repérer sur la map).</summary>
     public int GfxNpcBanquier { get; set; } = 65;
