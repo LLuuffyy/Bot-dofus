@@ -86,6 +86,19 @@ public sealed class Personnage
         SortsChanges?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>
+    /// Batch — utilisé par le parsing du paquet SL (liste complète des sorts appris).
+    /// Émet UN SEUL <see cref="SortsChanges"/> à la fin pour éviter les races
+    /// UI thread (Dictionary modifié pendant `.OrderBy().ToList()`) — cf. crash
+    /// VuePersonnage L 84 du 21/05 06:27.
+    /// </summary>
+    public void AjouterPlusieursSortsAppris(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<int, int>> sorts)
+    {
+        foreach (var kv in sorts)
+            SortsAppris[kv.Key] = kv.Value;
+        SortsChanges?.Invoke(this, EventArgs.Empty);
+    }
+
     public void ActualiserVie(int vie, int vieMax)
     {
         Vie = vie; VieMax = vieMax;

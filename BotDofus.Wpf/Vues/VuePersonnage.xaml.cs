@@ -81,7 +81,11 @@ public partial class VuePersonnage : UserControl
             : "Carte —";
 
         Sorts.Clear();
-        foreach (var paire in p.SortsAppris.OrderByDescending(kv => kv.Value).ThenBy(kv => kv.Key))
+        // Snapshot ToList() AVANT OrderBy → évite ArgumentException "Dictionary
+        // CopyTo destination array too small" quand le thread réseau ajoute un
+        // sort en pleine itération (race fixée 21/05 après commit f2f7fae G.1
+        // qui déclenche SortsChanges à chaque AjouterOuMajSort).
+        foreach (var paire in p.SortsAppris.ToList().OrderByDescending(kv => kv.Value).ThenBy(kv => kv.Key))
         {
             var info = BaseSorts.Instance.Trouver(paire.Key);
             var nom = info?.Nom ?? $"Sort #{paire.Key}";

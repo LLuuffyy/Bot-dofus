@@ -52,10 +52,11 @@ public sealed class TrameJeu : TrameBase
         Ecouter<MessageStats>(OnStats);
         Ecouter<BotDofus.Commun.Messages.VersClient.Authentification.MessageListeSorts>(msg =>
         {
-            // G.1 — passer par AjouterOuMajSort pour DÉCLENCHER l'event
-            // Personnage.SortsChanges (sinon CmbSort de VueCombat reste vide à vie
-            // car l'event n'est jamais invoqué par l'écriture directe du Dictionary).
-            foreach (var kv in msg.Sorts) _etat.Personnage.AjouterOuMajSort(kv.Key, kv.Value);
+            // BATCH (anti-crash race UI thread) — une seule notification
+            // SortsChanges après tout le SL, au lieu de N events qui faisaient
+            // crasher VuePersonnage.Rafraichir L 84 (Dictionary modifié en
+            // pleine itération `.OrderBy().ToList()` → ArgumentException copy_to).
+            _etat.Personnage.AjouterPlusieursSortsAppris(msg.Sorts);
             Journaliseur.Info($"[SORTS] {msg.Sorts.Count} sort(s) scanné(s) : "
                 + string.Join(", ", msg.Sorts.Select(s => $"#{s.Key} niv{s.Value}")));
         });

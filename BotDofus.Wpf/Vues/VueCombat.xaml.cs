@@ -163,7 +163,8 @@ public partial class VueCombat : UserControl
         if (_contexte == null) return;
 
         SortsAppris.Clear();
-        foreach (var (id, niv) in _contexte.EtatJeu.Personnage.SortsAppris.OrderBy(kv => kv.Key))
+        // Snapshot ToList() AVANT OrderBy (cf. crash 06:27 VuePersonnage L 84).
+        foreach (var (id, niv) in _contexte.EtatJeu.Personnage.SortsAppris.ToList().OrderBy(kv => kv.Key))
         {
             var info = BaseSorts.Instance.Trouver(id);
             SortsAppris.Add(new SortItemVm(id, niv, info?.Nom ?? $"Sort #{id}", info));
