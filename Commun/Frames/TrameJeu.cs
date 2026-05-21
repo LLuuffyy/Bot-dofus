@@ -895,6 +895,10 @@ public sealed class TrameJeu : TrameBase
         // ancien Random(600, 1200) était encore trop rapide. Random(1400, 2100)
         // colle au timing réel sans être suspect.
         int delaiReaction = System.Random.Shared.Next(1400, 2100);
+        Journaliseur.Info($"[TOUR-START] Tour #{combat.NumeroTour} — cell {maCell}, PA={perso.PA}, PM={perso.PM}, "
+            + $"alliés={combat.Allies.Count}, ennemis={combat.Ennemis.Count(e => !e.EstMort)}/{combat.Ennemis.Count}, "
+            + $"mode={_compte.ConfigCombat?.Mode}, règles={_compte.ConfigCombat?.Regles.Count ?? 0}, "
+            + $"délai réaction={delaiReaction}ms");
         await Task.Delay(delaiReaction).ConfigureAwait(false);
 
         // Log diag : voir EXACTEMENT ce que le bot perçoit du combat.

@@ -191,20 +191,30 @@
                                         CornerRadius="6"
                                         Padding="10,6"
                                         Margin="0,0,0,5">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Ellipse Grid.Column="0" Width="10" Height="10" Fill="{Binding CouleurEquipe}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding Nom}" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                                        <TextBlock Grid.Column="2" Text="{Binding PvTexte}" Foreground="#E53935" FontFamily="Consolas" Margin="10,0" VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="3" Text="{Binding PaTexte}" Foreground="#1E88E5" FontFamily="Consolas" Margin="10,0" VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="4" Text="{Binding PmTexte}" Foreground="#43A047" FontFamily="Consolas" Margin="10,0,0,0" VerticalAlignment="Center"/>
-                                    </Grid>
+                                    <StackPanel>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Ellipse Grid.Column="0" Width="10" Height="10" Fill="{Binding CouleurEquipe}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Nom}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding CelluleTexte}" Foreground="#9AA0AC" FontFamily="Consolas" FontSize="11" Margin="6,0" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="3" Text="{Binding PvTexte}" Foreground="#E53935" FontFamily="Consolas" Margin="8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="4" Text="{Binding PaTexte}" Foreground="#1E88E5" FontFamily="Consolas" Margin="8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="5" Text="{Binding PmTexte}" Foreground="#43A047" FontFamily="Consolas" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                        </Grid>
+                                        <!-- Barre PV proportionnelle (ProgressBar styled) -->
+                                        <ProgressBar Minimum="0" Maximum="100"
+                                                     Value="{Binding PourcentagePv, Mode=OneWay}"
+                                                     Height="6" Margin="0,4,0,0"
+                                                     Background="#1F2127"
+                                                     Foreground="{Binding CouleurEquipe}"/>
+                                    </StackPanel>
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

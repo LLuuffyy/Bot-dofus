@@ -599,6 +599,13 @@ public sealed class CombattantVm
     public string PvTexte => $"PV {_src.PV}/{_src.PVMax}";
     public string PaTexte => $"PA {_src.PA}";
     public string PmTexte => $"PM {_src.PM}";
+    /// <summary>Cellule actuelle du combattant (utile debug).</summary>
+    public string CelluleTexte => $"#{_src.CellulePosition}";
+    /// <summary>Pourcentage PV pour afficher une barre de vie proportionnelle.</summary>
+    public double PourcentagePv => _src.PVMax > 0 ? (100.0 * _src.PV / _src.PVMax) : 0;
+    public string PourcentagePvTexte => _src.PVMax > 0 ? $"{(int)PourcentagePv}%" : "-";
+    /// <summary>Indique si c'est l'invocation (Sadida poupées etc.) — pas d'humain.</summary>
+    public bool EstInvocation => _src.EstInvocation;
 
     public Brush CouleurEquipe => _estAllie
         ? new SolidColorBrush(Color.FromRgb(0x65, 0xC5, 0x6F))
