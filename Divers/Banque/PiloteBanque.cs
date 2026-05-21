@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BotDofus.Commun.Reseau;
+using BotDofus.Divers.Donnees;
 using BotDofus.Divers.Jeu.Personnage;
 using BotDofus.Divers.Scripts.Api;
 using BotDofus.Utilitaires.Journaux;
@@ -10,11 +12,17 @@ using BotDofus.Utilitaires.Journaux;
 namespace BotDofus.Divers.Banque;
 
 /// <summary>
-/// Pilote async du dépôt banque : zaap vers map banque → ouverture (EBM) →
-/// dépôt items (EM&lt;uid&gt;;qte;1) → fermeture (EV) → zaap retour optionnel.
+/// Pilote async du dépôt banque : zaap vers map banque → ouverture (<c>ApS</c>
+/// CLAIR) → dépôt items (<c>EMO+&lt;uidInv&gt;|&lt;qte&gt;</c> chiffré '-')
+/// → fermeture (<c>EV</c> chiffré '-') → zaap retour optionnel.
 ///
-/// ⚠ PROTOCOLE Dofus 1.29 — paquets EBM/EM/EV utilisés par dyshay/cadernis
-/// mais à VALIDER en capture user sur Hystoria (peut différer légèrement).
+/// ✅ PROTOCOLE confirmé par capture user 2026-05-21 sur Hystoria :
+/// <list type="bullet">
+///   <item><c>ApS</c> ouvre le coffre interactif (pas de dialogue NPC, gratuit).</item>
+///   <item><c>EMO+&lt;uid&gt;|&lt;qte&gt;</c> dépose (canal chiffré auto via DoitEtreChiffre).</item>
+///   <item><c>EV</c> ferme (canal chiffré).</item>
+///   <item>Attendre <c>OR&lt;persoId&gt;|&lt;uid&gt;</c> entre dépôts pour confirmation.</item>
+/// </list>
 /// </summary>
 public sealed class PiloteBanque
 {
@@ -22,6 +30,11 @@ public sealed class PiloteBanque
     private readonly SessionProxy _session;
     private readonly Personnage _perso;
     private readonly ConfigBanque _cfg;
+
+    /// <summary>Compteur monotone d'<c>OR</c> reçus (Object Remove de l'inventaire).
+    /// Incrémenté par <see cref="TrameJeu"/> à chaque OR observé. Utilisé pour
+    /// attendre la confirmation serveur entre 2 dépôts.</summary>
+    public static int CompteurObjectRemove;
 
     public PiloteBanque(ApiBot api, SessionProxy session, Personnage perso, ConfigBanque cfg)
     {
@@ -39,7 +52,7 @@ public sealed class PiloteBanque
     {
         Journaliseur.Info($"[BANQUE] === Workflow complet démarré (poids {_perso.PourcentagePoids:F1}%) ===");
 
-        // 1) Zaap vers la map banque (Astrub bank par défaut = 10117).
+        // 1) Zaap vers la map banque (Astrub bank par défaut = 10303 confirmé Hystoria).
         Journaliseur.Info($"[BANQUE] Étape 1/4 : zaap vers map banque {_cfg.MapBanqueId}");
         bool zaapOk = await _api.UtiliserZaapAsync(_cfg.MapBanqueId, ct).ConfigureAwait(false);
         if (!zaapOk)
@@ -85,37 +98,183 @@ public sealed class PiloteBanque
     {
         Journaliseur.Info($"[BANQUE] Démarrage dépôt — poids actuel {_perso.PourcentagePoids:F1}% (seuil={_cfg.SeuilPoidsPct}%, cible={_cfg.CiblePoidsPct}%)");
 
-        // Étape 1 : ouvrir la banque. Format Dofus Retro à confirmer en capture.
-        // Probablement EBM (Echange Banque Mode) ou GA500<cellNPC>;<skill>.
-        await _session.EnvoyerAuServeurAsync("EBM").ConfigureAwait(false);
-        await Delai().ConfigureAwait(false);
+        // === Étape 1 : ouvrir le coffre banque (ApS, CLAIR) ===
+        // ⚠ PROTOCOLE Hystoria : pas de dialogue NPC, le coffre interactif s'ouvre directement.
+        // Le serveur répond ECK5 (Échange Créé kind=5) puis EL (liste vide ou contenu).
+        Journaliseur.Info("[BANQUE] → ApS (ouverture coffre)");
+        await _session.EnvoyerAuServeurAsync("ApS").ConfigureAwait(false);
+        await Delai(ct).ConfigureAwait(false);
 
-        // Étape 2 : déposer les items (filtrage selon cfg).
-        var itemsADeposer = _perso.Inventaire
-            .Where(o => !_cfg.ItemsAGarder.Contains(o.IdTemplate))
-            .Where(o => _cfg.ItemsADeposer.Count == 0 || _cfg.ItemsADeposer.Contains(o.IdTemplate))
-            .ToList();
+        // === Étape 2 : calculer la liste effective à déposer selon les filtres ===
+        var snapshot = _perso.Inventaire.ToList();
+        var aDeposer = CalculerItemsADeposer(snapshot);
+        Journaliseur.Info($"[BANQUE] {aDeposer.Count}/{snapshot.Count} item(s) sélectionné(s) pour dépôt");
 
+        // === Étape 3 : déposer chaque item via EMO+<uid>|<qte> (canal chiffré auto) ===
         int deposes = 0;
-        foreach (var item in itemsADeposer)
+        int rejetesSec = 0;
+        foreach (var item in aDeposer)
         {
+            if (ct.IsCancellationRequested) break;
             if (_perso.PourcentagePoids <= _cfg.CiblePoidsPct)
             {
                 Journaliseur.Info($"[BANQUE] Cible {_cfg.CiblePoidsPct}% atteinte ({_perso.PourcentagePoids:F1}%), arrêt dépôt");
                 break;
             }
-            // Format Dofus 1.29 : EM<uid>;<quantite>;<1=depot>
-            await _session.EnvoyerAuServeurAsync($"EM{item.Identifiant};{item.Quantite};1").ConfigureAwait(false);
+
+            // Sécurité ultime : si l'item est dans IdsAGarder OU est de catégorie Quête
+            // décochée, on REFUSE de déposer même par erreur de calcul amont.
+            if (!EstAutoriseADeposer(item))
+            {
+                Journaliseur.Avertir($"[BANQUE] SÉCURITÉ : refus dépôt #{item.Identifiant} template={item.IdTemplate} (filtre amont divergent)");
+                rejetesSec++;
+                continue;
+            }
+
+            int compteurAvant = System.Threading.Interlocked.CompareExchange(ref CompteurObjectRemove, 0, 0);
+            // ⚠ PROTOCOLE Hystoria : EMO+<uid>|<qte> — séparateur '|' (PAS ';'),
+            // préfixe 'EMO+' (PAS 'EM'). UID = identifiant inventaire long.
+            var paquet = $"EMO+{item.Identifiant}|{item.Quantite}";
+            Journaliseur.Info($"[BANQUE] → {paquet} (template {item.IdTemplate}, qte {item.Quantite})");
+            await _session.EnvoyerAuServeurAsync(paquet).ConfigureAwait(false);
             deposes++;
-            await Delai().ConfigureAwait(false);
+
+            // Attendre la confirmation OR<persoId>|<uid> (= objet retiré inventaire)
+            // OU un délai de garde de 3s pour éviter de boucler si pas de feedback.
+            await AttendreObjectRemoveAsync(compteurAvant, 3000, ct).ConfigureAwait(false);
+            await Delai(ct).ConfigureAwait(false);
         }
 
-        // Étape 3 : fermer la banque (EV = Exchange Validate/leave).
+        // === Étape 4 : fermer la banque (EV, canal chiffré auto) ===
+        Journaliseur.Info("[BANQUE] → EV (fermeture coffre)");
         await _session.EnvoyerAuServeurAsync("EV").ConfigureAwait(false);
-        await Delai().ConfigureAwait(false);
+        await Delai(ct).ConfigureAwait(false);
 
-        Journaliseur.Info($"[BANQUE] Dépôt terminé — {deposes} item(s) déposés, poids final {_perso.PourcentagePoids:F1}%");
+        Journaliseur.Info($"[BANQUE] Dépôt terminé — {deposes} item(s) déposés, {rejetesSec} refusés (sécurité), poids final {_perso.PourcentagePoids:F1}%");
         return _perso.PourcentagePoids <= _cfg.CiblePoidsPct;
+    }
+
+    /// <summary>
+    /// Calcule la liste effective d'items à déposer selon les filtres :
+    /// catégorie (Équipement/Ressource/Consommable/Quête/Inconnu), liste
+    /// blanche/noire d'IDs template, seuils par template.
+    /// </summary>
+    internal List<ObjetInventaire> CalculerItemsADeposer(IEnumerable<ObjetInventaire> inventaire)
+    {
+        var bdd = BaseDonnees.Instance;
+        var resultat = new List<ObjetInventaire>();
+
+        // 1) Compter le total par template (pour les seuils).
+        var totalParTemplate = new Dictionary<int, int>();
+        foreach (var o in inventaire)
+            totalParTemplate[o.IdTemplate] = totalParTemplate.GetValueOrDefault(o.IdTemplate) + o.Quantite;
+
+        foreach (var item in inventaire)
+        {
+            // Liste noire : on garde TOUJOURS.
+            if (_cfg.IdsAGarder.Contains(item.IdTemplate)) continue;
+
+            // Liste blanche : on dépose TOUJOURS.
+            if (_cfg.IdsADeposerForce.Contains(item.IdTemplate))
+            {
+                AjouterAvecSeuil(item, totalParTemplate, resultat);
+                continue;
+            }
+
+            // Catégorie via le type de l'item dans la BDD.
+            var info = bdd.Item(item.IdTemplate);
+            var cat = info != null
+                ? CategoriseurObjet.Categoriser(info.IdType)
+                : CategorieObjet.Inconnu;
+
+            bool autorise = cat switch
+            {
+                CategorieObjet.Equipement => _cfg.DeposerEquipements,
+                CategorieObjet.Ressource => _cfg.DeposerRessources,
+                CategorieObjet.Consommable => _cfg.DeposerConsommables,
+                CategorieObjet.Quete => _cfg.DeposerQuetes,
+                CategorieObjet.Inconnu => _cfg.DeposerInconnus,
+                _ => false,
+            };
+            if (!autorise) continue;
+
+            AjouterAvecSeuil(item, totalParTemplate, resultat);
+        }
+        return resultat;
+    }
+
+    /// <summary>
+    /// Ajoute l'item à la liste de dépôt en respectant le <c>SeuilParTemplate</c> :
+    /// si l'user veut garder N exemplaires d'un template (ex. 50 pains), on
+    /// ajuste la quantité déposable pour conserver ce seuil en inventaire.
+    /// </summary>
+    private void AjouterAvecSeuil(ObjetInventaire item, Dictionary<int, int> totalParTemplate, List<ObjetInventaire> resultat)
+    {
+        if (!_cfg.SeuilParTemplate.TryGetValue(item.IdTemplate, out int seuil) || seuil <= 0)
+        {
+            resultat.Add(item);
+            return;
+        }
+        // Combien de cet item dans l'inventaire ?
+        int total = totalParTemplate.GetValueOrDefault(item.IdTemplate);
+        // Combien on peut déposer en gardant `seuil` ?
+        int dispo = total - seuil;
+        if (dispo <= 0) return;
+
+        int qteADep = System.Math.Min(item.Quantite, dispo);
+        if (qteADep <= 0) return;
+
+        // On dépose en ajustant la quantité (sans muter l'original).
+        resultat.Add(new ObjetInventaire
+        {
+            Identifiant = item.Identifiant,
+            IdTemplate = item.IdTemplate,
+            Quantite = qteADep,
+            Position = item.Position,
+        });
+        // Mettre à jour le total restant en inventaire pour les prochains items du même template.
+        totalParTemplate[item.IdTemplate] = total - qteADep;
+    }
+
+    /// <summary>
+    /// Vérifie une dernière fois (défensif) qu'on a le droit de déposer cet item :
+    /// JAMAIS un item dans <see cref="ConfigBanque.IdsAGarder"/>, JAMAIS un item
+    /// de catégorie Quête si <see cref="ConfigBanque.DeposerQuetes"/> est false.
+    /// </summary>
+    internal bool EstAutoriseADeposer(ObjetInventaire item)
+    {
+        if (_cfg.IdsAGarder.Contains(item.IdTemplate)) return false;
+        if (_cfg.IdsADeposerForce.Contains(item.IdTemplate)) return true;
+
+        var info = BaseDonnees.Instance.Item(item.IdTemplate);
+        var cat = info != null ? CategoriseurObjet.Categoriser(info.IdType) : CategorieObjet.Inconnu;
+        return cat switch
+        {
+            CategorieObjet.Equipement => _cfg.DeposerEquipements,
+            CategorieObjet.Ressource => _cfg.DeposerRessources,
+            CategorieObjet.Consommable => _cfg.DeposerConsommables,
+            CategorieObjet.Quete => _cfg.DeposerQuetes,
+            CategorieObjet.Inconnu => _cfg.DeposerInconnus,
+            _ => false,
+        };
+    }
+
+    /// <summary>
+    /// Attend que <see cref="CompteurObjectRemove"/> avance (= un OR&lt;persoId&gt;|&lt;uid&gt;
+    /// reçu, donc le dépôt est confirmé côté serveur). Sinon timeout — on
+    /// continue quand même pour éviter le blocage si le compteur n'est pas câblé.
+    /// </summary>
+    private static async Task AttendreObjectRemoveAsync(int compteurAvant, int timeoutMs, CancellationToken ct)
+    {
+        int waitMs = 0;
+        while (waitMs < timeoutMs)
+        {
+            if (ct.IsCancellationRequested) return;
+            int actuel = System.Threading.Interlocked.CompareExchange(ref CompteurObjectRemove, 0, 0);
+            if (actuel > compteurAvant) return;
+            await Task.Delay(100, ct).ConfigureAwait(false);
+            waitMs += 100;
+        }
     }
 
     private Task Delai(CancellationToken ct = default)

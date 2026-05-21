@@ -824,6 +824,9 @@ public sealed class TrameJeu : TrameBase
             Journaliseur.Debogue($"[INV] -1 objet (id {msg.IdentifiantObjet}, total = {inv.Count})");
             _etat.Personnage.NotifierInventaireChange();
         }
+        // Compteur monotone consommé par PiloteBanque.AttendreObjectRemoveAsync
+        // pour synchroniser les dépôts (chaque EMO+ déclenche un OR<id>|<uid>).
+        System.Threading.Interlocked.Increment(ref BotDofus.Divers.Banque.PiloteBanque.CompteurObjectRemove);
     }
 
     private void OnObjetQuantite(MessageObjetQuantite msg)

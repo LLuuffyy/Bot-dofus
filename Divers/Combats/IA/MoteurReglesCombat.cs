@@ -134,7 +134,20 @@ public static class MoteurReglesCombat
                     .OrderByDescending(e => e.PV).FirstOrDefault();
             else
                 cible = ChoisirCible(regle.Focus, combat, moi, mapWidth, carte);
-            if (cible == null) { Diag($"focus={regle.Focus} : aucune cible valide"); continue; }
+            if (cible == null)
+            {
+                // Anti-spam log : pour les focus d'invocation (très souvent vides quand le
+                // perso n'a pas encore d'invoc), on skip le diag. Idem AllieLePlusBlesse
+                // en solo (forensic 2026-05-21 : 59 rejets bruyants /combat).
+                bool focusVideAttendu =
+                    regle.Focus is FocusSort.InvocationLaPlusBlessee
+                                or FocusSort.InvocationLaPlusProche
+                                or FocusSort.AllieLePlusBlesse
+                                or FocusSort.AlliePlusGrosHeal
+                                or FocusSort.AllieLePlusProche;
+                if (!focusVideAttendu) Diag($"focus={regle.Focus} : aucune cible valide");
+                continue;
+            }
 
             // NombreParCible — max N casts sur la même cible ce tour.
             if (regle.NombreParCible > 0)
@@ -234,16 +247,21 @@ public static class MoteurReglesCombat
                 .FirstOrDefault(),
 
             // === SOI / ALLIÉS ===
+            // Note : AllieLePlusBlesse et AlliePlusGrosHeal EXCLUENT le caster
+            // (= moi) sinon, en solo, le moteur retourne moi → Ronce Apaisante
+            // se cast sur soi → rejetée car dist=0 < porteeMin=1 (forensic
+            // 2026-05-21 : 30 rejets/combat). Pour heal soi-même, utiliser
+            // explicitement FocusSort.Moi.
             FocusSort.Moi => moi,
             FocusSort.AllieLePlusBlesse => alliesVivants
-                .Where(a => a.PV < a.PVMax)
+                .Where(a => a.Identifiant != moi.Identifiant && a.PV < a.PVMax)
                 .OrderBy(a => a.PVMax > 0 ? 100 * a.PV / a.PVMax : 100)
                 .FirstOrDefault(),
             FocusSort.AllieLePlusProche => allies_humains
                 .OrderBy(a => DistanceDofus(moi.CellulePosition, a.CellulePosition, mapWidth))
                 .FirstOrDefault(),
             FocusSort.AlliePlusGrosHeal => alliesVivants
-                .Where(a => a.PV < a.PVMax)
+                .Where(a => a.Identifiant != moi.Identifiant && a.PV < a.PVMax)
                 .OrderByDescending(a => a.PVMax - a.PV)  // max points à régénérer
                 .FirstOrDefault(),
 
