@@ -52,15 +52,30 @@ public sealed class PiloteBanque
     {
         Journaliseur.Info($"[BANQUE] === Workflow complet démarré (poids {_perso.PourcentagePoids:F1}%) ===");
 
-        // 1) Zaap vers la map banque (Astrub bank par défaut = 10303 confirmé Hystoria).
-        Journaliseur.Info($"[BANQUE] Étape 1/4 : zaap vers map banque {_cfg.MapBanqueId}");
-        bool zaapOk = await _api.UtiliserZaapAsync(_cfg.MapBanqueId, ct).ConfigureAwait(false);
-        if (!zaapOk)
+        // 1) Si on est DÉJÀ sur la map banque, sauter l'étape zaap. Cas typique :
+        //    - user a fait "Tester maintenant" alors qu'il est devant le coffre,
+        //    - reprise de workflow après crash UI.
+        int? mapActuelle = _perso.CarteCourante;
+        bool dejaSurMapBanque = mapActuelle.HasValue && mapActuelle.Value == _cfg.MapBanqueId;
+        if (dejaSurMapBanque)
         {
-            Journaliseur.Avertir($"[BANQUE] Zaap vers {_cfg.MapBanqueId} échoué — abandon workflow");
-            return false;
+            Journaliseur.Info($"[BANQUE] Étape 1/4 : déjà sur map banque {_cfg.MapBanqueId} — skip zaap");
         }
-        await Task.Delay(System.Random.Shared.Next(1500, 2500), ct).ConfigureAwait(false);
+        else
+        {
+            Journaliseur.Info($"[BANQUE] Étape 1/4 : zaap vers map banque {_cfg.MapBanqueId} (depuis map {mapActuelle})");
+            bool zaapOk = await _api.UtiliserZaapAsync(_cfg.MapBanqueId, ct).ConfigureAwait(false);
+            if (!zaapOk)
+            {
+                Journaliseur.Avertir(
+                    $"[BANQUE] Zaap vers {_cfg.MapBanqueId} échoué — abandon workflow. "
+                    + "Cause probable : pas de cellule zaap (gfx 7000) sur la map actuelle, "
+                    + "ou map cible non débloquée. Mets-toi sur un zaap connu ou directement "
+                    + "sur la map banque avant de lancer 'Tester maintenant'.");
+                return false;
+            }
+            await Task.Delay(System.Random.Shared.Next(1500, 2500), ct).ConfigureAwait(false);
+        }
 
         // 2) Dépôt items.
         Journaliseur.Info("[BANQUE] Étape 2/4 : dépôt items");
