@@ -32,6 +32,7 @@ public sealed class ContexteCompte : IDisposable
     public GestionnaireScripts Scripts { get; }
     public MoteurLuaInteractif Lua { get; }
     public ConfigCombat ConfigCombat { get; }
+    public BotDofus.Divers.Banque.ConfigBanque ConfigBanque { get; }
     public BotDofus.Divers.Securite.DetecteurStaff DetecteurStaff { get; }
     public StatsSession Stats { get; } = new();
     public BotDofus.Divers.Interception.GestionnaireInterception Interception { get; } = new();
@@ -99,6 +100,14 @@ public sealed class ContexteCompte : IDisposable
         // de jouer le tour (le décideur IA en a besoin pour appliquer les
         // règles de sorts, focus, conditions — modèle dyshay/SynFus).
         compte.ConfigCombat = ConfigCombat;
+
+        // Config banque (banque/<perso>.json). Désactivée par défaut.
+        ConfigBanque = BotDofus.Divers.Banque.ConfigBanque.Charger(
+            Path.Combine("banque", $"{compte.Identifiant}.json"));
+        compte.ConfigBanque = ConfigBanque;
+
+        // Hook event poids → check seuil + Discord notif si configuré.
+        EtatJeu.Personnage.Mis_A_Jour += OnPersonnageMisAJour;
         ApiLua = new ApiLua(Api, EtatJeu, ConfigCombat, Interception);
         Scripts = new GestionnaireScripts(compte, Api);
         Lua = new MoteurLuaInteractif(ApiLua);
@@ -247,6 +256,61 @@ public sealed class ContexteCompte : IDisposable
         {
             Journaliseur.Avertir($"[AUTO-SCRIPT] Echec démarrage script auto : {ex.Message}");
         }
+    }
+
+    // ============================================================
+    // Anti-stuck + Discord notif + banque trigger
+    // ============================================================
+    private bool _banqueDeclenchee;
+    private bool _mortNotifiee;
+
+    private void OnPersonnageMisAJour(object? sender, EventArgs e)
+    {
+        var perso = EtatJeu.Personnage;
+
+        // ----- Détection MORT (PV = 0 et > 0 précédemment) -----
+        if (perso.VieMax > 0 && perso.Vie == 0 && !_mortNotifiee)
+        {
+            _mortNotifiee = true;
+            Stats.NotifierMort();
+            Journaliseur.Avertir($"[MORT] 💀 {perso.Nom} est mort sur la map {perso.CarteCourante}");
+            if (!string.IsNullOrWhiteSpace(Compte.WebhookDiscordUrl))
+            {
+                _ = BotDofus.Divers.Notifications.NotificateurDiscord.NotifierMortAsync(
+                    Compte.WebhookDiscordUrl, perso.Nom,
+                    perso.Niveau, perso.CarteCourante?.ToString() ?? "?");
+            }
+        }
+        else if (perso.Vie > 0)
+        {
+            _mortNotifiee = false;  // reset si ressuscité
+        }
+
+        // ----- Trigger banque (poids ≥ seuil) -----
+        if (ConfigBanque.Active
+            && !_banqueDeclenchee
+            && perso.PourcentagePoids >= ConfigBanque.SeuilPoidsPct
+            && EtatJeu.Combat.Etat == BotDofus.Divers.Combats.Enums.EtatCombat.Inactif)
+        {
+            _banqueDeclenchee = true;
+            Journaliseur.Avertir(
+                $"[BANQUE] 📦 Poids {perso.PourcentagePoids:F1}% ≥ seuil {ConfigBanque.SeuilPoidsPct}% "
+                + "→ trigger dépôt banque (pilote à câbler).");
+            if (!string.IsNullOrWhiteSpace(Compte.WebhookDiscordUrl))
+            {
+                _ = BotDofus.Divers.Notifications.NotificateurDiscord.NotifierBanquePleineAsync(
+                    Compte.WebhookDiscordUrl, perso.Nom, (int)perso.PourcentagePoids);
+            }
+            // TODO Phase complète : await new PiloteBanque(session, perso, ConfigBanque).DeposerToutAsync();
+        }
+        else if (perso.PourcentagePoids < ConfigBanque.CiblePoidsPct)
+        {
+            _banqueDeclenchee = false;  // reset après dépôt manuel ou auto
+        }
+
+        // ----- Anti-stuck timer (track dernier changement map) -----
+        // (le tracking se fait dans OnDonneesCarte ; ici on déclenche juste
+        // un timer périodique si pas de changement.)
     }
 
     private void OnEtatCompteChange(object? sender, Enums.EtatsCompte etat)

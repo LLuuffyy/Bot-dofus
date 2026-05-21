@@ -45,6 +45,20 @@ public sealed class Compte : IEffacable
     /// </summary>
     public BotDofus.Divers.Combats.IA.ConfigCombat? ConfigCombat { get; set; }
 
+    /// <summary>
+    /// Config dépôt banque automatique (banque/&lt;perso&gt;.json).
+    /// Si <c>Active</c> et poids ≥ <c>SeuilPoidsPct</c>, le bot interrompt le
+    /// farm pour déposer ses items à la banque (cf. <see cref="Banque.PiloteBanque"/>).
+    /// </summary>
+    public BotDofus.Divers.Banque.ConfigBanque? ConfigBanque { get; set; }
+
+    /// <summary>
+    /// URL webhook Discord pour notifications événements importants (mort,
+    /// level up, banque pleine, déconnexion). Vide = pas de notif.
+    /// Format : <c>https://discord.com/api/webhooks/&lt;id&gt;/&lt;token&gt;</c>.
+    /// </summary>
+    public string WebhookDiscordUrl { get; set; } = string.Empty;
+
     /// <summary>Déclenché à chaque changement d'état, utilisé par l'UI pour se rafraîchir.</summary>
     public event EventHandler<EtatsCompte>? EtatChange;
 

@@ -335,6 +335,9 @@ public sealed class TrameJeu : TrameBase
     {
         // As : statistiques complètes du perso (PV / Énergie / PA / PM / Kamas / XP / pts caracs / pts sorts).
         var perso = _etat.Personnage;
+        // Détection LEVEL UP via comparaison palier XP (msg.XpPalier différent
+        // → on a passé un cap = nouveau niveau).
+        long ancienPalier = perso.XpPalierCourant;
         perso.XpActuelle = msg.XpActuelle;
         perso.XpPalierCourant = msg.XpPalier;
         perso.XpPalierSuivant = msg.XpProchainPalier;
@@ -346,6 +349,16 @@ public sealed class TrameJeu : TrameBase
         perso.PM = msg.PM;
         perso.ActualiserVie(msg.Vie, msg.VieMax);
         perso.ActualiserEnergie(msg.Energie, msg.EnergieMax);
+
+        // Detect level up : palier qui change ↑ + notification Discord si webhook configuré.
+        if (ancienPalier > 0 && msg.XpPalier > ancienPalier && perso.Niveau > 0)
+        {
+            int nouveauNiveau = perso.Niveau + 1;
+            Journaliseur.Info($"[LEVEL-UP] 🎉 {perso.Nom} → niveau {nouveauNiveau} !");
+            var webhook = _compte.WebhookDiscordUrl;
+            if (!string.IsNullOrWhiteSpace(webhook))
+                _ = Divers.Notifications.NotificateurDiscord.NotifierLevelUpAsync(webhook, perso.Nom, nouveauNiveau);
+        }
     }
 
     private void OnDonneesCarte(MessageDonneesCarte msg)
