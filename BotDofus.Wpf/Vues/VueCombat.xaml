@@ -488,7 +488,8 @@
                                 <ComboBoxItem Tag="AlliePlusGrosHeal"       Content="Allié plus gros heal (PV manquants max)"/>
                                 <ComboBoxItem Tag="InvocationLaPlusBlessee" Content="Mes invocations la + blessée"/>
                                 <ComboBoxItem Tag="InvocationLaPlusProche"  Content="Mes invocations la + proche"/>
-                                <ComboBoxItem Tag="CelluleVide"             Content="Cellule vide (invocation libre)"/>
+                                <ComboBoxItem Tag="CelluleVide"             Content="Cellule vide (invocation libre — legacy)"/>
+                                <ComboBoxItem Tag="CelluleAdjacenteMoi"     Content="Cellule adjacente à moi (invocation priorisée)"/>
                                 <ComboBoxItem Tag="CelluleAdjacenteEnnemi"  Content="Cellule adjacente ennemi (blocage)"/>
                             </ComboBox>
                         </StackPanel>
@@ -778,53 +779,56 @@
                                Style="{StaticResource SectionTitleTextStyle}"
                                Margin="0,0,0,14"/>
 
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="220"/>
-                        </Grid.ColumnDefinitions>
+                    <!-- Stratégie (pleine largeur) -->
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="STRATEGIE" Style="{StaticResource SectionLabelStyle}"/>
+                        <ComboBox x:Name="CmbStrategie" SelectionChanged="CmbStrategie_SelectionChanged">
+                            <ComboBoxItem Content="Agressif"/>
+                            <ComboBoxItem Content="Tactique"/>
+                            <ComboBoxItem Content="Defensif"/>
+                            <ComboBoxItem Content="Soutien"/>
+                            <ComboBoxItem Content="Passif"/>
+                            <ComboBoxItem Content="Fugitif"/>
+                        </ComboBox>
+                    </StackPanel>
 
-                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
-                            <TextBlock Text="STRATEGIE" Style="{StaticResource SectionLabelStyle}"/>
-                            <ComboBox x:Name="CmbStrategie" SelectionChanged="CmbStrategie_SelectionChanged">
-                                <ComboBoxItem Content="Agressif"/>
-                                <ComboBoxItem Content="Tactique"/>
-                                <ComboBoxItem Content="Defensif"/>
-                                <ComboBoxItem Content="Soutien"/>
-                                <ComboBoxItem Content="Passif"/>
-                                <ComboBoxItem Content="Fugitif"/>
-                            </ComboBox>
-                        </StackPanel>
+                    <!-- Sauvegarde / Chargement (WrapPanel = wrap si pas assez large) -->
+                    <TextBlock Text="SAUVEGARDE / CHARGEMENT" Style="{StaticResource SectionLabelStyle}"/>
+                    <WrapPanel Margin="0,0,0,8">
+                        <Button Click="BtnSauver_Click"
+                                Style="{StaticResource TopNavButtonStyle}"
+                                Content="Sauvegarder"
+                                Margin="0,0,6,6"/>
+                        <Button Click="BtnCharger_Click"
+                                Style="{StaticResource TopNavButtonStyle}"
+                                Content="Charger"
+                                Margin="0,0,6,6"/>
+                    </WrapPanel>
 
-                        <StackPanel Grid.Column="1">
-                            <TextBlock Text="SAUVEGARDE / CHARGEMENT" Style="{StaticResource SectionLabelStyle}"/>
-                            <StackPanel Orientation="Horizontal">
-                                <Button Click="BtnSauver_Click"
-                                        Style="{StaticResource TopNavButtonStyle}"
-                                        Content="Sauvegarder"/>
-                                <Button Click="BtnCharger_Click"
-                                        Style="{StaticResource TopNavButtonStyle}"
-                                        Content="Charger"/>
-                                <Button Click="BtnPresetSadida_Click"
-                                        Style="{StaticResource TopNavButtonStyle}"
-                                        Content="Préset Sadida"
-                                        ToolTip="Crée une rotation typique Sadida : La Folle (CelluleVide) + Ronce + Larme"/>
-                                <Button Click="BtnPresetCra_Click"
-                                        Style="{StaticResource TopNavButtonStyle}"
-                                        Content="Préset Cra"
-                                        ToolTip="Crée une rotation typique Cra : Flèche Magique + Flèche Empoisonnée + Tir Critique"/>
-                                <Button Click="BtnPresetOffensifAuto_Click"
-                                        Style="{StaticResource TopNavButtonStyle}"
-                                        Content="Auto"
-                                        ToolTip="Génère une rotation offensive basique depuis tous les sorts appris"/>
-                            </StackPanel>
-                            <TextBlock x:Name="TxtEtatSauvegarde"
-                                       Text=""
-                                       Foreground="{DynamicResource SuccessBrush}"
-                                       FontSize="11"
-                                       Margin="0,4,0,0"/>
-                        </StackPanel>
-                    </Grid>
+                    <!-- Presets de classe (barre dédiée, WrapPanel pour visibilité totale) -->
+                    <TextBlock Text="PRESETS DE CLASSE" Style="{StaticResource SectionLabelStyle}"/>
+                    <WrapPanel Margin="0,0,0,4">
+                        <Button Click="BtnPresetSadida_Click"
+                                Style="{StaticResource TopNavButtonStyle}"
+                                Content="Préset Sadida"
+                                Margin="0,0,6,6"
+                                ToolTip="Crée une rotation typique Sadida : La Folle (CelluleAdjacenteMoi) + Ronce + Larme"/>
+                        <Button Click="BtnPresetCra_Click"
+                                Style="{StaticResource TopNavButtonStyle}"
+                                Content="Préset Cra"
+                                Margin="0,0,6,6"
+                                ToolTip="Crée une rotation typique Cra : Flèche Magique + Flèche Empoisonnée + Tir Critique"/>
+                        <Button Click="BtnPresetOffensifAuto_Click"
+                                Style="{StaticResource TopNavButtonStyle}"
+                                Content="Auto-offensifs"
+                                Margin="0,0,6,6"
+                                ToolTip="Génère une rotation offensive basique depuis tous les sorts appris"/>
+                    </WrapPanel>
+                    <TextBlock x:Name="TxtEtatSauvegarde"
+                               Text=""
+                               Foreground="{DynamicResource SuccessBrush}"
+                               FontSize="11"
+                               Margin="0,4,0,0"/>
                 </StackPanel>
             </Border>
 

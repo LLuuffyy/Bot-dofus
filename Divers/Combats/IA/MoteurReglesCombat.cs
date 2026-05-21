@@ -261,6 +261,7 @@ public static class MoteurReglesCombat
             // Le cast GA300 utilisera donc cette cell comme cible.
             FocusSort.CelluleVide => TrouverCelluleVide(carte, combat, moi, mapWidth),
             FocusSort.CelluleAdjacenteEnnemi => TrouverCelluleAdjacenteEnnemi(carte, combat, moi, mapWidth),
+            FocusSort.CelluleAdjacenteMoi => TrouverCelluleAdjacenteMoiPriorisee(carte, combat, moi, mapWidth),
             _ => null
         };
     }
@@ -317,6 +318,73 @@ public static class MoteurReglesCombat
             return new CombattantMonstre { Identifiant = -9001, CellulePosition = c.Identifiant, Nom = "(adj. ennemi)" };
         }
         return null;
+    }
+
+    /// <summary>
+    /// Cellule VIDE adjacente à MOI (Chebyshev=1) avec PRIORISATION :
+    /// 1) cellule entre moi et l'ennemi le + proche (vecteur unitaire dx/dy
+    ///    de moi → ennemi, normalisé à ±1 sur chaque axe),
+    /// 2) cellule du côté opposé (vecteur inversé — protège l'invoc derrière moi),
+    /// 3) première cellule vide adjacente trouvée (fallback).
+    ///
+    /// Distinct de <see cref="TrouverCelluleVide"/> qui ne priorise pas et choisit
+    /// la première cell vide rencontrée (souvent en haut-gauche de la grille).
+    /// </summary>
+    private static Combattant? TrouverCelluleAdjacenteMoiPriorisee(Carte carte, Combat combat, Combattant moi, int mapWidth)
+    {
+        var occupees = new HashSet<int>(
+            combat.Allies.Where(a => !a.EstMort).Select(a => a.CellulePosition)
+                .Concat(combat.Ennemis.Where(e => !e.EstMort).Select(e => e.CellulePosition)));
+        var (xMoi, yMoi) = Cellule.CalculerCoordonnees(moi.CellulePosition, mapWidth);
+
+        // Ennemi le + proche pour le vecteur de priorisation.
+        var ennemi = combat.Ennemis
+            .Where(e => !e.EstMort && e.PV > 0 && e.PVMax > 0)
+            .OrderBy(e => DistanceDofus(moi.CellulePosition, e.CellulePosition, mapWidth))
+            .FirstOrDefault();
+
+        // Liste des cellules vides adjacentes (Chebyshev=1) avec leurs coords relatives.
+        var candidates = new List<(Cellule cell, int dx, int dy)>();
+        foreach (var c in carte.Cellules)
+        {
+            if (c == null || !c.EstMarchable || c.IdInteractif >= 0) continue;
+            if (occupees.Contains(c.Identifiant)) continue;
+            int dx = c.X - xMoi;
+            int dy = c.Y - yMoi;
+            if (System.Math.Max(System.Math.Abs(dx), System.Math.Abs(dy)) != 1) continue;
+            candidates.Add((c, dx, dy));
+        }
+        if (candidates.Count == 0) return null;
+
+        // Pas d'ennemi → fallback immédiat (1re cell vide adjacente).
+        if (ennemi == null)
+        {
+            var fallback = candidates[0];
+            return new CombattantMonstre { Identifiant = -9002, CellulePosition = fallback.cell.Identifiant, Nom = "(adj. moi)" };
+        }
+
+        // Vecteur moi→ennemi normalisé à ±1 (Sign).
+        var (xEnn, yEnn) = Cellule.CalculerCoordonnees(ennemi.CellulePosition, mapWidth);
+        int sx = System.Math.Sign(xEnn - xMoi);
+        int sy = System.Math.Sign(yEnn - yMoi);
+
+        // Priorité 1 : cell dans la direction de l'ennemi (dx==sx && dy==sy)
+        // — bloque le chemin direct du mob vers moi.
+        var prio1 = candidates.FirstOrDefault(t => t.dx == sx && t.dy == sy);
+        if (prio1.cell != null)
+            return new CombattantMonstre { Identifiant = -9002, CellulePosition = prio1.cell.Identifiant, Nom = "(adj. moi, vers ennemi)" };
+
+        // Priorité 2 : cell opposée à l'ennemi (dx==-sx && dy==-sy)
+        // — protège l'invoc derrière moi.
+        var prio2 = candidates.FirstOrDefault(t => t.dx == -sx && t.dy == -sy);
+        if (prio2.cell != null)
+            return new CombattantMonstre { Identifiant = -9002, CellulePosition = prio2.cell.Identifiant, Nom = "(adj. moi, opposé ennemi)" };
+
+        // Priorité 3 : la moins éloignée du vecteur d'ennemi (produit scalaire max).
+        var meilleure = candidates
+            .OrderByDescending(t => t.dx * sx + t.dy * sy)
+            .First();
+        return new CombattantMonstre { Identifiant = -9002, CellulePosition = meilleure.cell.Identifiant, Nom = "(adj. moi, fallback)" };
     }
 
     /// <summary>

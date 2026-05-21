@@ -152,10 +152,19 @@ public enum FocusSort
     InvocationLaPlusProche,
 
     // === CELLULES ===
-    /// <summary>Cellule vide libre (invocation Sadida ex. La Folle).</summary>
+    /// <summary>Cellule vide libre (invocation Sadida ex. La Folle). Legacy =
+    /// première cellule vide adjacente trouvée, sans priorisation.</summary>
     CelluleVide,
     /// <summary>Cellule vide adjacente à l'ennemi le + proche (blocage avec La Bloqueuse).</summary>
     CelluleAdjacenteEnnemi,
+    /// <summary>
+    /// Cellule VIDE adjacente à MOI (Chebyshev=1), avec PRIORISATION :
+    /// 1) cellule entre moi et l'ennemi le plus proche (bloque le chemin),
+    /// 2) cellule du côté opposé à l'ennemi (protège l'invoc),
+    /// 3) première cellule vide trouvée (fallback).
+    /// Recommandé pour invocations Sadida (La Folle / Sacrifice Poupesque).
+    /// </summary>
+    CelluleAdjacenteMoi,
 }
 
 /// <summary>Méthode de lancement (= dyshay MetodoLanzamiento).</summary>

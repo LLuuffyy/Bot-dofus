@@ -573,7 +573,9 @@ public partial class VueCombat : UserControl
             });
         }
         // Priorités décroissantes : invocations 1er tour, puis offensifs, puis utilitaires.
-        Ajout(182, "La Folle",            FocusSort.CelluleVide,         100, 1, MethodeLancement.LesDeux, premierTour: true);
+        // La Folle = invocation adjacente à MOI avec PRIORISATION (entre moi/ennemi).
+        // NombreParTour=3 pour permettre plusieurs poupées sur le même tour si PA dispo.
+        Ajout(182, "La Folle",            FocusSort.CelluleAdjacenteMoi, 100, 3, MethodeLancement.LesDeux, premierTour: false);
         Ajout(193, "La Bloqueuse",        FocusSort.CelluleAdjacenteEnnemi, 95, 1, MethodeLancement.LesDeux, premierTour: true);
         Ajout(183, "Ronce",               FocusSort.EnnemiLePlusFaible,   80, 2, MethodeLancement.LesDeux);
         Ajout(195, "Larme",               FocusSort.EnnemiLePlusFaible,   75, 1, MethodeLancement.LesDeux);
