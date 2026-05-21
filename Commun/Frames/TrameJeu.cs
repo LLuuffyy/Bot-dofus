@@ -968,6 +968,21 @@ public sealed class TrameJeu : TrameBase
             }
             if (castsEffectues > 0)
             {
+                // Phase 6 — POST-CAST KITING (dyshay get_Fin_Turno).
+                // Si Mode = Eloigne/Fuyard et qu'il reste des PM → reculer
+                // au max après avoir cast. Stratégie classique « cast and back ».
+                if ((cfg.Mode == Divers.Combats.IA.ModeCombat.Eloigne
+                  || cfg.Mode == Divers.Combats.IA.ModeCombat.Fuyard)
+                  && perso.PM > 0
+                  && ennemisVivants.Any(e => !e.EstMort))
+                {
+                    var ennemisEnVie = combat.Ennemis.Where(e => !e.EstMort && e.PV > 0 && e.PVMax > 0).ToList();
+                    if (ennemisEnVie.Count > 0)
+                    {
+                        Journaliseur.Info($"[POST-CAST-KITE] Mode={cfg.Mode}, PM restants={perso.PM} → tente de reculer");
+                        await PreMouvementSelonModeAsync(perso, combat, ennemisEnVie).ConfigureAwait(false);
+                    }
+                }
                 // Pass turn après tous les casts effectués ce tour.
                 await Task.Delay(System.Random.Shared.Next(800, 1300)).ConfigureAwait(false);
                 Journaliseur.Info($"[ACTION] Passe le tour (Gt) — {castsEffectues} cast(s) ce tour");

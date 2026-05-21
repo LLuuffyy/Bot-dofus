@@ -122,8 +122,8 @@ public static class MoteurReglesCombat
                 cible = combat.Ennemis.Where(e => !e.EstMort && e.PV > 0 && e.PVMax > 0)
                     .OrderByDescending(e => e.PV).FirstOrDefault();
             else
-                cible = ChoisirCible(regle.Focus, combat, moi, mapWidth);
-            if (cible == null) continue;
+                cible = ChoisirCible(regle.Focus, combat, moi, mapWidth, carte);
+            if (cible == null) { Diag($"focus={regle.Focus} : aucune cible valide"); continue; }
 
             // === Conditions Cible (bloc « Cible » SynFus) ===
             if (cible.PVMax > 0)
@@ -184,7 +184,7 @@ public static class MoteurReglesCombat
     /// Filtre robuste : on jette les combattants à PV=0/PVMax=0 (non initialisés
     /// par un GTM complet — cf. fix log 18:27:09 du bot ciblant un cadavre).
     /// </summary>
-    private static Combattant? ChoisirCible(FocusSort focus, Combat combat, Combattant moi, int mapWidth)
+    private static Combattant? ChoisirCible(FocusSort focus, Combat combat, Combattant moi, int mapWidth, Carte carte)
     {
         var ennemisVivants = combat.Ennemis.Where(e => !e.EstMort && e.PV > 0 && e.PVMax > 0).ToList();
         var alliesVivants = combat.Allies.Where(a => !a.EstMort && a.PVMax > 0).ToList();
@@ -236,12 +236,67 @@ public static class MoteurReglesCombat
                 .OrderBy(i => DistanceDofus(moi.CellulePosition, i.CellulePosition, mapWidth))
                 .FirstOrDefault(),
 
-            // === CELLULES (TODO : besoin scan grille pour cells libres adjacentes) ===
-            // CelluleVide / CelluleAdjacenteEnnemi : nécessite accès à Carte +
-            // détermination cells marchables non occupées. Implémentation MVP
-            // dans ChoisirCelluleSpeciale (futur). Pour l'instant : null.
+            // === CELLULES (sorts d'invocation type La Folle / La Bloqueuse) ===
+            // Retourne un Combattant FICTIF dont CellulePosition = la cell choisie.
+            // Le cast GA300 utilisera donc cette cell comme cible.
+            FocusSort.CelluleVide => TrouverCelluleVide(carte, combat, moi, mapWidth),
+            FocusSort.CelluleAdjacenteEnnemi => TrouverCelluleAdjacenteEnnemi(carte, combat, moi, mapWidth),
             _ => null
         };
+    }
+
+    /// <summary>
+    /// Cherche une cellule vide marchable adjacente (Chebyshev=1) à MOI.
+    /// Utilisée pour invocations type La Folle (Sadida) qui pop adjacent au caster.
+    /// </summary>
+    private static Combattant? TrouverCelluleVide(Carte carte, Combat combat, Combattant moi, int mapWidth)
+    {
+        var occupees = new HashSet<int>(
+            combat.Allies.Where(a => !a.EstMort).Select(a => a.CellulePosition)
+                .Concat(combat.Ennemis.Where(e => !e.EstMort).Select(e => e.CellulePosition)));
+        var (xMoi, yMoi) = Cellule.CalculerCoordonnees(moi.CellulePosition, mapWidth);
+
+        foreach (var c in carte.Cellules)
+        {
+            if (c == null || !c.EstMarchable || c.IdInteractif >= 0) continue;
+            if (occupees.Contains(c.Identifiant)) continue;
+            int dx = System.Math.Abs(c.X - xMoi);
+            int dy = System.Math.Abs(c.Y - yMoi);
+            int dist = System.Math.Max(dx, dy);
+            if (dist != 1) continue;  // strictement adjacent
+            return new CombattantMonstre { Identifiant = -9000, CellulePosition = c.Identifiant, Nom = "(cell vide)" };
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Cherche une cellule vide marchable adjacente à l'ennemi le plus proche.
+    /// Utilisée pour invocations de blocage (La Bloqueuse Sadida) qui pop entre
+    /// nous et l'ennemi pour stopper son rush.
+    /// </summary>
+    private static Combattant? TrouverCelluleAdjacenteEnnemi(Carte carte, Combat combat, Combattant moi, int mapWidth)
+    {
+        var ennemi = combat.Ennemis
+            .Where(e => !e.EstMort && e.PV > 0 && e.PVMax > 0)
+            .OrderBy(e => DistanceDofus(moi.CellulePosition, e.CellulePosition, mapWidth))
+            .FirstOrDefault();
+        if (ennemi == null) return null;
+        var occupees = new HashSet<int>(
+            combat.Allies.Where(a => !a.EstMort).Select(a => a.CellulePosition)
+                .Concat(combat.Ennemis.Where(e => !e.EstMort).Select(e => e.CellulePosition)));
+        var (xEnn, yEnn) = Cellule.CalculerCoordonnees(ennemi.CellulePosition, mapWidth);
+
+        foreach (var c in carte.Cellules)
+        {
+            if (c == null || !c.EstMarchable || c.IdInteractif >= 0) continue;
+            if (occupees.Contains(c.Identifiant)) continue;
+            int dx = System.Math.Abs(c.X - xEnn);
+            int dy = System.Math.Abs(c.Y - yEnn);
+            int dist = System.Math.Max(dx, dy);
+            if (dist != 1) continue;  // strictement adjacent à l'ennemi
+            return new CombattantMonstre { Identifiant = -9001, CellulePosition = c.Identifiant, Nom = "(adj. ennemi)" };
+        }
+        return null;
     }
 
     /// <summary>
