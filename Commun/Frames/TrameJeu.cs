@@ -937,6 +937,17 @@ public sealed class TrameJeu : TrameBase
             return;
         }
 
+        // === PRÉ-MOUVEMENT selon Mode (demande user 07:13) ===
+        // Avant de cast, on respecte le Mode :
+        // - Agressif → se rapprocher au max de l'ennemi (idéal CAC) tant qu'on a des PM
+        // - Eloigne / Fuyard → s'éloigner au max (dans la portée du meilleur sort)
+        // - Equilibre → ajuster à DistancePreferee
+        // Le mode Agressif notamment doit TOUJOURS avancer si pas en CAC, même si le
+        // sort actuel est en portée — pour finir au CAC et profiter des bonus mêlée
+        // (et pousser la cible vers les alliés).
+        await PreMouvementSelonModeAsync(perso, combat, ennemisVivants).ConfigureAwait(false);
+        maCell = perso.CellulePosition ?? maCell;  // resync après mouvement
+
         // === Phase 1 moteur règles SynFus/dyshay + MULTI-CAST (N.1) ===
         // Si l'user a configuré des règles dans peleas/<perso>.json, on les
         // évalue dans l'ordre de priorité décroissante. **Boucle multi-cast**
@@ -1341,6 +1352,136 @@ public sealed class TrameJeu : TrameBase
     /// rejette les règles hors portée → fallback legacy). Le multi-cast par
     /// tour viendra en Phase 2 (drain PA, respecte NombreParTour).
     /// </remarks>
+    /// <summary>
+    /// Pré-mouvement selon Mode (demande user 07:13). Avant la boucle multi-cast :
+    /// - Agressif → se rapprocher de l'ennemi le plus proche (idéal CAC dist=1)
+    /// - Eloigne / Fuyard → s'éloigner au max de l'ennemi le plus proche
+    /// - Equilibre → ajuster à DistancePreferee (skip si déjà bien)
+    /// Utilise le pathfinder combat 4-dir + le pipeline event-based ADR-002.
+    /// </summary>
+    private async Task PreMouvementSelonModeAsync(
+        BotDofus.Divers.Jeu.Personnage.Personnage perso,
+        BotDofus.Divers.Combats.Combat combat,
+        System.Collections.Generic.List<BotDofus.Divers.Combats.Combattants.Combattant> ennemisVivants)
+    {
+        if (perso.PM <= 0 || perso.CellulePosition is not int maCellId) return;
+        var carte = _etat.CarteCourante;
+        if (carte == null) return;
+        var depart = carte.Obtenir(maCellId);
+        if (depart == null) return;
+        var cfg = _compte.ConfigCombat;
+        var mode = cfg?.Mode ?? BotDofus.Divers.Combats.IA.ModeCombat.Equilibre;
+        int distPref = cfg?.DistancePreferee ?? 5;
+
+        // Ennemi le plus proche = pivot du score.
+        var ennemi = ennemisVivants
+            .OrderBy(e => DistanceDofus(maCellId, e.CellulePosition))
+            .First();
+        int distActuelle = DistanceDofus(maCellId, ennemi.CellulePosition);
+
+        // Gate par mode : skip si déjà optimal.
+        switch (mode)
+        {
+            case BotDofus.Divers.Combats.IA.ModeCombat.Agressif when distActuelle <= 1: return;
+            case BotDofus.Divers.Combats.IA.ModeCombat.Equilibre when System.Math.Abs(distActuelle - distPref) <= 1: return;
+        }
+
+        var (xE, yE) = BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees(ennemi.CellulePosition, carte.Largeur);
+        int pmMax = perso.PM;
+
+        // Cells occupées = interdites (alliés vivants + ennemis vivants).
+        var interdites = new System.Collections.Generic.HashSet<BotDofus.Divers.Cartes.Cellule>();
+        foreach (var a in combat.Allies)
+        {
+            if (a.Identifiant == perso.Identifiant) continue;
+            var c = carte.Obtenir(a.CellulePosition);
+            if (c != null) interdites.Add(c);
+        }
+        foreach (var e in combat.Ennemis)
+        {
+            if (e.EstMort) continue;
+            var c = carte.Obtenir(e.CellulePosition);
+            if (c != null) interdites.Add(c);
+        }
+
+        // Énumère cells atteignables (4-dir, PM max), score selon mode.
+        BotDofus.Divers.Cartes.Cellule? meilleureCible = null;
+        System.Collections.Generic.List<BotDofus.Divers.Cartes.Cellule>? meilleurChemin = null;
+        double meilleurScore = double.MaxValue;
+        int meilleurNbPasTie = int.MaxValue;
+        int meilleureDistAfter = distActuelle;
+
+        foreach (var c in carte.Cellules)
+        {
+            if (c == null || !c.EstMarchable || c.IdInteractif >= 0 || interdites.Contains(c)) continue;
+            int dEstimee = System.Math.Abs(c.X - depart.X) + System.Math.Abs(c.Y - depart.Y);
+            if (dEstimee == 0 || dEstimee > pmMax) continue;
+            int distVersEnnemi = System.Math.Max(System.Math.Abs(c.X - xE), System.Math.Abs(c.Y - yE));
+            double score = mode switch
+            {
+                BotDofus.Divers.Combats.IA.ModeCombat.Agressif => distVersEnnemi,
+                BotDofus.Divers.Combats.IA.ModeCombat.Eloigne or BotDofus.Divers.Combats.IA.ModeCombat.Fuyard => -distVersEnnemi,
+                BotDofus.Divers.Combats.IA.ModeCombat.Equilibre => System.Math.Abs(distVersEnnemi - distPref),
+                _ => 0
+            };
+            var chemin = BotDofus.Divers.Cartes.Deplacement.Pathfinder.Trouver(carte, depart, c, interdites, combat: true);
+            if (chemin == null) continue;
+            int nbPas = chemin.Count - 1;
+            if (nbPas <= 0 || nbPas > pmMax) continue;
+            if (score < meilleurScore || (score == meilleurScore && nbPas < meilleurNbPasTie))
+            {
+                meilleurScore = score;
+                meilleurNbPasTie = nbPas;
+                meilleureCible = c;
+                meilleurChemin = chemin;
+                meilleureDistAfter = distVersEnnemi;
+            }
+        }
+
+        if (meilleureCible == null || meilleurChemin == null)
+        {
+            Journaliseur.Info($"[PRE-MOVE] Mode={mode} : aucune cell d'amélioration trouvée (dist actuelle={distActuelle}, PM={pmMax})");
+            return;
+        }
+
+        // Skip si la cible est notre cell actuelle ou si le mouvement n'améliore RIEN
+        // (pour Agressif → on veut réduire la dist ; pour Eloigne → augmenter).
+        bool ameliore = mode switch
+        {
+            BotDofus.Divers.Combats.IA.ModeCombat.Agressif => meilleureDistAfter < distActuelle,
+            BotDofus.Divers.Combats.IA.ModeCombat.Eloigne or BotDofus.Divers.Combats.IA.ModeCombat.Fuyard => meilleureDistAfter > distActuelle,
+            BotDofus.Divers.Combats.IA.ModeCombat.Equilibre => System.Math.Abs(meilleureDistAfter - distPref) < System.Math.Abs(distActuelle - distPref),
+            _ => false
+        };
+        if (!ameliore)
+        {
+            Journaliseur.Info($"[PRE-MOVE] Mode={mode} : pas d'amélioration (dist {distActuelle} → {meilleureDistAfter})");
+            return;
+        }
+
+        var paquetDep = BotDofus.Divers.Cartes.Deplacement.Pathfinder.PaquetDeplacement(meilleurChemin);
+        Journaliseur.Info($"[PRE-MOVE] Mode={mode} | départ cell {maCellId} → arrivée cell {meilleureCible.Identifiant} "
+            + $"| {meilleurNbPasTie} pas | dist ennemi {distActuelle} → {meilleureDistAfter}");
+        Journaliseur.Info($"[ACTION-MV] Envoi GA001 (pré-mouvement) → '{paquetDep}'");
+        await _session.EnvoyerAuServeurAsync(paquetDep).ConfigureAwait(false);
+
+        int timeoutMs = System.Math.Max(2500, meilleurNbPasTie * 450 + 1000);
+        var resultat = await Divers.Combats.IA.PipelineDeplacementCombat
+            .AttendreMouvementOuTimeoutAsync(combat, perso.Identifiant, meilleureCible.Identifiant, timeoutMs, default)
+            .ConfigureAwait(false);
+
+        if (resultat == Divers.Combats.IA.ResultatDeplacementCombat.Confirme
+            || resultat == Divers.Combats.IA.ResultatDeplacementCombat.ConfirmePartiel)
+        {
+            Journaliseur.Info($"[PRE-MOVE] Mouvement {resultat} : cell réelle = {perso.CellulePosition}");
+            await Task.Delay(System.Random.Shared.Next(300, 500)).ConfigureAwait(false);
+        }
+        else
+        {
+            Journaliseur.Avertir($"[PRE-MOVE] Timeout {timeoutMs}ms — serveur n'a pas confirmé. Le bot continue le tour sur sa position actuelle.");
+        }
+    }
+
     /// <summary>
     /// N.1 — Envoie un seul cast (GA300 + GKK0) SANS pass turn. La boucle
     /// multi-cast dans <see cref="JouerTourCombatAsync"/> rappelle cette
