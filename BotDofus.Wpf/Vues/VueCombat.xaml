@@ -54,6 +54,12 @@
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="MinHeight" Value="30"/>
+            <!-- TextElement.Foreground (attached) propage aux enfants visuels du
+                 ComboBox : ContentPresenter du SelectionBox + tooltips + popup.
+                 Override le default MaterialDesign qui rendait le SelectedItem
+                 invisible (texte blanc sur fond blanc constaté screenshot 014407). -->
+            <Setter Property="TextElement.Foreground" Value="#F2F4F8"/>
+            <Setter Property="TextBlock.Foreground" Value="#F2F4F8"/>
         </Style>
 
         <Style TargetType="ComboBoxItem">
