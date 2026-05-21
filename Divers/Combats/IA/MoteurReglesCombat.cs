@@ -186,18 +186,24 @@ public static class MoteurReglesCombat
     /// </summary>
     private static Combattant? ChoisirCible(FocusSort focus, Combat combat, Combattant moi, int mapWidth)
     {
-        var ennemisVivants = combat.Ennemis.Where(e => !e.EstMort && e.PV > 0 && e.PVMax > 0);
+        var ennemisVivants = combat.Ennemis.Where(e => !e.EstMort && e.PV > 0 && e.PVMax > 0).ToList();
         var alliesVivants = combat.Allies.Where(a => !a.EstMort && a.PVMax > 0);
+
+        // Phase 5 — éviter de cibler les invocations adverses pour PlusFaible/PlusFort
+        // (les invocations ennemies pop souvent à 10-30 PV → biais qui ferait que
+        // « Plus Faible » cible l'invoc au lieu du boss. Priorité au mob principal.)
+        var ennemisPrincipaux = ennemisVivants.Where(e => !e.EstInvocation).ToList();
+        if (ennemisPrincipaux.Count == 0) ennemisPrincipaux = ennemisVivants;  // fallback si que des invoc
 
         return focus switch
         {
             FocusSort.EnnemiLePlusProche => ennemisVivants
                 .OrderBy(e => DistanceDofus(moi.CellulePosition, e.CellulePosition, mapWidth))
                 .FirstOrDefault(),
-            FocusSort.EnnemiLePlusFaible => ennemisVivants
+            FocusSort.EnnemiLePlusFaible => ennemisPrincipaux
                 .OrderBy(e => e.PV)
                 .FirstOrDefault(),
-            FocusSort.EnnemiLePlusFort => ennemisVivants
+            FocusSort.EnnemiLePlusFort => ennemisPrincipaux
                 .OrderByDescending(e => e.PV)
                 .FirstOrDefault(),
             FocusSort.Moi => moi,
