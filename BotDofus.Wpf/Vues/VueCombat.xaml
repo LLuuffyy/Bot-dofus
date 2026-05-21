@@ -696,6 +696,20 @@
                                               SelectionChanged="CmbElement_SelectionChanged"
                                               SelectedItem="{Binding ElementRequis, Mode=TwoWay}"/>
                                 </DockPanel>
+                                <DockPanel Margin="0,4,0,6"
+                                           ToolTip="Cooldown : nombre de tours minimum entre 2 lancers de ce sort (0 = pas de cooldown, comme dyshay hechizos_intervalo). Ex. Sacrifice Poupesque = 5 tours.">
+                                    <TextBlock Text="Cooldown (tours) :" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+                                    <TextBox x:Name="TxtCooldown" Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="CooldownTours"
+                                             Text="{Binding CooldownTours, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <DockPanel Margin="0,0,0,6"
+                                           ToolTip="Nombre maximum de lancers sur la même cible par tour (0 = illimité). Ex. Ronce x2/tour mais max 1 par ennemi → spread les casts.">
+                                    <TextBlock Text="Max / cible (tour) :" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+                                    <TextBox x:Name="TxtNombreParCible" Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="NombreParCible"
+                                             Text="{Binding NombreParCible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
                             </StackPanel>
                         </GroupBox>
                     </Grid>
