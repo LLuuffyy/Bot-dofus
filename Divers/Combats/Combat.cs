@@ -60,6 +60,36 @@ public sealed class Combat
     public event EventHandler<MouvementBotArgs>? MouvementBotConfirme;
 
     /// <summary>
+    /// Sort sélectionné dans l'UI Combat (via clic ⓘ). Permet à MapViewer
+    /// de surligner les cellules dans la portée du sort. -1 = pas de sélection.
+    /// </summary>
+    public int SortSelectionneId { get; private set; } = -1;
+    public int SortPorteeMin { get; private set; }
+    public int SortPorteeMax { get; private set; }
+    public string SortSelectionneNom { get; private set; } = string.Empty;
+
+    /// <summary>Émis quand le sort sélectionné dans VueCombat change.</summary>
+    public event EventHandler? SortSelectionneChange;
+
+    public void DefinirSortSelectionne(int idSort, int porteeMin, int porteeMax, string nom)
+    {
+        SortSelectionneId = idSort;
+        SortPorteeMin = porteeMin;
+        SortPorteeMax = porteeMax;
+        SortSelectionneNom = nom;
+        SortSelectionneChange?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void EffacerSortSelectionne()
+    {
+        SortSelectionneId = -1;
+        SortPorteeMin = 0;
+        SortPorteeMax = 0;
+        SortSelectionneNom = string.Empty;
+        SortSelectionneChange?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
     /// Déclenche l'event <see cref="MouvementBotConfirme"/>. Appelé par
     /// <see cref="Commun.Frames.TrameJeu.OnActionJeu"/> quand un broadcast
     /// <c>GA;0/1</c> est reçu et que l'acteur correspond à <see cref="IdentifiantAllie"/>.

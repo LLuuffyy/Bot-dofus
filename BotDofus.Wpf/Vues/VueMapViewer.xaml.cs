@@ -69,6 +69,7 @@ public partial class VueMapViewer : UserControl
             oldCombat.PositionsChangees -= OnCombatChange;
             oldCombat.TourChange       -= OnCombatTourChange;
             oldCombat.EtatChange       -= OnCombatEtatChange;
+            oldCombat.SortSelectionneChange -= OnCombatChange;
         }
 
         _contexteLie = contexte;
@@ -81,6 +82,7 @@ public partial class VueMapViewer : UserControl
         combat.PositionsChangees += OnCombatChange;
         combat.TourChange       += OnCombatTourChange;
         combat.EtatChange       += OnCombatEtatChange;
+        combat.SortSelectionneChange += OnCombatChange;
         Rafraichir();
     }
 
@@ -327,9 +329,60 @@ public partial class VueMapViewer : UserControl
             // figé, pas de cells de placement résiduelles (cf. H.4
             // DessinerCellulesPlacement gate Placement only).
             DessinerCombattants(carte);
+            // Highlights : si un sort est sélectionné dans l'onglet Combat,
+            // surligne les cells dans sa portée autour de ma position actuelle.
+            DessinerHighlightsSortSelectionne(carte);
         }
         MettreAJourListeEntites(carte);
         CentrerSiNecessaire(carte);
+    }
+
+    /// <summary>
+    /// Surligne en orange semi-transparent les cells dans la portée du sort
+    /// sélectionné (clic ⓘ dans VueCombat), autour de la position actuelle
+    /// du perso. Permet de voir d'un coup d'œil les cibles potentielles.
+    /// </summary>
+    private void DessinerHighlightsSortSelectionne(BotDofus.Divers.Cartes.Carte carte)
+    {
+        if (_contexte == null) return;
+        var combat = _contexte.EtatJeu.Combat;
+        if (combat.SortSelectionneId < 0 || combat.SortPorteeMax <= 0) return;
+        int? maCell = _contexte.EtatJeu.Personnage.CellulePosition;
+        if (maCell is null) return;
+        var depart = carte.Obtenir(maCell.Value);
+        if (depart == null) return;
+
+        int pmin = combat.SortPorteeMin;
+        int pmax = combat.SortPorteeMax;
+        var fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x55, 0xFF, 0xB7, 0x00));
+        var stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0xAA, 0xFF, 0xB7, 0x00));
+        foreach (var c in carte.Cellules)
+        {
+            if (c == null) continue;
+            int dx = System.Math.Abs(c.X - depart.X);
+            int dy = System.Math.Abs(c.Y - depart.Y);
+            int dist = System.Math.Max(dx, dy);
+            if (dist < pmin || dist > pmax) continue;
+            // Ne surligne pas notre propre cell (Joueur déjà dessiné).
+            if (c.Identifiant == depart.Identifiant) continue;
+            DessinerCelluleSurligne(c, fill, stroke);
+        }
+    }
+
+    private void DessinerCelluleSurligne(BotDofus.Divers.Cartes.Cellule c,
+        System.Windows.Media.Brush fill, System.Windows.Media.Brush stroke)
+    {
+        if (!_cellulesPolygons.TryGetValue(c.Identifiant, out var poly)) return;
+        var overlay = new System.Windows.Shapes.Polygon
+        {
+            Points = poly.Points,
+            Fill = fill,
+            Stroke = stroke,
+            StrokeThickness = 1.5,
+            IsHitTestVisible = false,
+        };
+        Canvas.SetZIndex(overlay, 5);
+        CanvasMap.Children.Add(overlay);
     }
 
     private void RecalculerCadreCarte(Carte carte)

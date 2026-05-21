@@ -310,6 +310,16 @@ public partial class VueCombat : UserControl
         TxtCondTitre.Text = $"« {vm.NomSort} » (sort #{vm.Regle.IdSort})";
         // Scroll vers le panel pour confort visuel (rotation peut être longue).
         PanelConditions.BringIntoView();
+        // Highlights MapViewer : expose le sort sélectionné à VueMapViewer
+        // pour que les cells dans la portée soient surlignées sur la grille.
+        if (_contexte != null)
+        {
+            int niv = _contexte.EtatJeu.Personnage.SortsAppris.TryGetValue(vm.Regle.IdSort, out var n) ? n : 1;
+            var info = vm.Info;
+            int pmin = info?.Stats(niv)?.PorteeMin ?? vm.Regle.PorteeMin;
+            int pmax = info?.Stats(niv)?.PorteeMax ?? vm.Regle.PorteeMax;
+            _contexte.EtatJeu.Combat.DefinirSortSelectionne(vm.Regle.IdSort, pmin, pmax, vm.NomSort);
+        }
     }
 
     // ---------------------------------------------------------------------
