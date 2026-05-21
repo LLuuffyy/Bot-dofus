@@ -60,6 +60,19 @@ public sealed class Combat
     public event EventHandler<MouvementBotArgs>? MouvementBotConfirme;
 
     /// <summary>
+    /// Cells ciblées par nos casts d'invocation (Focus=CelluleVide ou
+    /// CelluleAdjacenteEnnemi). Quand le GTM suivant retourne un nouveau
+    /// combattant à une de ces cells, il est classé COMME MON INVOCATION
+    /// (Allies + EstInvocation=true) au lieu d'ennemi (heuristique id&lt;0).
+    /// Vidée par <see cref="OnPet"/> (déprécation : géré dans TrameJeu).
+    /// </summary>
+    public System.Collections.Generic.HashSet<int> CellsInvocationsAttendues { get; } = new();
+
+    /// <summary>IDs des combattants identifiés comme MES invocations.
+    /// Sert au GTM handler à les mettre dans Allies (pas Ennemis) à chaque MAJ.</summary>
+    public System.Collections.Generic.HashSet<int> MesInvocationsIds { get; } = new();
+
+    /// <summary>
     /// Sort sélectionné dans l'UI Combat (via clic ⓘ). Permet à MapViewer
     /// de surligner les cellules dans la portée du sort. -1 = pas de sélection.
     /// </summary>
@@ -144,6 +157,8 @@ public sealed class Combat
         CompteursRegleParTour.Clear();
         CompteursRegleParCible.Clear();
         DernierTourLanceParSort.Clear();
+        CellsInvocationsAttendues.Clear();
+        MesInvocationsIds.Clear();
         ChangerEtat(EtatCombat.Inactif);
         PositionsChangees?.Invoke(this, EventArgs.Empty);
     }

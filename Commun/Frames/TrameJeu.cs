@@ -204,8 +204,22 @@ public sealed class TrameJeu : TrameBase
 
         foreach (var c in msg.Combattants)
         {
+            // Tracking invocations Sadida : si l'ID a déjà été identifié comme
+            // MON invocation, c'est un allié peu importe le signe de l'ID.
+            // Si nouveau combattant à une cell ciblée par un de mes casts
+            // d'invoc → idem, et on l'ajoute au registre.
+            bool estMonInvoc = _etat.Combat.MesInvocationsIds.Contains(c.Id);
+            if (!estMonInvoc && _etat.Combat.CellsInvocationsAttendues.Contains(c.Cellule))
+            {
+                estMonInvoc = true;
+                _etat.Combat.MesInvocationsIds.Add(c.Id);
+                _etat.Combat.CellsInvocationsAttendues.Remove(c.Cellule);
+                Journaliseur.Info($"[INVOC] Combattant #{c.Id} à cell {c.Cellule} identifié comme MON invocation (Sadida).");
+            }
+
             // Heuristique PvM Incarnam : id < 0 = monstre/ennemi, id > 0 = joueur/allié.
-            bool ennemi = c.Id < 0;
+            // EXCEPTION : si l'ID est dans MesInvocationsIds → toujours allié.
+            bool ennemi = !estMonInvoc && c.Id < 0;
             var liste = ennemi ? _etat.Combat.Ennemis : _etat.Combat.Allies;
 
             var existant = liste.FirstOrDefault(x => x.Identifiant == c.Id);
@@ -222,6 +236,10 @@ public sealed class TrameJeu : TrameBase
             existant.PA = c.Pa;
             existant.PM = c.Pm;
             existant.EstMort = !c.Vivant;
+            // Marque les invocations alliées (utilisé par MoteurReglesCombat.ChoisirCible
+            // pour PlusFaible/PlusFort qui skip les invocs adverses, ET pour ne PAS
+            // que mes propres invocs soient ciblées comme ennemis).
+            if (estMonInvoc) existant.EstInvocation = true;
 
             // FIX CRITIQUE (21/05 morning) : si c'est MOI, resync aussi
             // _etat.Personnage.CellulePosition. Sinon le mode SECOURS optimiste
@@ -1014,6 +1032,17 @@ public sealed class TrameJeu : TrameBase
             const int MAX_CASTS_PAR_TOUR = 8;
             while (castsEffectues < MAX_CASTS_PAR_TOUR)
             {
+                // ═══ SYNC critical : avant chaque Evaluer(), aligner la cell
+                // du Combattant représentant MOI dans Combat.Allies sur la
+                // valeur autoritative perso.CellulePosition (mise à jour par
+                // pré-mouvement / GTM resync). Sans ça, Evaluer voit l'ancienne
+                // cell et TrouverCelluleVide retourne des cells adjacentes à
+                // la mauvaise position → ANTI-BAN refuse le cast (log 09:57:24
+                // « cible cell 381 dist=1 » mais réelle dist=3).
+                var moiAllie = combat.Allies.FirstOrDefault(a => a.Identifiant == perso.Identifiant);
+                if (moiAllie != null && perso.CellulePosition.HasValue)
+                    moiAllie.CellulePosition = perso.CellulePosition.Value;
+
                 var resultat = Divers.Combats.IA.MoteurReglesCombat.Evaluer(
                     combat, cfg, perso.SortsAppris, _etat.CarteCourante);
                 if (resultat == null) break;
@@ -1612,6 +1641,17 @@ public sealed class TrameJeu : TrameBase
                 (combatGarde.CompteursRegleParTour.TryGetValue(r.Sort.Identifiant, out var cntG) ? cntG : 0)
                 + System.Math.Max(1, r.Regle.NombreParTour);
             return;
+        }
+
+        // Si c'est un sort d'invocation (Focus=CelluleVide ou CelluleAdjacenteEnnemi),
+        // tracker la cell ciblée → le prochain combattant qui apparaît à cette
+        // cell sera classé comme MON invocation (Allies + EstInvocation) au lieu
+        // d'ennemi par l'heuristique id<0 (fix bug user 09:58 « il tape ses invocs »).
+        if (r.Regle.Focus == Divers.Combats.IA.FocusSort.CelluleVide
+            || r.Regle.Focus == Divers.Combats.IA.FocusSort.CelluleAdjacenteEnnemi)
+        {
+            _etat.Combat.CellsInvocationsAttendues.Add(r.Cible.CellulePosition);
+            Journaliseur.Info($"[INVOC] Cell {r.Cible.CellulePosition} ajoutée aux invocations attendues");
         }
 
         var paquet = $"GA300{r.Sort.Identifiant};{r.Cible.CellulePosition}";
