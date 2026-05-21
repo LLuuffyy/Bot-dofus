@@ -54,12 +54,21 @@
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="MinHeight" Value="30"/>
-            <!-- TextElement.Foreground (attached) propage aux enfants visuels du
-                 ComboBox : ContentPresenter du SelectionBox + tooltips + popup.
-                 Override le default MaterialDesign qui rendait le SelectedItem
-                 invisible (texte blanc sur fond blanc constaté screenshot 014407). -->
+            <!-- TextElement.Foreground attached + TextBlock.Foreground attached :
+                 propagent aux enfants visuels du ComboBox y compris ContentPresenter
+                 du SelectionBox. Override le default MaterialDesign qui rendait
+                 le SelectedItem invisible (white-on-white observé screenshots user). -->
             <Setter Property="TextElement.Foreground" Value="#F2F4F8"/>
             <Setter Property="TextBlock.Foreground" Value="#F2F4F8"/>
+            <Style.Resources>
+                <!-- Style implicite TextBlock dans le subtree ComboBox :
+                     tous les TextBlocks générés par ContentPresenter (y compris
+                     SelectionBox quand l'item sélectionné est un string) prennent
+                     cette couleur. -->
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="#F2F4F8"/>
+                </Style>
+            </Style.Resources>
         </Style>
 
         <Style TargetType="ComboBoxItem">
@@ -409,18 +418,18 @@
                         <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0,0,12">
                             <TextBlock Text="FOCUS" Style="{StaticResource SectionLabelStyle}"/>
                             <ComboBox x:Name="CmbCible" SelectedIndex="0">
-                                <ComboBoxItem Tag="EnnemiLePlusProche"><TextBlock Text="Ennemi le + proche"      Foreground="#F2F4F8"/></ComboBoxItem>
-                                <ComboBoxItem Tag="EnnemiLePlusFaible"><TextBlock Text="Ennemi le + faible (skip invoc)" Foreground="#F2F4F8"/></ComboBoxItem>
-                                <ComboBoxItem Tag="EnnemiLePlusFort"><TextBlock Text="Ennemi le + fort (skip invoc)"     Foreground="#F2F4F8"/></ComboBoxItem>
-                                <ComboBoxItem Tag="EnnemiLePlusLoin"><TextBlock Text="Ennemi le + loin"          Foreground="#F2F4F8"/></ComboBoxItem>
-                                <ComboBoxItem Tag="Moi"><TextBlock Text="Moi"                                     Foreground="#F2F4F8"/></ComboBoxItem>
-                                <ComboBoxItem Tag="AllieLePlusBlesse"><TextBlock Text="Allié le + blessé"        Foreground="#F2F4F8"/></ComboBoxItem>
-                                <ComboBoxItem Tag="AllieLePlusProche"><TextBlock Text="Allié le + proche"        Foreground="#F2F4F8"/></ComboBoxItem>
-                                <ComboBoxItem Tag="AlliePlusGrosHeal"><TextBlock Text="Allié plus gros heal (PV manquants max)" Foreground="#F2F4F8"/></ComboBoxItem>
-                                <ComboBoxItem Tag="InvocationLaPlusBlessee"><TextBlock Text="Mes invocations la + blessée" Foreground="#F2F4F8"/></ComboBoxItem>
-                                <ComboBoxItem Tag="InvocationLaPlusProche"><TextBlock Text="Mes invocations la + proche"   Foreground="#F2F4F8"/></ComboBoxItem>
-                                <ComboBoxItem Tag="CelluleVide"><TextBlock Text="Cellule vide (invocation libre)" Foreground="#F2F4F8"/></ComboBoxItem>
-                                <ComboBoxItem Tag="CelluleAdjacenteEnnemi"><TextBlock Text="Cellule adjacente ennemi (blocage)" Foreground="#F2F4F8"/></ComboBoxItem>
+                                <ComboBoxItem Tag="EnnemiLePlusProche"      Content="Ennemi le + proche"/>
+                                <ComboBoxItem Tag="EnnemiLePlusFaible"      Content="Ennemi le + faible (skip invoc)"/>
+                                <ComboBoxItem Tag="EnnemiLePlusFort"        Content="Ennemi le + fort (skip invoc)"/>
+                                <ComboBoxItem Tag="EnnemiLePlusLoin"        Content="Ennemi le + loin"/>
+                                <ComboBoxItem Tag="Moi"                     Content="Moi"/>
+                                <ComboBoxItem Tag="AllieLePlusBlesse"       Content="Allié le + blessé"/>
+                                <ComboBoxItem Tag="AllieLePlusProche"       Content="Allié le + proche"/>
+                                <ComboBoxItem Tag="AlliePlusGrosHeal"       Content="Allié plus gros heal (PV manquants max)"/>
+                                <ComboBoxItem Tag="InvocationLaPlusBlessee" Content="Mes invocations la + blessée"/>
+                                <ComboBoxItem Tag="InvocationLaPlusProche"  Content="Mes invocations la + proche"/>
+                                <ComboBoxItem Tag="CelluleVide"             Content="Cellule vide (invocation libre)"/>
+                                <ComboBoxItem Tag="CelluleAdjacenteEnnemi"  Content="Cellule adjacente ennemi (blocage)"/>
                             </ComboBox>
                         </StackPanel>
 
