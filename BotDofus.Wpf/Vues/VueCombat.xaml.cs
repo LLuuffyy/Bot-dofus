@@ -240,18 +240,13 @@ public partial class VueCombat : UserControl
         if (_contexte == null || CmbSort.SelectedItem is not SortItemVm sortVm) return;
 
         var info = sortVm.Info;
-        // Mapping CmbCible (6 items) → FocusSort. Évite le cast direct par index
-        // pour rester robuste si l'ordre des ComboBoxItem change dans le XAML.
-        FocusSort focus = CmbCible.SelectedIndex switch
+        // Lire Tag du ComboBoxItem sélectionné (= nom enum) → parse robuste.
+        // Permet d'ajouter/réordonner des items sans casser le code-behind.
+        var focus = FocusSort.EnnemiLePlusProche;
+        if (CmbCible.SelectedItem is ComboBoxItem cbiFocus && cbiFocus.Tag is string tagFocus)
         {
-            0 => FocusSort.EnnemiLePlusProche,
-            1 => FocusSort.EnnemiLePlusFaible,
-            2 => FocusSort.EnnemiLePlusFort,
-            3 => FocusSort.Moi,
-            4 => FocusSort.AllieLePlusBlesse,
-            5 => FocusSort.CelluleVide,
-            _ => FocusSort.EnnemiLePlusProche
-        };
+            if (System.Enum.TryParse<FocusSort>(tagFocus, out var f)) focus = f;
+        }
         // CmbMethode : 0=CAC, 1=Distance, 2=LesDeux (matche l'ordre XAML)
         MethodeLancement methode = CmbMethode.SelectedIndex switch
         {

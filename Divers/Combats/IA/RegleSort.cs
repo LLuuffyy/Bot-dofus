@@ -122,12 +122,32 @@ public sealed class RegleSort
 /// <summary>Cible du sort (= dyshay HechizoFocus + extensions SynFus UI).</summary>
 public enum FocusSort
 {
+    // === ENNEMIS ===
     EnnemiLePlusProche,
     EnnemiLePlusFaible,
     EnnemiLePlusFort,
+    /// <summary>Ennemi le plus éloigné (utile sort à portée min, ex. Tir Lourd Cra).</summary>
+    EnnemiLePlusLoin,
+
+    // === SOI / ALLIÉS ===
     Moi,
     AllieLePlusBlesse,
-    CelluleVide
+    /// <summary>Allié le plus proche (heal CC ou buff ami).</summary>
+    AllieLePlusProche,
+    /// <summary>Allié avec le plus de PV manquants (heal optimal).</summary>
+    AlliePlusGrosHeal,
+
+    // === INVOCATIONS ALLIÉES ===
+    /// <summary>Mes invocations les plus blessées (heal poupée Sadida).</summary>
+    InvocationLaPlusBlessee,
+    /// <summary>Mes invocations les plus proches (buff invocs adjacentes).</summary>
+    InvocationLaPlusProche,
+
+    // === CELLULES ===
+    /// <summary>Cellule vide libre (invocation Sadida ex. La Folle).</summary>
+    CelluleVide,
+    /// <summary>Cellule vide adjacente à l'ennemi le + proche (blocage avec La Bloqueuse).</summary>
+    CelluleAdjacenteEnnemi,
 }
 
 /// <summary>Méthode de lancement (= dyshay MetodoLanzamiento).</summary>

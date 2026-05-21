@@ -403,12 +403,18 @@
                         <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0,0,12">
                             <TextBlock Text="FOCUS" Style="{StaticResource SectionLabelStyle}"/>
                             <ComboBox x:Name="CmbCible" SelectedIndex="0">
-                                <ComboBoxItem><TextBlock Text="Ennemi le plus proche" Foreground="#F2F4F8"/></ComboBoxItem>
-                                <ComboBoxItem><TextBlock Text="Ennemi le plus faible" Foreground="#F2F4F8"/></ComboBoxItem>
-                                <ComboBoxItem><TextBlock Text="Ennemi le plus fort"   Foreground="#F2F4F8"/></ComboBoxItem>
-                                <ComboBoxItem><TextBlock Text="Soi"                   Foreground="#F2F4F8"/></ComboBoxItem>
-                                <ComboBoxItem><TextBlock Text="Allie le plus blesse"  Foreground="#F2F4F8"/></ComboBoxItem>
-                                <ComboBoxItem><TextBlock Text="Cellule vide (invocation)" Foreground="#F2F4F8"/></ComboBoxItem>
+                                <ComboBoxItem Tag="EnnemiLePlusProche"><TextBlock Text="Ennemi le + proche"      Foreground="#F2F4F8"/></ComboBoxItem>
+                                <ComboBoxItem Tag="EnnemiLePlusFaible"><TextBlock Text="Ennemi le + faible (skip invoc)" Foreground="#F2F4F8"/></ComboBoxItem>
+                                <ComboBoxItem Tag="EnnemiLePlusFort"><TextBlock Text="Ennemi le + fort (skip invoc)"     Foreground="#F2F4F8"/></ComboBoxItem>
+                                <ComboBoxItem Tag="EnnemiLePlusLoin"><TextBlock Text="Ennemi le + loin"          Foreground="#F2F4F8"/></ComboBoxItem>
+                                <ComboBoxItem Tag="Moi"><TextBlock Text="Moi"                                     Foreground="#F2F4F8"/></ComboBoxItem>
+                                <ComboBoxItem Tag="AllieLePlusBlesse"><TextBlock Text="Allié le + blessé"        Foreground="#F2F4F8"/></ComboBoxItem>
+                                <ComboBoxItem Tag="AllieLePlusProche"><TextBlock Text="Allié le + proche"        Foreground="#F2F4F8"/></ComboBoxItem>
+                                <ComboBoxItem Tag="AlliePlusGrosHeal"><TextBlock Text="Allié plus gros heal (PV manquants max)" Foreground="#F2F4F8"/></ComboBoxItem>
+                                <ComboBoxItem Tag="InvocationLaPlusBlessee"><TextBlock Text="Mes invocations la + blessée" Foreground="#F2F4F8"/></ComboBoxItem>
+                                <ComboBoxItem Tag="InvocationLaPlusProche"><TextBlock Text="Mes invocations la + proche"   Foreground="#F2F4F8"/></ComboBoxItem>
+                                <ComboBoxItem Tag="CelluleVide"><TextBlock Text="Cellule vide (invocation libre)" Foreground="#F2F4F8"/></ComboBoxItem>
+                                <ComboBoxItem Tag="CelluleAdjacenteEnnemi"><TextBlock Text="Cellule adjacente ennemi (blocage)" Foreground="#F2F4F8"/></ComboBoxItem>
                             </ComboBox>
                         </StackPanel>
 

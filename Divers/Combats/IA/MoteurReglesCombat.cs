@@ -187,7 +187,9 @@ public static class MoteurReglesCombat
     private static Combattant? ChoisirCible(FocusSort focus, Combat combat, Combattant moi, int mapWidth)
     {
         var ennemisVivants = combat.Ennemis.Where(e => !e.EstMort && e.PV > 0 && e.PVMax > 0).ToList();
-        var alliesVivants = combat.Allies.Where(a => !a.EstMort && a.PVMax > 0);
+        var alliesVivants = combat.Allies.Where(a => !a.EstMort && a.PVMax > 0).ToList();
+        var allies_humains = alliesVivants.Where(a => !a.EstInvocation && a.Identifiant != moi.Identifiant).ToList();
+        var mes_invocations = alliesVivants.Where(a => a.EstInvocation).ToList();
 
         // Phase 5 — éviter de cibler les invocations adverses pour PlusFaible/PlusFort
         // (les invocations ennemies pop souvent à 10-30 PV → biais qui ferait que
@@ -197,6 +199,7 @@ public static class MoteurReglesCombat
 
         return focus switch
         {
+            // === ENNEMIS ===
             FocusSort.EnnemiLePlusProche => ennemisVivants
                 .OrderBy(e => DistanceDofus(moi.CellulePosition, e.CellulePosition, mapWidth))
                 .FirstOrDefault(),
@@ -206,12 +209,37 @@ public static class MoteurReglesCombat
             FocusSort.EnnemiLePlusFort => ennemisPrincipaux
                 .OrderByDescending(e => e.PV)
                 .FirstOrDefault(),
+            FocusSort.EnnemiLePlusLoin => ennemisVivants
+                .OrderByDescending(e => DistanceDofus(moi.CellulePosition, e.CellulePosition, mapWidth))
+                .FirstOrDefault(),
+
+            // === SOI / ALLIÉS ===
             FocusSort.Moi => moi,
             FocusSort.AllieLePlusBlesse => alliesVivants
                 .Where(a => a.PV < a.PVMax)
                 .OrderBy(a => a.PVMax > 0 ? 100 * a.PV / a.PVMax : 100)
                 .FirstOrDefault(),
-            // CelluleVide : Phase 2/3 (besoin scan grille pour case libre adjacente).
+            FocusSort.AllieLePlusProche => allies_humains
+                .OrderBy(a => DistanceDofus(moi.CellulePosition, a.CellulePosition, mapWidth))
+                .FirstOrDefault(),
+            FocusSort.AlliePlusGrosHeal => alliesVivants
+                .Where(a => a.PV < a.PVMax)
+                .OrderByDescending(a => a.PVMax - a.PV)  // max points à régénérer
+                .FirstOrDefault(),
+
+            // === INVOCATIONS ALLIÉES (mes invoc, ex. Sadida poupées) ===
+            FocusSort.InvocationLaPlusBlessee => mes_invocations
+                .Where(i => i.PV < i.PVMax)
+                .OrderBy(i => i.PVMax > 0 ? 100 * i.PV / i.PVMax : 100)
+                .FirstOrDefault(),
+            FocusSort.InvocationLaPlusProche => mes_invocations
+                .OrderBy(i => DistanceDofus(moi.CellulePosition, i.CellulePosition, mapWidth))
+                .FirstOrDefault(),
+
+            // === CELLULES (TODO : besoin scan grille pour cells libres adjacentes) ===
+            // CelluleVide / CelluleAdjacenteEnnemi : nécessite accès à Carte +
+            // détermination cells marchables non occupées. Implémentation MVP
+            // dans ChoisirCelluleSpeciale (futur). Pour l'instant : null.
             _ => null
         };
     }
