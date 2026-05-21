@@ -237,7 +237,22 @@ public partial class VueCombat : UserControl
 
     private void BtnAjouter_Click(object sender, RoutedEventArgs e)
     {
-        if (_contexte == null || CmbSort.SelectedItem is not SortItemVm sortVm) return;
+        if (_contexte == null) return;
+        if (CmbSort.SelectedItem is not SortItemVm sortVm)
+        {
+            MessageBox.Show("Sélectionne un sort dans le combo avant d'ajouter à la rotation.",
+                "Validation règle", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+        // Validation : doublons (1 règle par sort suffit la plupart du temps,
+        // mais l'user peut en vouloir 2 si conditions différentes — juste warn).
+        if (_contexte.ConfigCombat.Regles.Any(r => r.IdSort == sortVm.Identifiant))
+        {
+            var rep = MessageBox.Show(
+                $"Le sort #{sortVm.Identifiant} '{sortVm.Affichage}' est déjà dans la rotation.\nL'ajouter en double ?",
+                "Doublon", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (rep != MessageBoxResult.Yes) return;
+        }
 
         var info = sortVm.Info;
         // Lire Tag du ComboBoxItem sélectionné (= nom enum) → parse robuste.
@@ -470,6 +485,8 @@ public partial class VueCombat : UserControl
             }
             SldDistancePref.Value = cfg.DistancePreferee;
             TxtDistancePref.Text  = cfg.DistancePreferee.ToString();
+            SldDistanceMin.Value  = cfg.DistanceMinEloigne;
+            TxtDistanceMin.Text   = cfg.DistanceMinEloigne.ToString();
             SldSeuilFuite.Value   = cfg.SeuilFuitePv;
             TxtSeuilFuite.Text    = cfg.SeuilFuitePv.ToString();
             SldDelaiActions.Value = cfg.DelaiEntreActionsMs;
@@ -509,6 +526,45 @@ public partial class VueCombat : UserControl
         DemanderSauvegardeDebouncee();
     }
 
+    private void SldDistanceMin_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        int v = (int)e.NewValue;
+        if (TxtDistanceMin != null) TxtDistanceMin.Text = v.ToString();
+        if (_initEnCours || _contexte == null) return;
+        _contexte.ConfigCombat.DistanceMinEloigne = v;
+        DemanderSauvegardeDebouncee();
+    }
+
+    /// <summary>
+    /// Charger une config combat depuis un fichier JSON (peleas/*.json) —
+    /// remplace la config courante et re-initialise tous les contrôles UI.
+    /// </summary>
+    private void BtnCharger_Click(object sender, RoutedEventArgs e)
+    {
+        if (_contexte == null) return;
+        var dlg = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "Charger une config combat",
+            Filter = "Config JSON (*.json)|*.json|Tous les fichiers|*.*",
+            InitialDirectory = System.IO.Path.GetFullPath("peleas"),
+        };
+        if (dlg.ShowDialog() != true) return;
+        var nouvelleConfig = BotDofus.Divers.Combats.IA.ConfigCombat.Charger(dlg.FileName);
+        // Remplace la config dans le contexte et resynchronise l'UI
+        _contexte.ConfigCombat.Regles.Clear();
+        foreach (var r in nouvelleConfig.Regles) _contexte.ConfigCombat.Regles.Add(r);
+        _contexte.ConfigCombat.Mode = nouvelleConfig.Mode;
+        _contexte.ConfigCombat.Strategie = nouvelleConfig.Strategie;
+        _contexte.ConfigCombat.DistancePreferee = nouvelleConfig.DistancePreferee;
+        _contexte.ConfigCombat.DistanceMinEloigne = nouvelleConfig.DistanceMinEloigne;
+        _contexte.ConfigCombat.SeuilFuitePv = nouvelleConfig.SeuilFuitePv;
+        _contexte.ConfigCombat.DelaiEntreActionsMs = nouvelleConfig.DelaiEntreActionsMs;
+        _contexte.ConfigCombat.ModeDeplacementOptimisteSecours = nouvelleConfig.ModeDeplacementOptimisteSecours;
+        InitialiserModeEtTactique(_contexte.ConfigCombat);
+        Rafraichir();
+        TxtEtatSauvegarde.Text = $"Chargé : {System.IO.Path.GetFileName(dlg.FileName)} ({nouvelleConfig.Regles.Count} règle(s))";
+    }
+
     private void SldDelaiActions_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         int v = (int)e.NewValue;
@@ -527,6 +583,12 @@ public partial class VueCombat : UserControl
     private void DemanderSauvegardeDebouncee()
     {
         if (_contexte == null) return;
+        // Indicateur visuel "en attente" pendant le debounce.
+        if (TxtEtatSauvegarde != null)
+        {
+            TxtEtatSauvegarde.Text = "⚠ Modif en attente…";
+            TxtEtatSauvegarde.Foreground = (System.Windows.Media.Brush)(FindResource("WarningBrush") ?? System.Windows.Media.Brushes.Orange);
+        }
         if (_timerSauvegarde == null)
         {
             _timerSauvegarde = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(800) };
@@ -536,6 +598,11 @@ public partial class VueCombat : UserControl
                 if (_contexte == null) return;
                 var chemin = Path.Combine("peleas", $"{_contexte.Compte.Identifiant}.json");
                 _contexte.ConfigCombat.Sauvegarder(chemin);
+                if (TxtEtatSauvegarde != null)
+                {
+                    TxtEtatSauvegarde.Text = $"✓ Enregistré ({DateTime.Now:HH:mm:ss})";
+                    TxtEtatSauvegarde.Foreground = (System.Windows.Media.Brush)(FindResource("SuccessBrush") ?? System.Windows.Media.Brushes.LightGreen);
+                }
             };
         }
         _timerSauvegarde.Stop();

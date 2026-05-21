@@ -657,11 +657,17 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Margin="0,0,8,0">
                             <DockPanel>
-                                <TextBlock Text="DISTANCE PREFEREE" Style="{StaticResource SectionLabelStyle}" DockPanel.Dock="Left"/>
+                                <TextBlock Text="DISTANCE PREFEREE (Equilibre)" Style="{StaticResource SectionLabelStyle}" DockPanel.Dock="Left"/>
                                 <TextBlock x:Name="TxtDistancePref" Text="5" DockPanel.Dock="Right" HorizontalAlignment="Right"/>
                             </DockPanel>
                             <Slider x:Name="SldDistancePref" Minimum="1" Maximum="12" TickFrequency="1"
                                     IsSnapToTickEnabled="True" Value="5" ValueChanged="SldDistancePref_Changed"/>
+                            <DockPanel Margin="0,8,0,0">
+                                <TextBlock Text="DISTANCE MIN (Eloigne/Fuyard)" Style="{StaticResource SectionLabelStyle}" DockPanel.Dock="Left"/>
+                                <TextBlock x:Name="TxtDistanceMin" Text="6" DockPanel.Dock="Right" HorizontalAlignment="Right"/>
+                            </DockPanel>
+                            <Slider x:Name="SldDistanceMin" Minimum="1" Maximum="12" TickFrequency="1"
+                                    IsSnapToTickEnabled="True" Value="6" ValueChanged="SldDistanceMin_Changed"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="0,0,8,0">
                             <DockPanel>
@@ -708,10 +714,20 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="1">
-                            <TextBlock Text="SAUVEGARDE" Style="{StaticResource SectionLabelStyle}"/>
-                            <Button Click="BtnSauver_Click"
-                                    Style="{StaticResource TopNavButtonStyle}"
-                                    Content="Sauvegarder la config"/>
+                            <TextBlock Text="SAUVEGARDE / CHARGEMENT" Style="{StaticResource SectionLabelStyle}"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Click="BtnSauver_Click"
+                                        Style="{StaticResource TopNavButtonStyle}"
+                                        Content="Sauvegarder"/>
+                                <Button Click="BtnCharger_Click"
+                                        Style="{StaticResource TopNavButtonStyle}"
+                                        Content="Charger"/>
+                            </StackPanel>
+                            <TextBlock x:Name="TxtEtatSauvegarde"
+                                       Text=""
+                                       Foreground="{DynamicResource SuccessBrush}"
+                                       FontSize="11"
+                                       Margin="0,4,0,0"/>
                         </StackPanel>
                     </Grid>
                 </StackPanel>

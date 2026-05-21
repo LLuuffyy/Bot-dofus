@@ -34,6 +34,13 @@ public sealed class ConfigCombat
     /// <summary>Distance préférée à maintenir avec l'ennemi (pour le mode Tactique).</summary>
     public int DistancePreferee { get; set; } = 5;
 
+    /// <summary>
+    /// Distance MINIMUM en mode Eloigne/Fuyard : à la fin de chaque tour, le
+    /// bot doit être à AU MOINS cette distance de l'ennemi le plus proche.
+    /// Si non atteignable avec ses PM, il s'éloigne au max.
+    /// </summary>
+    public int DistanceMinEloigne { get; set; } = 6;
+
     /// <summary>« Bloquer le combat » : si true, empêche les ennemis de passer derrière nous.</summary>
     public bool BloquerLeCombat { get; set; } = false;
 

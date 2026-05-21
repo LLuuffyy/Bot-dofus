@@ -1372,6 +1372,7 @@ public sealed class TrameJeu : TrameBase
         var cfg = _compte.ConfigCombat;
         var mode = cfg?.Mode ?? BotDofus.Divers.Combats.IA.ModeCombat.Equilibre;
         int distPref = cfg?.DistancePreferee ?? 5;
+        int distMinEloigne = cfg?.DistanceMinEloigne ?? 6;
 
         // Ennemi le plus proche = pivot du score.
         var ennemi = ennemisVivants
@@ -1420,7 +1421,15 @@ public sealed class TrameJeu : TrameBase
             double score = mode switch
             {
                 BotDofus.Divers.Combats.IA.ModeCombat.Agressif => distVersEnnemi,
-                BotDofus.Divers.Combats.IA.ModeCombat.Eloigne or BotDofus.Divers.Combats.IA.ModeCombat.Fuyard => -distVersEnnemi,
+                // Eloigne/Fuyard : priorité ABSOLUE au respect de DistanceMinEloigne.
+                // Si distVersEnnemi >= seuil → score normal (maximise dist).
+                // Sinon → pénalité forte (1000 * écart). Garantit que le bot ne
+                // termine JAMAIS son tour plus proche que la dist min demandée
+                // s'il a encore des PM dispos (demande user 04:30 §3.2).
+                BotDofus.Divers.Combats.IA.ModeCombat.Eloigne or BotDofus.Divers.Combats.IA.ModeCombat.Fuyard
+                    => distVersEnnemi >= distMinEloigne
+                        ? -distVersEnnemi
+                        : 1000.0 * (distMinEloigne - distVersEnnemi) - distVersEnnemi,
                 BotDofus.Divers.Combats.IA.ModeCombat.Equilibre => System.Math.Abs(distVersEnnemi - distPref),
                 _ => 0
             };
