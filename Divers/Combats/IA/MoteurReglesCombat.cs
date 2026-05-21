@@ -57,12 +57,20 @@ public static class MoteurReglesCombat
         // la Priorite explicite finalise le tri quand l'ordre liste est ambigu).
         foreach (var regle in cfg.Regles.OrderByDescending(r => r.Priorite))
         {
+            string Diag(string raison)
+            {
+                BotDofus.Utilitaires.Journaux.Journaliseur.Debogue(
+                    $"[DECIDEUR] rejet règle #{regle.IdSort} '{regle.Nom}' : {raison}");
+                return string.Empty;
+            }
+
             // Sort connu de la base XML dyshay ?
             var sort = BaseSorts.Instance.Trouver(regle.IdSort);
-            if (sort == null) continue;
+            if (sort == null) { Diag("sort introuvable dans BaseSorts XML"); continue; }
 
             // Sort réellement appris par le perso ? (paquet SL)
-            if (!sortsAppris.TryGetValue(regle.IdSort, out int niveau) || niveau <= 0) continue;
+            if (!sortsAppris.TryGetValue(regle.IdSort, out int niveau) || niveau <= 0)
+            { Diag($"sort non appris (sortsAppris.Count={sortsAppris.Count})"); continue; }
 
             // Compteur NombreParTour : la règle a-t-elle déjà été lancée
             // le nombre max de fois autorisé ce tour ? (limite SynFus)
@@ -101,7 +109,8 @@ public static class MoteurReglesCombat
             int porteeMax = stats?.PorteeMax ?? sort.PorteeMax;
 
             // PA disponibles ?
-            if (coutPA > 0 && moi.PA > 0 && coutPA > moi.PA) continue;
+            if (coutPA > 0 && moi.PA > 0 && coutPA > moi.PA)
+            { Diag($"PA insuffisants ({moi.PA}<{coutPA})"); continue; }
 
             // Cible selon Focus, avec overrides CiblePlusFaible / CiblePlusForte
             // (= forcer la cible vivante ayant le min/max PV, peu importe le Focus).
@@ -126,19 +135,23 @@ public static class MoteurReglesCombat
 
             // Distance Chebyshev (= métrique Dofus pour portées). CAC = dist 1.
             int dist = DistanceDofus(moi.CellulePosition, cible.CellulePosition, mapWidth);
-            if (dist < porteeMin) continue;
-            if (porteeMax > 0 && dist > porteeMax) continue;
+            if (dist < porteeMin) { Diag($"dist {dist} < porteeMin {porteeMin}"); continue; }
+            if (porteeMax > 0 && dist > porteeMax) { Diag($"dist {dist} > porteeMax {porteeMax}"); continue; }
 
             // Conditions de distance SynFus (bloc « Distance »).
-            if (regle.DistanceMin.HasValue && dist < regle.DistanceMin.Value) continue;
-            if (regle.DistanceMax.HasValue && dist > regle.DistanceMax.Value) continue;
-            if (regle.IgnorerCAC && dist <= 1) continue;     // pas en CAC autorisé
-            if (regle.SeulementCAC && dist > 1) continue;    // CAC uniquement
+            if (regle.DistanceMin.HasValue && dist < regle.DistanceMin.Value)
+            { Diag($"dist {dist} < DistanceMin {regle.DistanceMin}"); continue; }
+            if (regle.DistanceMax.HasValue && dist > regle.DistanceMax.Value)
+            { Diag($"dist {dist} > DistanceMax {regle.DistanceMax}"); continue; }
+            if (regle.IgnorerCAC && dist <= 1) { Diag("IgnorerCAC + en CAC"); continue; }
+            if (regle.SeulementCAC && dist > 1) { Diag("SeulementCAC + à distance"); continue; }
 
             // Méthode de lancement SynFus : CAC = adjacent / Distance = pas
             // adjacent / LesDeux = pas de filtre. Aligné dyshay MetodoLanzamiento.
-            if (regle.MethodeLancement == MethodeLancement.CAC && dist > 1) continue;
-            if (regle.MethodeLancement == MethodeLancement.Distance && dist <= 1) continue;
+            if (regle.MethodeLancement == MethodeLancement.CAC && dist > 1)
+            { Diag($"MethodeLancement=CAC mais dist {dist}>1"); continue; }
+            if (regle.MethodeLancement == MethodeLancement.Distance && dist <= 1)
+            { Diag($"MethodeLancement=Distance mais dist {dist}<=1"); continue; }
 
             // LOS Bresenham — si le sort nécessite une ligne de vue, vérifier
             // qu'aucun combattant n'est sur la trajectoire (cf. anti-pattern #4
