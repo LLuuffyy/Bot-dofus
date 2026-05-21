@@ -492,7 +492,36 @@ public sealed class TrameJeu : TrameBase
     /// </summary>
     private void OnActionJeu(MessageActionJeu msg)
     {
-        var p = (msg.Charge ?? string.Empty).Split(';');
+        var charge = msg.Charge ?? string.Empty;
+
+        // ═══ Parser GAF<code>|<id> — fin d'action serveur (succès ou échec) ═══
+        // Format Dofus 1.29 : GAF + code 1-2 digits + | + idActeur.
+        // Code 0 = succès. ≠ 0 = échec (sort hors portée, cible morte, etc.)
+        if (charge.StartsWith("F") && charge.Contains('|'))
+        {
+            var pipe = charge.IndexOf('|');
+            var codeStr = charge.Substring(1, pipe - 1);
+            var idStr = charge.Substring(pipe + 1);
+            if (int.TryParse(codeStr, out var code)
+                && int.TryParse(idStr, out var idActeur)
+                && idActeur == _etat.Personnage.Identifiant
+                && code != 0)
+            {
+                string raison = code switch
+                {
+                    1 => "cible/cellule invalide",
+                    2 => "hors portée",
+                    3 => "ligne de vue obstruée",
+                    4 => "pas assez de PA",
+                    5 => "déjà lancé ce tour",
+                    6 => "cooldown actif",
+                    _ => $"code {code} (inconnu)"
+                };
+                Journaliseur.Avertir($"[GAF-ECHEC] Action serveur refusée code={code} ({raison}) pour mon perso");
+            }
+        }
+
+        var p = charge.Split(';');
         // Seulement les déplacements : type 0/1, acteur numérique, chemin présent.
         if (p.Length < 4) return;
         if (p[0] != "0" && p[0] != "1") return;
@@ -935,6 +964,31 @@ public sealed class TrameJeu : TrameBase
             Journaliseur.Info("[ACTION] Aucun ennemi vivant → Gt");
             await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
             return;
+        }
+
+        // === SOIN AUTO CONSOMMABLE (Phase 9 PLAN-REFONTE) ===
+        // Si PV% < seuil ET un consommable est configuré ET dispo dans l'inventaire,
+        // l'utiliser via OAU<uid>. Capture la quantité avant/après via OQ.
+        var cfgSoin = _compte.ConfigCombat;
+        if (cfgSoin != null && cfgSoin.ConsommableSoinIdTemplate > 0 && perso.VieMax > 0)
+        {
+            int pvPct = (int)(100.0 * perso.Vie / perso.VieMax);
+            if (pvPct < cfgSoin.ConsommableUtiliserSiPvInfPct)
+            {
+                var conso = perso.Inventaire.FirstOrDefault(o => o.IdTemplate == cfgSoin.ConsommableSoinIdTemplate && o.Quantite > 0);
+                if (conso != null)
+                {
+                    Journaliseur.Info($"[SOIN] PV {pvPct}% < seuil {cfgSoin.ConsommableUtiliserSiPvInfPct}% → utilise consommable #{conso.IdTemplate} (uid={conso.Identifiant}, qte={conso.Quantite})");
+                    await _session.EnvoyerAuServeurAsync($"OU{conso.Identifiant}").ConfigureAwait(false);
+                    int delaiMin = cfgSoin.ConsommableDelaiMinMs > 0 ? cfgSoin.ConsommableDelaiMinMs : 150;
+                    int delaiMax = cfgSoin.ConsommableDelaiMaxMs > delaiMin ? cfgSoin.ConsommableDelaiMaxMs : delaiMin + 250;
+                    await Task.Delay(System.Random.Shared.Next(delaiMin, delaiMax)).ConfigureAwait(false);
+                }
+                else
+                {
+                    Journaliseur.Avertir($"[SOIN] PV {pvPct}% bas mais consommable #{cfgSoin.ConsommableSoinIdTemplate} ABSENT de l'inventaire");
+                }
+            }
         }
 
         // === PRÉ-MOUVEMENT selon Mode (demande user 07:13) ===
@@ -1566,10 +1620,14 @@ public sealed class TrameJeu : TrameBase
             + $"{r.CoutPA} PA, portée {r.PorteeMin}-{r.PorteeMax}, dist réelle={distReelle})");
         await _session.EnvoyerAuServeurAsync(paquet).ConfigureAwait(false);
 
-        // Compteur NombreParTour pour empêcher la même règle de boucler.
+        // Compteur NombreParTour + NombreParCible + DernierTour (cooldown).
         var combat = _etat.Combat;
         combat.CompteursRegleParTour[r.Sort.Identifiant] =
             (combat.CompteursRegleParTour.TryGetValue(r.Sort.Identifiant, out var cnt) ? cnt : 0) + 1;
+        var cleParCible = (r.Sort.Identifiant, r.Cible.Identifiant);
+        combat.CompteursRegleParCible[cleParCible] =
+            (combat.CompteursRegleParCible.TryGetValue(cleParCible, out var cntC) ? cntC : 0) + 1;
+        combat.DernierTourLanceParSort[r.Sort.Identifiant] = combat.NumeroTour;
 
         // OPTIMISTIC : décrémenter les PA côté bot pour que le prochain Evaluer()
         // de la boucle multi-cast voie le bon budget restant. Le serveur sync

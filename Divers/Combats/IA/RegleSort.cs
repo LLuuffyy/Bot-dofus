@@ -117,6 +117,14 @@ public sealed class RegleSort
     public ElementSort ElementRequis { get; set; } = ElementSort.Aucun;
     public int? SeuilCritiqueInfPct { get; set; }
     public int? SeuilCritiqueSupPct { get; set; }
+
+    /// <summary>
+    /// Cooldown en TOURS entre 2 lancers de ce sort. 0 = pas de cooldown (= dyshay
+    /// hechizos_intervalo). Ex. Sadida « Sacrifice Poupesque » cooldown 5 tours.
+    /// Combiné à NombreParTour (1 = 1 cast/tour) et NombreParCible (jamais 2× sur
+    /// la même cible dans le même tour).
+    /// </summary>
+    public int CooldownTours { get; set; } = 0;
 }
 
 /// <summary>Cible du sort (= dyshay HechizoFocus + extensions SynFus UI).</summary>

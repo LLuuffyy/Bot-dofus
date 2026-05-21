@@ -30,6 +30,21 @@ public sealed class Combat
     /// </summary>
     public Dictionary<int, int> CompteursRegleParTour { get; } = new();
 
+    /// <summary>
+    /// Compteur de lancements par (sort, cible) pour le TOUR courant. Reset à
+    /// chaque <see cref="NouveauTour"/>. Implémente <see cref="IA.RegleSort.NombreParCible"/>
+    /// (« max N fois sur la même cible »).
+    /// </summary>
+    public Dictionary<(int idSort, int idCible), int> CompteursRegleParCible { get; } = new();
+
+    /// <summary>
+    /// Dernier numéro de tour où chaque sort a été lancé. Persiste à travers
+    /// les tours (pas reset par NouveauTour). Implémente
+    /// <see cref="IA.RegleSort.CooldownTours"/> (« relançable tous les N tours »).
+    /// Reset par <see cref="Reinitialiser"/> en fin de combat.
+    /// </summary>
+    public Dictionary<int, int> DernierTourLanceParSort { get; } = new();
+
     public event EventHandler<EtatCombat>? EtatChange;
     public event EventHandler<int>? TourChange;
     public event EventHandler? PositionsChangees;
@@ -72,6 +87,7 @@ public sealed class Combat
         NumeroTour++;
         IdentifiantCombattantActuel = identifiantCombattant;
         CompteursRegleParTour.Clear();
+        CompteursRegleParCible.Clear();
         TourChange?.Invoke(this, identifiantCombattant);
     }
 
@@ -96,6 +112,8 @@ public sealed class Combat
         NumeroTour = 0;
         IdentifiantCombattantActuel = 0;
         CompteursRegleParTour.Clear();
+        CompteursRegleParCible.Clear();
+        DernierTourLanceParSort.Clear();
         ChangerEtat(EtatCombat.Inactif);
         PositionsChangees?.Invoke(this, EventArgs.Empty);
     }

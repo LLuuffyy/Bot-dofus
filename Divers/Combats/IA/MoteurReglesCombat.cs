@@ -77,7 +77,18 @@ public static class MoteurReglesCombat
             if (regle.NombreParTour > 0)
             {
                 int dejaLance = combat.CompteursRegleParTour.TryGetValue(regle.IdSort, out var cnt) ? cnt : 0;
-                if (dejaLance >= regle.NombreParTour) continue;
+                if (dejaLance >= regle.NombreParTour)
+                { Diag($"NombreParTour atteint ({dejaLance}/{regle.NombreParTour})"); continue; }
+            }
+
+            // Cooldown multi-tours (= dyshay hechizos_intervalo). Si le sort a
+            // été lancé il y a moins de CooldownTours tours, skip.
+            if (regle.CooldownTours > 0
+                && combat.DernierTourLanceParSort.TryGetValue(regle.IdSort, out var dernierTour))
+            {
+                int toursDepuis = combat.NumeroTour - dernierTour;
+                if (toursDepuis < regle.CooldownTours)
+                { Diag($"cooldown ({toursDepuis}/{regle.CooldownTours} tours)"); continue; }
             }
 
             // === Conditions Joueur (bloc « Joueur » SynFus) ===
@@ -124,6 +135,15 @@ public static class MoteurReglesCombat
             else
                 cible = ChoisirCible(regle.Focus, combat, moi, mapWidth, carte);
             if (cible == null) { Diag($"focus={regle.Focus} : aucune cible valide"); continue; }
+
+            // NombreParCible — max N casts sur la même cible ce tour.
+            if (regle.NombreParCible > 0)
+            {
+                var cleC = (regle.IdSort, cible.Identifiant);
+                int dejaSurCible = combat.CompteursRegleParCible.TryGetValue(cleC, out var cntC) ? cntC : 0;
+                if (dejaSurCible >= regle.NombreParCible)
+                { Diag($"NombreParCible atteint ({dejaSurCible}/{regle.NombreParCible}) sur #{cible.Identifiant}"); continue; }
+            }
 
             // === Conditions Cible (bloc « Cible » SynFus) ===
             if (cible.PVMax > 0)
