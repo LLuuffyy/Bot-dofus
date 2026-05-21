@@ -24,6 +24,10 @@
     <Compile Remove="BotDofus.Wpf\**\*.cs" />
     <EmbeddedResource Remove="BotDofus.Wpf\**\*" />
     <None Remove="BotDofus.Wpf\**\*" />
+    <!-- Exclure le projet de tests (.csproj séparé) du compile main. -->
+    <Compile Remove="BotDofus.Tests\**\*.cs" />
+    <EmbeddedResource Remove="BotDofus.Tests\**\*" />
+    <None Remove="BotDofus.Tests\**\*" />
   </ItemGroup>
 
   <ItemGroup>
