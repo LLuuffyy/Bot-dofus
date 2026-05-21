@@ -69,6 +69,7 @@ public partial class VueMapViewer : UserControl
             oldCombat.TourChange       -= OnCombatTourChange;
             oldCombat.EtatChange       -= OnCombatEtatChange;
             oldCombat.SortSelectionneChange -= OnCombatChange;
+            oldCombat.CastEffectue -= OnCombatCastEffectue;
         }
 
         _contexteLie = contexte;
@@ -82,6 +83,7 @@ public partial class VueMapViewer : UserControl
         combat.TourChange       += OnCombatTourChange;
         combat.EtatChange       += OnCombatEtatChange;
         combat.SortSelectionneChange += OnCombatChange;
+        combat.CastEffectue     += OnCombatCastEffectue;
         Rafraichir();
     }
 
@@ -92,6 +94,45 @@ public partial class VueMapViewer : UserControl
         => Dispatcher.BeginInvoke(new Action(Rafraichir));
     private void OnCombatEtatChange(object? sender, BotDofus.Divers.Combats.Enums.EtatCombat etat)
         => Dispatcher.BeginInvoke(new Action(Rafraichir));
+
+    /// <summary>
+    /// Animation flash quand le bot cast un sort : la cell cible clignote
+    /// rouge vif pendant ~400ms (eye-candy + repère du dernier cast).
+    /// </summary>
+    private void OnCombatCastEffectue(object? sender, BotDofus.Divers.Combats.CastEffectueArgs e)
+    {
+        Dispatcher.BeginInvoke(new Action(() => AnimerFlashCell(e.CellCible)));
+    }
+
+    private void AnimerFlashCell(int cellId)
+    {
+        if (_contexte?.EtatJeu.CarteCourante is not BotDofus.Divers.Cartes.Carte carte) return;
+        var c = carte.Obtenir(cellId);
+        if (c == null) return;
+        if (!_cellulesPolygons.TryGetValue(c.Identifiant, out var poly)) return;
+
+        var fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0xCC, 0xFF, 0x33, 0x33));
+        var overlay = new System.Windows.Shapes.Polygon
+        {
+            Points = poly.Points,
+            Fill = fill,
+            Stroke = System.Windows.Media.Brushes.OrangeRed,
+            StrokeThickness = 3,
+            IsHitTestVisible = false,
+            Opacity = 1.0,
+        };
+        Canvas.SetZIndex(overlay, 10);
+        CanvasMap.Children.Add(overlay);
+
+        // Fade-out + retrait après 400ms (Storyboard WPF natif).
+        var anim = new System.Windows.Media.Animation.DoubleAnimation
+        {
+            From = 1.0, To = 0.0,
+            Duration = new System.Windows.Duration(System.TimeSpan.FromMilliseconds(400)),
+        };
+        anim.Completed += (_, _) => CanvasMap.Children.Remove(overlay);
+        overlay.BeginAnimation(System.Windows.UIElement.OpacityProperty, anim);
+    }
 
     private int _dialoguePnjId;
     private int _dialogueQuestionId;

@@ -1683,6 +1683,8 @@ public sealed class TrameJeu : TrameBase
         Journaliseur.Info($"[ACTION] Sort « {r.Sort.Nom} » niv{r.NiveauAppris} "
             + $"sur cell {r.Cible.CellulePosition} (cible « {r.Cible.Nom} », "
             + $"{r.CoutPA} PA, portée {r.PorteeMin}-{r.PorteeMax}, dist réelle={distReelle})");
+        // Trigger animation flash sur la cell cible dans MapViewer.
+        _etat.Combat.DeclencherCast(r.Sort.Identifiant, r.Sort.Nom, r.Cible.CellulePosition);
         await _session.EnvoyerAuServeurAsync(paquet).ConfigureAwait(false);
 
         // Compteur NombreParTour + NombreParCible + DernierTour (cooldown).

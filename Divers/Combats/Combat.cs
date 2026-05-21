@@ -103,6 +103,18 @@ public sealed class Combat
     }
 
     /// <summary>
+    /// Émis par le moteur IA quand il déclenche un cast — déclenche une
+    /// animation flash sur la cell cible dans MapViewer (eye-candy + repère).
+    /// </summary>
+    public event EventHandler<CastEffectueArgs>? CastEffectue;
+
+    public void DeclencherCast(int idSort, string nomSort, int cellCible)
+        => CastEffectue?.Invoke(this, new CastEffectueArgs
+        {
+            IdSort = idSort, NomSort = nomSort, CellCible = cellCible
+        });
+
+    /// <summary>
     /// Déclenche l'event <see cref="MouvementBotConfirme"/>. Appelé par
     /// <see cref="Commun.Frames.TrameJeu.OnActionJeu"/> quand un broadcast
     /// <c>GA;0/1</c> est reçu et que l'acteur correspond à <see cref="IdentifiantAllie"/>.
@@ -178,6 +190,14 @@ public sealed class Combat
         Etat = nouveau;
         EtatChange?.Invoke(this, nouveau);
     }
+}
+
+/// <summary>Args pour l'event Combat.CastEffectue (animation MapViewer).</summary>
+public sealed class CastEffectueArgs : EventArgs
+{
+    public int IdSort { get; set; }
+    public string NomSort { get; set; } = string.Empty;
+    public int CellCible { get; set; }
 }
 
 /// <summary>
