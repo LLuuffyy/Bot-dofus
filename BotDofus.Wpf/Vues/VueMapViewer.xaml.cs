@@ -21,7 +21,6 @@ public partial class VueMapViewer : UserControl
 {
     private ContexteCompte? _contexte;
     private ContexteCompte? _contexteLie;
-    private BotDofus.Utilitaires.Auto.CalibrationClic? _calibration;
     // Panneau droit catégorisé (style MoonBot).
     public ObservableCollection<string> Monstres { get; } = new();
     public ObservableCollection<string> Pnjs { get; } = new();

@@ -788,13 +788,22 @@ public sealed class SortConfigureVm
         _ => "-"
     };
     public string NombreParTourTexte => Regle.NombreParTour > 0 ? $"x{Regle.NombreParTour}" : "max";
-    public string CibleTexte => Regle.Cible switch
+    // Affichage Focus via la NOUVELLE enum FocusSort (12 valeurs vs 6).
+    // CibleSort (5 valeurs) est l'alias obsolète pré-N.5 ; on utilise Focus direct.
+    public string CibleTexte => Regle.Focus switch
     {
-        CibleSort.EnnemiPlusProche => "Ennemi le plus proche",
-        CibleSort.EnnemiPlusFaible => "Ennemi le plus faible",
-        CibleSort.EnnemiPlusFort => "Ennemi le plus fort",
-        CibleSort.Soi => "Soi",
-        CibleSort.AlliePlusBlesse => "Allie le plus blesse",
+        FocusSort.EnnemiLePlusProche       => "Ennemi le + proche",
+        FocusSort.EnnemiLePlusFaible       => "Ennemi le + faible",
+        FocusSort.EnnemiLePlusFort         => "Ennemi le + fort",
+        FocusSort.EnnemiLePlusLoin         => "Ennemi le + loin",
+        FocusSort.Moi                      => "Moi",
+        FocusSort.AllieLePlusBlesse        => "Allié le + blessé",
+        FocusSort.AllieLePlusProche        => "Allié le + proche",
+        FocusSort.AlliePlusGrosHeal        => "Allié plus gros heal",
+        FocusSort.InvocationLaPlusBlessee  => "Mes invoc la + blessée",
+        FocusSort.InvocationLaPlusProche   => "Mes invoc la + proche",
+        FocusSort.CelluleVide              => "Cellule vide",
+        FocusSort.CelluleAdjacenteEnnemi   => "Cellule adj. ennemi",
         _ => "-"
     };
     public string ConditionsTexte => $"P:{Regle.Priorite}";
