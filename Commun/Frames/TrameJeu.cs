@@ -917,19 +917,30 @@ public sealed class TrameJeu : TrameBase
             return;
         }
 
-        // === Phase 1 moteur règles SynFus/dyshay ===
+        // === Phase 1 moteur règles SynFus/dyshay + MULTI-CAST (N.1) ===
         // Si l'user a configuré des règles dans peleas/<perso>.json, on les
-        // évalue dans l'ordre de priorité décroissante. Si une règle passe
-        // (sort appris + PA OK + cible valide + portée OK), on la cast direct.
-        // Sinon, fallback sur le comportement legacy (ennemi le plus proche
-        // + sort de plus haut niveau + déplacement si hors portée).
+        // évalue dans l'ordre de priorité décroissante. **Boucle multi-cast**
+        // tant qu'une règle reste utilisable (PA dispo + sort en portée +
+        // NombreParTour pas atteint). Garde max 8 itérations anti-boucle.
         var cfg = _compte.ConfigCombat;
         if (cfg != null && cfg.Regles.Count > 0 && _etat.CarteCourante != null)
         {
-            var resultat = Divers.Combats.IA.MoteurReglesCombat.Evaluer(combat, cfg, perso.SortsAppris, _etat.CarteCourante);
-            if (resultat != null)
+            int castsEffectues = 0;
+            const int MAX_CASTS_PAR_TOUR = 8;
+            while (castsEffectues < MAX_CASTS_PAR_TOUR)
             {
-                await ExecuterRegleAsync(resultat).ConfigureAwait(false);
+                var resultat = Divers.Combats.IA.MoteurReglesCombat.Evaluer(
+                    combat, cfg, perso.SortsAppris, _etat.CarteCourante);
+                if (resultat == null) break;
+                await EnvoyerCastAsync(resultat).ConfigureAwait(false);
+                castsEffectues++;
+            }
+            if (castsEffectues > 0)
+            {
+                // Pass turn après tous les casts effectués ce tour.
+                await Task.Delay(System.Random.Shared.Next(800, 1300)).ConfigureAwait(false);
+                Journaliseur.Info($"[ACTION] Passe le tour (Gt) — {castsEffectues} cast(s) ce tour");
+                await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
                 return;
             }
             Journaliseur.Info($"[COMBAT] Aucune règle SynFus en portée ({cfg.Regles.Count} règle(s) configurée(s)) → fallback legacy");
@@ -1310,9 +1321,16 @@ public sealed class TrameJeu : TrameBase
     /// rejette les règles hors portée → fallback legacy). Le multi-cast par
     /// tour viendra en Phase 2 (drain PA, respecte NombreParTour).
     /// </remarks>
-    private async Task ExecuterRegleAsync(Divers.Combats.IA.MoteurReglesCombat.ResultatRegle r)
+    /// <summary>
+    /// N.1 — Envoie un seul cast (GA300 + GKK0) SANS pass turn. La boucle
+    /// multi-cast dans <see cref="JouerTourCombatAsync"/> rappelle cette
+    /// méthode tant qu'une règle SynFus est utilisable + PA dispo + cible
+    /// en portée + NombreParTour pas atteint. Le Gt final est émis par
+    /// l'appelant.
+    /// </summary>
+    private async Task EnvoyerCastAsync(Divers.Combats.IA.MoteurReglesCombat.ResultatRegle r)
     {
-        Journaliseur.Info($"[COMBAT] Règle SynFus appliquée : « {r.Sort.Nom} » "
+        Journaliseur.Info($"[DECIDEUR] Règle SynFus retenue : « {r.Sort.Nom} » "
             + $"(#{r.Sort.Identifiant} niv{r.NiveauAppris}) focus={r.Regle.Focus}, "
             + $"cible « {r.Cible.Nom} » cell {r.Cible.CellulePosition} "
             + $"(dist={r.Distance}, {r.CoutPA} PA, portée {r.PorteeMin}-{r.PorteeMax})");
@@ -1323,18 +1341,21 @@ public sealed class TrameJeu : TrameBase
             + $"{r.CoutPA} PA, portée {r.PorteeMin}-{r.PorteeMax})");
         await _session.EnvoyerAuServeurAsync(paquet).ConfigureAwait(false);
 
-        // Incrémente le compteur NombreParTour de la règle (clé = idSort). Lu par
-        // MoteurReglesCombat au prochain appel pour empêcher de relancer ce sort
-        // au-delà de RegleSort.NombreParTour pendant le même tour (limite SynFus).
+        // Compteur NombreParTour pour empêcher la même règle de boucler.
         var combat = _etat.Combat;
         combat.CompteursRegleParTour[r.Sort.Identifiant] =
             (combat.CompteursRegleParTour.TryGetValue(r.Sort.Identifiant, out var cnt) ? cnt : 0) + 1;
 
-        // Séquence capture user 16:22 : GA300 → 376 ms → GKK0 → ~1.3 s → Gt
+        // OPTIMISTIC : décrémenter les PA côté bot pour que le prochain Evaluer()
+        // de la boucle multi-cast voie le bon budget restant. Le serveur sync
+        // via GTS au tour suivant.
+        if (_etat.Personnage.PA >= r.CoutPA)
+            _etat.Personnage.PA -= r.CoutPA;
+
+        // GKK0 ack + délai humanisé inter-cast (pas trop court pour éviter
+        // signature anti-bot ; pas trop long pour laisser tourner la boucle).
         await Task.Delay(System.Random.Shared.Next(300, 500)).ConfigureAwait(false);
         await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
-        await Task.Delay(System.Random.Shared.Next(1000, 1500)).ConfigureAwait(false);
-        Journaliseur.Info("[ACTION] Passe le tour (Gt)");
-        await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
+        await Task.Delay(System.Random.Shared.Next(500, 900)).ConfigureAwait(false);
     }
 }
