@@ -5,6 +5,13 @@ using BotDofus.Divers.Combats.Combattants;
 namespace BotDofus.Divers.Combats.IA;
 
 /// <summary>
+/// <b>LEGACY OBSOLETE (Phase 7 PLAN-REFONTE)</b> — La nouvelle IA combat est
+/// dans <see cref="MoteurReglesCombat"/> (stateless, conditions SynFus complètes,
+/// utilisé par <see cref="BotDofus.Commun.Frames.TrameJeu.JouerTourCombatAsync"/>).
+/// Ce DecideurCombat est conservé pour référence historique mais N'EST PLUS
+/// APPELÉ en production (cf. ContexteCompte.cs:182-184 : early return).
+/// Sera supprimé dans une future refonte.
+///
 /// Décide de l'action à exécuter pendant le tour du bot, à partir de l'état
 /// du combat et d'une liste de règles de sorts. Algorithme par défaut :
 ///
