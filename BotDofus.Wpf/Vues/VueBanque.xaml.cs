@@ -53,6 +53,7 @@ public partial class VueBanque : UserControl
             SldCible.Value = cfg.CiblePoidsPct;
             TxtCible.Text = cfg.CiblePoidsPct.ToString();
             TxtMapBanque.Text = cfg.MapBanqueId.ToString();
+            ChkOuvertureDirecte.IsChecked = cfg.OuvertureDirecte;
             ChkRetourFarm.IsChecked = cfg.RetourFarmApresDepot;
             TxtDelaiMin.Text = cfg.DelaiActionMinMs.ToString();
             TxtDelaiMax.Text = cfg.DelaiActionMaxMs.ToString();
@@ -114,6 +115,7 @@ public partial class VueBanque : UserControl
         cfg.SeuilPoidsPct = (int)SldSeuil.Value;
         cfg.CiblePoidsPct = (int)SldCible.Value;
         if (int.TryParse(TxtMapBanque.Text, out var map) && map > 0) cfg.MapBanqueId = map;
+        cfg.OuvertureDirecte = ChkOuvertureDirecte.IsChecked == true;
         cfg.RetourFarmApresDepot = ChkRetourFarm.IsChecked == true;
         if (int.TryParse(TxtDelaiMin.Text, out var dmin) && dmin >= 50) cfg.DelaiActionMinMs = dmin;
         if (int.TryParse(TxtDelaiMax.Text, out var dmax) && dmax >= cfg.DelaiActionMinMs) cfg.DelaiActionMaxMs = dmax;
@@ -146,6 +148,7 @@ public partial class VueBanque : UserControl
         AppliquerEnConfig();
     }
     private void TxtMapBanque_Changed(object sender, TextChangedEventArgs e) => AppliquerEnConfig();
+    private void ChkOuvertureDirecte_Changed(object sender, RoutedEventArgs e) => AppliquerEnConfig();
     private void ChkRetourFarm_Changed(object sender, RoutedEventArgs e) => AppliquerEnConfig();
     private void TxtDelai_Changed(object sender, TextChangedEventArgs e) => AppliquerEnConfig();
     private void ChkCategorie_Changed(object sender, RoutedEventArgs e) => AppliquerEnConfig();
@@ -179,6 +182,7 @@ public partial class VueBanque : UserControl
         cfg.SeuilPoidsPct = fresh.SeuilPoidsPct;
         cfg.CiblePoidsPct = fresh.CiblePoidsPct;
         cfg.MapBanqueId = fresh.MapBanqueId;
+        cfg.OuvertureDirecte = fresh.OuvertureDirecte;
         cfg.RetourFarmApresDepot = fresh.RetourFarmApresDepot;
         cfg.DelaiActionMinMs = fresh.DelaiActionMinMs;
         cfg.DelaiActionMaxMs = fresh.DelaiActionMaxMs;

@@ -44,14 +44,20 @@
 
                     <DockPanel Margin="0,8">
                         <TextBlock Text="Map banque (ID) :" Width="220" VerticalAlignment="Center"/>
-                        <TextBox x:Name="TxtMapBanque" Width="100" Text="10303"
+                        <TextBox x:Name="TxtMapBanque" Width="100" Text="10306"
                                  TextChanged="TxtMapBanque_Changed"/>
                         <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" Opacity="0.6"
-                                   Text="(Astrub banque = 10303 sur Hystoria — vérifié capture user)"/>
+                                   Text="(Astrub banque = 10306 sur Hystoria — capture user 16:52)"/>
                     </DockPanel>
 
-                    <CheckBox x:Name="ChkRetourFarm" Content="Retour automatique à la map de farm après dépôt"
+                    <CheckBox x:Name="ChkOuvertureDirecte"
+                              Content="Ouverture directe (skip zaap — perso doit être devant le coffre)"
                               Margin="0,8,0,0"
+                              ToolTip="Si coché, le bot envoie ApS directement depuis la position actuelle sans tenter de zaap. À utiliser quand tu positionnes le perso manuellement avant le test."
+                              Checked="ChkOuvertureDirecte_Changed" Unchecked="ChkOuvertureDirecte_Changed"/>
+
+                    <CheckBox x:Name="ChkRetourFarm" Content="Retour automatique à la map de farm après dépôt"
+                              Margin="0,4,0,0"
                               Checked="ChkRetourFarm_Changed" Unchecked="ChkRetourFarm_Changed"/>
 
                     <DockPanel Margin="0,8">

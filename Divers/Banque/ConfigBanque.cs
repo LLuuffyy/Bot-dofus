@@ -30,8 +30,15 @@ public sealed class ConfigBanque
     /// <summary>Pourcentage de poids cible APRÈS dépôt (relâcher au moins jusqu'à X% — 30% par défaut).</summary>
     public int CiblePoidsPct { get; set; } = 30;
 
-    /// <summary>ID de la map où se trouve la banque (ex. Astrub bank = 10303 confirmé Hystoria).</summary>
-    public int MapBanqueId { get; set; } = 10303;
+    /// <summary>ID de la map où se trouve la banque (Astrub bank Hystoria = 10306, confirmé capture user 16:52).</summary>
+    public int MapBanqueId { get; set; } = 10306;
+
+    /// <summary>
+    /// Si true, sauter complètement l'étape zaap : envoyer <c>ApS</c> directement
+    /// depuis la position actuelle. Utile quand l'user positionne lui-même son
+    /// perso devant le coffre (workflow manuel) ou si le zaap n'est pas dispo.
+    /// </summary>
+    public bool OuvertureDirecte { get; set; } = false;
 
     /// <summary>GFX du PNJ banquier OU du coffre interactif (utile pour le repérer sur la map).</summary>
     public int GfxNpcBanquier { get; set; } = 65;

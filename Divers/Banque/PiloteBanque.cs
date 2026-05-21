@@ -52,14 +52,19 @@ public sealed class PiloteBanque
     {
         Journaliseur.Info($"[BANQUE] === Workflow complet démarré (poids {_perso.PourcentagePoids:F1}%) ===");
 
-        // 1) Si on est DÉJÀ sur la map banque, sauter l'étape zaap. Cas typique :
-        //    - user a fait "Tester maintenant" alors qu'il est devant le coffre,
-        //    - reprise de workflow après crash UI.
+        // 1) Si on est DÉJÀ sur la map banque OU si OuvertureDirecte est activé,
+        //    sauter l'étape zaap et envoyer ApS directement depuis la position.
         int? mapActuelle = _perso.CarteCourante;
         bool dejaSurMapBanque = mapActuelle.HasValue && mapActuelle.Value == _cfg.MapBanqueId;
         if (dejaSurMapBanque)
         {
             Journaliseur.Info($"[BANQUE] Étape 1/4 : déjà sur map banque {_cfg.MapBanqueId} — skip zaap");
+        }
+        else if (_cfg.OuvertureDirecte)
+        {
+            Journaliseur.Info(
+                $"[BANQUE] Étape 1/4 : OuvertureDirecte=true — skip zaap, ApS envoyé depuis map {mapActuelle}. "
+                + "Le perso DOIT être à proximité d'un coffre banque ou ApS sera ignoré par le serveur.");
         }
         else
         {
