@@ -546,6 +546,66 @@ public partial class VueCombat : UserControl
     }
 
     /// <summary>
+    /// Préset Sadida : crée une rotation typique invocations + offensifs +
+    /// soin. L'user peut ensuite affiner via le DataGrid.
+    /// </summary>
+    private void BtnPresetSadida_Click(object sender, RoutedEventArgs e)
+    {
+        if (_contexte == null) return;
+        var rep = MessageBox.Show(
+            "Cela va REMPLACER toute la rotation actuelle par un préset Sadida\n"
+            + "(La Folle + La Bloqueuse + Ronce + Ronce Apaisante + Larme).\nContinuer ?",
+            "Préset Sadida", MessageBoxButton.YesNo, MessageBoxImage.Question);
+        if (rep != MessageBoxResult.Yes) return;
+
+        var sortsAppris = _contexte.EtatJeu.Personnage.SortsAppris;
+        _contexte.ConfigCombat.Regles.Clear();
+        void Ajout(int id, string nom, FocusSort focus, int prio, int nbParTour = 1,
+                   MethodeLancement methode = MethodeLancement.LesDeux, bool premierTour = false,
+                   int cooldown = 0)
+        {
+            if (!sortsAppris.ContainsKey(id)) return;
+            _contexte.ConfigCombat.Regles.Add(new RegleSort
+            {
+                IdSort = id, Nom = nom, Focus = focus, Priorite = prio,
+                NombreParTour = nbParTour, MethodeLancement = methode,
+                PremierTour = premierTour, CooldownTours = cooldown,
+            });
+        }
+        // Priorités décroissantes : invocations 1er tour, puis offensifs, puis utilitaires.
+        Ajout(182, "La Folle",            FocusSort.CelluleVide,         100, 1, MethodeLancement.LesDeux, premierTour: true);
+        Ajout(193, "La Bloqueuse",        FocusSort.CelluleAdjacenteEnnemi, 95, 1, MethodeLancement.LesDeux, premierTour: true);
+        Ajout(183, "Ronce",               FocusSort.EnnemiLePlusFaible,   80, 2, MethodeLancement.LesDeux);
+        Ajout(195, "Larme",               FocusSort.EnnemiLePlusFaible,   75, 1, MethodeLancement.LesDeux);
+        Ajout(200, "Poison Paralysant",   FocusSort.EnnemiLePlusFort,     70, 1, MethodeLancement.LesDeux);
+        Ajout(192, "Ronce Apaisante",     FocusSort.AllieLePlusBlesse,    60, 1, MethodeLancement.LesDeux);
+        Ajout(197, "Puissance Sylvestre", FocusSort.InvocationLaPlusBlessee, 50, 1, MethodeLancement.LesDeux);
+
+        DemanderSauvegardeDebouncee();
+        Rafraichir();
+        TxtEtatSauvegarde.Text = $"Préset Sadida appliqué ({_contexte.ConfigCombat.Regles.Count} règles)";
+    }
+
+    /// <summary>
+    /// Auto : crée une rotation basique depuis TOUS les sorts offensifs appris.
+    /// Focus = EnnemiLePlusProche, NombreParTour=1, Méthode=LesDeux.
+    /// </summary>
+    private void BtnPresetOffensifAuto_Click(object sender, RoutedEventArgs e)
+    {
+        if (_contexte == null) return;
+        var rep = MessageBox.Show(
+            "Cela va REMPLACER toute la rotation actuelle par tous les sorts offensifs appris.\nContinuer ?",
+            "Auto-config", MessageBoxButton.YesNo, MessageBoxImage.Question);
+        if (rep != MessageBoxResult.Yes) return;
+        var def = ConfigCombat.GenererParDefaut(_contexte.EtatJeu.Personnage.SortsAppris.Keys);
+        _contexte.ConfigCombat.Regles.Clear();
+        foreach (var r in def.Regles) _contexte.ConfigCombat.Regles.Add(r);
+        DemanderSauvegardeDebouncee();
+        Rafraichir();
+        TxtEtatSauvegarde.Text = $"Auto-config offensifs : {def.Regles.Count} règles";
+    }
+
+    /// <summary>
     /// Charger une config combat depuis un fichier JSON (peleas/*.json) —
     /// remplace la config courante et re-initialise tous les contrôles UI.
     /// </summary>

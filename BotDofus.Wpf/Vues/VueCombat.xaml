@@ -791,6 +791,14 @@
                                 <Button Click="BtnCharger_Click"
                                         Style="{StaticResource TopNavButtonStyle}"
                                         Content="Charger"/>
+                                <Button Click="BtnPresetSadida_Click"
+                                        Style="{StaticResource TopNavButtonStyle}"
+                                        Content="Préset Sadida"
+                                        ToolTip="Crée une rotation typique Sadida : La Folle (CelluleVide) + Ronce + Larme"/>
+                                <Button Click="BtnPresetOffensifAuto_Click"
+                                        Style="{StaticResource TopNavButtonStyle}"
+                                        Content="Auto"
+                                        ToolTip="Génère une rotation offensive basique depuis tous les sorts appris"/>
                             </StackPanel>
                             <TextBlock x:Name="TxtEtatSauvegarde"
                                        Text=""

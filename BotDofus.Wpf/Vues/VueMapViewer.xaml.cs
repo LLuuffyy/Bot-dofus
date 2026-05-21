@@ -332,6 +332,8 @@ public partial class VueMapViewer : UserControl
             // Highlights : si un sort est sélectionné dans l'onglet Combat,
             // surligne les cells dans sa portée autour de ma position actuelle.
             DessinerHighlightsSortSelectionne(carte);
+            // Highlight EXTRA de MA cell (carré bleu vif) pour repérage rapide.
+            DessinerMaCellulePersoCombat(carte);
         }
         MettreAJourListeEntites(carte);
         CentrerSiNecessaire(carte);
@@ -382,6 +384,29 @@ public partial class VueMapViewer : UserControl
             IsHitTestVisible = false,
         };
         Canvas.SetZIndex(overlay, 5);
+        CanvasMap.Children.Add(overlay);
+    }
+
+    /// <summary>
+    /// Surligne MA cell (perso) en BLEU VIF en combat — repère immédiat sur la grille.
+    /// </summary>
+    private void DessinerMaCellulePersoCombat(BotDofus.Divers.Cartes.Carte carte)
+    {
+        if (_contexte?.EtatJeu.Personnage.CellulePosition is not int maCell) return;
+        var c = carte.Obtenir(maCell);
+        if (c == null) return;
+        var fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0xAA, 0x33, 0x99, 0xFF));
+        var stroke = System.Windows.Media.Brushes.DeepSkyBlue;
+        if (!_cellulesPolygons.TryGetValue(c.Identifiant, out var poly)) return;
+        var overlay = new System.Windows.Shapes.Polygon
+        {
+            Points = poly.Points,
+            Fill = fill,
+            Stroke = stroke,
+            StrokeThickness = 2.5,
+            IsHitTestVisible = false,
+        };
+        Canvas.SetZIndex(overlay, 8);
         CanvasMap.Children.Add(overlay);
     }
 
