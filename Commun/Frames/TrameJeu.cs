@@ -222,6 +222,21 @@ public sealed class TrameJeu : TrameBase
             existant.PA = c.Pa;
             existant.PM = c.Pm;
             existant.EstMort = !c.Vivant;
+
+            // FIX CRITIQUE (21/05 morning) : si c'est MOI, resync aussi
+            // _etat.Personnage.CellulePosition. Sinon le mode SECOURS optimiste
+            // (post-GA001 timeout broadcast) laisse `perso.CellulePosition` à
+            // la cell d'arrivée espérée alors que le serveur n'a peut-être
+            // jamais validé le déplacement. Le bot calculait ensuite ses
+            // distances depuis la fausse cell → cast à 12 cases alors que
+            // portée 8 (bug user log 063241 / screenshot Dofus).
+            if (c.Id == _etat.Personnage.Identifiant && c.Cellule > 0)
+            {
+                int? avant = _etat.Personnage.CellulePosition;
+                _etat.Personnage.CellulePosition = c.Cellule;
+                if (avant != c.Cellule)
+                    Journaliseur.Info($"[ACTION-MV] GTM resync : ma cell {avant} → {c.Cellule} (autoritative serveur)");
+            }
         }
 
         // Affichage sur la GRILLE Carte : en combat, GTM donne les cellules

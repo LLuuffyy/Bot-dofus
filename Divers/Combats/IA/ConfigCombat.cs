@@ -91,10 +91,13 @@ public sealed class ConfigCombat
     /// (aucun broadcast GA;0/1 reçu après envoi GA001) le bot continue quand
     /// même le cast en mode optimistic (= comportement pré-ADR-002).
     /// Si <c>false</c>, le bot passe son tour (Gt direct, plus safe).
-    /// Par défaut <c>true</c> pour ne pas casser les combats existants tant
-    /// que le pipeline event-based n'a pas été validé en live (cf. ADR-002 §5).
+    /// Par défaut <c>false</c> (changé 21/05 matin) : le serveur Hystoria
+    /// rejetait silencieusement certains GA001 (cell d'arrivée invalide,
+    /// tacle subi, etc.) et le mode secours faisait croire au bot qu'il
+    /// avait bougé → cast hors portée au tour suivant (12 cases vs portée 8,
+    /// bug user log 063241).
     /// </summary>
-    public bool ModeDeplacementOptimisteSecours { get; set; } = true;
+    public bool ModeDeplacementOptimisteSecours { get; set; } = false;
 
     // ---------------------------------------------------------------
     // Sérialisation JSON
