@@ -1183,10 +1183,25 @@ public sealed class TrameJeu : TrameBase
         // après chaque action overworld ET combat pour débloquer la séquence).
         // Sans le GKK0, notre IA précédente envoyait GA300 → Gt en 800 ms et
         // le serveur kickait au tour 1 (log 16:05:06).
+        // ═══ GARDE-FOU ANTI-BAN fallback legacy ═══
+        // Idem EnvoyerCastAsync : check dist réelle au moment du cast pour éviter
+        // tout GA300 hors portée (signature anti-bot serveur Hystoria).
+        int maCellFallback = perso.CellulePosition ?? maCell;
+        int distFallback = DistanceDofus(maCellFallback, ennemi.CellulePosition);
+        if (distFallback < sortPorteeMin || (sortPorteeMax > 0 && distFallback > sortPorteeMax))
+        {
+            Journaliseur.Avertir(
+                $"[ANTI-BAN] REFUS cast legacy « {sort.Nom} » : dist réelle {distFallback} "
+                + $"hors portée [{sortPorteeMin}-{sortPorteeMax}] (ma cell {maCellFallback}, "
+                + $"cible cell {ennemi.CellulePosition}) → Gt direct.");
+            await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
+            return;
+        }
+
         var paquetSort = $"GA300{sort.Identifiant};{ennemi.CellulePosition}";
         int nivChoisi = perso.SortsAppris.TryGetValue(sort.Identifiant, out var nv) ? nv : 0;
         Journaliseur.Info($"[ACTION] Sort « {sort.Nom} » (#{sort.Identifiant} niv{nivChoisi}) "
-            + $"sur cell {ennemi.CellulePosition} (cible « {ennemi.Nom} », {sortCoutPA} PA, portée {sortPorteeMin}-{sortPorteeMax})");
+            + $"sur cell {ennemi.CellulePosition} (cible « {ennemi.Nom} », {sortCoutPA} PA, portée {sortPorteeMin}-{sortPorteeMax}, dist réelle={distFallback})");
         await _session.EnvoyerAuServeurAsync(paquetSort).ConfigureAwait(false);
 
         // GKK0 : capture user 16:22:00.130 → 376 ms après GA300. Random 300-500.
@@ -1522,10 +1537,33 @@ public sealed class TrameJeu : TrameBase
             + $"cible « {r.Cible.Nom} » cell {r.Cible.CellulePosition} "
             + $"(dist={r.Distance}, {r.CoutPA} PA, portée {r.PorteeMin}-{r.PorteeMax})");
 
+        // ═══ GARDE-FOU ANTI-BAN (demande user 08:18) ═══
+        // Recalcule la distance RÉELLE avec la position perso ACTUELLE au moment
+        // du cast (peut avoir bougé après que MoteurReglesCombat l'a évaluée).
+        // Si dist > porteeMax → REFUS catégorique d'envoyer GA300. Le serveur
+        // Hystoria détecte les casts hors portée comme signature anti-bot → ban.
+        int maCellMaintenant = _etat.Personnage.CellulePosition ?? 0;
+        int distReelle = DistanceDofus(maCellMaintenant, r.Cible.CellulePosition);
+        if (distReelle < r.PorteeMin || (r.PorteeMax > 0 && distReelle > r.PorteeMax))
+        {
+            Journaliseur.Avertir(
+                $"[ANTI-BAN] REFUS cast « {r.Sort.Nom} » : dist réelle {distReelle} "
+                + $"hors portée [{r.PorteeMin}-{r.PorteeMax}] (ma cell {maCellMaintenant}, "
+                + $"cible cell {r.Cible.CellulePosition}). Le serveur aurait rejeté "
+                + "le sort, signature anti-bot → annulation locale.");
+            // Marque la règle comme « tentée ce tour » pour la boucle multi-cast
+            // (sinon elle re-essaie indéfiniment cette même règle).
+            var combatGarde = _etat.Combat;
+            combatGarde.CompteursRegleParTour[r.Sort.Identifiant] =
+                (combatGarde.CompteursRegleParTour.TryGetValue(r.Sort.Identifiant, out var cntG) ? cntG : 0)
+                + System.Math.Max(1, r.Regle.NombreParTour);
+            return;
+        }
+
         var paquet = $"GA300{r.Sort.Identifiant};{r.Cible.CellulePosition}";
         Journaliseur.Info($"[ACTION] Sort « {r.Sort.Nom} » niv{r.NiveauAppris} "
             + $"sur cell {r.Cible.CellulePosition} (cible « {r.Cible.Nom} », "
-            + $"{r.CoutPA} PA, portée {r.PorteeMin}-{r.PorteeMax})");
+            + $"{r.CoutPA} PA, portée {r.PorteeMin}-{r.PorteeMax}, dist réelle={distReelle})");
         await _session.EnvoyerAuServeurAsync(paquet).ConfigureAwait(false);
 
         // Compteur NombreParTour pour empêcher la même règle de boucler.

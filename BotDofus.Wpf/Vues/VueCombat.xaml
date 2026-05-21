@@ -46,6 +46,73 @@
             <Setter Property="CaretBrush" Value="{DynamicResource AccentBrush}"/>
         </Style>
 
+        <!-- Template ComboBox NUCLÉAIRE — outrepasse complètement MaterialDesign
+             pour garantir que le texte de l'item sélectionné est toujours lisible.
+             Template WPF complet avec ToggleButton (zone clickable) + ContentPresenter
+             (rendu SelectionBox) + Popup (dropdown). Foreground=#F2F4F8 forcé partout. -->
+        <ControlTemplate x:Key="ComboBoxNucleaireTemplate" TargetType="ComboBox">
+            <Grid>
+                <ToggleButton x:Name="ToggleBtn" Grid.Column="2"
+                              Focusable="False"
+                              ClickMode="Press"
+                              IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                    <ToggleButton.Template>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Border x:Name="Bd" CornerRadius="3"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="18"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Path Grid.Column="1" Data="M 0 0 L 4 4 L 8 0 Z"
+                                          Fill="#F2F4F8"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="BorderBrush" Value="#6C76FF"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </ToggleButton.Template>
+                </ToggleButton>
+                <!-- LA zone qui rend l'item sélectionné — Foreground EXPLICITE. -->
+                <ContentPresenter x:Name="ContentSite"
+                                  Margin="{TemplateBinding Padding}"
+                                  IsHitTestVisible="False"
+                                  HorizontalAlignment="Left"
+                                  VerticalAlignment="Center"
+                                  Content="{TemplateBinding SelectionBoxItem}"
+                                  ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                  ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                  TextElement.Foreground="#F2F4F8"
+                                  TextBlock.Foreground="#F2F4F8"/>
+                <Popup x:Name="Popup"
+                       Placement="Bottom"
+                       IsOpen="{TemplateBinding IsDropDownOpen}"
+                       AllowsTransparency="True"
+                       Focusable="False"
+                       PopupAnimation="Slide">
+                    <Border x:Name="DropDownBorder"
+                            MinWidth="{TemplateBinding ActualWidth}"
+                            MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                            Background="#262930"
+                            BorderBrush="#393D47"
+                            BorderThickness="1"
+                            CornerRadius="3">
+                        <ScrollViewer>
+                            <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"
+                                            TextElement.Foreground="#F2F4F8"/>
+                        </ScrollViewer>
+                    </Border>
+                </Popup>
+            </Grid>
+        </ControlTemplate>
+
         <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
             <Setter Property="Background" Value="{DynamicResource SurfaceBrushSoft}"/>
             <Setter Property="Foreground" Value="#F2F4F8"/>
@@ -54,17 +121,10 @@
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="MinHeight" Value="30"/>
-            <!-- TextElement.Foreground attached + TextBlock.Foreground attached :
-                 propagent aux enfants visuels du ComboBox y compris ContentPresenter
-                 du SelectionBox. Override le default MaterialDesign qui rendait
-                 le SelectedItem invisible (white-on-white observé screenshots user). -->
             <Setter Property="TextElement.Foreground" Value="#F2F4F8"/>
             <Setter Property="TextBlock.Foreground" Value="#F2F4F8"/>
+            <Setter Property="Template" Value="{StaticResource ComboBoxNucleaireTemplate}"/>
             <Style.Resources>
-                <!-- Style implicite TextBlock dans le subtree ComboBox :
-                     tous les TextBlocks générés par ContentPresenter (y compris
-                     SelectionBox quand l'item sélectionné est un string) prennent
-                     cette couleur. -->
                 <Style TargetType="TextBlock">
                     <Setter Property="Foreground" Value="#F2F4F8"/>
                 </Style>
