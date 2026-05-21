@@ -37,6 +37,45 @@ public sealed class StatsSession
     public long KamasGagnes => KamasCourants - KamasInitiaux;
     public long XpGagnee => XpCourante - XpInitiale;
 
+    /// <summary>Kamas/heure extrapolé depuis le début de session.</summary>
+    public double KamasParHeure
+    {
+        get
+        {
+            var h = TempsEcoule.TotalHours;
+            return h > 0.01 ? KamasGagnes / h : 0;
+        }
+    }
+
+    /// <summary>XP/heure extrapolé.</summary>
+    public double XpParHeure
+    {
+        get
+        {
+            var h = TempsEcoule.TotalHours;
+            return h > 0.01 ? XpGagnee / h : 0;
+        }
+    }
+
+    /// <summary>Combats/heure (rate de farm).</summary>
+    public double CombatsParHeure
+    {
+        get
+        {
+            var h = TempsEcoule.TotalHours;
+            return h > 0.01 ? CombatsTotaux / h : 0;
+        }
+    }
+
+    /// <summary>Compteur de morts du perso (incrémenté par TrameJeu sur GE PV=0).</summary>
+    public int MortsTotales { get; set; }
+
+    /// <summary>Compteur de level ups détectés (paquet As nouveau niveau).</summary>
+    public int LevelUps { get; set; }
+
+    public void NotifierMort() { MortsTotales++; Change?.Invoke(this, EventArgs.Empty); }
+    public void NotifierLevelUp() { LevelUps++; Change?.Invoke(this, EventArgs.Empty); }
+
     public event EventHandler? Change;
 
     public void DemarrerSession(Personnage perso)
