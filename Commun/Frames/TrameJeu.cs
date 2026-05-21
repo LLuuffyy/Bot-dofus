@@ -1093,9 +1093,11 @@ public sealed class TrameJeu : TrameBase
 
                     // Pipeline event-based ADR-002 §3.3 : on envoie GA001 puis on
                     // attend le broadcast GA;0/1;<monId> via Combat.MouvementBotConfirme.
-                    // Timeout = 2.5s + marge nbPas (pour cartes laggy).
+                    // Timeout passé à 3500ms (observé 2500ms parfois trop court
+                    // sur cartes laggy — agent DIAG063 a vu jusqu'à 45s en cas
+                    // extrême mais 3500ms suffit pour le cas typique laggy).
                     int idMoi = _etat.Personnage.Identifiant;
-                    int timeoutMs = System.Math.Max(2500, nbPasMove * 450 + 1000);
+                    int timeoutMs = System.Math.Max(3500, nbPasMove * 500 + 1500);
                     await _session.EnvoyerAuServeurAsync(paquetDep).ConfigureAwait(false);
 
                     var resultat = await Divers.Combats.IA.PipelineDeplacementCombat
@@ -1489,7 +1491,7 @@ public sealed class TrameJeu : TrameBase
         Journaliseur.Info($"[ACTION-MV] Envoi GA001 (pré-mouvement) → '{paquetDep}'");
         await _session.EnvoyerAuServeurAsync(paquetDep).ConfigureAwait(false);
 
-        int timeoutMs = System.Math.Max(2500, meilleurNbPasTie * 450 + 1000);
+        int timeoutMs = System.Math.Max(3500, meilleurNbPasTie * 500 + 1500);
         var resultat = await Divers.Combats.IA.PipelineDeplacementCombat
             .AttendreMouvementOuTimeoutAsync(combat, perso.Identifiant, meilleureCible.Identifiant, timeoutMs, default)
             .ConfigureAwait(false);

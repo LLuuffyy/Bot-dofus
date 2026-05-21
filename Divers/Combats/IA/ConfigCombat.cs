@@ -90,8 +90,10 @@ public sealed class ConfigCombat
     /// <summary>Seuil PV (0-100) pour déclencher la fuite.</summary>
     public int SeuilFuitePv { get; set; } = 20;
 
-    /// <summary>Délai entre actions IA combat (ms) — humanise les casts.</summary>
-    public int DelaiEntreActionsMs { get; set; } = 800;
+    /// <summary>Délai entre actions IA combat (ms) — humanise les casts.
+    /// 1000ms par défaut (humain réel = 1400-2100ms observé, on prend un milieu).
+    /// Ne JAMAIS descendre &lt; 500ms = signature anti-bot évidente.</summary>
+    public int DelaiEntreActionsMs { get; set; } = 1000;
 
     /// <summary>
     /// FLAG ROLLOUT — si <c>true</c>, en cas de <see cref="ResultatDeplacementCombat.TimeoutSilencieux"/>
