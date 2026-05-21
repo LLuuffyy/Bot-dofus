@@ -587,6 +587,47 @@ public partial class VueCombat : UserControl
     }
 
     /// <summary>
+    /// Préset Cra : rotation typique archer à distance.
+    /// </summary>
+    private void BtnPresetCra_Click(object sender, RoutedEventArgs e)
+    {
+        if (_contexte == null) return;
+        var rep = MessageBox.Show(
+            "Cela va REMPLACER toute la rotation actuelle par un préset Cra\n"
+            + "(Flèche Magique + Flèche Empoisonnée + Tir Critique + Flèche Punitive).\nContinuer ?",
+            "Préset Cra", MessageBoxButton.YesNo, MessageBoxImage.Question);
+        if (rep != MessageBoxResult.Yes) return;
+
+        var sortsAppris = _contexte.EtatJeu.Personnage.SortsAppris;
+        _contexte.ConfigCombat.Regles.Clear();
+        void Ajout(int id, string nom, FocusSort focus, int prio, int nbParTour = 1,
+                   MethodeLancement methode = MethodeLancement.Distance)
+        {
+            if (!sortsAppris.ContainsKey(id)) return;
+            _contexte.ConfigCombat.Regles.Add(new RegleSort
+            {
+                IdSort = id, Nom = nom, Focus = focus, Priorite = prio,
+                NombreParTour = nbParTour, MethodeLancement = methode,
+                IgnorerCAC = true,  // Cra évite le CAC
+            });
+        }
+        Ajout(161, "Flèche Magique",       FocusSort.EnnemiLePlusFaible, 90, 2);
+        Ajout(162, "Flèche Punitive",      FocusSort.EnnemiLePlusFaible, 85, 1);
+        Ajout(163, "Flèche Empoisonnée",   FocusSort.EnnemiLePlusFort,   80, 1);
+        Ajout(164, "Tir Critique",         FocusSort.EnnemiLePlusFort,   75, 1);
+        Ajout(165, "Flèche de Recul",      FocusSort.EnnemiLePlusProche, 70, 1, MethodeLancement.CAC);
+        Ajout(166, "Flèche Glacée",        FocusSort.EnnemiLePlusFort,   65, 1);
+        Ajout(167, "Tir de Diversion",     FocusSort.EnnemiLePlusFaible, 60, 1);
+
+        _contexte.ConfigCombat.Mode = ModeCombat.Eloigne;  // Cra = kite par défaut
+        _contexte.ConfigCombat.DistanceMinEloigne = 6;
+        InitialiserModeEtTactique(_contexte.ConfigCombat);
+        DemanderSauvegardeDebouncee();
+        Rafraichir();
+        TxtEtatSauvegarde.Text = $"Préset Cra appliqué ({_contexte.ConfigCombat.Regles.Count} règles, mode=Eloigne)";
+    }
+
+    /// <summary>
     /// Auto : crée une rotation basique depuis TOUS les sorts offensifs appris.
     /// Focus = EnnemiLePlusProche, NombreParTour=1, Méthode=LesDeux.
     /// </summary>

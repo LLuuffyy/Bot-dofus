@@ -795,6 +795,10 @@
                                         Style="{StaticResource TopNavButtonStyle}"
                                         Content="Préset Sadida"
                                         ToolTip="Crée une rotation typique Sadida : La Folle (CelluleVide) + Ronce + Larme"/>
+                                <Button Click="BtnPresetCra_Click"
+                                        Style="{StaticResource TopNavButtonStyle}"
+                                        Content="Préset Cra"
+                                        ToolTip="Crée une rotation typique Cra : Flèche Magique + Flèche Empoisonnée + Tir Critique"/>
                                 <Button Click="BtnPresetOffensifAuto_Click"
                                         Style="{StaticResource TopNavButtonStyle}"
                                         Content="Auto"

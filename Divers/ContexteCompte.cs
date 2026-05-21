@@ -173,83 +173,9 @@ public sealed class ContexteCompte : IDisposable
             }
         };
 
-        // Mon tour : DÉSACTIVÉ — la vraie IA combat est dans TrameJeu.JouerTourCombatAsync
-        // (handler MessageTourCombatAbrak, déjà branché pour Hystoria). Le code ci-dessous
-        // déclenche le DecideurCombat legacy qui faisait du double-jeu avec la nouvelle IA :
-        // log 17:20:28 montre les 2 IA qui parlent à 1.5 s d'écart, l'une décidant
-        // « passer », l'autre tentant un déplacement, GT bloqué entre temps → kick.
-        // On garde le squelette pour la migration future mais on sort tôt :
-        EtatJeu.Combat.TourChange += async (_, idCombattant) =>
-        {
-            return;
-            #pragma warning disable CS0162 // code mort assumé : on garde la logique pour référence
-            if (idCombattant != EtatJeu.Personnage.Identifiant) return;
-            if (EtatJeu.Combat.Etat != BotDofus.Divers.Combats.Enums.EtatCombat.EnCours) return;
-            try
-            {
-                // Auto-génère les règles offensives depuis les sorts RÉELLEMENT
-                // appris (scan SL) si aucune config peleas/<perso>.json fournie
-                // → l'IA lance vraiment les sorts au lieu de juste passer.
-                if (ConfigCombat.Regles.Count == 0
-                    && EtatJeu.Personnage.SortsAppris.Count > 0)
-                {
-                    var def = ConfigCombat.GenererParDefaut(
-                        EtatJeu.Personnage.SortsAppris.Keys);
-                    ConfigCombat.Regles = def.Regles;
-                    Journaliseur.Info(
-                        $"[IA] Config combat auto-générée : {def.Regles.Count} "
-                        + "règle(s) offensive(s) depuis les sorts appris.");
-                }
-
-                var decideur = new DecideurCombat(ConfigCombat.Strategie, ConfigCombat.Regles);
-                var action = decideur.Decider(EtatJeu.Combat);
-                int ennemisVivants = 0;
-                foreach (var e in EtatJeu.Combat.Ennemis) if (!e.EstMort) ennemisVivants++;
-                string desc = action switch
-                {
-                    ActionCombat.LancerSort s => $"sort {s.IdSort}→cell {s.CelluleCible}",
-                    ActionCombat.SeDeplacer d => $"déplacement→cell {d.CelluleCible}",
-                    ActionCombat.UtiliserObjet o => $"objet {o.IdObjet}",
-                    _ => "passer"
-                };
-                Journaliseur.Info(
-                    $"[IA] Mon tour → {desc} ({ennemisVivants} ennemi(s) vivant(s)). "
-                    + "Action de jeu chiffrée (Shield) → on passe le tour ; alliés leech tuent.");
-
-                if (!ModePassif)
-                {
-                    await System.Threading.Tasks.Task.Delay(900);
-
-                    // Exécution RÉELLE de l'action décidée. Le commentaire
-                    // historique « Shield non injectable » est OBSOLÈTE depuis
-                    // le proxy re-chiffrant : GA300/GA001 passent par le canal
-                    // « - » re-chiffré. Format de sort CAPTURÉ du vrai client
-                    // (log 11:25:22, '-' déchiffré) : GA300<idSort>;<cellule>,
-                    // suivi de GKK0 (ack fin d'action) — comme GA001.
-                    // STRICTEMENT ADDITIF : sans règle configurée le décideur
-                    // renvoie SeDeplacer/PasserTour → on garde le leech (juste
-                    // GT), comportement Incarnam inchangé. Avec règles → on
-                    // lance vraiment les sorts.
-                    if (action is ActionCombat.LancerSort s)
-                    {
-                        await Api.EnvoyerPaquetBrutAsync($"GA300{s.IdSort};{s.CelluleCible}");
-                        await System.Threading.Tasks.Task.Delay(
-                            System.Math.Max(300, ConfigCombat.DelaiEntreActionsMs));
-                        await Api.EnvoyerPaquetBrutAsync("GKK0");
-                        Journaliseur.Info(
-                            $"[AUTO-COMBAT] Sort lancé GA300{s.IdSort};{s.CelluleCible} + GKK0.");
-                        await System.Threading.Tasks.Task.Delay(700);
-                    }
-
-                    await Api.EnvoyerPaquetBrutAsync("GT");
-                    Journaliseur.Info("[AUTO-COMBAT] Tour passé (GT).");
-                }
-            }
-            catch (Exception ex)
-            {
-                Journaliseur.Avertir($"[AUTO-COMBAT] tour : {ex.Message}");
-            }
-        };
+        // Mon tour : la vraie IA combat est dans TrameJeu.JouerTourCombatAsync
+        // (handler MessageTourCombatAbrak, déjà branché pour Hystoria). Le code
+        // legacy DecideurCombat a été supprimé (commit Phase 7 finalisée).
     }
 
     private bool _combatPretEnvoye;

@@ -1634,13 +1634,38 @@ public sealed class TrameJeu : TrameBase
                 + $"hors portée [{r.PorteeMin}-{r.PorteeMax}] (ma cell {maCellMaintenant}, "
                 + $"cible cell {r.Cible.CellulePosition}). Le serveur aurait rejeté "
                 + "le sort, signature anti-bot → annulation locale.");
-            // Marque la règle comme « tentée ce tour » pour la boucle multi-cast
-            // (sinon elle re-essaie indéfiniment cette même règle).
-            var combatGarde = _etat.Combat;
-            combatGarde.CompteursRegleParTour[r.Sort.Identifiant] =
-                (combatGarde.CompteursRegleParTour.TryGetValue(r.Sort.Identifiant, out var cntG) ? cntG : 0)
+            var combatGardeR = _etat.Combat;
+            combatGardeR.CompteursRegleParTour[r.Sort.Identifiant] =
+                (combatGardeR.CompteursRegleParTour.TryGetValue(r.Sort.Identifiant, out var cntGR) ? cntGR : 0)
                 + System.Math.Max(1, r.Regle.NombreParTour);
             return;
+        }
+
+        // Check LOS si nécessaire (sorts à ligne droite obligatoire).
+        var statsR = r.Sort.Stats(r.NiveauAppris);
+        bool besoinLOS = statsR?.NecessiteLOS ?? false;
+        if (besoinLOS && _etat.CarteCourante != null && distReelle > 1)
+        {
+            var celluleMoi = _etat.CarteCourante.Obtenir(maCellMaintenant);
+            var celluleCible = _etat.CarteCourante.Obtenir(r.Cible.CellulePosition);
+            if (celluleMoi != null && celluleCible != null)
+            {
+                var occupees = new System.Collections.Generic.HashSet<int>(
+                    _etat.Combat.Allies.Where(a => !a.EstMort).Select(a => a.CellulePosition)
+                        .Concat(_etat.Combat.Ennemis.Where(e => !e.EstMort).Select(e => e.CellulePosition)));
+                if (BotDofus.Divers.Cartes.LigneVisuelle.EstObstruee(_etat.CarteCourante, celluleMoi, celluleCible, occupees))
+                {
+                    Journaliseur.Avertir(
+                        $"[ANTI-BAN] REFUS cast « {r.Sort.Nom} » : LIGNE DE VUE OBSTRUÉE "
+                        + $"entre cell {maCellMaintenant} et cible cell {r.Cible.CellulePosition} "
+                        + "(combattant sur trajectoire). Le serveur aurait rejeté le sort.");
+                    var combatGardeL = _etat.Combat;
+                    combatGardeL.CompteursRegleParTour[r.Sort.Identifiant] =
+                        (combatGardeL.CompteursRegleParTour.TryGetValue(r.Sort.Identifiant, out var cntGL) ? cntGL : 0)
+                        + System.Math.Max(1, r.Regle.NombreParTour);
+                    return;
+                }
+            }
         }
 
         // Si c'est un sort d'invocation (Focus=CelluleVide ou CelluleAdjacenteEnnemi),

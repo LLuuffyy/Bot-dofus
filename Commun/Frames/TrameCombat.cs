@@ -15,20 +15,23 @@ namespace BotDofus.Commun.Frames;
 /// Phase "en combat" : gère le placement initial, le tour des combattants,
 /// les actions (déplacement/sort/passer), la fin de combat.
 /// </summary>
+/// <remarks>
+/// LEGACY : cette trame n'est plus utilisée en production — TrameJeu fait tout
+/// le travail. Conservée comme squelette pour migration future éventuelle.
+/// Refactor Phase 7 : suppression du DecideurCombat legacy.
+/// </remarks>
 public sealed class TrameCombat : TrameBase
 {
     private readonly Compte _compte;
     private readonly SessionProxy _session;
     private readonly Combat _combat;
-    private readonly DecideurCombat _decideur;
 
-    public TrameCombat(Repartiteur repartiteur, Compte compte, SessionProxy session, Combat combat, DecideurCombat? decideur = null)
+    public TrameCombat(Repartiteur repartiteur, Compte compte, SessionProxy session, Combat combat)
         : base(repartiteur)
     {
         _compte = compte;
         _session = session;
         _combat = combat;
-        _decideur = decideur ?? new DecideurCombat(StrategieCombat.Tactique, System.Array.Empty<RegleSort>());
     }
 
     protected override void EnregistrerGestionnaires()
@@ -74,53 +77,17 @@ public sealed class TrameCombat : TrameBase
 
     private async void OnTour(MessageTourCombat msg)
     {
+        // LEGACY : la vraie IA est dans TrameJeu.JouerTourCombatAsync.
+        // Ce handler reste actif comme filet de sécurité (passe le tour).
         var estMonTour = msg.IdentifiantCombattant == _combat.IdentifiantAllie;
         if (!estMonTour) return;
-
-        Journaliseur.Info("Mon tour — interrogation du décideur IA");
-
         try
         {
-            var action = _decideur.Decider(_combat);
-            await ExecuterActionAsync(action).ConfigureAwait(false);
             await _session.EnvoyerAuServeurAsync(new MessageJeuFinirTour().Serialiser()).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            Journaliseur.Erreur("Échec lors du tour de combat", ex);
-        }
-    }
-
-    private async System.Threading.Tasks.Task ExecuterActionAsync(ActionCombat action)
-    {
-        switch (action)
-        {
-            case ActionCombat.PasserTour:
-                Journaliseur.Debogue("Décideur : passer le tour");
-                break;
-
-            case ActionCombat.SeDeplacer dep:
-                Journaliseur.Debogue($"Décideur : se déplacer vers {dep.CelluleCible}");
-                // TODO : émettre un GA[sous-code mouvement] avec la clef de chemin sérialisée
-                //        une fois le pathfinding sur la carte de combat finalisé.
-                _ = dep;
-                break;
-
-            case ActionCombat.LancerSort sort:
-                Journaliseur.Debogue($"Décideur : sort {sort.IdSort} sur cellule {sort.CelluleCible}");
-                var msgSort = new MessageJeuAction
-                {
-                    SousCode = "300", // GA300xxx = lancer sort (sous-code à confirmer sur capture réelle)
-                    Parametres = $"{sort.IdSort};{sort.CelluleCible}"
-                };
-                await _session.EnvoyerAuServeurAsync(msgSort.Serialiser()).ConfigureAwait(false);
-                break;
-
-            case ActionCombat.UtiliserObjet obj:
-                Journaliseur.Debogue($"Décideur : utiliser objet {obj.IdObjet}");
-                // TODO : émettre un OU (Object Use) avec l'identifiant de l'objet.
-                _ = obj;
-                break;
+            Journaliseur.Erreur("Échec lors du tour de combat (legacy)", ex);
         }
     }
 
