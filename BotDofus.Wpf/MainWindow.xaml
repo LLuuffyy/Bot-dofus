@@ -500,6 +500,9 @@
                                 <TabItem Header="Inventaire">
                                     <vues:VueInventaire x:Name="VueInvTab" />
                                 </TabItem>
+                                <TabItem Header="Banque">
+                                    <vues:VueBanque x:Name="VueBanqueTab" />
+                                </TabItem>
                                 <TabItem Header="Tools">
                                     <vues:VueTools x:Name="VueToolsTab" />
                                 </TabItem>

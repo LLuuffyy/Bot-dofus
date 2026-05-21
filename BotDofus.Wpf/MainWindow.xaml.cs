@@ -303,6 +303,7 @@ public partial class MainWindow : Window
             VueMap.Lier(_contexteSelectionne);
             VueWorldMapTab.Lier(_contexteSelectionne);
             VueInvTab.Lier(_contexteSelectionne);
+            VueBanqueTab.Lier(_contexteSelectionne);
             VueCombatTab.Lier(_contexteSelectionne);
             VueToolsTab.Lier(_contexteSelectionne);
             VueScriptsTab.Lier(_contexteSelectionne);
