@@ -1,36 +1,87 @@
+using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using BotDofus.Commun.Reseau;
 using BotDofus.Divers.Jeu.Personnage;
+using BotDofus.Divers.Scripts.Api;
 using BotDofus.Utilitaires.Journaux;
 
 namespace BotDofus.Divers.Banque;
 
 /// <summary>
-/// Pilote async du dépôt banque : ouverture (EBM/interactif), dépôt items
-/// (EM&lt;uid&gt;;qte;1), fermeture (EV).
+/// Pilote async du dépôt banque : zaap vers map banque → ouverture (EBM) →
+/// dépôt items (EM&lt;uid&gt;;qte;1) → fermeture (EV) → zaap retour optionnel.
 ///
-/// État : SQUELETTE — protocole Dofus 1.29 à valider en capture réelle
-/// avant déploiement prod. Voir docs/FEATURES-ROADMAP.md §"Plan Dépôt banque".
+/// ⚠ PROTOCOLE Dofus 1.29 — paquets EBM/EM/EV utilisés par dyshay/cadernis
+/// mais à VALIDER en capture user sur Hystoria (peut différer légèrement).
 /// </summary>
 public sealed class PiloteBanque
 {
+    private readonly ApiBot _api;
     private readonly SessionProxy _session;
     private readonly Personnage _perso;
     private readonly ConfigBanque _cfg;
 
-    public PiloteBanque(SessionProxy session, Personnage perso, ConfigBanque cfg)
+    public PiloteBanque(ApiBot api, SessionProxy session, Personnage perso, ConfigBanque cfg)
     {
+        _api = api;
         _session = session;
         _perso = perso;
         _cfg = cfg;
     }
 
     /// <summary>
-    /// Workflow complet : ouvre, dépose, ferme. Retourne true si le pourcentage
-    /// poids est passé sous CiblePoidsPct.
+    /// Workflow COMPLET : zaap vers banque → dépôt → zaap retour si configuré.
+    /// Retourne true si le pourcentage poids est passé sous CiblePoidsPct.
     /// </summary>
-    public async Task<bool> DeposerToutAsync()
+    public async Task<bool> WorkflowCompletAsync(int? carteFarmAvant, CancellationToken ct = default)
+    {
+        Journaliseur.Info($"[BANQUE] === Workflow complet démarré (poids {_perso.PourcentagePoids:F1}%) ===");
+
+        // 1) Zaap vers la map banque (Astrub bank par défaut = 10117).
+        Journaliseur.Info($"[BANQUE] Étape 1/4 : zaap vers map banque {_cfg.MapBanqueId}");
+        bool zaapOk = await _api.UtiliserZaapAsync(_cfg.MapBanqueId, ct).ConfigureAwait(false);
+        if (!zaapOk)
+        {
+            Journaliseur.Avertir($"[BANQUE] Zaap vers {_cfg.MapBanqueId} échoué — abandon workflow");
+            return false;
+        }
+        await Task.Delay(System.Random.Shared.Next(1500, 2500), ct).ConfigureAwait(false);
+
+        // 2) Dépôt items.
+        Journaliseur.Info("[BANQUE] Étape 2/4 : dépôt items");
+        var depotOk = await DeposerToutAsync(ct).ConfigureAwait(false);
+        if (!depotOk)
+        {
+            Journaliseur.Avertir($"[BANQUE] Dépôt incomplet (poids={_perso.PourcentagePoids:F1}% > cible {_cfg.CiblePoidsPct}%)");
+        }
+
+        // 3) Retour vers la map de farm (si configuré et map sauvegardée).
+        if (_cfg.RetourFarmApresDepot && carteFarmAvant.HasValue && carteFarmAvant.Value != _cfg.MapBanqueId)
+        {
+            Journaliseur.Info($"[BANQUE] Étape 3/4 : zaap retour vers map {carteFarmAvant.Value}");
+            bool retourOk = await _api.UtiliserZaapAsync(carteFarmAvant.Value, ct).ConfigureAwait(false);
+            if (!retourOk)
+            {
+                Journaliseur.Avertir($"[BANQUE] Zaap retour échoué — perso reste à la banque");
+            }
+            await Task.Delay(System.Random.Shared.Next(1500, 2500), ct).ConfigureAwait(false);
+        }
+        else
+        {
+            Journaliseur.Info("[BANQUE] Étape 3/4 : pas de retour configuré, perso reste à la banque");
+        }
+
+        Journaliseur.Info($"[BANQUE] === Workflow terminé (poids final {_perso.PourcentagePoids:F1}%) ===");
+        return depotOk;
+    }
+
+    /// <summary>
+    /// Workflow ouvrir-déposer-fermer (sans zaap). Retourne true si le
+    /// pourcentage poids est passé sous CiblePoidsPct.
+    /// </summary>
+    public async Task<bool> DeposerToutAsync(CancellationToken ct = default)
     {
         Journaliseur.Info($"[BANQUE] Démarrage dépôt — poids actuel {_perso.PourcentagePoids:F1}% (seuil={_cfg.SeuilPoidsPct}%, cible={_cfg.CiblePoidsPct}%)");
 
@@ -67,8 +118,8 @@ public sealed class PiloteBanque
         return _perso.PourcentagePoids <= _cfg.CiblePoidsPct;
     }
 
-    private Task Delai()
+    private Task Delai(CancellationToken ct = default)
         => Task.Delay(System.Random.Shared.Next(
             System.Math.Max(50, _cfg.DelaiActionMinMs),
-            System.Math.Max(100, _cfg.DelaiActionMaxMs)));
+            System.Math.Max(100, _cfg.DelaiActionMaxMs)), ct);
 }

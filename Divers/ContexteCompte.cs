@@ -295,13 +295,46 @@ public sealed class ContexteCompte : IDisposable
             _banqueDeclenchee = true;
             Journaliseur.Avertir(
                 $"[BANQUE] 📦 Poids {perso.PourcentagePoids:F1}% ≥ seuil {ConfigBanque.SeuilPoidsPct}% "
-                + "→ trigger dépôt banque (pilote à câbler).");
+                + "→ déclenchement workflow banque");
             if (!string.IsNullOrWhiteSpace(Compte.WebhookDiscordUrl))
             {
                 _ = BotDofus.Divers.Notifications.NotificateurDiscord.NotifierBanquePleineAsync(
                     Compte.WebhookDiscordUrl, perso.Nom, (int)perso.PourcentagePoids);
             }
-            // TODO Phase complète : await new PiloteBanque(session, perso, ConfigBanque).DeposerToutAsync();
+            // Pilote async fire-and-forget. Capture la map AVANT le départ.
+            int? carteAvant = perso.CarteCourante;
+            var session = SessionJeuActive;
+            if (session != null)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        // Pause script Lua si actif (l'user relancera après dépôt).
+                        bool scriptEnExecution = Scripts.Etat == BotDofus.Divers.Scripts.EtatScript.EnExecution;
+                        if (scriptEnExecution) Scripts.MettreEnPause();
+
+                        var pilote = new BotDofus.Divers.Banque.PiloteBanque(Api, session, perso, ConfigBanque);
+                        await pilote.WorkflowCompletAsync(carteAvant);
+
+                        if (scriptEnExecution)
+                            Journaliseur.Info("[BANQUE] Workflow terminé — script Lua en PAUSE, à reprendre manuellement.");
+                    }
+                    catch (Exception bex)
+                    {
+                        Journaliseur.Erreur("[BANQUE] Workflow échec", bex);
+                        if (!string.IsNullOrWhiteSpace(Compte.WebhookDiscordUrl))
+                        {
+                            _ = BotDofus.Divers.Notifications.NotificateurDiscord.NotifierErreurCritiqueAsync(
+                                Compte.WebhookDiscordUrl, perso.Nom, $"workflow banque : {bex.Message}");
+                        }
+                    }
+                });
+            }
+            else
+            {
+                Journaliseur.Avertir("[BANQUE] Session jeu inactive — workflow skip");
+            }
         }
         else if (perso.PourcentagePoids < ConfigBanque.CiblePoidsPct)
         {
