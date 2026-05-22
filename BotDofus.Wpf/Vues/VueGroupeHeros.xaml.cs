@@ -68,6 +68,7 @@ public partial class VueGroupeHeros : UserControl
             _groupeLie.GroupeActive -= OnGroupeChange;
             _groupeLie.GroupeDissous -= OnGroupeChange;
             _groupeLie.StatsMembreChange -= OnStatsChange;
+            _groupeLie.SortsMembreChange -= OnStatsChange;
         }
         _groupeLie = gh;
         if (_groupeLie != null)
@@ -77,6 +78,7 @@ public partial class VueGroupeHeros : UserControl
             _groupeLie.GroupeActive += OnGroupeChange;
             _groupeLie.GroupeDissous += OnGroupeChange;
             _groupeLie.StatsMembreChange += OnStatsChange;
+            _groupeLie.SortsMembreChange += OnStatsChange;
         }
     }
 
@@ -219,6 +221,23 @@ public sealed class LigneMembre
             StatsTexte = "Stats indisponibles (pas en combat)";
             StatsVisible = System.Windows.Visibility.Collapsed;
         }
+
+        // Sorts appris : on liste id+niveau si > 0 (- pas dans la barre).
+        if (m.SortsAppris.Count > 0)
+        {
+            var parts = new System.Collections.Generic.List<string>();
+            foreach (var kv in m.SortsAppris)
+            {
+                parts.Add($"#{kv.Key} niv{kv.Value}");
+            }
+            SortsTexte = "Sorts : " + string.Join(", ", parts);
+            SortsVisible = System.Windows.Visibility.Visible;
+        }
+        else
+        {
+            SortsTexte = "Sorts non capturés";
+            SortsVisible = System.Windows.Visibility.Collapsed;
+        }
     }
 
     public int IdJeu { get; }
@@ -231,6 +250,8 @@ public sealed class LigneMembre
     public string IndicateurTour { get; }
     public string StatsTexte { get; }
     public System.Windows.Visibility StatsVisible { get; }
+    public string SortsTexte { get; }
+    public System.Windows.Visibility SortsVisible { get; }
 }
 
 /// <summary>Ligne de la liste « Ordre des tours » — projection lisible.</summary>

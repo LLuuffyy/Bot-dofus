@@ -121,6 +121,13 @@
                                                        FontSize="11"
                                                        Foreground="#9AB8E0"
                                                        Margin="0,3,0,0"/>
+                                            <TextBlock Text="{Binding SortsTexte}"
+                                                       Visibility="{Binding SortsVisible}"
+                                                       FontFamily="Consolas"
+                                                       FontSize="10"
+                                                       Foreground="#8AA0BC"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,2,0,0"/>
                                         </StackPanel>
                                         <TextBlock Grid.Column="2"
                                                    Text="{Binding IndicateurTour}"
