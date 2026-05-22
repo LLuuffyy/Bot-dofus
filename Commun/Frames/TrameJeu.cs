@@ -30,8 +30,10 @@ public sealed class TrameJeu : TrameBase
     /// <summary>Détecteur mode héros (Abrak) — observe les GTSX pour enrôler les héros liés.</summary>
     private readonly BotDofus.Divers.MultiAccount.DetecteurModeHeros _detecteurHeros;
 
-    // Anti-spam logs : acteurs déjà annoncés, et dernier état de combat loggué.
-    private readonly System.Collections.Generic.HashSet<int> _acteursVus = new();
+    // Cache identité acteurs (id → nom/niveau) — alimenté par NLK et consulté
+    // au moment de l'enrôlement mode héros (les NLK arrivent à la connexion,
+    // bien avant le 1er GTSX du 1er combat → on peut donc enrichir tout de suite).
+    private readonly System.Collections.Generic.Dictionary<int, (string Nom, int Niveau)> _acteursVus = new();
     private int _dernierNbVivants = -1;
     private int _dernierNbCombattants = -1;
 
@@ -150,8 +152,15 @@ public sealed class TrameJeu : TrameBase
         Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageActeurAbrak>(msg =>
         {
             foreach (var a in msg.Spawns)
-                if (_acteursVus.Add(a.Id)) // 1 ligne par acteur (anti-spam NLK/Nx)
+            {
+                bool nouveau = !_acteursVus.ContainsKey(a.Id);
+                _acteursVus[a.Id] = (a.Nom, a.Niveau);
+                if (nouveau)
                     Journaliseur.Info($"[ENT] acteur Abrak vu : « {a.Nom} » niv {a.Niveau} (#{a.Id})");
+            }
+            // Enrichit les MembreHeros du groupe avec nom/niveau si déjà connus
+            // (cas typique : un nouveau lié arrive et son NLK a déjà été reçu).
+            EnrichirMembresHerosDepuisCache();
             foreach (var id in msg.Despawns)
                 Journaliseur.Debogue($"[ENT] acteur Abrak parti : #{id}");
         });
@@ -169,6 +178,9 @@ public sealed class TrameJeu : TrameBase
             if (msg.EstGTSX)
             {
                 _detecteurHeros.OnGTSX(msg);
+                // Les NLK des liés ont déjà été reçus à la connexion → on a leur
+                // identité en cache, on peut résoudre Nom/Niveau immédiatement.
+                EnrichirMembresHerosDepuisCache();
                 return;
             }
             if (!msg.EstTour) return; // GTS mal formé
@@ -209,6 +221,27 @@ public sealed class TrameJeu : TrameBase
                 catch { /* swallow */ }
             }
         });
+    }
+
+    /// <summary>
+    /// Tente de résoudre Nom/Niveau pour chaque <see cref="BotDofus.Divers.MultiAccount.MembreHeros"/>
+    /// dont ces champs sont vides, en piochant dans <see cref="_acteursVus"/>
+    /// (alimenté par NLK). No-op si pas de groupe ou tous les membres déjà résolus.
+    /// </summary>
+    private void EnrichirMembresHerosDepuisCache()
+    {
+        var groupe = _compte.GroupeHeros;
+        if (groupe is null) return;
+        foreach (var m in groupe.Membres)
+        {
+            if (!_acteursVus.TryGetValue(m.IdJeu, out var info)) continue;
+            bool change = false;
+            if (string.IsNullOrWhiteSpace(m.Nom) && !string.IsNullOrWhiteSpace(info.Nom))
+            { m.Nom = info.Nom; change = true; }
+            if (m.Niveau == 0 && info.Niveau > 0) { m.Niveau = info.Niveau; change = true; }
+            if (change)
+                Journaliseur.Info($"[MODE-HEROS] Identité résolue : id {m.IdJeu} → {info.Nom} (niv {info.Niveau})");
+        }
     }
 
     private void OnCombattantsAbrak(BotDofus.Commun.Messages.VersClient.Jeu.MessageCombattantsAbrak msg)
