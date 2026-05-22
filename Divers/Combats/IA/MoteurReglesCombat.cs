@@ -216,7 +216,7 @@ public static class MoteurReglesCombat
                         if (!e.EstMort && e.Identifiant != cible.Identifiant) occupees.Add(e.CellulePosition);
 
                     if (LigneVisuelle.EstObstruee(carte, celluleMoi, celluleCible, occupees))
-                        continue;
+                    { Diag($"LOS bloquée par combattant entre cell {moi.CellulePosition} → {cible.CellulePosition} (dist {dist})"); continue; }
                 }
             }
 

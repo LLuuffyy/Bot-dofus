@@ -308,7 +308,7 @@ public sealed class ContexteCompte : IDisposable
     // Anti-stuck + Discord notif + banque trigger
     // ============================================================
     private bool _banqueDeclenchee;
-    private bool _mortNotifiee;
+    private DateTime _derniereMortNotifieeUtc = DateTime.MinValue;
     /// <summary>Timestamp UTC du dernier changement de carte — sert à imposer
     /// un délai de grâce de 2s avant de déclencher la banque (le perso vient
     /// de zaap, l'inventaire peut encore se synchroniser).</summary>
@@ -319,9 +319,14 @@ public sealed class ContexteCompte : IDisposable
         var perso = EtatJeu.Personnage;
 
         // ----- Détection MORT (PV = 0 et > 0 précédemment) -----
-        if (perso.VieMax > 0 && perso.Vie == 0 && !_mortNotifiee)
+        // Cooldown 30s anti-spam : forensic 2026-05-22 19:37:30 où le perso
+        // a été notifié mort 10× en 30s à cause de Sacrifice Poupesque qui
+        // fait fluctuer les PV entre 0 et ≥1 plusieurs fois par tour.
+        var maintenant = DateTime.UtcNow;
+        if (perso.VieMax > 0 && perso.Vie == 0
+            && (maintenant - _derniereMortNotifieeUtc).TotalSeconds > 30)
         {
-            _mortNotifiee = true;
+            _derniereMortNotifieeUtc = maintenant;
             Stats.NotifierMort();
             Journaliseur.Avertir($"[MORT] 💀 {perso.Nom} est mort sur la map {perso.CarteCourante}");
             if (!string.IsNullOrWhiteSpace(Compte.WebhookDiscordUrl))
@@ -330,10 +335,6 @@ public sealed class ContexteCompte : IDisposable
                     Compte.WebhookDiscordUrl, perso.Nom,
                     perso.Niveau, perso.CarteCourante?.ToString() ?? "?");
             }
-        }
-        else if (perso.Vie > 0)
-        {
-            _mortNotifiee = false;  // reset si ressuscité
         }
 
         // ----- Trigger banque (poids ≥ seuil) -----
