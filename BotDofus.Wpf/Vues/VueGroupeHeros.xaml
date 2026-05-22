@@ -56,7 +56,7 @@
             <TextBlock Foreground="#9AB8E0"
                        FontSize="11"
                        TextWrapping="Wrap"
-                       Text="Mode héros Abrak — mono-client : le serveur joue les héros liés tout seul (le bot n'envoie aucune action pour eux). Cette vue est en lecture seule, les stats sont rafraîchies en temps réel via GTM."/>
+                       Text="Mode héros Abrak — mono-client. Le bot peut piloter chaque héros (à chaque GTS le serveur attribue les actions au perso actif). Mais les sorts des liés ne sont pas transmis par le serveur : il faudra les configurer manuellement (peleas/heros/&lt;id&gt;.json + UI à venir). Pour l'instant cette vue affiche le groupe en lecture seule, stats live via GTM. Voir docs/ADDENDUM-MODE-HEROS-PILOTAGE-CLIENT.md."/>
         </Border>
 
         <!-- Corps : 2 colonnes (membres + ordre tours) -->
