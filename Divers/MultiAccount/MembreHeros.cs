@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace BotDofus.Divers.MultiAccount;
@@ -64,12 +65,23 @@ public sealed class MembreHeros
 
     /// <summary>
     /// Config combat persistée par perso lié (<c>peleas/heros/&lt;idJeu&gt;.json</c>).
-    /// Sur Abrak, n'a pas d'effet runtime (le serveur joue les liés), mais
-    /// permet de préparer la base pour un éventuel serveur N-clients où la
-    /// config par perso pilote son IA.
+    /// Pilote l'IA du membre quand c'est son tour (Phase D à venir).
     /// </summary>
     [JsonIgnore]
     public BotDofus.Divers.Combats.IA.ConfigCombat? ConfigCombat { get; set; }
+
+    /// <summary>
+    /// Sorts appris par ce perso : (idSort → niveau). Peuplé via le paquet
+    /// <c>Nh&lt;id&gt;|&lt;sorts&gt;</c> reçu en réponse au <c>Nh&lt;id&gt;</c>/<c>Ns&lt;id&gt;</c>
+    /// envoyé par le client. Sur Abrak, sans cette requête le serveur n'envoie
+    /// aucun SL pour les liés.
+    /// </summary>
+    [JsonIgnore]
+    public Dictionary<int, int> SortsAppris { get; } = new();
+
+    /// <summary>Position dans la barre de sorts (idSort → pos, -1 = hors barre).</summary>
+    [JsonIgnore]
+    public Dictionary<int, int> PositionsBarre { get; } = new();
 }
 
 /// <summary>Rôle d'un <see cref="MembreHeros"/> dans son <see cref="GroupeHeros"/>.</summary>

@@ -106,3 +106,51 @@ public sealed class MessagePartyCheck : MessageDofus, IMessageVersClient
         NomMaster = charge;
     }
 }
+
+/// <summary>
+/// Nh (S→C) : liste des sorts d'un héros lié (réponse à <c>Nh&lt;id&gt;</c> +
+/// <c>Ns&lt;id&gt;</c> envoyés par le client en mode héros, log 101039 sec 10:11:58).
+/// Format observé : <c>Nh401774|49~1~-1;51~4~3;41~1~1;42~1~-1;43~1~2;</c>
+/// soit <c>Nh&lt;idHeros&gt;|&lt;sortId&gt;~&lt;niveau&gt;~&lt;posBarre&gt;;...</c>
+/// (posBarre = -1 si pas dans la barre de sorts).
+/// </summary>
+public sealed class MessageHerosSorts : MessageDofus, IMessageVersClient
+{
+    public override string Prefixe => "Nh";
+    public override DirectionPaquet Direction => DirectionPaquet.VersClient;
+
+    public int IdHeros { get; private set; }
+    /// <summary>Sorts appris : (id → niveau).</summary>
+    public Dictionary<int, int> Sorts { get; } = new();
+    /// <summary>Position dans la barre de sorts (id → pos, -1 = hors barre).</summary>
+    public Dictionary<int, int> PositionsBarre { get; } = new();
+
+    public override void Desserialiser(string charge)
+    {
+        Charge = charge;
+        // Format : "<id>|<sortId>~<niv>~<pos>;<sortId>~<niv>~<pos>;..."
+        var sep = charge.IndexOf('|');
+        if (sep < 0)
+        {
+            // Pas de payload : c'est juste "<id>" (= Nh client sans corps,
+            // observé en C→S ; côté S→C on doit avoir le pipe).
+            int.TryParse(charge, out var idSeul);
+            IdHeros = idSeul;
+            return;
+        }
+        if (!int.TryParse(charge[..sep], out var id)) return;
+        IdHeros = id;
+        var corps = charge[(sep + 1)..];
+        foreach (var bloc in corps.Split(';', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var champs = bloc.Split('~');
+            if (champs.Length < 2) continue;
+            if (!int.TryParse(champs[0], out var sortId)) continue;
+            int.TryParse(champs[1], out var niveau);
+            int pos = -1;
+            if (champs.Length >= 3) int.TryParse(champs[2], out pos);
+            Sorts[sortId] = niveau;
+            PositionsBarre[sortId] = pos;
+        }
+    }
+}

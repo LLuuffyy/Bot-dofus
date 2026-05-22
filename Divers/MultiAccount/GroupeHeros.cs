@@ -59,6 +59,9 @@ public sealed class GroupeHeros : IDisposable
     /// <summary>Déclenché quand PV/PA/PM/vivant d'un membre changent (live via GTM).</summary>
     public event EventHandler<MembreHeros>? StatsMembreChange;
 
+    /// <summary>Déclenché quand la liste de sorts d'un membre est (re)peuplée.</summary>
+    public event EventHandler<MembreHeros>? SortsMembreChange;
+
     // ----- Composition : mutations -----
 
     /// <summary>
@@ -227,6 +230,31 @@ public sealed class GroupeHeros : IDisposable
             StatsMembreChange?.Invoke(this, membre);
         }
         return change;
+    }
+
+    /// <summary>
+    /// Met à jour les sorts d'un membre (reçus via <c>Nh&lt;id&gt;|&lt;sorts&gt;</c>).
+    /// Remplace complètement les <see cref="MembreHeros.SortsAppris"/> /
+    /// <see cref="MembreHeros.PositionsBarre"/>.
+    /// </summary>
+    public bool NotifierSortsMembre(int idJeu,
+        IReadOnlyDictionary<int, int> sorts,
+        IReadOnlyDictionary<int, int>? positions = null)
+    {
+        MembreHeros? membre;
+        lock (_verrouEtat)
+        {
+            membre = _membres.FirstOrDefault(m => m.IdJeu == idJeu);
+            if (membre is null) return false;
+            membre.SortsAppris.Clear();
+            foreach (var kv in sorts) membre.SortsAppris[kv.Key] = kv.Value;
+            membre.PositionsBarre.Clear();
+            if (positions is not null)
+                foreach (var kv in positions) membre.PositionsBarre[kv.Key] = kv.Value;
+        }
+        Journaliseur.Info($"[GH:{Id}] Sorts résolus pour {membre.Nom} (id {idJeu}) : {sorts.Count} sort(s)");
+        SortsMembreChange?.Invoke(this, membre);
+        return true;
     }
 
     /// <summary>Reset l'ordre des tours (à appeler entre 2 combats si désactivation conservée).</summary>

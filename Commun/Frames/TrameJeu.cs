@@ -172,9 +172,21 @@ public sealed class TrameJeu : TrameBase
         {
             _detecteurHeros.OnPartyMembres(msg);
             EnrichirMembresHerosDepuisCache();
+            // Procédure de capture sorts/stats : à chaque nouveau membre ajouté,
+            // envoyer Nh<id> + Ns<id> au serveur pour récupérer ses sorts (sinon
+            // on n'a aucun signal sur ce que le perso connaît).
+            _ = DemanderSortsMembresAsync();
         });
         Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessagePartyLeader>(msg =>
             _detecteurHeros.OnPartyLeader(msg));
+        Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageHerosSorts>(msg =>
+        {
+            // Nh<id>|<sortId>~<niv>~<pos>;... — sorts d'un membre.
+            // Cas d'usage : on a envoyé Nh<id>+Ns<id> côté client (auto), le
+            // serveur répond avec la liste complète des sorts du perso.
+            if (msg.IdHeros == 0 || msg.Sorts.Count == 0) return;
+            _compte.GroupeHeros?.NotifierSortsMembre(msg.IdHeros, msg.Sorts, msg.PositionsBarre);
+        });
 
         // === COMBAT ABRAK EN CLAIR : positions des combattants ===
         // GTM = liste combattants+cellules ; GTS = à qui le tour. C'est ICI
@@ -230,6 +242,49 @@ public sealed class TrameJeu : TrameBase
                 catch { /* swallow */ }
             }
         });
+    }
+
+    /// <summary>
+    /// Envoie <c>Nh&lt;id&gt;</c> + <c>Ns&lt;id&gt;</c> pour chaque membre du groupe
+    /// dont les sorts ne sont pas encore connus, afin de demander au serveur sa
+    /// liste de sorts (réponse via <c>Nh&lt;id&gt;|&lt;sorts&gt;</c>).
+    ///
+    /// Skip en mode passif (aucune injection automatique) et hors session.
+    /// Émet espacé pour ne pas spammer le serveur.
+    /// </summary>
+    private async Task DemanderSortsMembresAsync()
+    {
+        if (_compte.ModePassif) return;
+        if (_session is null) return;
+        var groupe = _compte.GroupeHeros;
+        if (groupe is null) return;
+
+        // Snapshot des membres avec sorts manquants (pas re-demander si déjà connus).
+        var aDemander = new System.Collections.Generic.List<int>();
+        foreach (var m in groupe.Membres)
+        {
+            if (m.IdJeu == 0) continue;
+            if (m.Role == BotDofus.Divers.MultiAccount.RoleDansGroupe.Leader) continue; // master = SL déjà reçu
+            if (m.SortsAppris.Count > 0) continue;
+            aDemander.Add(m.IdJeu);
+        }
+        if (aDemander.Count == 0) return;
+
+        foreach (var id in aDemander)
+        {
+            try
+            {
+                await _session.EnvoyerAuServeurAsync($"Nh{id}").ConfigureAwait(false);
+                await Task.Delay(80).ConfigureAwait(false);
+                await _session.EnvoyerAuServeurAsync($"Ns{id}").ConfigureAwait(false);
+                await Task.Delay(120).ConfigureAwait(false);
+                Journaliseur.Info($"[MODE-HEROS] Demande sorts pour id={id} (Nh + Ns envoyés)");
+            }
+            catch (Exception ex)
+            {
+                Journaliseur.Avertir($"[MODE-HEROS] Échec demande sorts id={id} : {ex.Message}");
+            }
+        }
     }
 
     /// <summary>

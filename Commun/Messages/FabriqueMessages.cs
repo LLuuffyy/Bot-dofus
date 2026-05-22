@@ -153,6 +153,8 @@ public static class FabriqueMessages
         EnregistrerVersClient<VersClient.Jeu.MessagePartyMembres>("PM");
         EnregistrerVersClient<VersClient.Jeu.MessagePartyLeader>("PL");
         EnregistrerVersClient<VersClient.Jeu.MessagePartyInvitation>("PI");
+        // Nh (S→C) : sorts d'un héros lié (réponse à Nh<id>/Ns<id> C→S).
+        EnregistrerVersClient<VersClient.Jeu.MessageHerosSorts>("Nh");
 
         // --- VersClient : Info ---
         EnregistrerVersClient<VersClient.Info.MessageInfoMessage>("Im");
