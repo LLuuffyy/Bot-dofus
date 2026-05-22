@@ -19,7 +19,14 @@ public sealed class MessagePartyMembres : MessageDofus, IMessageVersClient
     public override DirectionPaquet Direction => DirectionPaquet.VersClient;
 
     public readonly record struct Membre(
-        char Operation, int Id, string Nom, int Skin, int Pv, int PvMax, int Niveau);
+        char Operation, int Id, string Nom, int Skin, int Pv, int PvMax, int Niveau)
+    {
+        /// <summary>
+        /// Identifiant de classe Dofus Retro déduit du skin (skin = idClasse*10 + sexe).
+        /// Ex. skin 101 → classe 10 (Sadida), skin 31 → classe 3 (Enutrof).
+        /// </summary>
+        public int IdClasse => Skin / 10;
+    }
 
     public List<Membre> Membres { get; } = new();
 

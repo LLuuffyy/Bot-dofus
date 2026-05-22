@@ -182,10 +182,18 @@ public sealed class TrameJeu : TrameBase
         Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageHerosSorts>(msg =>
         {
             // Nh<id>|<sortId>~<niv>~<pos>;... — sorts d'un membre.
-            // Cas d'usage : on a envoyé Nh<id>+Ns<id> côté client (auto), le
-            // serveur répond avec la liste complète des sorts du perso.
             if (msg.IdHeros == 0 || msg.Sorts.Count == 0) return;
-            _compte.GroupeHeros?.NotifierSortsMembre(msg.IdHeros, msg.Sorts, msg.PositionsBarre);
+            var groupe = _compte.GroupeHeros;
+            if (groupe is null) return;
+            groupe.NotifierSortsMembre(msg.IdHeros, msg.Sorts, msg.PositionsBarre);
+            // Persistance disque : sauvegarde dans peleas/heros/<id>.json pour
+            // que l'user puisse voir/éditer la config offline (et la
+            // configuration soit chargée à la prochaine session).
+            var membre = groupe.TrouverParIdJeu(msg.IdHeros);
+            if (membre is not null)
+            {
+                BotDofus.Divers.MultiAccount.ServiceConfigsHeros.Sauvegarder(membre);
+            }
         });
 
         // === COMBAT ABRAK EN CLAIR : positions des combattants ===
@@ -202,6 +210,10 @@ public sealed class TrameJeu : TrameBase
                 // Les NLK des liés ont déjà été reçus à la connexion → on a leur
                 // identité en cache, on peut résoudre Nom/Niveau immédiatement.
                 EnrichirMembresHerosDepuisCache();
+                // Si on découvre le groupe via GTSX (sans PM préalable), il faut
+                // aussi demander les sorts des liés au serveur (l'auto-Nh/Ns du
+                // PM handler n'a pas tourné parce que pas de PM).
+                _ = DemanderSortsMembresAsync();
                 return;
             }
             if (!msg.EstTour) return; // GTS mal formé
@@ -245,21 +257,27 @@ public sealed class TrameJeu : TrameBase
     }
 
     /// <summary>
-    /// Envoie <c>Nh&lt;id&gt;</c> + <c>Ns&lt;id&gt;</c> pour chaque membre du groupe
-    /// dont les sorts ne sont pas encore connus, afin de demander au serveur sa
-    /// liste de sorts (réponse via <c>Nh&lt;id&gt;|&lt;sorts&gt;</c>).
+    /// Envoie <c>Nh&lt;id&gt;</c> + <c>Ns&lt;id&gt;</c> pour chaque membre lié du
+    /// groupe dont les sorts ne sont pas encore connus, et synchronise les
+    /// sorts du master depuis <see cref="Personnage.SortsAppris"/>.
     ///
     /// Skip en mode passif (aucune injection automatique) et hors session.
     /// Émet espacé pour ne pas spammer le serveur.
     /// </summary>
     private async Task DemanderSortsMembresAsync()
     {
-        if (_compte.ModePassif) return;
-        if (_session is null) return;
         var groupe = _compte.GroupeHeros;
         if (groupe is null) return;
 
-        // Snapshot des membres avec sorts manquants (pas re-demander si déjà connus).
+        // Sync sorts du master depuis le SL standard (déjà reçu à la connexion) —
+        // permet à la VueGroupeHeros et aux configs uniformes d'avoir les 8 persos
+        // avec leurs sorts au même endroit (MembreHeros.SortsAppris).
+        SynchroniserSortsMaster();
+
+        if (_compte.ModePassif) return;
+        if (_session is null) return;
+
+        // Snapshot des liés avec sorts manquants (pas re-demander si déjà connus).
         var aDemander = new System.Collections.Generic.List<int>();
         foreach (var m in groupe.Membres)
         {
@@ -285,6 +303,27 @@ public sealed class TrameJeu : TrameBase
                 Journaliseur.Avertir($"[MODE-HEROS] Échec demande sorts id={id} : {ex.Message}");
             }
         }
+    }
+
+    /// <summary>
+    /// Copie les sorts du master (reçus via SL à la connexion, stockés dans
+    /// <see cref="Personnage.SortsAppris"/>) dans son <see cref="BotDofus.Divers.MultiAccount.MembreHeros"/>.
+    /// Permet d'avoir une vue uniforme « 8 persos avec leurs sorts » côté
+    /// VueGroupeHeros (au lieu d'avoir le master sorts à un endroit + liés à
+    /// un autre).
+    /// </summary>
+    private void SynchroniserSortsMaster()
+    {
+        var groupe = _compte.GroupeHeros;
+        if (groupe is null) return;
+        var leader = groupe.Leader;
+        if (leader is null) return;
+        var sortsPerso = _etat.Personnage.SortsAppris;
+        if (sortsPerso is null || sortsPerso.Count == 0) return;
+        if (leader.SortsAppris.Count == sortsPerso.Count) return; // déjà synchro
+
+        var snapshotSorts = new System.Collections.Generic.Dictionary<int, int>(sortsPerso);
+        groupe.NotifierSortsMembre(leader.IdJeu, snapshotSorts);
     }
 
     /// <summary>

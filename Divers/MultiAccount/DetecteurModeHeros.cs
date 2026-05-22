@@ -76,13 +76,17 @@ public sealed class DetecteurModeHeros
         // Ajout du lié (anti-doublon géré par GroupeHeros.AjouterMembre).
         if (groupe.TrouverParIdJeu(msg.IdPersoLie) is null)
         {
-            groupe.AjouterMembre(new MembreHeros
+            var nouveau = new MembreHeros
             {
                 IdJeu = msg.IdPersoLie,
                 Role = RoleDansGroupe.Suiveur,
                 // Nom/Classe/Niveau enrichis ultérieurement via GTM ou ALK
                 // (hors scope Phase 3, voir Phase 5 UI).
-            });
+            };
+            groupe.AjouterMembre(nouveau);
+            // Hydrate depuis peleas/heros/<id>.json (charge sorts + config combat
+            // persistés). Si pas de fichier, applique preset par défaut classe.
+            ServiceConfigsHeros.HydrateMembre(nouveau);
             Journaliseur.Info($"[MODE-HEROS] +Héros lié id={msg.IdPersoLie}");
         }
     }
@@ -130,11 +134,12 @@ public sealed class DetecteurModeHeros
                     IdJeu = m.Id,
                     Nom = m.Nom,
                     Niveau = m.Niveau,
+                    IdClasse = m.IdClasse,
                     Role = m.Id == monId ? RoleDansGroupe.Leader : RoleDansGroupe.Suiveur,
                     Pv = m.Pv,
                     PvMax = m.PvMax,
                 });
-                Journaliseur.Info($"[MODE-HEROS] +Membre via PM : {m.Nom} (id {m.Id}, niv {m.Niveau})");
+                Journaliseur.Info($"[MODE-HEROS] +Membre via PM : {m.Nom} (id {m.Id}, niv {m.Niveau}, classe {m.IdClasse})");
             }
             else
             {
