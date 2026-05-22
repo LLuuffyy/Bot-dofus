@@ -234,13 +234,32 @@ public sealed class TrameJeu : TrameBase
             // brancher l'IA, sinon le bot reste 45 s muet par tour (cf. log
             // 13:09 → 6 tours sans le moindre GA300).
             if (_session is null) return;
-            if (msg.IdentifiantCombattant != _etat.Personnage.Identifiant) return;
-            // Mode passif global : le bot n'agit jamais en auto (capture
-            // protocole, observation, ou simplement « stop ! »). L'utilisateur
-            // joue à la main, on n'interfère pas.
             if (_compte.ModePassif)
             {
                 Journaliseur.Info("[COMBAT] mode passif actif → IA désactivée, à toi de jouer.");
+                return;
+            }
+
+            // Tour d'un héros lié (mode héros Abrak) : pilotage via IA dédiée.
+            if (msg.IdentifiantCombattant != _etat.Personnage.Identifiant)
+            {
+                var groupe = _compte.GroupeHeros;
+                var membre = groupe?.TrouverParIdJeu(msg.IdentifiantCombattant);
+                if (membre is not null && membre.Role == BotDofus.Divers.MultiAccount.RoleDansGroupe.Suiveur)
+                {
+                    Journaliseur.Info($"[COMBAT] tour héros lié {membre.Nom} → IA dédiée");
+                    try
+                    {
+                        await BotDofus.Divers.MultiAccount.IACombatHerosSimple.JouerTourAsync(
+                            membre, _etat.Combat, _etat.CarteCourante, _session).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Journaliseur.Avertir($"[COMBAT-HEROS] erreur IA tour : {ex.Message}");
+                        try { await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false); }
+                        catch { /* swallow */ }
+                    }
+                }
                 return;
             }
             try
