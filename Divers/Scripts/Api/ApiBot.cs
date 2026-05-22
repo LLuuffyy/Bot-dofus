@@ -381,6 +381,10 @@ public sealed class ApiBot
             await Task.Delay(Math.Clamp((cases - 1) * 180, 250, 3000), ct).ConfigureAwait(false);
             await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
         }
+        // Attendre la confirmation serveur que le combat démarre (max 2s) —
+        // évite qu'un script Lua qui enchaîne « engage puis bouge » quitte
+        // la map avant le combat (forensic 2026-05-22 16:59:08).
+        await AttendreDebutCombatAsync(2000, ct).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -973,6 +977,14 @@ public sealed class ApiBot
     /// vrai client (log 11:24:15, '-' déchiffré) : <c>GA907&lt;cellGroupe&gt;;&lt;idGroupe&gt;</c>
     /// (ex. <c>GA907288;-78</c>). L'ancien <c>GA902&lt;id&gt;</c> était une
     /// supposition fausse → serveur muet. Opcode 'GA' ⇒ chiffré '-'.
+    ///
+    /// <para>
+    /// ⚠️ Cette méthode attend que le combat soit effectivement DÉMARRÉ par
+    /// le serveur (cf. <see cref="AttendreDebutCombatAsync"/>) avant de
+    /// retourner. Sans cette attente, les scripts Lua qui enchaînent farmer
+    /// → bouger envoient un déplacement AVANT que le combat soit lancé →
+    /// le bot quitte la map en plein combat (bug forensic 2026-05-22).
+    /// </para>
     /// </summary>
     public async Task<bool> EngagerCombatAsync(CancellationToken ct)
     {
@@ -982,7 +994,59 @@ public sealed class ApiBot
         Journaliseur.Info(
             $"[FARM] cible groupe #{cible.Identifiant} « {cible.Nom} » cell {cible.CellulePosition} → {paquet}");
         await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
+        // ATTENTE DÉBUT COMBAT — bloque jusqu'à ce que le serveur confirme
+        // (passage Combat.Etat = EnCours / Placement) ou timeout 2s.
+        await AttendreDebutCombatAsync(2000, ct).ConfigureAwait(false);
         return true;
+    }
+
+    /// <summary>
+    /// Bloque jusqu'à ce que <see cref="Combat.Etat"/> passe à
+    /// <see cref="BotDofus.Divers.Combats.Enums.EtatCombat.Placement"/> ou
+    /// <see cref="BotDofus.Divers.Combats.Enums.EtatCombat.EnCours"/>, ou
+    /// que <paramref name="timeoutMs"/> s'écoule. Retourne <c>true</c> si
+    /// le combat a effectivement démarré.
+    ///
+    /// <para>
+    /// Sert aux scripts farm Lua après un <c>GA907</c> : sans cette attente,
+    /// le script continue avec un déplacement qui quitte la map et le
+    /// combat est avorté côté serveur (cf. log forensic 16:59:08).
+    /// </para>
+    /// </summary>
+    public async Task<bool> AttendreDebutCombatAsync(int timeoutMs = 2000, CancellationToken ct = default)
+    {
+        var combat = _etat.Combat;
+        // Déjà en combat → retour immédiat.
+        if (combat.Etat == BotDofus.Divers.Combats.Enums.EtatCombat.Placement
+            || combat.Etat == BotDofus.Divers.Combats.Enums.EtatCombat.EnCours)
+            return true;
+
+        var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        void OnEtat(object? s, BotDofus.Divers.Combats.Enums.EtatCombat etat)
+        {
+            if (etat == BotDofus.Divers.Combats.Enums.EtatCombat.Placement
+                || etat == BotDofus.Divers.Combats.Enums.EtatCombat.EnCours)
+                tcs.TrySetResult(true);
+        }
+        combat.EtatChange += OnEtat;
+        try
+        {
+            // Re-check après abonnement (race condition).
+            if (combat.Etat == BotDofus.Divers.Combats.Enums.EtatCombat.Placement
+                || combat.Etat == BotDofus.Divers.Combats.Enums.EtatCombat.EnCours)
+                return true;
+            var tTimeout = Task.Delay(timeoutMs, ct);
+            var gagnant = await Task.WhenAny(tcs.Task, tTimeout).ConfigureAwait(false);
+            if (gagnant != tcs.Task)
+            {
+                Journaliseur.Avertir(
+                    $"[FARM] Timeout {timeoutMs}ms : combat pas démarré après GA907. "
+                    + "Le script va continuer SANS combat — risque de quitter la map.");
+                return false;
+            }
+            return true;
+        }
+        finally { combat.EtatChange -= OnEtat; }
     }
 
     // ===================== CARACS & SORTS ============================
