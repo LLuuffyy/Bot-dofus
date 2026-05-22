@@ -29,6 +29,13 @@ public sealed class EntiteMonstre : Entite
     public int NiveauGroupe { get; set; }
     public bool EstAgressif { get; set; }
     public int TailleGroupe { get; set; } = 1;
+
+    /// <summary>
+    /// Vrai si c'est un vrai groupe de mobs attaquable. Sur Dofus 1.29 les
+    /// groupes mobs ont des IDs négatifs (-300, -302…) ; les IDs positifs sont
+    /// joueurs/héros/PNJs (jamais attaquables via GA907).
+    /// </summary>
+    public bool EstGroupeAttaquable => Identifiant < 0;
 }
 
 /// <summary>PNJ (personnage non joueur).</summary>

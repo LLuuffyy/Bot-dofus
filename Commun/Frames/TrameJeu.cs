@@ -658,12 +658,9 @@ public sealed class TrameJeu : TrameBase
             // (ex. +220;1;0;-6;857;…;6363b3;ffe926;d1cdad;…;9089 = PNJ #9089).
 
             // ---- Groupe de monstres ('~') ----
-            // FIX 2026-05-22 20:34 : sur Hystoria, le préfixe '~' est aussi
-            // utilisé pour UPDATE générique (acteur déplacé, état changé), pas
-            // que pour les vrais groupes mobs. Forensic :
-            //   GM|~350;3;0;401770;Beiloddurul;...  ← joueur master, pas un mob !
-            // Si idEntite > 0 OU champ4 non-numérique (contient un nom),
-            // ce n'est PAS un groupe de monstres → fallthrough vers parsing acteur.
+            // Sur Hystoria, '~' est aussi utilisé pour UPDATE acteur (pas que mobs).
+            // On exige idEntite<0 ET champ4 strictement numérique (liste gabarits)
+            // pour ne pas confondre avec un update de joueur.
             bool champ4LooksLikeNumericList = champ4.Length > 0
                 && champ4.All(c => char.IsDigit(c) || c == ',' || c == '-');
             if (entree.Operation == OperationGM.MonstreGroupe

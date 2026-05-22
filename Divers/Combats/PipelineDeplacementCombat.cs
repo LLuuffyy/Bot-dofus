@@ -73,9 +73,8 @@ public static class PipelineDeplacementCombat
             if (e.IdActeur != idMoi) return;
             tcs.TrySetResult((e.CellArrivee, e.CellArrivee == cellAttendue));
         }
-        // FIX 2026-05-22 : si le combat se termine pendant qu'on attend
-        // (kick, fin tour adverse, etc.), abort immédiat sinon on poirote
-        // 3000ms inutilement avant le timeout (forensic Ukdeshan 19:36:25.341).
+        // Abort immédiat si le combat se termine pendant l'attente (kick,
+        // fin tour adverse) — sinon on poirote jusqu'au timeout pour rien.
         void OnEtatCombat(object? s, BotDofus.Divers.Combats.Enums.EtatCombat etat)
         {
             if (etat == BotDofus.Divers.Combats.Enums.EtatCombat.Inactif)

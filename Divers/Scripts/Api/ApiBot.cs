@@ -372,10 +372,8 @@ public sealed class ApiBot
         if (paquet != null)
         {
             await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
-            // ATTENDRE la durée de marche AVANT GA907 (sinon serveur ignore
-            // car perso pas à destination). 330ms/case ≈ vrai client + marge.
-            // Forensic 2026-05-22 19:36:24 : GA907 envoyé 295ms après GA001
-            // pour 5 cases → serveur ignore, [FARM] Timeout 2000ms.
+            // GA907 doit partir APRÈS l'arrivée du perso sinon serveur l'ignore
+            // silencieusement (perso pas à destination). 330ms/case ≈ vrai client.
             int delaiMarcheMs = Math.Clamp((cases - 1) * 330, 250, 3500);
             await Task.Delay(delaiMarcheMs, ct).ConfigureAwait(false);
         }
@@ -970,16 +968,10 @@ public sealed class ApiBot
         if (carte == null) return null;
         int moi = _etat.Personnage.CellulePosition ?? 0;
         int monId = _etat.Personnage.Identifiant;
-        // FIX 2026-05-22 20:34 : filtrer les fausses EntiteMonstre :
-        //   - Sur Dofus 1.29, les groupes de mobs ont des IDs NÉGATIFS (-300, -302, ...).
-        //     Les IDs positifs sont les joueurs/héros/PNJs → JAMAIS attaquables.
-        //   - Exclure aussi mon propre ID (defense in depth).
-        //   - Exclure les entités à la même cell que moi (fantômes parsés à
-        //     ma position quand le combat finit).
-        // Forensic : [FARM] cible #401770 « Monstre #0 » cell 350 (perso 350, dist 0)
-        // → tentative d'auto-engagement, serveur ignore GA907, timeout 2s.
+        // Filtre les fausses EntiteMonstre : doit être un vrai groupe (id < 0),
+        // pas mon perso, et pas à ma cell (fantôme parsé en fin de combat).
         return carte.Entites.Values.OfType<EntiteMonstre>()
-            .Where(m => m.Identifiant < 0
+            .Where(m => m.EstGroupeAttaquable
                      && m.Identifiant != monId
                      && m.CellulePosition != moi)
             .OrderBy(m => Math.Abs(m.CellulePosition - moi))

@@ -1144,11 +1144,15 @@ public partial class VueCombat : UserControl
         if (parts[1] == "Min") plage.Min = valeur;
         else if (parts[1] == "Max") plage.Max = valeur;
 
-        // Bascule auto en Custom si modif manuelle
+        // Bascule auto en Custom si modif manuelle. Guard _initEnCours pour
+        // empêcher SelectionnerProfilCombobox de déclencher CmbProfilVitesse_SelectionChanged
+        // qui ré-appelle RechargerChampsDelais() et wipe la saisie en cours.
         if (delais.Profil != BotDofus.Divers.Combats.IA.ProfilVitesseCombat.Custom)
         {
             delais.Profil = BotDofus.Divers.Combats.IA.ProfilVitesseCombat.Custom;
-            SelectionnerProfilCombobox(BotDofus.Divers.Combats.IA.ProfilVitesseCombat.Custom);
+            _initEnCours = true;
+            try { SelectionnerProfilCombobox(BotDofus.Divers.Combats.IA.ProfilVitesseCombat.Custom); }
+            finally { _initEnCours = false; }
         }
         BotDofus.Divers.Combats.IA.TimingsCombat.AppliquerConfig(ConfigActive);
         DemanderSauvegardeDebouncee();

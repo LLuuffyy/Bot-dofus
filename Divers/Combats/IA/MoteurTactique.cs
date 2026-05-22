@@ -86,12 +86,9 @@ public static class MoteurTactique
         double scoreDepart = ScorePositionCombat.ScoreCelluleAvance(
             depart.X, depart.Y, ennemisXY, cibleXY, ctx, losDepart, poids);
 
-        // FIX 2026-05-22 : si LOS de départ est bloquée pour le sort principal,
-        // on RELAXE exigeAmelioration pour permettre une cellule équivalente
-        // qui dégage la LOS. Sans ça, le perso reste planté en position avec
-        // LOS bloquée et 0 cast par tour (forensic Athabiel 19:36:45+).
-        bool relaxAmelioration = ctx.SortNecessiteLOS && !losDepart;
-        if (relaxAmelioration) exigeAmelioration = false;
+        // Si LOS bloquée au départ, accepter une cellule équivalente en distance
+        // qui dégage la LOS (sinon le perso reste planté avec 0 cast par tour).
+        if (ctx.SortNecessiteLOS && !losDepart) exigeAmelioration = false;
 
         Cellule? meilleureCible = null;
         IReadOnlyList<Cellule>? meilleurChemin = null;
