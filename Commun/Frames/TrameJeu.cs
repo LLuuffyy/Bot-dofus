@@ -167,6 +167,15 @@ public sealed class TrameJeu : TrameBase
         Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageActeurAbrakRetrait>(msg =>
             Journaliseur.Debogue($"[ENT] acteur Abrak parti : #{msg.Identifiant}"));
 
+        // Party / mode héros — détection HORS combat via PM.
+        Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessagePartyMembres>(msg =>
+        {
+            _detecteurHeros.OnPartyMembres(msg);
+            EnrichirMembresHerosDepuisCache();
+        });
+        Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessagePartyLeader>(msg =>
+            _detecteurHeros.OnPartyLeader(msg));
+
         // === COMBAT ABRAK EN CLAIR : positions des combattants ===
         // GTM = liste combattants+cellules ; GTS = à qui le tour. C'est ICI
         // qu'on récupère enfin les entités positionnées (pour l'IA combat).

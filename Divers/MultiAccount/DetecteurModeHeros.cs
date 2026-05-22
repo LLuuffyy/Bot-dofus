@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using BotDofus.Commun.Messages.VersClient.Jeu;
 using BotDofus.Divers.Jeu;
 using BotDofus.Utilitaires.Journaux;
@@ -84,5 +85,88 @@ public sealed class DetecteurModeHeros
             });
             Journaliseur.Info($"[MODE-HEROS] +Héros lié id={msg.IdPersoLie}");
         }
+    }
+
+    /// <summary>
+    /// Appelé par <see cref="BotDofus.Commun.Frames.TrameJeu"/> à chaque
+    /// <see cref="MessagePartyMembres"/> reçu. Crée/met à jour le GroupeHeros
+    /// dès qu'on observe un groupe formé HORS combat (l'invitation Party
+    /// Dofus régulière → PM avec &gt;1 membre). Bien plus tôt que GTSX qui
+    /// n'arrive qu'au 1er combat.
+    /// </summary>
+    public void OnPartyMembres(MessagePartyMembres msg)
+    {
+        if (msg is null) return;
+        if (msg.Membres.Count == 0) return;
+
+        var monId = _etat.Personnage.Identifiant;
+        // On ne fait quelque chose que si NOUS faisons partie du groupe envoyé.
+        if (monId != 0 && msg.Membres.All(m => m.Id != monId))
+        {
+            // Pas notre groupe — peut être un PM d'observation.
+            return;
+        }
+
+        var groupe = _compte.GroupeHeros;
+        if (groupe is null)
+        {
+            groupe = new GroupeHeros { Nom = $"groupe-{monId}" };
+            _compte.GroupeHeros = groupe;
+            Journaliseur.Info($"[MODE-HEROS] Détection via PM — groupe créé pour master {monId}");
+        }
+
+        foreach (var m in msg.Membres)
+        {
+            if (m.Operation == '-')
+            {
+                groupe.RetirerMembre(m.Id);
+                continue;
+            }
+            var existant = groupe.TrouverParIdJeu(m.Id);
+            if (existant is null)
+            {
+                groupe.AjouterMembre(new MembreHeros
+                {
+                    IdJeu = m.Id,
+                    Nom = m.Nom,
+                    Niveau = m.Niveau,
+                    Role = m.Id == monId ? RoleDansGroupe.Leader : RoleDansGroupe.Suiveur,
+                    Pv = m.Pv,
+                    PvMax = m.PvMax,
+                });
+                Journaliseur.Info($"[MODE-HEROS] +Membre via PM : {m.Nom} (id {m.Id}, niv {m.Niveau})");
+            }
+            else
+            {
+                // Update : on enrichit seulement les champs jusqu'ici vides.
+                if (string.IsNullOrWhiteSpace(existant.Nom) && !string.IsNullOrWhiteSpace(m.Nom))
+                    existant.Nom = m.Nom;
+                if (existant.Niveau == 0 && m.Niveau > 0)
+                    existant.Niveau = m.Niveau;
+                if (existant.PvMax == 0 && m.PvMax > 0)
+                {
+                    existant.PvMax = m.PvMax;
+                    existant.Pv = m.Pv;
+                }
+            }
+        }
+
+        if (!groupe.EstActif) groupe.Activer();
+    }
+
+    /// <summary>Hook PL — promotion du leader.</summary>
+    public void OnPartyLeader(MessagePartyLeader msg)
+    {
+        if (msg is null || msg.IdLeader == 0) return;
+        var groupe = _compte.GroupeHeros;
+        if (groupe is null) return;
+        var nouveau = groupe.TrouverParIdJeu(msg.IdLeader);
+        if (nouveau is null || nouveau.Role == RoleDansGroupe.Leader) return;
+        // Rétrograde l'ancien leader.
+        foreach (var m in groupe.Membres)
+            if (m.Role == RoleDansGroupe.Leader && m.IdJeu != msg.IdLeader)
+                m.Role = RoleDansGroupe.Suiveur;
+        nouveau.Role = RoleDansGroupe.Leader;
+        Journaliseur.Info($"[MODE-HEROS] Leader → {nouveau.Nom} (id {msg.IdLeader})");
     }
 }

@@ -148,6 +148,11 @@ public static class FabriqueMessages
         EnregistrerVersClient<VersClient.Jeu.MessageCombattantsAbrak>("GTM");
         EnregistrerVersClient<VersClient.Jeu.MessageTourCombatAbrak>("GTS");
         EnregistrerVersClient<VersClient.Jeu.MessageNombreCombats>("fC");
+        // Party (mode héros Abrak) — PCK (3) prioritaire avant PI/PM/PL (2).
+        EnregistrerVersClient<VersClient.Jeu.MessagePartyCheck>("PCK");
+        EnregistrerVersClient<VersClient.Jeu.MessagePartyMembres>("PM");
+        EnregistrerVersClient<VersClient.Jeu.MessagePartyLeader>("PL");
+        EnregistrerVersClient<VersClient.Jeu.MessagePartyInvitation>("PI");
 
         // --- VersClient : Info ---
         EnregistrerVersClient<VersClient.Info.MessageInfoMessage>("Im");
