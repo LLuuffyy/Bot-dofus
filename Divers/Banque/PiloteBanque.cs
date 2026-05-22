@@ -176,6 +176,16 @@ public sealed class PiloteBanque
                 continue;
             }
 
+            // Skip items dont la quantité est 0 ou négative — l'inventaire peut
+            // contenir un objet à qte=0 transitoirement (race entre OQ/OR et
+            // notre snapshot, cf. log 04:11:44 où 3 items passaient qte=0).
+            // EMO+<uid>|0 est inutile et pollue le journal.
+            if (item.Quantite <= 0)
+            {
+                Journaliseur.Debogue($"[BANQUE] skip item #{item.Identifiant} template={item.IdTemplate} (qte=0)");
+                continue;
+            }
+
             int compteurAvant = System.Threading.Interlocked.CompareExchange(ref CompteurObjectRemove, 0, 0);
             // ⚠ PROTOCOLE Hystoria : EMO+<uid>|<qte> — séparateur '|' (PAS ';'),
             // préfixe 'EMO+' (PAS 'EM'). UID = identifiant inventaire long.
