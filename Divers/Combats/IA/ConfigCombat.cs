@@ -110,8 +110,16 @@ public sealed class ConfigCombat
     /// Délais à 5 ms (vs 25 ms turbo standard). À combiner avec TurboCombat=true
     /// (sinon ignoré). Risque de désync TCP sur connexion à haute latence.
     /// Pour mode farm aggressif uniquement.
+    /// LEGACY — préférer <see cref="Delais"/> avec profil <see cref="ProfilVitesseCombat.UltraRapide"/>.
     /// </summary>
     public bool UltraTurboCombat { get; set; } = false;
+
+    /// <summary>
+    /// Config fine des délais combat (inspirée du panneau « Délais » SynFus).
+    /// Permet à l'utilisateur de choisir un profil prédéfini (HumainNormal /
+    /// Rapide / UltraRapide) ou de tweaker chaque délai manuellement (Custom).
+    /// </summary>
+    public ConfigDelaisCombat Delais { get; set; } = ConfigDelaisCombat.Defauts();
 
     /// <summary>
     /// FLAG ROLLOUT — si <c>true</c>, en cas de <see cref="ResultatDeplacementCombat.TimeoutSilencieux"/>

@@ -1244,7 +1244,7 @@ public sealed class TrameJeu : TrameBase
         //   - Tour 7 : GTS 16:22:02.921 → GA300 16:22:04.494 = 1573 ms
         // Vrais humains : 1.5-1.7 s entre voir le tour et cliquer un sort.
         // En mode turbo, ce délai est réduit à 50ms (cf. TimingsCombat).
-        int delaiReaction = Divers.Combats.IA.TimingsCombat.Delai(1400, 2100);
+        int delaiReaction = Divers.Combats.IA.TimingsCombat.DelaiActionCombat(1400, 2100);
         Journaliseur.Info($"[TOUR-START] Tour #{combat.NumeroTour} — cell {maCell}, PA={perso.PA}, PM={perso.PM}, "
             + $"alliés={combat.Allies.Count}, ennemis={combat.Ennemis.Count(e => !e.EstMort)}/{combat.Ennemis.Count}, "
             + $"mode={_compte.ConfigCombat?.Mode}, règles={_compte.ConfigCombat?.Regles.Count ?? 0}, "
@@ -1372,10 +1372,10 @@ public sealed class TrameJeu : TrameBase
                 // le Gt jusqu'à 13s — forensic 2026-05-22 18:39:51 Ukdeshan.
                 // Les GKK0 redondants sont safe (serveur ignore).
                 try { await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false); } catch { /* best-effort */ }
-                await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(150, 300)).ConfigureAwait(false);
+                await Task.Delay(Divers.Combats.IA.TimingsCombat.DelaiApresDeplacement(150, 300)).ConfigureAwait(false);
 
                 // Pass turn après tous les casts effectués ce tour.
-                await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(800, 1300)).ConfigureAwait(false);
+                await Task.Delay(Divers.Combats.IA.TimingsCombat.DelaiPasserTour(800, 1300)).ConfigureAwait(false);
                 Journaliseur.Info($"[ACTION] Passe le tour (Gt) — {castsEffectues} cast(s) ce tour");
                 await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
                 return;
@@ -1544,7 +1544,7 @@ public sealed class TrameJeu : TrameBase
                         // L'ancien GKK0 forcé pouvait être une autre cause du
                         // rejet silent côté serveur. Cf. agent REFPLACE BUG #4
                         // + docs/REFERENCE-PLACEMENT-DEPLACEMENT-DYSHAY.md §2.1.
-                        await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(150, 300)).ConfigureAwait(false);
+                        await Task.Delay(Divers.Combats.IA.TimingsCombat.DelaiApresDeplacement(150, 300)).ConfigureAwait(false);
 
                         sort = sortVise;
                         sortCoutPA = paVL;
@@ -1567,7 +1567,7 @@ public sealed class TrameJeu : TrameBase
             // un GKK0 final ferme proprement l'action côté serveur Hystoria.
             // Sans ça, le Gt peut être ignoré jusqu'à 13s (forensic Athabiel 14:38:28).
             try { await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false); } catch { /* swallow */ }
-            await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(150, 300)).ConfigureAwait(false);
+            await Task.Delay(Divers.Combats.IA.TimingsCombat.DelaiApresDeplacement(150, 300)).ConfigureAwait(false);
             await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
             return;
         }
@@ -1601,14 +1601,14 @@ public sealed class TrameJeu : TrameBase
         await _session.EnvoyerAuServeurAsync(paquetSort).ConfigureAwait(false);
 
         // GKK0 : capture user 16:22:00.130 → 376 ms après GA300. Random 300-500.
-        await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(300, 500)).ConfigureAwait(false);
+        await Task.Delay(Divers.Combats.IA.TimingsCombat.DelaiLancerSort(300, 500)).ConfigureAwait(false);
         await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
 
         // Gt : capture user montre que le serveur termine le tour ~1.5 s après
         // GKK0 quand le client a vidé ses PA. Pour rester sûr, on envoie Gt
         // explicite après 1-1.5 s (humanisé). Si le serveur a déjà fermé le
         // tour (GTF reçu), Gt est inoffensif (le serveur l'ignore).
-        await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(1000, 1500)).ConfigureAwait(false);
+        await Task.Delay(Divers.Combats.IA.TimingsCombat.DelaiPasserTour(1000, 1500)).ConfigureAwait(false);
         Journaliseur.Info("[ACTION] Passe le tour (Gt)");
         await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
     }
@@ -1843,7 +1843,7 @@ public sealed class TrameJeu : TrameBase
                 || resTac == Divers.Combats.IA.ResultatDeplacementCombat.ConfirmePartiel)
             {
                 Journaliseur.Info($"[TACTIC] Mouvement {resTac} : cell réelle = {perso.CellulePosition}");
-                await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(300, 500)).ConfigureAwait(false);
+                await Task.Delay(Divers.Combats.IA.TimingsCombat.DelaiApresDeplacement(300, 500)).ConfigureAwait(false);
             }
             else
             {
@@ -1933,7 +1933,7 @@ public sealed class TrameJeu : TrameBase
             || resultat == Divers.Combats.IA.ResultatDeplacementCombat.ConfirmePartiel)
         {
             Journaliseur.Info($"[PRE-MOVE] Mouvement {resultat} : cell réelle = {perso.CellulePosition}");
-            await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(300, 500)).ConfigureAwait(false);
+            await Task.Delay(Divers.Combats.IA.TimingsCombat.DelaiApresDeplacement(300, 500)).ConfigureAwait(false);
         }
         else
         {
@@ -2149,9 +2149,8 @@ public sealed class TrameJeu : TrameBase
 
         // GKK0 ack + délai humanisé inter-cast (pas trop court pour éviter
         // signature anti-bot ; pas trop long pour laisser tourner la boucle).
-        // En mode turbo, réduit à 50ms (cf. TimingsCombat).
-        await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(300, 500)).ConfigureAwait(false);
+        await Task.Delay(Divers.Combats.IA.TimingsCombat.DelaiLancerSort(300, 500)).ConfigureAwait(false);
         await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
-        await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(500, 900)).ConfigureAwait(false);
+        await Task.Delay(Divers.Combats.IA.TimingsCombat.DelaiEntreDeuxSorts(500, 900)).ConfigureAwait(false);
     }
 }

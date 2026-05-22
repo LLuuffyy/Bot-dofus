@@ -172,14 +172,14 @@ public static class IACombatHerosSimple
         try
         {
             await session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
-            await Task.Delay(TimingsCombat.Delai(150, 300)).ConfigureAwait(false);
+            await Task.Delay(TimingsCombat.DelaiApresDeplacement(150, 300)).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             Journaliseur.Avertir($"[{tag}] échec GKK0 fin-action : {ex.Message}");
         }
 
-        await Task.Delay(TimingsCombat.DelaiFixe(DelaiAvantFinTourMs)).ConfigureAwait(false);
+        await Task.Delay(TimingsCombat.DelaiPasserTour(DelaiAvantFinTourMs, DelaiAvantFinTourMs)).ConfigureAwait(false);
         await EnvoyerFinTourAsync(session);
     }
 
@@ -538,9 +538,9 @@ public static class IACombatHerosSimple
         // Décrément PA optimiste (la prochaine itération du moteur voit le bon budget).
         if (moi.PA >= r.CoutPA) moi.PA -= r.CoutPA;
 
-        await Task.Delay(TimingsCombat.Delai(300, 500)).ConfigureAwait(false);
+        await Task.Delay(TimingsCombat.DelaiLancerSort(300, 500)).ConfigureAwait(false);
         try { await session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false); } catch { /* ack best-effort */ }
-        await Task.Delay(TimingsCombat.Delai(500, 900)).ConfigureAwait(false);
+        await Task.Delay(TimingsCombat.DelaiEntreDeuxSorts(500, 900)).ConfigureAwait(false);
         return true;
     }
 

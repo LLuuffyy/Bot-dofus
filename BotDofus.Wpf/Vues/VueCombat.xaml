@@ -881,6 +881,155 @@
                               Unchecked="ChkUltraTurboCombat_Changed"
                               ToolTip="Active uniquement si Turbo coché. Délais réduits à 5ms (vs 25ms turbo). Combats 2x plus rapides encore. Risque de désync TCP sur connexion à haute latence — désactiver si tu vois des paquets en erreur."/>
 
+                    <!-- ===== PANNEAU DÉLAIS FIN (style SynFus) ===== -->
+                    <Expander Header="⏱ Délais avancés (style SynFus — fine-tuning)"
+                              Margin="0,8,0,12"
+                              IsExpanded="False">
+                        <Border Background="{DynamicResource SurfaceBrushSoft}"
+                                BorderBrush="{DynamicResource BorderSoftBrush}"
+                                BorderThickness="1" CornerRadius="6" Padding="10">
+                            <StackPanel>
+                                <!-- Sélecteur de profil -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <TextBlock Text="Profil de vitesse :" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <ComboBox x:Name="CmbProfilVitesse" Width="180"
+                                              SelectionChanged="CmbProfilVitesse_SelectionChanged">
+                                        <ComboBoxItem Tag="HumainNormal">🧍 Humain normal (100-400ms)</ComboBoxItem>
+                                        <ComboBoxItem Tag="Rapide">⚡ Rapide (50-150ms)</ComboBoxItem>
+                                        <ComboBoxItem Tag="UltraRapide">🚀 Ultra rapide (5-15ms)</ComboBoxItem>
+                                        <ComboBoxItem Tag="Custom">🛠 Custom (manuel)</ComboBoxItem>
+                                    </ComboBox>
+                                    <Button x:Name="BtnResetDelais" Content="↻ Reset profil"
+                                            Margin="10,0,0,0" Padding="8,4"
+                                            Click="BtnResetDelais_Click"
+                                            ToolTip="Recharge les délais avec les défauts du profil sélectionné."/>
+                                </StackPanel>
+
+                                <!-- Grille délais EN COMBAT -->
+                                <TextBlock Text="Délais en combat (ms)" FontWeight="Bold" Margin="0,4,0,4"
+                                           Foreground="{DynamicResource AccentBrush}"/>
+                                <Grid x:Name="GridDelaisCombat">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="220"/>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="20"/>
+                                        <ColumnDefinition Width="80"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Action combat général -->
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Action combat (général)" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="0" Grid.Column="1" x:Name="TxtDelai_ActionCombatMin" TextChanged="TxtDelai_Changed" Tag="ActionCombatGeneral.Min"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="0" Grid.Column="3" x:Name="TxtDelai_ActionCombatMax" TextChanged="TxtDelai_Changed" Tag="ActionCombatGeneral.Max"/>
+
+                                    <!-- Lancer sort -->
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Lancer un sort" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="1" Grid.Column="1" x:Name="TxtDelai_LancerSortMin" TextChanged="TxtDelai_Changed" Tag="LancerSort.Min"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="1" Grid.Column="3" x:Name="TxtDelai_LancerSortMax" TextChanged="TxtDelai_Changed" Tag="LancerSort.Max"/>
+
+                                    <!-- Entre 2 sorts -->
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Entre 2 sorts" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="2" Grid.Column="1" x:Name="TxtDelai_EntreDeuxSortsMin" TextChanged="TxtDelai_Changed" Tag="EntreDeuxSorts.Min"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="2" Grid.Column="3" x:Name="TxtDelai_EntreDeuxSortsMax" TextChanged="TxtDelai_Changed" Tag="EntreDeuxSorts.Max"/>
+
+                                    <!-- Passer tour -->
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Passer le tour (Gt)" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="3" Grid.Column="1" x:Name="TxtDelai_PasserTourMin" TextChanged="TxtDelai_Changed" Tag="PasserTour.Min"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="3" Grid.Column="3" x:Name="TxtDelai_PasserTourMax" TextChanged="TxtDelai_Changed" Tag="PasserTour.Max"/>
+
+                                    <!-- Après déplacement -->
+                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Après déplacement" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="4" Grid.Column="1" x:Name="TxtDelai_ApresDeplMin" TextChanged="TxtDelai_Changed" Tag="ApresDeplacement.Min"/>
+                                    <TextBlock Grid.Row="4" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="4" Grid.Column="3" x:Name="TxtDelai_ApresDeplMax" TextChanged="TxtDelai_Changed" Tag="ApresDeplacement.Max"/>
+
+                                    <!-- Placement combat -->
+                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Placement (Gp)" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="5" Grid.Column="1" x:Name="TxtDelai_PlacementMin" TextChanged="TxtDelai_Changed" Tag="PlacementCombat.Min"/>
+                                    <TextBlock Grid.Row="5" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="5" Grid.Column="3" x:Name="TxtDelai_PlacementMax" TextChanged="TxtDelai_Changed" Tag="PlacementCombat.Max"/>
+
+                                    <!-- Durée par case -->
+                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Durée par case (déplacement)" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="6" Grid.Column="1" x:Name="TxtDelai_DureeCaseMin" TextChanged="TxtDelai_Changed" Tag="DureeParCaseMs.Min"/>
+                                    <TextBlock Grid.Row="6" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="6" Grid.Column="3" x:Name="TxtDelai_DureeCaseMax" TextChanged="TxtDelai_Changed" Tag="DureeParCaseMs.Max"/>
+
+                                    <!-- Timeout cast -->
+                                    <TextBlock Grid.Row="7" Grid.Column="0" Text="Timeout cast (GAS/GAF)" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="7" Grid.Column="1" x:Name="TxtDelai_TimeoutCastMin" TextChanged="TxtDelai_Changed" Tag="TimeoutCast.Min"/>
+                                    <TextBlock Grid.Row="7" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="7" Grid.Column="3" x:Name="TxtDelai_TimeoutCastMax" TextChanged="TxtDelai_Changed" Tag="TimeoutCast.Max"/>
+
+                                    <!-- Timeout mouvement -->
+                                    <TextBlock Grid.Row="8" Grid.Column="0" Text="Timeout mouvement (GA)" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="8" Grid.Column="1" x:Name="TxtDelai_TimeoutMvtMin" TextChanged="TxtDelai_Changed" Tag="TimeoutMouvement.Min"/>
+                                    <TextBlock Grid.Row="8" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="8" Grid.Column="3" x:Name="TxtDelai_TimeoutMvtMax" TextChanged="TxtDelai_Changed" Tag="TimeoutMouvement.Max"/>
+
+                                    <!-- Cliquer PnB -->
+                                    <TextBlock Grid.Row="9" Grid.Column="0" Text="Cliquer PnB / interactif" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="9" Grid.Column="1" x:Name="TxtDelai_CliquerPnbMin" TextChanged="TxtDelai_Changed" Tag="CliquerPnb.Min"/>
+                                    <TextBlock Grid.Row="9" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="9" Grid.Column="3" x:Name="TxtDelai_CliquerPnbMax" TextChanged="TxtDelai_Changed" Tag="CliquerPnb.Max"/>
+                                </Grid>
+
+                                <!-- Grille délais HORS COMBAT -->
+                                <TextBlock Text="Délais hors combat (ms)" FontWeight="Bold" Margin="0,12,0,4"
+                                           Foreground="{DynamicResource AccentBrush}"/>
+                                <Grid x:Name="GridDelaisHorsCombat">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="220"/>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="20"/>
+                                        <ColumnDefinition Width="80"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Déplacement map" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="0" Grid.Column="1" x:Name="TxtDelai_DeplMapMin" TextChanged="TxtDelai_Changed" Tag="DeplacementMap.Min"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="0" Grid.Column="3" x:Name="TxtDelai_DeplMapMax" TextChanged="TxtDelai_Changed" Tag="DeplacementMap.Max"/>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Changement de map" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="1" Grid.Column="1" x:Name="TxtDelai_ChgtMapMin" TextChanged="TxtDelai_Changed" Tag="ChangementMap.Min"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="1" Grid.Column="3" x:Name="TxtDelai_ChgtMapMax" TextChanged="TxtDelai_Changed" Tag="ChangementMap.Max"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Engager le combat (GA907)" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="2" Grid.Column="1" x:Name="TxtDelai_EngagerMin" TextChanged="TxtDelai_Changed" Tag="EngagerCombat.Min"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="2" Grid.Column="3" x:Name="TxtDelai_EngagerMax" TextChanged="TxtDelai_Changed" Tag="EngagerCombat.Max"/>
+
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Réponse PNJ" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="3" Grid.Column="1" x:Name="TxtDelai_ReponsePnjMin" TextChanged="TxtDelai_Changed" Tag="ReponsePnj.Min"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="3" Grid.Column="3" x:Name="TxtDelai_ReponsePnjMax" TextChanged="TxtDelai_Changed" Tag="ReponsePnj.Max"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </Expander>
+
                     <!-- ===== CONSOMMABLE DE SOIN (master uniquement, les héros liés
                          n'ont pas d'inventaire individuel sur Abrak Hystoria) ===== -->
                     <Border Background="{DynamicResource SurfaceBrushSoft}"

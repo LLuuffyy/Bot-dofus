@@ -816,6 +816,9 @@ public partial class VueCombat : UserControl
             ChkTurboCombat.IsChecked = cfg.TurboCombat;
             ChkUltraTurboCombat.IsChecked = cfg.UltraTurboCombat;
 
+            // Recharge le panneau délais avancé (style SynFus)
+            RechargerChampsDelais();
+
             // Sync sliders consommable (les valeurs viennent de la config).
             if (SldConsoSeuilInf != null)
             {
@@ -1083,6 +1086,127 @@ public partial class VueCombat : UserControl
         ConfigActive!.UltraTurboCombat = ChkUltraTurboCombat.IsChecked == true;
         BotDofus.Divers.Combats.IA.TimingsCombat.AppliquerConfig(ConfigActive);
         DemanderSauvegardeDebouncee();
+    }
+
+    // ===== PANNEAU DÉLAIS AVANCÉ (style SynFus) =====
+
+    private void CmbProfilVitesse_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (_initEnCours || _contexte == null || ConfigActive == null) return;
+        if (CmbProfilVitesse.SelectedItem is not System.Windows.Controls.ComboBoxItem item) return;
+        if (item.Tag is not string tag) return;
+        if (!System.Enum.TryParse<BotDofus.Divers.Combats.IA.ProfilVitesseCombat>(tag, out var profil)) return;
+
+        ConfigActive.Delais.AppliquerProfil(profil);
+        RechargerChampsDelais();
+        BotDofus.Divers.Combats.IA.TimingsCombat.AppliquerConfig(ConfigActive);
+        DemanderSauvegardeDebouncee();
+    }
+
+    private void BtnResetDelais_Click(object sender, RoutedEventArgs e)
+    {
+        if (_initEnCours || _contexte == null || ConfigActive == null) return;
+        ConfigActive.Delais.AppliquerProfil(ConfigActive.Delais.Profil);
+        RechargerChampsDelais();
+        BotDofus.Divers.Combats.IA.TimingsCombat.AppliquerConfig(ConfigActive);
+        DemanderSauvegardeDebouncee();
+    }
+
+    private void TxtDelai_Changed(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    {
+        if (_initEnCours || _contexte == null || ConfigActive == null) return;
+        if (sender is not System.Windows.Controls.TextBox txt) return;
+        if (txt.Tag is not string chemin) return;
+        if (!int.TryParse(txt.Text, out var valeur) || valeur < 0) return;
+
+        var delais = ConfigActive.Delais;
+        var parts = chemin.Split('.');
+        if (parts.Length != 2) return;
+        var plage = parts[0] switch
+        {
+            nameof(delais.ActionCombatGeneral) => delais.ActionCombatGeneral,
+            nameof(delais.CliquerPnb) => delais.CliquerPnb,
+            nameof(delais.LancerSort) => delais.LancerSort,
+            nameof(delais.EntreDeuxSorts) => delais.EntreDeuxSorts,
+            nameof(delais.PasserTour) => delais.PasserTour,
+            nameof(delais.ApresDeplacement) => delais.ApresDeplacement,
+            nameof(delais.TimeoutCast) => delais.TimeoutCast,
+            nameof(delais.TimeoutMouvement) => delais.TimeoutMouvement,
+            nameof(delais.PlacementCombat) => delais.PlacementCombat,
+            nameof(delais.DureeParCaseMs) => delais.DureeParCaseMs,
+            nameof(delais.DeplacementMap) => delais.DeplacementMap,
+            nameof(delais.ChangementMap) => delais.ChangementMap,
+            nameof(delais.EngagerCombat) => delais.EngagerCombat,
+            nameof(delais.ReponsePnj) => delais.ReponsePnj,
+            _ => null
+        };
+        if (plage == null) return;
+        if (parts[1] == "Min") plage.Min = valeur;
+        else if (parts[1] == "Max") plage.Max = valeur;
+
+        // Bascule auto en Custom si modif manuelle
+        if (delais.Profil != BotDofus.Divers.Combats.IA.ProfilVitesseCombat.Custom)
+        {
+            delais.Profil = BotDofus.Divers.Combats.IA.ProfilVitesseCombat.Custom;
+            SelectionnerProfilCombobox(BotDofus.Divers.Combats.IA.ProfilVitesseCombat.Custom);
+        }
+        BotDofus.Divers.Combats.IA.TimingsCombat.AppliquerConfig(ConfigActive);
+        DemanderSauvegardeDebouncee();
+    }
+
+    private void RechargerChampsDelais()
+    {
+        if (ConfigActive == null) return;
+        _initEnCours = true;
+        try
+        {
+            var d = ConfigActive.Delais;
+            TxtDelai_ActionCombatMin.Text = d.ActionCombatGeneral.Min.ToString();
+            TxtDelai_ActionCombatMax.Text = d.ActionCombatGeneral.Max.ToString();
+            TxtDelai_LancerSortMin.Text = d.LancerSort.Min.ToString();
+            TxtDelai_LancerSortMax.Text = d.LancerSort.Max.ToString();
+            TxtDelai_EntreDeuxSortsMin.Text = d.EntreDeuxSorts.Min.ToString();
+            TxtDelai_EntreDeuxSortsMax.Text = d.EntreDeuxSorts.Max.ToString();
+            TxtDelai_PasserTourMin.Text = d.PasserTour.Min.ToString();
+            TxtDelai_PasserTourMax.Text = d.PasserTour.Max.ToString();
+            TxtDelai_ApresDeplMin.Text = d.ApresDeplacement.Min.ToString();
+            TxtDelai_ApresDeplMax.Text = d.ApresDeplacement.Max.ToString();
+            TxtDelai_PlacementMin.Text = d.PlacementCombat.Min.ToString();
+            TxtDelai_PlacementMax.Text = d.PlacementCombat.Max.ToString();
+            TxtDelai_DureeCaseMin.Text = d.DureeParCaseMs.Min.ToString();
+            TxtDelai_DureeCaseMax.Text = d.DureeParCaseMs.Max.ToString();
+            TxtDelai_TimeoutCastMin.Text = d.TimeoutCast.Min.ToString();
+            TxtDelai_TimeoutCastMax.Text = d.TimeoutCast.Max.ToString();
+            TxtDelai_TimeoutMvtMin.Text = d.TimeoutMouvement.Min.ToString();
+            TxtDelai_TimeoutMvtMax.Text = d.TimeoutMouvement.Max.ToString();
+            TxtDelai_CliquerPnbMin.Text = d.CliquerPnb.Min.ToString();
+            TxtDelai_CliquerPnbMax.Text = d.CliquerPnb.Max.ToString();
+            TxtDelai_DeplMapMin.Text = d.DeplacementMap.Min.ToString();
+            TxtDelai_DeplMapMax.Text = d.DeplacementMap.Max.ToString();
+            TxtDelai_ChgtMapMin.Text = d.ChangementMap.Min.ToString();
+            TxtDelai_ChgtMapMax.Text = d.ChangementMap.Max.ToString();
+            TxtDelai_EngagerMin.Text = d.EngagerCombat.Min.ToString();
+            TxtDelai_EngagerMax.Text = d.EngagerCombat.Max.ToString();
+            TxtDelai_ReponsePnjMin.Text = d.ReponsePnj.Min.ToString();
+            TxtDelai_ReponsePnjMax.Text = d.ReponsePnj.Max.ToString();
+            SelectionnerProfilCombobox(d.Profil);
+        }
+        finally { _initEnCours = false; }
+    }
+
+    private void SelectionnerProfilCombobox(BotDofus.Divers.Combats.IA.ProfilVitesseCombat profil)
+    {
+        if (CmbProfilVitesse == null) return;
+        foreach (var i in CmbProfilVitesse.Items)
+        {
+            if (i is System.Windows.Controls.ComboBoxItem item
+                && item.Tag is string tag
+                && tag == profil.ToString())
+            {
+                CmbProfilVitesse.SelectedItem = item;
+                return;
+            }
+        }
     }
 
     // ============================================================
