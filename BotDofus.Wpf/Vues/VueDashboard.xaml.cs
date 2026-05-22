@@ -129,13 +129,29 @@ public partial class VueDashboard : UserControl
             TxtStatOctets.Text = $"{FormaterOctets(s.OctetsRecus)} / {FormaterOctets(s.OctetsEnvoyes)}";
 
         if (TxtStatCombats != null)
-            TxtStatCombats.Text = s.CombatsTotaux.ToString();
+        {
+            var perHeure = s.CombatsParHeure;
+            var suffix = perHeure > 0 ? $" ({perHeure:F1}/h)" : "";
+            TxtStatCombats.Text = s.CombatsTotaux.ToString() + suffix;
+        }
 
         if (TxtStatKamas != null)
-            TxtStatKamas.Text = (s.KamasGagnes >= 0 ? "+" : "") + s.KamasGagnes.ToString("N0");
+        {
+            var perHeure = s.KamasParHeure;
+            var suffix = perHeure >= 1000
+                ? $" ({perHeure / 1000:F1}k/h)"
+                : perHeure > 0 ? $" ({perHeure:F0}/h)" : "";
+            TxtStatKamas.Text = (s.KamasGagnes >= 0 ? "+" : "") + s.KamasGagnes.ToString("N0") + suffix;
+        }
 
         if (TxtStatXp != null)
-            TxtStatXp.Text = (s.XpGagnee >= 0 ? "+" : "") + s.XpGagnee.ToString("N0");
+        {
+            var perHeure = s.XpParHeure;
+            var suffix = perHeure >= 1000
+                ? $" ({perHeure / 1000:F1}k/h)"
+                : perHeure > 0 ? $" ({perHeure:F0}/h)" : "";
+            TxtStatXp.Text = (s.XpGagnee >= 0 ? "+" : "") + s.XpGagnee.ToString("N0") + suffix;
+        }
 
         if (TxtStatModifies != null)
             TxtStatModifies.Text = s.PaquetsModifies.ToString("N0");

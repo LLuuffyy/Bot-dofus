@@ -129,7 +129,7 @@ public sealed class DetecteurModeHeros
             var existant = groupe.TrouverParIdJeu(m.Id);
             if (existant is null)
             {
-                groupe.AjouterMembre(new MembreHeros
+                var nouveauMembre = new MembreHeros
                 {
                     IdJeu = m.Id,
                     Nom = m.Nom,
@@ -138,7 +138,15 @@ public sealed class DetecteurModeHeros
                     Role = m.Id == monId ? RoleDansGroupe.Leader : RoleDansGroupe.Suiveur,
                     Pv = m.Pv,
                     PvMax = m.PvMax,
-                });
+                };
+                groupe.AjouterMembre(nouveauMembre);
+                // Hydrate depuis peleas/heros/<id>.json (charge sorts + config combat
+                // persistés) — manquait ici, cf. forensic 2026-05-22 15:04:14
+                // « [IA-HEROS:Vrottigrat] ConfigCombat vide → Gt direct »
+                // (ajouté via PM+ sans HydrateMembre, donc ConfigCombat restait null).
+                // Skip pour le LEADER (= master, sa config est dans peleas/<compte>.json).
+                if (nouveauMembre.Role != RoleDansGroupe.Leader)
+                    ServiceConfigsHeros.HydrateMembre(nouveauMembre);
                 Journaliseur.Info($"[MODE-HEROS] +Membre via PM : {m.Nom} (id {m.Id}, niv {m.Niveau}, classe {m.IdClasse})");
             }
             else

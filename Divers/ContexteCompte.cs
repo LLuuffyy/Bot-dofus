@@ -233,6 +233,32 @@ public sealed class ContexteCompte : IDisposable
         // tire, et on veut que OnHerosOrdre puisse réagir en ayant la session.
         ActivateurHerosAbrak.AttacherSession(session);
 
+        // Détection déconnexion inattendue → alerte Discord (P0 user feedback).
+        // SessionProxy.SessionTerminee est levé quand le socket se ferme,
+        // que ce soit par déconnexion normale (user quitte) ou par kick/ban
+        // serveur. On envoie l'alerte uniquement si l'user est en jeu (Etat ≠ Inactif)
+        // pour ne pas spam Discord à chaque fermeture volontaire.
+        session.SessionTerminee += (s, e) =>
+        {
+            try
+            {
+                if (Compte.Etat == Enums.EtatsCompte.EnJeu || Compte.Etat == Enums.EtatsCompte.EnCombat)
+                {
+                    Journaliseur.Avertir($"[DECONNEXION] Session jeu terminée inopinément — perso était {Compte.Etat}");
+                    if (!string.IsNullOrWhiteSpace(Compte.WebhookDiscordUrl))
+                    {
+                        _ = BotDofus.Divers.Notifications.NotificateurDiscord.NotifierDeconnexionAsync(
+                            Compte.WebhookDiscordUrl, EtatJeu.Personnage.Nom,
+                            $"socket fermé en état {Compte.Etat} (kick/ban serveur possible)");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Journaliseur.Avertir($"[DECONNEXION] Erreur notification Discord : {ex.Message}");
+            }
+        };
+
         // TOUJOURS TrameJeu (observation + parseurs combat/entités), que l'on
         // soit passif ou actif : le client réel gère sélection perso/serveur.
         // TrameSelectionPersonnage injecterait des paquets de sélection en

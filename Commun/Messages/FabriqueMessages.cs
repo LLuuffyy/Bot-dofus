@@ -155,6 +155,8 @@ public static class FabriqueMessages
         EnregistrerVersClient<VersClient.Jeu.MessagePartyInvitation>("PI");
         // Nh (S→C) : sorts d'un héros lié (réponse à Nh<id>/Ns<id> C→S).
         EnregistrerVersClient<VersClient.Jeu.MessageHerosSorts>("Nh");
+        // NO (S→C) : liste héros liés + master (mode héros Abrak Hystoria).
+        EnregistrerVersClient<VersClient.Jeu.MessageHerosOrdre>("NO");
 
         // --- VersClient : Info ---
         EnregistrerVersClient<VersClient.Info.MessageInfoMessage>("Im");

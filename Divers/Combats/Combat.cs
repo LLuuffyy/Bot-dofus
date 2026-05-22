@@ -23,19 +23,25 @@ public sealed class Combat
     public int EquipePlacement { get; private set; } = -1;
 
     /// <summary>
-    /// Compteur de lancements par sort pour le TOUR courant. Reset à chaque
-    /// <see cref="NouveauTour"/>. Utilisé par <see cref="IA.MoteurReglesCombat"/>
+    /// Compteur de lancements par (CASTER, sort) pour le TOUR courant. Reset à
+    /// chaque <see cref="NouveauTour"/>. Utilisé par <see cref="IA.MoteurReglesCombat"/>
     /// pour appliquer <see cref="IA.RegleSort.NombreParTour"/> (limite SynFus :
     /// « lancer ce sort au max N fois par tour »).
+    /// <para>
+    /// ⚠️ La clé inclut <c>idCaster</c> pour cloisonner master ET chaque héros lié
+    /// (sinon le 1er caster d'un tour de combat consomme le compteur partagé et
+    /// les suivants se font rejeter leur règle — bug forensic 2026-05-22 log 14:38:28
+    /// où Athabiel/Aelardast finissaient à 0 cast).
+    /// </para>
     /// </summary>
-    public Dictionary<int, int> CompteursRegleParTour { get; } = new();
+    public Dictionary<(int idCaster, int idSort), int> CompteursRegleParTour { get; } = new();
 
     /// <summary>
-    /// Compteur de lancements par (sort, cible) pour le TOUR courant. Reset à
-    /// chaque <see cref="NouveauTour"/>. Implémente <see cref="IA.RegleSort.NombreParCible"/>
-    /// (« max N fois sur la même cible »).
+    /// Compteur de lancements par (CASTER, sort, cible) pour le TOUR courant.
+    /// Reset à chaque <see cref="NouveauTour"/>. Implémente
+    /// <see cref="IA.RegleSort.NombreParCible"/> (« max N fois sur la même cible »).
     /// </summary>
-    public Dictionary<(int idSort, int idCible), int> CompteursRegleParCible { get; } = new();
+    public Dictionary<(int idCaster, int idSort, int idCible), int> CompteursRegleParCible { get; } = new();
 
     /// <summary>
     /// Dernier numéro de tour où chaque sort a été lancé. Persiste à travers

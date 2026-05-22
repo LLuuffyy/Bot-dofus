@@ -369,6 +369,9 @@ public partial class VueMapViewer : UserControl
             // figé, pas de cells de placement résiduelles (cf. H.4
             // DessinerCellulesPlacement gate Placement only).
             DessinerCombattants(carte);
+            // Cells atteignables avec mes PM courants (BFS 4-dir), vert pâle.
+            // Donne immédiatement la zone de mouvement ce tour (ADR-003).
+            DessinerCellulesAtteignablesAvecPM(carte);
             // Highlights : si un sort est sélectionné dans l'onglet Combat,
             // surligne les cells dans sa portée autour de ma position actuelle.
             DessinerHighlightsSortSelectionne(carte);
@@ -377,6 +380,57 @@ public partial class VueMapViewer : UserControl
         }
         MettreAJourListeEntites(carte);
         CentrerSiNecessaire(carte);
+    }
+
+    /// <summary>
+    /// Surligne en vert pâle les cells atteignables ce tour avec les PM
+    /// courants du perso (BFS 4-dir style combat). Aide à visualiser la
+    /// zone de mouvement disponible avant de prendre une décision tactique.
+    /// </summary>
+    private void DessinerCellulesAtteignablesAvecPM(BotDofus.Divers.Cartes.Carte carte)
+    {
+        if (_contexte == null) return;
+        var perso = _contexte.EtatJeu.Personnage;
+        if (perso.PM <= 0) return;
+        if (perso.CellulePosition is not int maCellId) return;
+        var depart = carte.Obtenir(maCellId);
+        if (depart == null) return;
+
+        // Combattants vivants = interdits.
+        var interdits = new System.Collections.Generic.HashSet<BotDofus.Divers.Cartes.Cellule>();
+        foreach (var a in _contexte.EtatJeu.Combat.Allies)
+        {
+            if (a.EstMort || a.Identifiant == perso.Identifiant) continue;
+            var c = carte.Obtenir(a.CellulePosition);
+            if (c != null) interdits.Add(c);
+        }
+        foreach (var e in _contexte.EtatJeu.Combat.Ennemis)
+        {
+            if (e.EstMort) continue;
+            var c = carte.Obtenir(e.CellulePosition);
+            if (c != null) interdits.Add(c);
+        }
+
+        int pm = perso.PM;
+        var fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x33, 0x55, 0xFF, 0x88));
+        var stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(0x77, 0x55, 0xFF, 0x88));
+
+        // Pré-filtre Manhattan pour limiter les A* coûteux : seules les cells
+        // dans un carré 2×PM+1 autour du départ peuvent être atteignables.
+        foreach (var c in carte.Cellules)
+        {
+            if (c == null || !c.EstMarchable || c.IdInteractif >= 0 || interdits.Contains(c)) continue;
+            if (c.Identifiant == depart.Identifiant) continue;
+            int dEst = System.Math.Abs(c.X - depart.X) + System.Math.Abs(c.Y - depart.Y);
+            if (dEst == 0 || dEst > pm) continue;
+            // Pathfinder A* combat (cher mais précis). On le fait seulement
+            // pour les cells pré-filtrées (gain perf ~10×).
+            var chemin = BotDofus.Divers.Cartes.Deplacement.Pathfinder.Trouver(carte, depart, c, interdits, combat: true);
+            if (chemin == null) continue;
+            int nbPas = chemin.Count - 1;
+            if (nbPas <= 0 || nbPas > pm) continue;
+            DessinerCelluleSurligne(c, fill, stroke);
+        }
     }
 
     /// <summary>

@@ -78,6 +78,26 @@ public sealed class Compte : IEffacable
     public event EventHandler<BotDofus.Divers.MultiAccount.GroupeHeros?>? GroupeHerosChange;
 
     /// <summary>
+    /// Déclenché quand le serveur envoie une erreur d'invitation
+    /// (<c>PI&lt;code&gt;</c>, ex <c>PIEa</c>). Permet à
+    /// <see cref="BotDofus.Divers.MultiAccount.AutoInviteurHeros"/> de passer
+    /// immédiatement à l'invitation suivante au lieu d'attendre 4s de timeout.
+    /// L'argument est le code brut serveur (ex <c>"Ea"</c>).
+    /// </summary>
+    public event EventHandler<string>? InvitationRefusee;
+
+    /// <summary>Déclenche l'event <see cref="InvitationRefusee"/>.</summary>
+    public void DeclencherInvitationRefusee(string code)
+        => InvitationRefusee?.Invoke(this, code);
+
+    /// <summary>
+    /// Activateur mode héros Abrak (séquence <c>NOL → NA&lt;ids&gt;</c>).
+    /// Affecté par <see cref="ContexteCompte"/> à l'init. <c>null</c> tant que
+    /// le contexte n'est pas créé.
+    /// </summary>
+    public BotDofus.Divers.MultiAccount.ActivateurHerosAbrak? ActivateurHerosAbrak { get; set; }
+
+    /// <summary>
     /// URL webhook Discord pour notifications événements importants (mort,
     /// level up, banque pleine, déconnexion). Vide = pas de notif.
     /// Format : <c>https://discord.com/api/webhooks/&lt;id&gt;/&lt;token&gt;</c>.

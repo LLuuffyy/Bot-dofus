@@ -115,6 +115,58 @@ public sealed class MessagePartyCheck : MessageDofus, IMessageVersClient
 }
 
 /// <summary>
+/// NO (S→C) : liste des héros liés au master + leurs états. Reçu en réponse à
+/// un <c>NOL</c> (Heros Order List) envoyé par le client.
+///
+/// Format observé Hystoria (log 152139 sec 15:22:10) :
+/// <c>NO32~401781;0|401778;0|401779;0|401776;0|401777;0|401774;0|401775;0|401770;3</c>
+/// soit <c>NO&lt;flagsHexa&gt;~&lt;idPerso&gt;;&lt;etat&gt;|...</c> où
+/// <list type="bullet">
+///   <item><c>etat=3</c> = MASTER (leader actif, perso pilotable)</item>
+///   <item><c>etat=0</c> = HÉROS LIÉ (suiveur, contrôlable serveur-side)</item>
+/// </list>
+///
+/// Le bot s'en sert pour extraire tous les IDs liés et envoyer un
+/// <c>NA&lt;id1&gt;,&lt;id2&gt;,...</c> qui ACTIVE le mode héros sur ces persos
+/// (= ils rejoignent le combat à côté du master au prochain GTSX).
+/// </summary>
+public sealed class MessageHerosOrdre : MessageDofus, IMessageVersClient
+{
+    public override string Prefixe => "NO";
+    public override DirectionPaquet Direction => DirectionPaquet.VersClient;
+
+    public readonly record struct EntreeHeros(int IdPerso, int Etat)
+    {
+        /// <summary>État 3 = master (leader actif), 0 = héros lié (suiveur).</summary>
+        public bool EstMaster => Etat == 3;
+    }
+
+    /// <summary>Drapeaux serveur (ex. "32") avant le séparateur '~'.</summary>
+    public string Flags { get; private set; } = string.Empty;
+
+    /// <summary>Entrées héros parsées.</summary>
+    public List<EntreeHeros> Entrees { get; } = new();
+
+    public override void Desserialiser(string charge)
+    {
+        Charge = charge;
+        var sepFlags = charge.IndexOf('~');
+        string corps;
+        if (sepFlags < 0) { Flags = string.Empty; corps = charge; }
+        else { Flags = charge[..sepFlags]; corps = charge[(sepFlags + 1)..]; }
+
+        foreach (var bloc in corps.Split('|', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var champs = bloc.Split(';');
+            if (champs.Length < 2) continue;
+            if (!int.TryParse(champs[0], out var idPerso)) continue;
+            int.TryParse(champs[1], out var etat);
+            Entrees.Add(new EntreeHeros(idPerso, etat));
+        }
+    }
+}
+
+/// <summary>
 /// Nh (S→C) : liste des sorts d'un héros lié (réponse à <c>Nh&lt;id&gt;</c> +
 /// <c>Ns&lt;id&gt;</c> envoyés par le client en mode héros, log 101039 sec 10:11:58).
 /// Format observé : <c>Nh401774|49~1~-1;51~4~3;41~1~1;42~1~-1;43~1~2;</c>

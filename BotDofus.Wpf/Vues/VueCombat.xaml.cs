@@ -814,6 +814,7 @@ public partial class VueCombat : UserControl
             SldDelaiActions.Value = cfg.DelaiEntreActionsMs;
             TxtDelaiActions.Text  = cfg.DelaiEntreActionsMs.ToString();
             ChkTurboCombat.IsChecked = cfg.TurboCombat;
+            ChkUltraTurboCombat.IsChecked = cfg.UltraTurboCombat;
 
             // Sync sliders consommable (les valeurs viennent de la config).
             if (SldConsoSeuilInf != null)
@@ -1076,6 +1077,14 @@ public partial class VueCombat : UserControl
         DemanderSauvegardeDebouncee();
     }
 
+    private void ChkUltraTurboCombat_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_initEnCours || _contexte == null) return;
+        ConfigActive!.UltraTurboCombat = ChkUltraTurboCombat.IsChecked == true;
+        BotDofus.Divers.Combats.IA.TimingsCombat.AppliquerConfig(ConfigActive);
+        DemanderSauvegardeDebouncee();
+    }
+
     // ============================================================
     // CONSOMMABLE DE SOIN (master uniquement)
     // ============================================================
@@ -1099,8 +1108,16 @@ public partial class VueCombat : UserControl
         var bdd = BotDofus.Divers.Donnees.BaseDonnees.Instance;
         if (inv != null && bdd != null)
         {
+            // SNAPSHOT atomique d'abord — sinon « Collection was modified »
+            // si le thread réseau (OAK/OR/OQ) modifie Inventaire pendant
+            // l'énumération LINQ (crash forensic 2026-05-22 19:11:44).
+            BotDofus.Divers.Jeu.Personnage.ObjetInventaire[] snapshot;
+            lock (inv)
+            {
+                snapshot = inv.ToArray();
+            }
             // Agrège par IdTemplate (un même template peut avoir plusieurs piles).
-            var grpd = inv
+            var grpd = snapshot
                 .Where(o => o.Quantite > 0)
                 .GroupBy(o => o.IdTemplate)
                 .OrderBy(g => bdd.Item(g.Key)?.Nom ?? "")

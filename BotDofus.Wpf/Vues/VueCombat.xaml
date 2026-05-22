@@ -870,10 +870,16 @@
                          pendant un combat (overworld reste humanisé). -->
                     <CheckBox x:Name="ChkTurboCombat"
                               Content="⚡ Mode Turbo combat (délais minimum, combat uniquement)"
-                              Margin="0,0,0,12"
+                              Margin="0,0,0,4"
                               Checked="ChkTurboCombat_Changed"
                               Unchecked="ChkTurboCombat_Changed"
-                              ToolTip="Réduit tous les délais IA en combat à 50ms (réaction, GKK0, Gt, inter-cast). Les délais OVERWORLD (récolte, zaap, déplacement carte) restent humanisés. Utile pour finir vite les combats de farm."/>
+                              ToolTip="Réduit tous les délais IA en combat à 25ms (réaction, GKK0, Gt, inter-cast). Les délais OVERWORLD (récolte, zaap, déplacement carte) restent humanisés. Utile pour finir vite les combats de farm."/>
+                    <CheckBox x:Name="ChkUltraTurboCombat"
+                              Content="🚀 ULTRA Turbo (5ms, mode expert — combats 2x plus rapides)"
+                              Margin="20,0,0,12"
+                              Checked="ChkUltraTurboCombat_Changed"
+                              Unchecked="ChkUltraTurboCombat_Changed"
+                              ToolTip="Active uniquement si Turbo coché. Délais réduits à 5ms (vs 25ms turbo). Combats 2x plus rapides encore. Risque de désync TCP sur connexion à haute latence — désactiver si tu vois des paquets en erreur."/>
 
                     <!-- ===== CONSOMMABLE DE SOIN (master uniquement, les héros liés
                          n'ont pas d'inventaire individuel sur Abrak Hystoria) ===== -->

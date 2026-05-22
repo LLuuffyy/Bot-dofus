@@ -96,6 +96,24 @@ public sealed class ConfigCombat
     public int DelaiEntreActionsMs { get; set; } = 1000;
 
     /// <summary>
+    /// Mode TURBO en combat : si <c>true</c>, les délais humanisés (entre cast,
+    /// avant Gt, entre actions IA) sont réduits au minimum (<see cref="TimingsCombat.MsTurbo"/>
+    /// ms). Affecte UNIQUEMENT le combat (overworld reste humanisé). Utile
+    /// pour les sessions de farm rapide où la signature anti-bot du timing
+    /// combat est moins critique (le serveur Hystoria tolère des séquences
+    /// rapides en combat tant qu'elles ne se chevauchent pas TCP).
+    /// </summary>
+    public bool TurboCombat { get; set; } = false;
+
+    /// <summary>
+    /// Mode ULTRA TURBO : encore plus rapide que <see cref="TurboCombat"/>.
+    /// Délais à 5 ms (vs 25 ms turbo standard). À combiner avec TurboCombat=true
+    /// (sinon ignoré). Risque de désync TCP sur connexion à haute latence.
+    /// Pour mode farm aggressif uniquement.
+    /// </summary>
+    public bool UltraTurboCombat { get; set; } = false;
+
+    /// <summary>
     /// FLAG ROLLOUT — si <c>true</c>, en cas de <see cref="ResultatDeplacementCombat.TimeoutSilencieux"/>
     /// (aucun broadcast GA;0/1 reçu après envoi GA001) le bot continue quand
     /// même le cast en mode optimistic (= comportement pré-ADR-002).
