@@ -536,16 +536,21 @@ public sealed class TrameJeu : TrameBase
         // Inventaire initial inclus dans le paquet ASK (pas besoin d'attendre des OAK)
         if (msg.ObjetsInitiaux.Count > 0)
         {
-            perso.Inventaire.Clear();
-            foreach (var o in msg.ObjetsInitiaux)
+            // Lock pour éviter race avec UI thread (VueCombat/VueInventaire qui itèrent).
+            // Clear + Add tout dans un seul bloc lock = mutations atomiques côté thread réseau.
+            lock (perso.Inventaire)
             {
-                perso.Inventaire.Add(new BotDofus.Divers.Jeu.Personnage.ObjetInventaire
+                perso.Inventaire.Clear();
+                foreach (var o in msg.ObjetsInitiaux)
                 {
-                    Identifiant = o.Identifiant,
-                    IdTemplate = o.IdTemplate,
-                    Quantite = o.Quantite,
-                    Position = o.Position
-                });
+                    perso.Inventaire.Add(new BotDofus.Divers.Jeu.Personnage.ObjetInventaire
+                    {
+                        Identifiant = o.Identifiant,
+                        IdTemplate = o.IdTemplate,
+                        Quantite = o.Quantite,
+                        Position = o.Position
+                    });
+                }
             }
             Journaliseur.Info($"[INV] Inventaire initial chargé : {msg.ObjetsInitiaux.Count} objets");
             perso.NotifierInventaireChange();
@@ -1037,34 +1042,38 @@ public sealed class TrameJeu : TrameBase
     {
         var inv = _etat.Personnage.Inventaire;
         var bddItems = Divers.Donnees.BaseDonnees.Instance;
-        foreach (var o in msg.ObjetsParse)
+        // Lock pour éviter race UI thread (cf. fix VueCombat/VueInventaire snapshot).
+        lock (inv)
         {
-            // Évite les doublons : si l'id existe déjà, on remplace quantité/position.
-            var existant = inv.FirstOrDefault(x => x.Identifiant == o.Identifiant);
-            if (existant != null)
+            foreach (var o in msg.ObjetsParse)
             {
-                int delta = o.Quantite - existant.Quantite;
-                existant.Quantite = o.Quantite;
-                existant.Position = o.Position;
-                if (delta > 0)
+                // Évite les doublons : si l'id existe déjà, on remplace quantité/position.
+                var existant = inv.FirstOrDefault(x => x.Identifiant == o.Identifiant);
+                if (existant != null)
                 {
-                    var nom = bddItems.Item(o.IdTemplate)?.Nom ?? $"Item #{o.IdTemplate}";
-                    Journaliseur.Info($"[ACTION] +{delta} {nom} (total {o.Quantite})");
+                    int delta = o.Quantite - existant.Quantite;
+                    existant.Quantite = o.Quantite;
+                    existant.Position = o.Position;
+                    if (delta > 0)
+                    {
+                        var nom = bddItems.Item(o.IdTemplate)?.Nom ?? $"Item #{o.IdTemplate}";
+                        Journaliseur.Info($"[ACTION] +{delta} {nom} (total {o.Quantite})");
+                    }
                 }
-            }
-            else
-            {
-                inv.Add(new BotDofus.Divers.Jeu.Personnage.ObjetInventaire
+                else
                 {
-                    Identifiant = o.Identifiant,
-                    IdTemplate = o.IdTemplate,
-                    Quantite = o.Quantite,
-                    Position = o.Position
-                });
-                if (o.Quantite > 0 && o.Position == 63)  // 63 = sac (récolte fraîche)
-                {
-                    var nom = bddItems.Item(o.IdTemplate)?.Nom ?? $"Item #{o.IdTemplate}";
-                    Journaliseur.Info($"[ACTION] +{o.Quantite} {nom} (nouveau)");
+                    inv.Add(new BotDofus.Divers.Jeu.Personnage.ObjetInventaire
+                    {
+                        Identifiant = o.Identifiant,
+                        IdTemplate = o.IdTemplate,
+                        Quantite = o.Quantite,
+                        Position = o.Position
+                    });
+                    if (o.Quantite > 0 && o.Position == 63)  // 63 = sac (récolte fraîche)
+                    {
+                        var nom = bddItems.Item(o.IdTemplate)?.Nom ?? $"Item #{o.IdTemplate}";
+                        Journaliseur.Info($"[ACTION] +{o.Quantite} {nom} (nouveau)");
+                    }
                 }
             }
         }
@@ -1075,7 +1084,11 @@ public sealed class TrameJeu : TrameBase
     private void OnObjetRetrait(MessageObjetRetrait msg)
     {
         var inv = _etat.Personnage.Inventaire;
-        var n = inv.RemoveAll(x => x.Identifiant == msg.IdentifiantObjet);
+        int n;
+        lock (inv) // race UI thread
+        {
+            n = inv.RemoveAll(x => x.Identifiant == msg.IdentifiantObjet);
+        }
         if (n > 0)
         {
             Journaliseur.Debogue($"[INV] -1 objet (id {msg.IdentifiantObjet}, total = {inv.Count})");

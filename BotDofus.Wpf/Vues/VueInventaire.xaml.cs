@@ -57,7 +57,17 @@ public partial class VueInventaire : UserControl
         var totalPods = 0;
         var equipes = 0;
 
-        foreach (var obj in perso.Inventaire
+        // SNAPSHOT atomique — sinon « Collection was modified » si le thread
+        // réseau (OAK/OR/OQ) modifie perso.Inventaire pendant l'énumération
+        // (crash forensic 2026-05-22 19:11:44 sur VueCombat → fix appliqué
+        // ici aussi par mesure préventive).
+        BotDofus.Divers.Jeu.Personnage.ObjetInventaire[] snapshot;
+        lock (perso.Inventaire)
+        {
+            snapshot = perso.Inventaire.ToArray();
+        }
+
+        foreach (var obj in snapshot
                      .OrderBy(o => o.Position == 63 ? 1 : 0)
                      .ThenBy(o => o.Position)
                      .ThenBy(o => o.IdTemplate))
@@ -94,7 +104,7 @@ public partial class VueInventaire : UserControl
             });
         }
 
-        TxtCount.Text = $"{Lignes.Count} / {perso.Inventaire.Count}";
+        TxtCount.Text = $"{Lignes.Count} / {snapshot.Length}";
         TxtEquipes.Text = equipes.ToString();
         TxtPodsObjets.Text = totalPods.ToString("N0");
         TxtPodsPerso.Text = $"{perso.PoidsActuel:N0} / {perso.PoidsMax:N0}";
