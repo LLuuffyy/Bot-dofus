@@ -299,6 +299,7 @@ public sealed class ContexteCompte : IDisposable
         // pas encore complet) → log 17:10:22 cas observé.
         bool grace = (DateTime.UtcNow - _dernierChangementCarteUtc).TotalMilliseconds < 2000;
         if (ConfigBanque.Active
+            && !ModePassif                                              // mode passif → AUCUNE action auto, y compris banque
             && !_banqueDeclenchee
             && !grace
             && perso.PourcentagePoids >= ConfigBanque.SeuilPoidsPct
