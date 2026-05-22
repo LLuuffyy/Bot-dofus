@@ -65,25 +65,44 @@ public static class PipelineDeplacementCombat
     {
         var tcs = new TaskCompletionSource<(int cellAtteinte, bool exact)>(
             TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcsCombatFini = new TaskCompletionSource<bool>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
 
         void OnMv(object? s, MouvementBotArgs e)
         {
             if (e.IdActeur != idMoi) return;
             tcs.TrySetResult((e.CellArrivee, e.CellArrivee == cellAttendue));
         }
+        // FIX 2026-05-22 : si le combat se termine pendant qu'on attend
+        // (kick, fin tour adverse, etc.), abort immédiat sinon on poirote
+        // 3000ms inutilement avant le timeout (forensic Ukdeshan 19:36:25.341).
+        void OnEtatCombat(object? s, BotDofus.Divers.Combats.Enums.EtatCombat etat)
+        {
+            if (etat == BotDofus.Divers.Combats.Enums.EtatCombat.Inactif)
+                tcsCombatFini.TrySetResult(true);
+        }
         combat.MouvementBotConfirme += OnMv;
+        combat.EtatChange += OnEtatCombat;
         try
         {
             var tEvent = tcs.Task;
+            var tCombatFini = tcsCombatFini.Task;
             var tTimeout = Task.Delay(timeoutMs, ct);
-            var won = await Task.WhenAny(tEvent, tTimeout).ConfigureAwait(false);
-            if (won == tTimeout)
-                return ResultatDeplacementCombat.TimeoutSilencieux;
-            var (_, exact) = tEvent.Result;
-            return exact
-                ? ResultatDeplacementCombat.Confirme
-                : ResultatDeplacementCombat.ConfirmePartiel;
+            var won = await Task.WhenAny(tEvent, tCombatFini, tTimeout).ConfigureAwait(false);
+            if (won == tEvent)
+            {
+                var (_, exact) = tEvent.Result;
+                return exact
+                    ? ResultatDeplacementCombat.Confirme
+                    : ResultatDeplacementCombat.ConfirmePartiel;
+            }
+            // Timeout OU combat fini → on signale timeout silencieux.
+            return ResultatDeplacementCombat.TimeoutSilencieux;
         }
-        finally { combat.MouvementBotConfirme -= OnMv; }
+        finally
+        {
+            combat.MouvementBotConfirme -= OnMv;
+            combat.EtatChange -= OnEtatCombat;
+        }
     }
 }

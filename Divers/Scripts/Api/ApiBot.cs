@@ -372,19 +372,21 @@ public sealed class ApiBot
         if (paquet != null)
         {
             await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
-            await Task.Delay(120, ct).ConfigureAwait(false); // GA001 puis GA907 collés
+            // ATTENDRE la durée de marche AVANT GA907 (sinon serveur ignore
+            // car perso pas à destination). 330ms/case ≈ vrai client + marge.
+            // Forensic 2026-05-22 19:36:24 : GA907 envoyé 295ms après GA001
+            // pour 5 cases → serveur ignore, [FARM] Timeout 2000ms.
+            int delaiMarcheMs = Math.Clamp((cases - 1) * 330, 250, 3500);
+            await Task.Delay(delaiMarcheMs, ct).ConfigureAwait(false);
         }
         await EnvoyerHumaniseAsync($"GA907{cellule};{idGroupe}", ct).ConfigureAwait(false);
-        // GKK0 après la durée de marche (le serveur a fait marcher le perso).
+        // GKK0 immédiatement après GA907 (action de déplacement terminée).
         if (paquet != null)
         {
-            await Task.Delay(Math.Clamp((cases - 1) * 180, 250, 3000), ct).ConfigureAwait(false);
             await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
         }
-        // Attendre la confirmation serveur que le combat démarre (max 2s) —
-        // évite qu'un script Lua qui enchaîne « engage puis bouge » quitte
-        // la map avant le combat (forensic 2026-05-22 16:59:08).
-        await AttendreDebutCombatAsync(2000, ct).ConfigureAwait(false);
+        // Attendre la confirmation serveur que le combat démarre (max 4s).
+        await AttendreDebutCombatAsync(4000, ct).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -995,8 +997,8 @@ public sealed class ApiBot
             $"[FARM] cible groupe #{cible.Identifiant} « {cible.Nom} » cell {cible.CellulePosition} → {paquet}");
         await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
         // ATTENTE DÉBUT COMBAT — bloque jusqu'à ce que le serveur confirme
-        // (passage Combat.Etat = EnCours / Placement) ou timeout 2s.
-        await AttendreDebutCombatAsync(2000, ct).ConfigureAwait(false);
+        // (passage Combat.Etat = EnCours / Placement) ou timeout 4s.
+        await AttendreDebutCombatAsync(4000, ct).ConfigureAwait(false);
         return true;
     }
 
@@ -1013,7 +1015,7 @@ public sealed class ApiBot
     /// combat est avorté côté serveur (cf. log forensic 16:59:08).
     /// </para>
     /// </summary>
-    public async Task<bool> AttendreDebutCombatAsync(int timeoutMs = 2000, CancellationToken ct = default)
+    public async Task<bool> AttendreDebutCombatAsync(int timeoutMs = 4000, CancellationToken ct = default)
     {
         var combat = _etat.Combat;
         // Déjà en combat → retour immédiat.
@@ -1040,8 +1042,12 @@ public sealed class ApiBot
             if (gagnant != tcs.Task)
             {
                 Journaliseur.Avertir(
-                    $"[FARM] Timeout {timeoutMs}ms : combat pas démarré après GA907. "
-                    + "Le script va continuer SANS combat — risque de quitter la map.");
+                    $"[FARM] Timeout {timeoutMs}ms : combat pas démarré après GA907 "
+                    + $"(combat.Etat={combat.Etat}). Le script va continuer SANS combat — "
+                    + "risque de quitter la map. Causes probables : "
+                    + "(a) déplacement pas fini avant GA907 = serveur ignore ; "
+                    + "(b) groupe déjà engagé par un autre joueur ; "
+                    + "(c) cellule hors-portée.");
                 return false;
             }
             return true;
