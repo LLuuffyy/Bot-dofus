@@ -1283,16 +1283,14 @@ public sealed class TrameJeu : TrameBase
             }
         }
 
-        // === PRÉ-MOUVEMENT selon Mode (demande user 07:13) ===
-        // Avant de cast, on respecte le Mode :
-        // - Agressif → se rapprocher au max de l'ennemi (idéal CAC) tant qu'on a des PM
-        // - Eloigne / Fuyard → s'éloigner au max (dans la portée du meilleur sort)
-        // - Equilibre → ajuster à DistancePreferee
-        // Le mode Agressif notamment doit TOUJOURS avancer si pas en CAC, même si le
-        // sort actuel est en portée — pour finir au CAC et profiter des bonus mêlée
-        // (et pousser la cible vers les alliés).
-        await PreMouvementSelonModeAsync(perso, combat, ennemisVivants).ConfigureAwait(false);
-        maCell = perso.CellulePosition ?? maCell;  // resync après mouvement
+        // === ORDRE INVERSÉ (refonte 2026-05-22 — demande user) ===
+        // CAST D'ABORD depuis la position actuelle (préserve le tacle CAC),
+        // déplacement uniquement si aucun sort en portée (fallback), puis
+        // repositionnement final pour préparer le tour suivant.
+        // Avant : PRE-MOVE → multi-cast → FIN-TOUR. Problème : si le perso
+        // bougeait depuis un CAC où il tacle un ennemi, il perdait son tacle
+        // pour se rapprocher d'un autre mob → tour gaspillé bêtement.
+        // → Le PreMouvementSelonModeAsync est maintenant déplacé APRÈS les casts.
 
         // === Phase 1 moteur règles SynFus/dyshay + MULTI-CAST (N.1) ===
         // Si l'user a configuré des règles dans peleas/<perso>.json, on les

@@ -107,15 +107,19 @@ public static class IACombatHerosSimple
             + $"mode={cfg.Mode}, règles={cfg.Regles.Count}, délai réaction={delaiReaction}ms");
         await Task.Delay(delaiReaction).ConfigureAwait(false);
 
-        // === (1) PRÉ-MOUVEMENT selon Mode ===
-        await PreMouvementSelonModeAsync(tag, moi, membre, combat, carte, cfg, ennemisVivants, session)
-            .ConfigureAwait(false);
+        // === ORDRE INVERSÉ (refonte 2026-05-22) ===
+        // CAST D'ABORD depuis la position actuelle (préserve le tacle CAC),
+        // déplacement uniquement si aucun sort en portée (fallback),
+        // repositionnement final à la fin du tour.
+        // Avant : PRE-MOVE → cast → FIN-TOUR. Problème : si le perso bougeait
+        // depuis un CAC (où il tacle un ennemi), il perdait son tacle pour
+        // se rapprocher d'un autre mob → tour gaspillé.
 
-        // === (2) BOUCLE MULTI-CAST SynFus ===
+        // === (1) BOUCLE MULTI-CAST SynFus depuis position actuelle ===
         int castsEffectues = 0;
         while (castsEffectues < MaxCastsParTour)
         {
-            // Resync cell allié sur position autoritative du membre (après pré-move).
+            // Resync cell allié sur position autoritative du membre.
             if (membre.Cellule > 0) moi.CellulePosition = membre.Cellule;
 
             var resultat = MoteurReglesCombat.Evaluer(combat, cfg, membre.SortsAppris, carte, moi);
@@ -127,7 +131,8 @@ public static class IACombatHerosSimple
             castsEffectues++;
         }
 
-        // === (3) FALLBACK : déplacement + cast si aucun cast SynFus possible ===
+        // === (2) FALLBACK déplacement + cast si AUCUN sort en portée ===
+        // Cas typique : hors portée tous sorts → faut bouger pour atteindre.
         if (castsEffectues == 0 && moi.PM > 0)
         {
             bool castFallbackOk = await TenterDeplacementPuisCastAsync(
@@ -135,7 +140,19 @@ public static class IACombatHerosSimple
             if (castFallbackOk) castsEffectues = 1;
         }
 
-        // === (4) GET_FIN_TURNO style dyshay : repositionnement fin de tour ===
+        // === (3) REPOSITIONNEMENT FIN DE TOUR — anciennement « PRE-MOVE »  ===
+        // Après les casts, on positionne pour le tour suivant. C'est ICI que
+        // le smart-positioning du MoteurTactique opère, pas en début de tour
+        // (sinon perte du tacle CAC). Skip si déjà au CAC en Agressif.
+        if (moi.PM > 0)
+        {
+            await PreMouvementSelonModeAsync(tag, moi, membre, combat, carte, cfg, ennemisVivants, session)
+                .ConfigureAwait(false);
+        }
+
+        // === (4) GET_FIN_TURNO style dyshay : repositionnement complémentaire ===
+        // RepositionnerFinTourAsync gère uniquement les cas extrêmes
+        // (Fuyard <8 / >12, etc.) sur les PM résiduels.
         if (moi.PM > 0)
         {
             await RepositionnerFinTourAsync(tag, moi, membre, combat, carte, cfg, session)
