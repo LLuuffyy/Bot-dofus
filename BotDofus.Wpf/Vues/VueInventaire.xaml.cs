@@ -141,15 +141,34 @@ public partial class VueInventaire : UserControl
         _ => $"Pos {position}"
     };
 
-    /// <summary>Catégorie « jeu » (onglets Dofus) déduite du type d'item.</summary>
+    /// <summary>
+    /// Catégorie « jeu » (onglets Dofus) déduite du type d'item.
+    /// Mapping aligné sur <see cref="BotDofus.Divers.Banque.CategoriseurObjet"/>
+    /// (importé de dyshay/InventoryUtilities.cs) + raffinements UI :
+    /// Familiers/Dofus/Pierres d'âme = sous-catégories distinctes.
+    /// </summary>
     private static string CategorieItem(int type) => type switch
     {
-        1 or 2 or 3 or 4 or 5 or 6 or 7 or 8 or 9 or 10 or 11 or 16 or 17
-            or 19 or 20 or 21 or 22 or 82 => "Équipement",
+        // === Sous-catégories spéciales (visibilité user) ===
         18 => "Familiers",
         23 => "Dofus",
-        33 or 34 or 36 => "Consommables",
-        35 => "Ressources",
+        85 => "Pierres d'âme",
+        86 => "Boissons",
+
+        // === Équipement (armes + accessoires portables) ===
+        1 or 2 or 3 or 4 or 5 or 6 or 7 or 8 or 9 or 10
+            or 11 or 16 or 17 or 19 or 20 or 21 or 22 or 82 or 83 => "Équipement",
+
+        // === Consommables (potions, parchemins, nourriture) ===
+        12 or 13 or 33 or 34 or 36 => "Consommables",
+
+        // === Ressources (matériaux récoltés/dropés — mapping dyshay) ===
+        15 or 34 or 35 or 38 or 41 or 46 or 47 or 48 or 50
+            or 51 or 53 or 54 or 55 or 56 or 57 or 58 or 59 or 60
+            or 63 or 65 or 68 or 84 or 96 or 98
+            or 100 or 103 or 104 or 105 or 106
+            or 107 or 108 or 109 or 111 => "Ressources",
+
         24 => "Quête",
         _ => "Divers",
     };
