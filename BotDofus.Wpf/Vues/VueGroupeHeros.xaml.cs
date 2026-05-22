@@ -40,11 +40,23 @@ public partial class VueGroupeHeros : UserControl
         if (ReferenceEquals(_contexte, ctx)) return;
         Detacher();
         _contexte = ctx;
+        if (_contexte != null)
+        {
+            // S'abonner aux (dé)affectations du GroupeHeros : à la liaison le
+            // groupe est typiquement encore null (créé au 1er GTSX), il faut
+            // se ré-attacher dès qu'il apparaît côté Compte.
+            _contexte.Compte.GroupeHerosChange += OnGroupeAffecte;
+        }
         AttacherAuGroupe(_contexte?.Compte.GroupeHeros);
-        // Le groupe peut être (dés)attaché à chaud → on re-vérifie sur chaque
-        // changement de compte / chaque rafraîchissement.
         Rafraichir();
     }
+
+    private void OnGroupeAffecte(object? sender, BotDofus.Divers.MultiAccount.GroupeHeros? nouveau)
+        => Dispatcher.BeginInvoke(new Action(() =>
+        {
+            AttacherAuGroupe(nouveau);
+            Rafraichir();
+        }), System.Windows.Threading.DispatcherPriority.Background);
 
     private void AttacherAuGroupe(GroupeHeros? gh)
     {
@@ -68,6 +80,10 @@ public partial class VueGroupeHeros : UserControl
 
     private void Detacher()
     {
+        if (_contexte != null)
+        {
+            _contexte.Compte.GroupeHerosChange -= OnGroupeAffecte;
+        }
         AttacherAuGroupe(null);
         _contexte = null;
     }

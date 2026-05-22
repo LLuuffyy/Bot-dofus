@@ -125,9 +125,37 @@ public partial class VueCombat : UserControl
         if (_contexte == null) return;
         var combat = _contexte.EtatJeu.Combat;
 
+        // Snapshot atomique pour échapper à la race avec le thread réseau qui
+        // mute combat.Allies/Ennemis (CRASH observé 22-05 09:30 :
+        // ArgumentException « Destination array was not long enough » dans
+        // List<T>.CopyTo, car ToList() voit la collection rétrécir entre la
+        // pré-allocation et la copie). On retente une fois en silence si la
+        // collection bouge encore — le prochain event UI ré-affichera.
+        BotDofus.Divers.Combats.Combattants.Combattant[] alliesSnap;
+        BotDofus.Divers.Combats.Combattants.Combattant[] ennemisSnap;
+        int essai = 0;
+        while (true)
+        {
+            try
+            {
+                alliesSnap = combat.Allies.ToArray();
+                ennemisSnap = combat.Ennemis.ToArray();
+                break;
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+            {
+                if (++essai >= 3)
+                {
+                    BotDofus.Utilitaires.Journaux.Journaliseur.Debogue(
+                        $"[UI-COMBAT] race snapshot abandonnée : {ex.GetType().Name}");
+                    return;
+                }
+            }
+        }
+
         TxtTour.Text = combat.NumeroTour > 0 ? combat.NumeroTour.ToString() : "-";
-        TxtNbAllies.Text = combat.Allies.Count.ToString();
-        TxtNbEnnemis.Text = combat.Ennemis.Count.ToString();
+        TxtNbAllies.Text = alliesSnap.Length.ToString();
+        TxtNbEnnemis.Text = ennemisSnap.Length.ToString();
 
         var (libelle, couleur) = combat.Etat switch
         {
@@ -141,16 +169,16 @@ public partial class VueCombat : UserControl
         BadgeEtat.Background = (Brush)new BrushConverter().ConvertFromString(couleur)!;
 
         CombattantsLive.Clear();
-        // Snapshot : combat.Allies/Ennemis mutés par le thread réseau.
-        foreach (var allie in System.Linq.Enumerable.ToList(combat.Allies))
+        var idActuel = combat.IdentifiantCombattantActuel;
+        foreach (var allie in alliesSnap)
         {
             CombattantsLive.Add(new CombattantVm(allie, estAllie: true,
-                joueActuellement: combat.IdentifiantCombattantActuel == allie.Identifiant));
+                joueActuellement: idActuel == allie.Identifiant));
         }
-        foreach (var ennemi in System.Linq.Enumerable.ToList(combat.Ennemis))
+        foreach (var ennemi in ennemisSnap)
         {
             CombattantsLive.Add(new CombattantVm(ennemi, estAllie: false,
-                joueActuellement: combat.IdentifiantCombattantActuel == ennemi.Identifiant));
+                joueActuellement: idActuel == ennemi.Identifiant));
         }
 
         var horsCombat = combat.Etat == BotDofus.Divers.Combats.Enums.EtatCombat.Inactif

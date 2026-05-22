@@ -52,13 +52,30 @@ public sealed class Compte : IEffacable
     /// </summary>
     public BotDofus.Divers.Banque.ConfigBanque? ConfigBanque { get; set; }
 
+    private BotDofus.Divers.MultiAccount.GroupeHeros? _groupeHeros;
+
     /// <summary>
     /// Groupe héros actuellement attaché à ce compte (null si pas en mode héros).
     /// Instancié par <see cref="BotDofus.Divers.MultiAccount.DetecteurModeHeros"/>
     /// à la réception du 1er <c>GTSX</c> d'un combat. Dissous à la déconnexion.
-    /// Cf. <c>docs/SYNTHESE-MODE-HEROS-PHASE1.md</c> (Phase 3).
+    /// Le set émet <see cref="GroupeHerosChange"/> pour permettre à l'UI de
+    /// s'attacher dès la création (cas typique : la VueGroupeHeros est liée au
+    /// Compte AVANT que le 1er GTSX arrive — sans cet event elle resterait
+    /// attachée à null).
     /// </summary>
-    public BotDofus.Divers.MultiAccount.GroupeHeros? GroupeHeros { get; set; }
+    public BotDofus.Divers.MultiAccount.GroupeHeros? GroupeHeros
+    {
+        get => _groupeHeros;
+        set
+        {
+            if (ReferenceEquals(_groupeHeros, value)) return;
+            _groupeHeros = value;
+            GroupeHerosChange?.Invoke(this, value);
+        }
+    }
+
+    /// <summary>Déclenché quand le <see cref="GroupeHeros"/> est (dé)affecté.</summary>
+    public event EventHandler<BotDofus.Divers.MultiAccount.GroupeHeros?>? GroupeHerosChange;
 
     /// <summary>
     /// URL webhook Discord pour notifications événements importants (mort,
