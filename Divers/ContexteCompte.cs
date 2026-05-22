@@ -33,6 +33,8 @@ public sealed class ContexteCompte : IDisposable
     public MoteurLuaInteractif Lua { get; }
     public ConfigCombat ConfigCombat { get; }
     public BotDofus.Divers.Banque.ConfigBanque ConfigBanque { get; }
+    public BotDofus.Divers.MultiAccount.ConfigGroupeHeros ConfigGroupeHeros { get; }
+    private readonly BotDofus.Divers.MultiAccount.AutoInviteurHeros _inviteurHeros;
     public BotDofus.Divers.Securite.DetecteurStaff DetecteurStaff { get; }
     public StatsSession Stats { get; } = new();
     public BotDofus.Divers.Interception.GestionnaireInterception Interception { get; } = new();
@@ -105,6 +107,10 @@ public sealed class ContexteCompte : IDisposable
         ConfigBanque = BotDofus.Divers.Banque.ConfigBanque.Charger(
             Path.Combine("banque", $"{compte.Identifiant}.json"));
         compte.ConfigBanque = ConfigBanque;
+
+        // Config groupe héros (multi-account/<perso>.json) + auto-inviteur.
+        ConfigGroupeHeros = BotDofus.Divers.MultiAccount.ConfigGroupeHeros.Charger(compte.Identifiant);
+        _inviteurHeros = new BotDofus.Divers.MultiAccount.AutoInviteurHeros(compte, ConfigGroupeHeros);
 
         // Hook event poids → check seuil + Discord notif si configuré.
         EtatJeu.Personnage.Mis_A_Jour += OnPersonnageMisAJour;
@@ -376,6 +382,13 @@ public sealed class ContexteCompte : IDisposable
             Trames.TrameActive is not TrameJeu)
         {
             Trames.RemplacerTrame(new TrameJeu(Repartiteur, Compte, EtatJeu, SessionJeuActive));
+        }
+
+        // Auto-invitation héros : déclenchée à l'entrée En Jeu si configuré.
+        // Skip en mode passif / si déjà tournée (le service est anti-réentrant).
+        if (etat == Enums.EtatsCompte.EnJeu && SessionJeuActive != null && !ModePassif)
+        {
+            _ = _inviteurHeros.LancerAsync(SessionJeuActive);
         }
     }
 
