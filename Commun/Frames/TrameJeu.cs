@@ -112,6 +112,9 @@ public sealed class TrameJeu : TrameBase
             // un nouvel ordre — la compo elle-même reste, on ne dissout qu'à
             // la déconnexion).
             _compte.GroupeHeros?.ReinitialiserOrdreTours();
+            // Reset flag turbo : les délais doivent redevenir humanisés en
+            // overworld (récolte, zaap, déplacement) — sinon signature anti-bot.
+            Divers.Combats.IA.TimingsCombat.Reset();
             Journaliseur.Info("[COMBAT] Combat terminé");
         });
         Ecouter<MessageTourCombat>(async msg =>
@@ -179,6 +182,28 @@ public sealed class TrameJeu : TrameBase
         });
         Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessagePartyLeader>(msg =>
             _detecteurHeros.OnPartyLeader(msg));
+
+        // PI : confirmations / erreurs d'invitation côté serveur.
+        // Format observé Hystoria : « PIEa » = erreur (perso introuvable /
+        // déjà dans un groupe). On notifie le Compte pour que l'AutoInviteur
+        // sorte de son attente sans gaspiller 4s de timeout.
+        Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessagePartyInvitation>(msg =>
+        {
+            if (!string.IsNullOrEmpty(msg.Code))
+            {
+                Journaliseur.Avertir(
+                    $"[GH-INVIT] Serveur refuse l'invitation : code='{msg.Code}' "
+                    + "(probable perso introuvable / déjà dans un groupe)");
+                _compte.DeclencherInvitationRefusee(msg.Code);
+            }
+        });
+
+        // NO<flags>~<id>;<etat>|... — liste héros liés Hystoria Abrak.
+        // Transmis à l'ActivateurHerosAbrak qui poursuit la séquence NA<ids>.
+        Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageHerosOrdre>(msg =>
+        {
+            _compte.ActivateurHerosAbrak?.OnHerosOrdre(msg);
+        });
         Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageHerosSorts>(msg =>
         {
             // Nh<id>|<sortId>~<niv>~<pos>;... — sorts d'un membre.
@@ -527,6 +552,16 @@ public sealed class TrameJeu : TrameBase
         }
 
         Journaliseur.Info($"Personnage : {msg.Nom} (classe #{msg.IdClasse}, niv {msg.Niveau})");
+
+        // Bascule état en jeu — déclenche AutoInviteurHeros + ActivateurHerosAbrak
+        // côté ContexteCompte. Sans ça, ni l'auto-invitation PI ni l'activation
+        // mode héros NA n'ont lieu (forensic 2026-05-22 log 155158 — aucun
+        // [ACTIV-HEROS] ni [GH-INVIT] sans cet appel).
+        if (_compte.Etat != Divers.Enums.EtatsCompte.EnJeu
+            && _compte.Etat != Divers.Enums.EtatsCompte.EnCombat)
+        {
+            _compte.ChangerEtat(Divers.Enums.EtatsCompte.EnJeu);
+        }
     }
 
     private void OnStats(MessageStats msg)
@@ -821,6 +856,26 @@ public sealed class TrameJeu : TrameBase
         }
         else
         {
+            // EN COMBAT : si l'acteur est un héros lié allié, on met à jour sa
+            // position dans Combat.Allies ET on déclenche MouvementBotConfirme
+            // pour que IACombatHerosSimple.DeplacerAsync sorte de son attente
+            // sans timeout (sinon 2500-3000ms perdus par déplacement de héros,
+            // cf. logs 14:28:14 / 14:28:17 etc.).
+            if (_etat.Combat.Etat != Divers.Combats.Enums.EtatCombat.Inactif)
+            {
+                var allie = _etat.Combat.Allies.FirstOrDefault(a => a.Identifiant == acteurId);
+                if (allie != null)
+                {
+                    int avantHeros = allie.CellulePosition;
+                    allie.CellulePosition = cell;
+                    Journaliseur.Info(
+                        $"[ACTION-MV] Position héros #{acteurId} confirmée : cell {avantHeros} → {cell} (broadcast GA;{p[0]};)");
+                    _etat.Combat.DeclencherMouvementBot(acteurId, cell, chemin);
+                    _etat.Combat.SignalerCombattantsMaj();
+                    return;
+                }
+            }
+            // Sinon (overworld) : entité de la carte courante.
             var carte = _etat.CarteCourante;
             if (carte != null && carte.Entites.TryGetValue(acteurId, out var ent))
             {
@@ -1168,14 +1223,15 @@ public sealed class TrameJeu : TrameBase
         var combat = _etat.Combat;
         int maCell = perso.CellulePosition ?? 0;
 
+        // Active le flag turbo global SI cfg le demande (master pilote).
+        Divers.Combats.IA.TimingsCombat.AppliquerConfig(_compte.ConfigCombat);
+
         // Délai de réaction humanisé. Capture user passif 16:21-16:22 montre :
         //   - Tour 6 : GTS 16:21:58.058 → GA300 16:21:59.754 = 1696 ms
         //   - Tour 7 : GTS 16:22:02.921 → GA300 16:22:04.494 = 1573 ms
-        // Vrais humains : 1.5-1.7 s entre voir le tour et cliquer un sort
-        // (déplacer souris vers la barre, viser la cible, double-clic). Notre
-        // ancien Random(600, 1200) était encore trop rapide. Random(1400, 2100)
-        // colle au timing réel sans être suspect.
-        int delaiReaction = System.Random.Shared.Next(1400, 2100);
+        // Vrais humains : 1.5-1.7 s entre voir le tour et cliquer un sort.
+        // En mode turbo, ce délai est réduit à 50ms (cf. TimingsCombat).
+        int delaiReaction = Divers.Combats.IA.TimingsCombat.Delai(1400, 2100);
         Journaliseur.Info($"[TOUR-START] Tour #{combat.NumeroTour} — cell {maCell}, PA={perso.PA}, PM={perso.PM}, "
             + $"alliés={combat.Allies.Count}, ennemis={combat.Ennemis.Count(e => !e.EstMort)}/{combat.Ennemis.Count}, "
             + $"mode={_compte.ConfigCombat?.Mode}, règles={_compte.ConfigCombat?.Regles.Count ?? 0}, "
@@ -1269,23 +1325,39 @@ public sealed class TrameJeu : TrameBase
             }
             if (castsEffectues > 0)
             {
-                // Phase 6 — POST-CAST KITING (dyshay get_Fin_Turno).
-                // Si Mode = Eloigne/Fuyard et qu'il reste des PM → reculer
-                // au max après avoir cast. Stratégie classique « cast and back ».
-                if ((cfg.Mode == Divers.Combats.IA.ModeCombat.Eloigne
-                  || cfg.Mode == Divers.Combats.IA.ModeCombat.Fuyard)
-                  && perso.PM > 0
-                  && ennemisVivants.Any(e => !e.EstMort))
+                // === GET_FIN_TURNO (dyshay) — repositionnement fin de tour ===
+                // Refonte 2026-05-22 : généralise le POST-CAST-KITE Eloigne/Fuyard
+                // à TOUS les modes qui ont une logique de positionnement :
+                //   - Agressif sans CAC → avance (rush l'ennemi pour CAC tour suivant)
+                //   - Fuyard ennemi proche < 8 → recule (kite)
+                //   - Fuyard ennemi loin > 12 → avance (reste en portée)
+                //   - Eloigne distance < DistanceMinEloigne → recule
+                //   - Equilibre / Tactique → rien (préserve PM)
+                // Réutilise PreMouvementSelonModeAsync car son score gère déjà tous
+                // ces cas via mode + DistancePreferee + DistanceMinEloigne.
+                if (perso.PM > 0)
                 {
                     var ennemisEnVie = combat.Ennemis.Where(e => !e.EstMort && e.PV > 0 && e.PVMax > 0).ToList();
                     if (ennemisEnVie.Count > 0)
                     {
-                        Journaliseur.Info($"[POST-CAST-KITE] Mode={cfg.Mode}, PM restants={perso.PM} → tente de reculer");
-                        await PreMouvementSelonModeAsync(perso, combat, ennemisEnVie).ConfigureAwait(false);
+                        int maCellFin = perso.CellulePosition ?? 0;
+                        int distMinFin = ennemisEnVie.Min(e => DistanceDofus(maCellFin, e.CellulePosition));
+                        bool repositionner = cfg.Mode switch
+                        {
+                            Divers.Combats.IA.ModeCombat.Agressif => distMinFin > 1,
+                            Divers.Combats.IA.ModeCombat.Fuyard => distMinFin <= 1 || distMinFin < 8 || distMinFin > 12,
+                            Divers.Combats.IA.ModeCombat.Eloigne => distMinFin < cfg.DistanceMinEloigne,
+                            _ => false
+                        };
+                        if (repositionner)
+                        {
+                            Journaliseur.Info($"[FIN-TOUR] Mode={cfg.Mode}, distMin={distMinFin}, PM={perso.PM} → repositionne");
+                            await PreMouvementSelonModeAsync(perso, combat, ennemisEnVie).ConfigureAwait(false);
+                        }
                     }
                 }
                 // Pass turn après tous les casts effectués ce tour.
-                await Task.Delay(System.Random.Shared.Next(800, 1300)).ConfigureAwait(false);
+                await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(800, 1300)).ConfigureAwait(false);
                 Journaliseur.Info($"[ACTION] Passe le tour (Gt) — {castsEffectues} cast(s) ce tour");
                 await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
                 return;
@@ -1454,7 +1526,7 @@ public sealed class TrameJeu : TrameBase
                         // L'ancien GKK0 forcé pouvait être une autre cause du
                         // rejet silent côté serveur. Cf. agent REFPLACE BUG #4
                         // + docs/REFERENCE-PLACEMENT-DEPLACEMENT-DYSHAY.md §2.1.
-                        await Task.Delay(System.Random.Shared.Next(150, 300)).ConfigureAwait(false);
+                        await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(150, 300)).ConfigureAwait(false);
 
                         sort = sortVise;
                         sortCoutPA = paVL;
@@ -1473,6 +1545,11 @@ public sealed class TrameJeu : TrameBase
         if (sort == null)
         {
             Journaliseur.Info($"[ACTION] Aucun sort utilisable (dist={distEnnemi}, PA={perso.PA}, PM={perso.PM}) → Gt");
+            // SÉCURITÉ : si on a bougé sans cast (ou même si on n'a rien fait),
+            // un GKK0 final ferme proprement l'action côté serveur Hystoria.
+            // Sans ça, le Gt peut être ignoré jusqu'à 13s (forensic Athabiel 14:38:28).
+            try { await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false); } catch { /* swallow */ }
+            await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(150, 300)).ConfigureAwait(false);
             await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
             return;
         }
@@ -1506,14 +1583,14 @@ public sealed class TrameJeu : TrameBase
         await _session.EnvoyerAuServeurAsync(paquetSort).ConfigureAwait(false);
 
         // GKK0 : capture user 16:22:00.130 → 376 ms après GA300. Random 300-500.
-        await Task.Delay(System.Random.Shared.Next(300, 500)).ConfigureAwait(false);
+        await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(300, 500)).ConfigureAwait(false);
         await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
 
         // Gt : capture user montre que le serveur termine le tour ~1.5 s après
         // GKK0 quand le client a vidé ses PA. Pour rester sûr, on envoie Gt
         // explicite après 1-1.5 s (humanisé). Si le serveur a déjà fermé le
         // tour (GTF reçu), Gt est inoffensif (le serveur l'ignore).
-        await Task.Delay(System.Random.Shared.Next(1000, 1500)).ConfigureAwait(false);
+        await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(1000, 1500)).ConfigureAwait(false);
         Journaliseur.Info("[ACTION] Passe le tour (Gt)");
         await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
     }
@@ -1707,21 +1784,56 @@ public sealed class TrameJeu : TrameBase
         int distPref = cfg?.DistancePreferee ?? 5;
         int distMinEloigne = cfg?.DistanceMinEloigne ?? 6;
 
-        // Ennemi le plus proche = pivot du score.
-        var ennemi = ennemisVivants
-            .OrderBy(e => DistanceDofus(maCellId, e.CellulePosition))
-            .First();
-        int distActuelle = DistanceDofus(maCellId, ennemi.CellulePosition);
+        // Smart positioning multi-mobs : on score chaque cell candidate via la
+        // SOMME des distances Chebyshev vers TOUS les ennemis vivants (style
+        // dyshay Get_Total_Distancia_Enemigo). Plus précis que l'ancien
+        // « distance vers l'ennemi le plus proche » quand il y a 2+ mobs.
+        int mw = carte.Largeur > 0 ? carte.Largeur : BotDofus.Divers.Cartes.Carte.LargeurParDefaut;
+        var ennemisXY = BotDofus.Divers.Combats.IA.ScorePositionCombat.CoordsEnnemis(ennemisVivants, mw);
+        var (xMoi, yMoi) = BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees(maCellId, mw);
+        int distActuelle = BotDofus.Divers.Combats.IA.ScorePositionCombat.DistanceMin(xMoi, yMoi, ennemisXY);
+        double scoreActuel = BotDofus.Divers.Combats.IA.ScorePositionCombat.ScoreCellule(
+            xMoi, yMoi, ennemisXY, mode, distPref, distMinEloigne);
 
-        // Gate par mode : skip si déjà optimal.
+        // Gate par mode : skip si déjà optimal (distance min sans rien à gagner).
         switch (mode)
         {
             case BotDofus.Divers.Combats.IA.ModeCombat.Agressif when distActuelle <= 1: return;
             case BotDofus.Divers.Combats.IA.ModeCombat.Equilibre when System.Math.Abs(distActuelle - distPref) <= 1: return;
         }
 
-        var (xE, yE) = BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees(ennemi.CellulePosition, carte.Largeur);
         int pmMax = perso.PM;
+
+        // === MOTEUR TACTIQUE AVANCÉ (ADR-008) : tente d'abord la fonction
+        // CalculerMeilleureCellule qui prend en compte sort principal + LOS +
+        // kite intelligent. Si pas de sort identifiable, fallback sur la
+        // logique multi-mobs basique ci-dessous. ===
+        var resultatTactique = TenterMoteurTactiqueMaster(perso, combat, carte, cfg, ennemisVivants, mw, ennemisXY, pmMax);
+        if (resultatTactique.HasValue)
+        {
+            var (cellTac, cheminTac, pmTac, distFinTac) = resultatTactique.Value;
+            Journaliseur.Info(
+                $"[TACTIC] PRE-MOVE Mode={mode} | cell {maCellId} → {cellTac.Identifiant} | {pmTac} pas | distMin {distActuelle}→{distFinTac}");
+            var paquetDepTac = BotDofus.Divers.Cartes.Deplacement.Pathfinder.PaquetDeplacement(cheminTac);
+            await _session.EnvoyerAuServeurAsync(paquetDepTac).ConfigureAwait(false);
+
+            int timeoutTac = System.Math.Max(3500, pmTac * 500 + 1500);
+            var resTac = await Divers.Combats.IA.PipelineDeplacementCombat
+                .AttendreMouvementOuTimeoutAsync(combat, perso.Identifiant, cellTac.Identifiant, timeoutTac, default)
+                .ConfigureAwait(false);
+            if (resTac == Divers.Combats.IA.ResultatDeplacementCombat.Confirme
+                || resTac == Divers.Combats.IA.ResultatDeplacementCombat.ConfirmePartiel)
+            {
+                Journaliseur.Info($"[TACTIC] Mouvement {resTac} : cell réelle = {perso.CellulePosition}");
+                await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(300, 500)).ConfigureAwait(false);
+            }
+            else
+            {
+                Journaliseur.Avertir($"[TACTIC] Timeout {timeoutTac}ms — serveur n'a pas confirmé.");
+            }
+            return;
+        }
+        // Fallback (legacy multi-mobs) — code ci-dessous.
 
         // Cells occupées = interdites (alliés vivants + ennemis vivants).
         var interdites = new System.Collections.Generic.HashSet<BotDofus.Divers.Cartes.Cellule>();
@@ -1738,10 +1850,11 @@ public sealed class TrameJeu : TrameBase
             if (c != null) interdites.Add(c);
         }
 
-        // Énumère cells atteignables (4-dir, PM max), score selon mode.
+        // Énumère cells atteignables (4-dir, PM max), score via SOMME des
+        // distances à TOUS les ennemis vivants (multi-mobs).
         BotDofus.Divers.Cartes.Cellule? meilleureCible = null;
         System.Collections.Generic.List<BotDofus.Divers.Cartes.Cellule>? meilleurChemin = null;
-        double meilleurScore = double.MaxValue;
+        double meilleurScore = scoreActuel; // ne bouge que si on FAIT MIEUX
         int meilleurNbPasTie = int.MaxValue;
         int meilleureDistAfter = distActuelle;
 
@@ -1750,22 +1863,10 @@ public sealed class TrameJeu : TrameBase
             if (c == null || !c.EstMarchable || c.IdInteractif >= 0 || interdites.Contains(c)) continue;
             int dEstimee = System.Math.Abs(c.X - depart.X) + System.Math.Abs(c.Y - depart.Y);
             if (dEstimee == 0 || dEstimee > pmMax) continue;
-            int distVersEnnemi = System.Math.Max(System.Math.Abs(c.X - xE), System.Math.Abs(c.Y - yE));
-            double score = mode switch
-            {
-                BotDofus.Divers.Combats.IA.ModeCombat.Agressif => distVersEnnemi,
-                // Eloigne/Fuyard : priorité ABSOLUE au respect de DistanceMinEloigne.
-                // Si distVersEnnemi >= seuil → score normal (maximise dist).
-                // Sinon → pénalité forte (1000 * écart). Garantit que le bot ne
-                // termine JAMAIS son tour plus proche que la dist min demandée
-                // s'il a encore des PM dispos (demande user 04:30 §3.2).
-                BotDofus.Divers.Combats.IA.ModeCombat.Eloigne or BotDofus.Divers.Combats.IA.ModeCombat.Fuyard
-                    => distVersEnnemi >= distMinEloigne
-                        ? -distVersEnnemi
-                        : 1000.0 * (distMinEloigne - distVersEnnemi) - distVersEnnemi,
-                BotDofus.Divers.Combats.IA.ModeCombat.Equilibre => System.Math.Abs(distVersEnnemi - distPref),
-                _ => 0
-            };
+
+            double score = BotDofus.Divers.Combats.IA.ScorePositionCombat.ScoreCellule(
+                c.X, c.Y, ennemisXY, mode, distPref, distMinEloigne);
+
             var chemin = BotDofus.Divers.Cartes.Deplacement.Pathfinder.Trouver(carte, depart, c, interdites, combat: true);
             if (chemin == null) continue;
             int nbPas = chemin.Count - 1;
@@ -1776,34 +1877,32 @@ public sealed class TrameJeu : TrameBase
                 meilleurNbPasTie = nbPas;
                 meilleureCible = c;
                 meilleurChemin = chemin;
-                meilleureDistAfter = distVersEnnemi;
+                meilleureDistAfter = BotDofus.Divers.Combats.IA.ScorePositionCombat.DistanceMin(c.X, c.Y, ennemisXY);
             }
         }
 
         if (meilleureCible == null || meilleurChemin == null)
         {
-            Journaliseur.Info($"[PRE-MOVE] Mode={mode} : aucune cell d'amélioration trouvée (dist actuelle={distActuelle}, PM={pmMax})");
+            Journaliseur.Info($"[PRE-MOVE] Mode={mode} : aucune cell d'amélioration trouvée (dist min actuelle={distActuelle}, scoreActuel={scoreActuel:F1}, PM={pmMax}, ennemis={ennemisXY.Length})");
             return;
         }
 
         // Skip si la cible est notre cell actuelle ou si le mouvement n'améliore RIEN
         // (pour Agressif → on veut réduire la dist ; pour Eloigne → augmenter).
-        bool ameliore = mode switch
-        {
-            BotDofus.Divers.Combats.IA.ModeCombat.Agressif => meilleureDistAfter < distActuelle,
-            BotDofus.Divers.Combats.IA.ModeCombat.Eloigne or BotDofus.Divers.Combats.IA.ModeCombat.Fuyard => meilleureDistAfter > distActuelle,
-            BotDofus.Divers.Combats.IA.ModeCombat.Equilibre => System.Math.Abs(meilleureDistAfter - distPref) < System.Math.Abs(distActuelle - distPref),
-            _ => false
-        };
+        // Le score est déjà le critère absolu — meilleurScore est strictement
+        // inférieur à scoreActuel sinon meilleurChemin serait null.
+        bool ameliore = meilleurScore < scoreActuel;
         if (!ameliore)
         {
             Journaliseur.Info($"[PRE-MOVE] Mode={mode} : pas d'amélioration (dist {distActuelle} → {meilleureDistAfter})");
             return;
         }
 
+        int sommeDistApres = BotDofus.Divers.Combats.IA.ScorePositionCombat.SommeDistances(
+            meilleureCible.X, meilleureCible.Y, ennemisXY);
         var paquetDep = BotDofus.Divers.Cartes.Deplacement.Pathfinder.PaquetDeplacement(meilleurChemin);
         Journaliseur.Info($"[PRE-MOVE] Mode={mode} | départ cell {maCellId} → arrivée cell {meilleureCible.Identifiant} "
-            + $"| {meilleurNbPasTie} pas | dist ennemi {distActuelle} → {meilleureDistAfter}");
+            + $"| {meilleurNbPasTie} pas | distMin {distActuelle}→{meilleureDistAfter}, ΣdistEnnemis→{sommeDistApres} ({ennemisXY.Length} ennemis)");
         Journaliseur.Info($"[ACTION-MV] Envoi GA001 (pré-mouvement) → '{paquetDep}'");
         await _session.EnvoyerAuServeurAsync(paquetDep).ConfigureAwait(false);
 
@@ -1816,12 +1915,117 @@ public sealed class TrameJeu : TrameBase
             || resultat == Divers.Combats.IA.ResultatDeplacementCombat.ConfirmePartiel)
         {
             Journaliseur.Info($"[PRE-MOVE] Mouvement {resultat} : cell réelle = {perso.CellulePosition}");
-            await Task.Delay(System.Random.Shared.Next(300, 500)).ConfigureAwait(false);
+            await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(300, 500)).ConfigureAwait(false);
         }
         else
         {
             Journaliseur.Avertir($"[PRE-MOVE] Timeout {timeoutMs}ms — serveur n'a pas confirmé. Le bot continue le tour sur sa position actuelle.");
         }
+    }
+
+    /// <summary>
+    /// Tente le moteur tactique avancé (ADR-008) pour le master : identifie
+    /// le sort principal de la rotation + la cible prioritaire, calcule la
+    /// distance d'arrêt idéale (kite intelligent en Eloigne) et invoque
+    /// <see cref="Divers.Combats.IA.MoteurTactique.CalculerMeilleureCellule"/>.
+    /// Retourne <c>null</c> si pas de sort identifiable (fallback legacy).
+    /// </summary>
+    private (BotDofus.Divers.Cartes.Cellule, System.Collections.Generic.List<BotDofus.Divers.Cartes.Cellule>, int, int)?
+        TenterMoteurTactiqueMaster(
+            BotDofus.Divers.Jeu.Personnage.Personnage perso,
+            BotDofus.Divers.Combats.Combat combat,
+            BotDofus.Divers.Cartes.Carte carte,
+            BotDofus.Divers.Combats.IA.ConfigCombat? cfg,
+            System.Collections.Generic.List<BotDofus.Divers.Combats.Combattants.Combattant> ennemisVivants,
+            int mapWidth,
+            (int x, int y)[] ennemisXY,
+            int pmMax)
+    {
+        if (cfg == null || cfg.Regles.Count == 0) return null;
+        if (perso.CellulePosition is not int maCellId) return null;
+        var depart = carte.Obtenir(maCellId);
+        if (depart == null) return null;
+
+        // Identifie le sort principal (1re règle valide : sort appris,
+        // offensif, cible ennemi vivante).
+        Divers.Jeu.Personnage.Spells.InfoSort? sortPrincipal = null;
+        Divers.Combats.Combattants.Combattant? cible = null;
+        int porteeMinSort = 0, porteeMaxSort = 0;
+        bool sortLOS = false;
+        foreach (var regle in cfg.Regles.OrderByDescending(r => r.Priorite))
+        {
+            if (regle.IdSort <= 0) continue;
+            if (!perso.SortsAppris.TryGetValue(regle.IdSort, out var niveau) || niveau <= 0) continue;
+            var sort = Divers.Jeu.Personnage.Spells.BaseSorts.Instance.Trouver(regle.IdSort);
+            if (sort == null) continue;
+            var stats = sort.Stats(niveau);
+            int pmaxL = stats?.PorteeMax ?? sort.PorteeMax;
+            if (pmaxL <= 0) continue;
+            int pminL = stats?.PorteeMin ?? sort.PorteeMin;
+            bool losL = stats?.NecessiteLOS ?? false;
+
+            // Cible selon Focus (offensif seulement).
+            Divers.Combats.Combattants.Combattant? cibleL = regle.Focus switch
+            {
+                Divers.Combats.IA.FocusSort.EnnemiLePlusProche => ennemisVivants
+                    .OrderBy(e => DistanceDofus(maCellId, e.CellulePosition)).FirstOrDefault(),
+                Divers.Combats.IA.FocusSort.EnnemiLePlusFaible => ennemisVivants
+                    .Where(e => !e.EstInvocation).DefaultIfEmpty(ennemisVivants.FirstOrDefault())
+                    .OrderBy(e => e?.PV ?? int.MaxValue).FirstOrDefault(),
+                Divers.Combats.IA.FocusSort.EnnemiLePlusFort => ennemisVivants
+                    .Where(e => !e.EstInvocation).DefaultIfEmpty(ennemisVivants.FirstOrDefault())
+                    .OrderByDescending(e => e?.PV ?? -1).FirstOrDefault(),
+                Divers.Combats.IA.FocusSort.EnnemiLePlusLoin => ennemisVivants
+                    .OrderByDescending(e => DistanceDofus(maCellId, e.CellulePosition)).FirstOrDefault(),
+                _ => null,
+            };
+            if (cibleL == null) continue;
+            sortPrincipal = sort; cible = cibleL;
+            porteeMinSort = pminL; porteeMaxSort = pmaxL; sortLOS = losL;
+            break;
+        }
+        if (sortPrincipal == null || cible == null) return null;
+
+        var ctx = new Divers.Combats.IA.ScorePositionCombat.ContexteTactique(
+            Mode: cfg.Mode,
+            PorteeMinSort: porteeMinSort,
+            PorteeMaxSort: porteeMaxSort,
+            SortNecessiteLOS: sortLOS,
+            PmEnnemiCible: cible.PM,
+            DistancePreferee: cfg.DistancePreferee,
+            DistanceMinEloigne: cfg.DistanceMinEloigne);
+
+        int distIdeale = Divers.Combats.IA.ScorePositionCombat.DistanceIdeale(ctx);
+        var (xCible, yCible) = BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees(cible.CellulePosition, mapWidth);
+        Journaliseur.Info(
+            $"[TACTIC] Mode={cfg.Mode}, sort=#{sortPrincipal.Identifiant} portée [{porteeMinSort}-{porteeMaxSort}] LOS={sortLOS} "
+            + $"| cible #{cible.Identifiant} cell {cible.CellulePosition} pmEnnemi={cible.PM} → distIdéale={distIdeale}");
+
+        // Interdites = combattants vivants sauf moi.
+        var interdites = new System.Collections.Generic.HashSet<BotDofus.Divers.Cartes.Cellule>();
+        var interdites_int = new System.Collections.Generic.HashSet<int>();
+        foreach (var a in combat.Allies)
+        {
+            if (a.Identifiant == perso.Identifiant || a.EstMort) continue;
+            var cellA = carte.Obtenir(a.CellulePosition);
+            if (cellA != null) { interdites.Add(cellA); interdites_int.Add(cellA.Identifiant); }
+        }
+        foreach (var e in combat.Ennemis)
+        {
+            if (e.EstMort) continue;
+            var cellE = carte.Obtenir(e.CellulePosition);
+            if (cellE != null) { interdites.Add(cellE); interdites_int.Add(cellE.Identifiant); }
+        }
+
+        Divers.Combats.IA.MoteurTactique.TestLosDelegate testLos = (depuis, vers) =>
+            !BotDofus.Divers.Cartes.LigneVisuelle.EstObstruee(carte, depuis, vers, interdites_int);
+
+        var resultat = Divers.Combats.IA.MoteurTactique.CalculerMeilleureCellule(
+            carte, depart, pmMax, interdites, ennemisXY, (xCible, yCible), ctx, testLos,
+            exigeAmelioration: true);
+
+        if (resultat == null) return null;
+        return (resultat.Cible, new System.Collections.Generic.List<BotDofus.Divers.Cartes.Cellule>(resultat.Chemin), resultat.PmConsommes, resultat.DistanceFinaleCible);
     }
 
     /// <summary>
@@ -1853,8 +2057,9 @@ public sealed class TrameJeu : TrameBase
                 + $"cible cell {r.Cible.CellulePosition}). Le serveur aurait rejeté "
                 + "le sort, signature anti-bot → annulation locale.");
             var combatGardeR = _etat.Combat;
-            combatGardeR.CompteursRegleParTour[r.Sort.Identifiant] =
-                (combatGardeR.CompteursRegleParTour.TryGetValue(r.Sort.Identifiant, out var cntGR) ? cntGR : 0)
+            var cleGR = (_etat.Personnage.Identifiant, r.Sort.Identifiant);
+            combatGardeR.CompteursRegleParTour[cleGR] =
+                (combatGardeR.CompteursRegleParTour.TryGetValue(cleGR, out var cntGR) ? cntGR : 0)
                 + System.Math.Max(1, r.Regle.NombreParTour);
             return;
         }
@@ -1878,8 +2083,9 @@ public sealed class TrameJeu : TrameBase
                         + $"entre cell {maCellMaintenant} et cible cell {r.Cible.CellulePosition} "
                         + "(combattant sur trajectoire). Le serveur aurait rejeté le sort.");
                     var combatGardeL = _etat.Combat;
-                    combatGardeL.CompteursRegleParTour[r.Sort.Identifiant] =
-                        (combatGardeL.CompteursRegleParTour.TryGetValue(r.Sort.Identifiant, out var cntGL) ? cntGL : 0)
+                    var cleGL = (_etat.Personnage.Identifiant, r.Sort.Identifiant);
+                    combatGardeL.CompteursRegleParTour[cleGL] =
+                        (combatGardeL.CompteursRegleParTour.TryGetValue(cleGL, out var cntGL) ? cntGL : 0)
                         + System.Math.Max(1, r.Regle.NombreParTour);
                     return;
                 }
@@ -1906,10 +2112,13 @@ public sealed class TrameJeu : TrameBase
         await _session.EnvoyerAuServeurAsync(paquet).ConfigureAwait(false);
 
         // Compteur NombreParTour + NombreParCible + DernierTour (cooldown).
+        // Compteurs CLOISONNÉS par caster (idActif = master ici).
         var combat = _etat.Combat;
-        combat.CompteursRegleParTour[r.Sort.Identifiant] =
-            (combat.CompteursRegleParTour.TryGetValue(r.Sort.Identifiant, out var cnt) ? cnt : 0) + 1;
-        var cleParCible = (r.Sort.Identifiant, r.Cible.Identifiant);
+        int idActif = _etat.Personnage.Identifiant;
+        var cleT = (idActif, r.Sort.Identifiant);
+        combat.CompteursRegleParTour[cleT] =
+            (combat.CompteursRegleParTour.TryGetValue(cleT, out var cnt) ? cnt : 0) + 1;
+        var cleParCible = (idActif, r.Sort.Identifiant, r.Cible.Identifiant);
         combat.CompteursRegleParCible[cleParCible] =
             (combat.CompteursRegleParCible.TryGetValue(cleParCible, out var cntC) ? cntC : 0) + 1;
         combat.DernierTourLanceParSort[r.Sort.Identifiant] = combat.NumeroTour;
@@ -1922,8 +2131,9 @@ public sealed class TrameJeu : TrameBase
 
         // GKK0 ack + délai humanisé inter-cast (pas trop court pour éviter
         // signature anti-bot ; pas trop long pour laisser tourner la boucle).
-        await Task.Delay(System.Random.Shared.Next(300, 500)).ConfigureAwait(false);
+        // En mode turbo, réduit à 50ms (cf. TimingsCombat).
+        await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(300, 500)).ConfigureAwait(false);
         await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
-        await Task.Delay(System.Random.Shared.Next(500, 900)).ConfigureAwait(false);
+        await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(500, 900)).ConfigureAwait(false);
     }
 }

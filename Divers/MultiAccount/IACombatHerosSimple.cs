@@ -13,43 +13,37 @@ using BotDofus.Utilitaires.Journaux;
 namespace BotDofus.Divers.MultiAccount;
 
 /// <summary>
-/// IA de combat des héros liés en mode héros Abrak. Pipeline complet
-/// avec déplacement A*, ligne de vue (Bresenham iso) et choix de cellule
-/// selon <see cref="ModeCombat"/> :
+/// IA de combat des héros liés en mode héros Abrak. Pipeline unifié au master :
+/// utilise <see cref="MoteurReglesCombat"/> SynFus (Focus, conditions PV%,
+/// LOS Bresenham, IgnorerCAC/SeulementCAC, MethodeLancement, NombreParTour /
+/// NombreParCible, CooldownTours, etc.) + pré-mouvement selon
+/// <see cref="ModeCombat"/> + déplacement A* 4-dir pour atteindre une cell
+/// de cast + repositionnement fin de tour style dyshay <c>get_Fin_Turno</c>.
 ///
-/// <list type="bullet">
-///   <item><b>Agressif</b> : minimise la distance à l'ennemi (cellule de
-///         cast la plus proche), bourrine au CAC quand possible.</item>
-///   <item><b>Eloigne</b> : maximise la distance dans la portée du sort,
-///         kite si possible.</item>
-///   <item><b>Fuyard</b> : maximise la distance, skip cast si PV bas.</item>
-///   <item><b>Equilibre</b> : vise <c>DistancePreferee</c> en priorité.</item>
-/// </list>
-///
-/// Règle d'or (demandée par l'user 2026-05-22) : <b>prioriser le cast</b>
-/// par rapport à la position idéale. Mieux vaut taper à 5 cases (en portée)
-/// que rester à la distance préférée 7 sans rien lancer.
-///
-/// Pipeline par tour :
+/// Pipeline (refonte 2026-05-22, audit logs cell 253 + spams sans rush) :
 /// <list type="number">
-///   <item>Sélectionne l'ennemi le plus pertinent (le plus proche).</item>
-///   <item>Pour chaque règle (priorité décroissante) :
-///         <list type="bullet">
-///           <item>Cast direct si position + portée + LOS OK.</item>
-///           <item>Sinon, cherche cellule de cast atteignable (PM dispo).</item>
-///           <item>Bouge + cast.</item>
-///         </list></item>
-///   <item>Si aucune action : approche selon mode (consomme PM).</item>
-///   <item><c>Gt</c> en fin de tour.</item>
+///   <item><b>Pré-mouvement</b> selon Mode (Agressif rush CAC, Fuyard recule,
+///         Eloigne kite à porteeMax, Equilibre vise DistancePreferee).</item>
+///   <item><b>Boucle multi-cast SynFus</b> : <see cref="MoteurReglesCombat.Evaluer"/>
+///         avec caster explicite = ce héros, exécute la règle, recommence
+///         tant qu'une règle reste utilisable.</item>
+///   <item><b>Fallback déplacement+cast</b> si aucune règle SynFus n'est en
+///         portée mais le héros a des PM : cherche cell de cast atteignable
+///         pour la 1re règle utilisable, bouge, cast.</item>
+///   <item><b>get_Fin_Turno</b> : repositionnement final selon Mode
+///         (Agressif sans CAC → avance, Fuyard <8 → recule, Fuyard >12 → avance).</item>
+///   <item><c>Gt</c> + délai humanisé.</item>
 /// </list>
+///
+/// Différences vs master : pas de pipeline événementiel (Combat.MouvementBotConfirme
+/// = master only, le héros utilise <c>Task.Delay(330ms × nbPas)</c>),
+/// pas de consommable de soin (Phase ultérieure).
 /// </summary>
-public sealed class IACombatHerosSimple
+public static class IACombatHerosSimple
 {
-    private const int DelaiAvantAckMs = 350;
-    private const int DelaiEntreActionsMs = 1100;
     private const int DelaiAvantFinTourMs = 700;
-    /// <summary>Délai par case de déplacement (cf. cadence GKK0 standard, log dyshay).</summary>
-    private const int DelaiParCasePmMs = 330;
+    /// <summary>Garde-fou anti-boucle multi-cast.</summary>
+    private const int MaxCastsParTour = 8;
 
     public static async Task JouerTourAsync(
         MembreHeros membre,
@@ -59,397 +53,853 @@ public sealed class IACombatHerosSimple
     {
         if (membre is null || combat is null || session is null) return;
 
+        string tag = $"IA-HEROS:{membre.Nom}";
+
         if (carte is null)
         {
-            Journaliseur.Avertir($"[IA-HEROS:{membre.Nom}] Pas de carte → Gt direct");
+            Journaliseur.Avertir($"[{tag}] Pas de carte → Gt direct");
             await EnvoyerFinTourAsync(session);
             return;
         }
         if (membre.SortsAppris.Count == 0)
         {
-            Journaliseur.Info($"[IA-HEROS:{membre.Nom}] Aucun sort connu → Gt direct");
+            Journaliseur.Info($"[{tag}] Aucun sort connu → Gt direct");
             await EnvoyerFinTourAsync(session);
             return;
         }
         var cfg = membre.ConfigCombat;
         if (cfg is null || cfg.Regles.Count == 0)
         {
-            Journaliseur.Info($"[IA-HEROS:{membre.Nom}] ConfigCombat vide → Gt direct");
+            Journaliseur.Info($"[{tag}] ConfigCombat vide → Gt direct");
             await EnvoyerFinTourAsync(session);
             return;
         }
 
-        var membreCell = carte.Obtenir(membre.Cellule);
-        if (membreCell is null)
+        // Trouver le Combattant qui représente CE héros dans Combat.Allies.
+        var moi = combat.Allies.FirstOrDefault(a => a.Identifiant == membre.IdJeu);
+        if (moi is null)
         {
-            Journaliseur.Avertir($"[IA-HEROS:{membre.Nom}] Cellule {membre.Cellule} introuvable → Gt");
+            Journaliseur.Avertir($"[{tag}] Combattant id={membre.IdJeu} absent de Combat.Allies → Gt");
+            await EnvoyerFinTourAsync(session);
+            return;
+        }
+        // Sync cell du Combattant sur la valeur de MembreHeros (au cas où le
+        // GTM n'a pas suivi un précédent déplacement de l'IA).
+        if (membre.Cellule > 0) moi.CellulePosition = membre.Cellule;
+
+        // Aligne le flag turbo sur la config héros — chaque héros peut avoir
+        // sa propre préférence ; en pratique on suit la config du master qui
+        // pilote déjà le flag global (cf. TrameJeu.JouerTourCombatAsync).
+        TimingsCombat.AppliquerConfig(cfg);
+
+        var ennemisVivants = combat.Ennemis.Where(e => !e.EstMort && e.PV > 0 && e.PVMax > 0).ToList();
+        if (ennemisVivants.Count == 0)
+        {
+            Journaliseur.Info($"[{tag}] Plus d'ennemis vivants → Gt");
             await EnvoyerFinTourAsync(session);
             return;
         }
 
-        var ennemis = combat.Ennemis.Where(e => !e.EstMort && e.CellulePosition > 0).ToList();
-        if (ennemis.Count == 0)
+        int delaiReaction = TimingsCombat.Delai(1100, 1700);
+        Journaliseur.Info(
+            $"[{tag}] Tour — cell {moi.CellulePosition}, PA={moi.PA}, PM={moi.PM}, "
+            + $"alliés={combat.Allies.Count}, ennemis={ennemisVivants.Count}, "
+            + $"mode={cfg.Mode}, règles={cfg.Regles.Count}, délai réaction={delaiReaction}ms");
+        await Task.Delay(delaiReaction).ConfigureAwait(false);
+
+        // === (1) PRÉ-MOUVEMENT selon Mode ===
+        await PreMouvementSelonModeAsync(tag, moi, membre, combat, carte, cfg, ennemisVivants, session)
+            .ConfigureAwait(false);
+
+        // === (2) BOUCLE MULTI-CAST SynFus ===
+        int castsEffectues = 0;
+        while (castsEffectues < MaxCastsParTour)
         {
-            Journaliseur.Info($"[IA-HEROS:{membre.Nom}] Plus d'ennemis → Gt");
-            await EnvoyerFinTourAsync(session);
-            return;
+            // Resync cell allié sur position autoritative du membre (après pré-move).
+            if (membre.Cellule > 0) moi.CellulePosition = membre.Cellule;
+
+            var resultat = MoteurReglesCombat.Evaluer(combat, cfg, membre.SortsAppris, carte, moi);
+            if (resultat == null) break;
+
+            bool castOk = await EnvoyerCastSynFusAsync(tag, moi, combat, carte, resultat, session)
+                .ConfigureAwait(false);
+            if (!castOk) break;
+            castsEffectues++;
         }
 
-        // Cible : l'ennemi le plus proche (Chebyshev). On pourrait raffiner via
-        // Focus dans la règle, mais V1 = simple.
-        var cibleCell = ChoisirCibleProche(carte, membreCell, ennemis);
-        if (cibleCell is null)
+        // === (3) FALLBACK : déplacement + cast si aucun cast SynFus possible ===
+        if (castsEffectues == 0 && moi.PM > 0)
         {
-            Journaliseur.Avertir($"[IA-HEROS:{membre.Nom}] Aucune cible accessible → Gt");
-            await EnvoyerFinTourAsync(session);
-            return;
+            bool castFallbackOk = await TenterDeplacementPuisCastAsync(
+                tag, moi, membre, combat, carte, cfg, ennemisVivants, session).ConfigureAwait(false);
+            if (castFallbackOk) castsEffectues = 1;
+        }
+
+        // === (4) GET_FIN_TURNO style dyshay : repositionnement fin de tour ===
+        if (moi.PM > 0)
+        {
+            await RepositionnerFinTourAsync(tag, moi, membre, combat, carte, cfg, session)
+                .ConfigureAwait(false);
         }
 
         Journaliseur.Info(
-            $"[IA-HEROS:{membre.Nom}] Tour — cell {membreCell.Identifiant}, "
-            + $"PA={membre.Pa}, PM={membre.Pm}, cible cell {cibleCell.Identifiant} "
-            + $"(dist {membreCell.DistanceChebyshev(cibleCell)})");
+            $"[{tag}] Fin tour ({castsEffectues} cast(s), PA restants {moi.PA}, PM restants {moi.PM})");
 
-        // Cellules occupées par les autres combattants (pour LOS + pathfinder).
-        var cellsOccupees = SnapshotCellsOccupees(combat, membre.IdJeu);
-
-        int paRestant = membre.Pa;
-        int pmRestant = membre.Pm;
-        int casts = 0;
-
-        var reglesTriees = cfg.Regles
-            .Where(r => r != null && r.IdSort > 0)
-            .OrderByDescending(r => r.Priorite)
-            .ToList();
-        var compteursParSort = new Dictionary<int, int>();
-
-        // Boucle multi-cast.
-        bool actionTrouvee;
-        do
+        // SÉCURITÉ Gt : si aucun cast n'a été envoyé MAIS qu'on a bougé (GA001),
+        // le serveur Hystoria attend un GKK0 final pour fermer l'action de
+        // déplacement avant d'accepter le Gt. Sans ça, observé jusqu'à 13s
+        // d'attente avant qu'un Gt manuel finisse par passer (forensic
+        // 2026-05-22 14:38:28 Athabiel — Gt ignoré 13s).
+        // Quand castsEffectues>0, EnvoyerCastSynFusAsync envoie déjà GKK0
+        // après chaque GA300, donc inutile de doubler.
+        if (castsEffectues == 0)
         {
-            actionTrouvee = false;
-            foreach (var regle in reglesTriees)
+            try
             {
-                int idSort = regle.IdSort;
-                if (!membre.SortsAppris.TryGetValue(idSort, out var niveau) || niveau <= 0) continue;
-                if (compteursParSort.TryGetValue(idSort, out var deja) && deja >= regle.NombreParTour) continue;
-
-                var infoSort = BaseSorts.Instance.Trouver(idSort);
-                if (infoSort is null) continue;
-                var stats = infoSort.Stats(niveau);
-                if (stats is null || stats.CoutPA <= 0 || stats.CoutPA > paRestant) continue;
-
-                // (A) Cast direct depuis position actuelle ?
-                int distActuelle = membreCell.DistanceChebyshev(cibleCell);
-                if (distActuelle >= stats.PorteeMin && distActuelle <= stats.PorteeMax
-                    && LosOk(stats, membreCell, cibleCell, cellsOccupees))
-                {
-                    Journaliseur.Info(
-                        $"[IA-HEROS:{membre.Nom}] cast #{idSort} niv{niveau} sur cell {cibleCell.Identifiant} "
-                        + $"(direct, dist {distActuelle}, coût {stats.CoutPA} PA)");
-                    if (!await CastAsync(session, idSort, cibleCell.Identifiant))
-                    {
-                        goto fin;
-                    }
-                    paRestant -= stats.CoutPA;
-                    casts++;
-                    compteursParSort[idSort] = deja + 1;
-                    actionTrouvee = true;
-                    break;
-                }
-
-                // (B) Sinon, chercher cellule en portée+LoS atteignable.
-                if (pmRestant <= 0) continue;
-                var candidats = TrouverCellulesCast(
-                    carte, cibleCell, stats, cellsOccupees, membreCell, pmRestant);
-                if (candidats.Count == 0) continue;
-
-                var ordre = TrierCellsSelonMode(candidats, membreCell, cibleCell, cfg, stats);
-                CheminChoisi? choisi = null;
-                foreach (var cand in ordre)
-                {
-                    var interdits = ConstruireInterdits(carte, combat, membre.IdJeu);
-                    var chemin = Pathfinder.Trouver(carte, membreCell, cand, interdits, combat: true);
-                    if (chemin is null || chemin.Count < 2) continue;
-                    int pmRequis = chemin.Count - 1;
-                    if (pmRequis > pmRestant) continue;
-                    choisi = new CheminChoisi(chemin, pmRequis, cand);
-                    break;
-                }
-                if (choisi is null) continue;
-
-                Journaliseur.Info(
-                    $"[IA-HEROS:{membre.Nom}] déplacement {membreCell.Identifiant}→{choisi.Cellule.Identifiant} "
-                    + $"({choisi.PmRequis} PM) puis cast #{idSort} niv{niveau} sur cell {cibleCell.Identifiant}");
-                if (!await DeplacerAsync(session, choisi.Chemin))
-                {
-                    goto fin;
-                }
-                membreCell = choisi.Cellule;
-                membre.Cellule = membreCell.Identifiant;
-                pmRestant -= choisi.PmRequis;
-                cellsOccupees = SnapshotCellsOccupees(combat, membre.IdJeu);
-
-                await Task.Delay(DelaiEntreActionsMs).ConfigureAwait(false);
-
-                if (!await CastAsync(session, idSort, cibleCell.Identifiant))
-                {
-                    goto fin;
-                }
-                paRestant -= stats.CoutPA;
-                casts++;
-                compteursParSort[idSort] = deja + 1;
-                actionTrouvee = true;
-                break;
+                await session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
+                await Task.Delay(TimingsCombat.Delai(150, 300)).ConfigureAwait(false);
             }
-        } while (actionTrouvee && paRestant > 0);
-
-    fin:
-        // (C) Aucun cast trouvé ce tour : on consomme quand même les PM pour
-        // se positionner selon le mode (préparer le tour suivant). Sauf en
-        // Equilibre/Tactique qui restent sur place (préservent les PM).
-        if (casts == 0 && pmRestant > 0
-            && cfg.Mode != ModeCombat.Equilibre)
-        {
-            await ApprocherAsync(membre, membreCell, cibleCell, carte, combat, cfg, pmRestant, session);
+            catch (Exception ex)
+            {
+                Journaliseur.Avertir($"[{tag}] échec GKK0 fin-action : {ex.Message}");
+            }
         }
 
-        Journaliseur.Info(
-            $"[IA-HEROS:{membre.Nom}] Fin tour ({casts} cast(s), PA restants {paRestant}, PM restants {pmRestant})");
-        await Task.Delay(DelaiAvantFinTourMs).ConfigureAwait(false);
+        await Task.Delay(TimingsCombat.DelaiFixe(DelaiAvantFinTourMs)).ConfigureAwait(false);
         await EnvoyerFinTourAsync(session);
     }
 
-    // ----- Sélection cible / cellules / mode -----
+    // =============================================================
+    // (1) PRÉ-MOUVEMENT selon Mode — copie adaptée master TrameJeu
+    // =============================================================
 
-    private static Cellule? ChoisirCibleProche(
-        Carte carte,
-        Cellule moi,
-        IEnumerable<Combats.Combattants.Combattant> ennemis)
+    private static async Task PreMouvementSelonModeAsync(
+        string tag, Combats.Combattants.Combattant moi, MembreHeros membre,
+        Combat combat, Carte carte, ConfigCombat cfg,
+        List<Combats.Combattants.Combattant> ennemisVivants, SessionProxy session)
     {
-        Cellule? best = null;
-        int meilleureDist = int.MaxValue;
-        foreach (var e in ennemis)
+        if (moi.PM <= 0) return;
+        int maCellId = moi.CellulePosition;
+        var depart = carte.Obtenir(maCellId);
+        if (depart == null) return;
+
+        var mode = cfg.Mode;
+        int distPref = cfg.DistancePreferee;
+        int distMinEloigne = cfg.DistanceMinEloigne;
+        int mw = carte.Largeur > 0 ? carte.Largeur : Carte.LargeurParDefaut;
+
+        // Smart positioning multi-mobs : score = SOMME distances Chebyshev
+        // vers TOUS les ennemis vivants (cf. ScorePositionCombat).
+        var ennemisXY = ScorePositionCombat.CoordsEnnemis(ennemisVivants, mw);
+
+        // === MOTEUR TACTIQUE AVANCÉ — identifie sort principal + cible + LOS ===
+        // Sort principal = 1re règle de la rotation (priorité décroissante)
+        // qui a un sort appris et offensif. Utilisé pour calculer la distance
+        // d'arrêt idéale (kite intelligent : porteeMax + PM_ennemi en Eloigne).
+        var (sortPrincipal, ciblePrincipale) = IdentifierSortEtCibleAsync(membre, combat, cfg, ennemisVivants, mw);
+
+        if (sortPrincipal == null || ciblePrincipale == null)
         {
-            var ec = carte.Obtenir(e.CellulePosition);
-            if (ec is null) continue;
-            int d = moi.DistanceChebyshev(ec);
-            if (d < meilleureDist)
-            {
-                meilleureDist = d;
-                best = ec;
-            }
+            // Pas de sort offensif identifiable → fallback comportement legacy
+            // (heuristique distance min + somme dist multi-mobs).
+            await PreMouvementLegacyAsync(tag, moi, membre, combat, carte, cfg, ennemisVivants, session).ConfigureAwait(false);
+            return;
         }
-        return best;
+
+        var statsSort = sortPrincipal.Sort.Stats(sortPrincipal.NiveauAppris);
+        int porteeMinSort = statsSort?.PorteeMin ?? 0;
+        int porteeMaxSort = statsSort?.PorteeMax ?? 6;
+        bool sortLOS = statsSort?.NecessiteLOS ?? false;
+
+        var ctx = new ScorePositionCombat.ContexteTactique(
+            Mode: mode,
+            PorteeMinSort: porteeMinSort,
+            PorteeMaxSort: porteeMaxSort,
+            SortNecessiteLOS: sortLOS,
+            PmEnnemiCible: ciblePrincipale.PM,
+            DistancePreferee: distPref,
+            DistanceMinEloigne: distMinEloigne);
+
+        int distIdeale = ScorePositionCombat.DistanceIdeale(ctx);
+        var (xMoi, yMoi) = Cellule.CalculerCoordonnees(maCellId, mw);
+        var (xCible, yCible) = Cellule.CalculerCoordonnees(ciblePrincipale.CellulePosition, mw);
+        int distActuelle = System.Math.Max(System.Math.Abs(xMoi - xCible), System.Math.Abs(yMoi - yCible));
+
+        Journaliseur.Info(
+            $"[{tag}] TACTIC Mode={mode}, sort=#{sortPrincipal.Sort.Identifiant} portée [{porteeMinSort}-{porteeMaxSort}] LOS={sortLOS} "
+            + $"| cible #{ciblePrincipale.Identifiant} cell {ciblePrincipale.CellulePosition} dist={distActuelle} pmEnnemi={ciblePrincipale.PM} "
+            + $"→ distIdéale={distIdeale}");
+
+        // Skip si déjà à la distance idéale (et LOS OK si requise).
+        bool dejaIdeal = distActuelle == distIdeale
+            && (!sortLOS || TesterLos(carte, depart, carte.Obtenir(ciblePrincipale.CellulePosition), combat, moi.Identifiant));
+        if (dejaIdeal)
+        {
+            Journaliseur.Info($"[{tag}] TACTIC déjà à distance idéale {distIdeale}, skip pré-move.");
+            return;
+        }
+
+        int pmMax = moi.PM;
+        var interdites = ConstruireInterdites(carte, combat, moi.Identifiant);
+        var interdites_int = new HashSet<int>(System.Linq.Enumerable.Select(interdites, c => c.Identifiant));
+
+        // LOS delegate qui réutilise la carte + occupations.
+        MoteurTactique.TestLosDelegate testLos = (depuis, vers) =>
+            !LigneVisuelle.EstObstruee(carte, depuis, vers, interdites_int);
+
+        var resultat = MoteurTactique.CalculerMeilleureCellule(
+            carte, depart, pmMax, interdites,
+            ennemisXY, (xCible, yCible),
+            ctx, testLos,
+            exigeAmelioration: true);
+
+        if (resultat == null)
+        {
+            Journaliseur.Info($"[{tag}] TACTIC aucune amélioration possible (distActuelle={distActuelle}, distIdéale={distIdeale}, PM={pmMax})");
+            return;
+        }
+
+        Journaliseur.Info(
+            $"[{tag}] TACTIC PRE-MOVE Mode={mode} | cell {maCellId} → {resultat.Cible.Identifiant} "
+            + $"| {resultat.PmConsommes} pas | dist {distActuelle}→{resultat.DistanceFinaleCible} (idéale={distIdeale}) "
+            + $"| LOS={resultat.LosCibleFinale} | Σdist={resultat.SommeDistEnnemis} | score={resultat.Score:F1}");
+
+        var meilleurChemin = new List<Cellule>(resultat.Chemin);
+        var meilleureCible = resultat.Cible;
+        int meilleurNbPasTie = resultat.PmConsommes;
+        int meilleureDistAfter = resultat.DistanceFinaleCible;
+
+        int cellReelle = await DeplacerAsync(tag, combat, moi.Identifiant, session, meilleurChemin)
+            .ConfigureAwait(false);
+        if (cellReelle > 0)
+        {
+            moi.CellulePosition = cellReelle;
+            membre.Cellule = cellReelle;
+            // Décrément PM optimiste (le GTS suivant resync).
+            moi.PM = System.Math.Max(0, moi.PM - meilleurNbPasTie);
+        }
+    }
+
+    // =============================================================
+    // (1bis) HELPERS pour MoteurTactique
+    // =============================================================
+
+    /// <summary>
+    /// Identifie le sort principal + cible prioritaire selon la 1re règle de
+    /// la rotation qui matche (priorité décroissante). Sert au moteur tactique
+    /// pour calculer la distance d'arrêt idéale.
+    ///
+    /// Retourne <c>(null, null)</c> si aucune règle ne donne un sort offensif
+    /// avec un ennemi vivant cible → le moteur tactique tombe en fallback.
+    /// </summary>
+    private static (MoteurReglesCombat.ResultatRegle?, Combats.Combattants.Combattant?) IdentifierSortEtCibleAsync(
+        MembreHeros membre, Combat combat, ConfigCombat cfg,
+        List<Combats.Combattants.Combattant> ennemisVivants, int mapWidth)
+    {
+        // On utilise le moteur règles tel quel — il choisit la 1re règle valide
+        // selon focus + conditions configurées par l'user.
+        var moi = combat.Allies.FirstOrDefault(a => a.Identifiant == membre.IdJeu);
+        if (moi == null) return (null, null);
+
+        // Pour le pré-mouvement, on veut le sort EN PRIORITÉ, peu importe la
+        // portée actuelle (puisqu'on va se déplacer pour atteindre la portée).
+        // Donc on évalue sans tenir compte de la position actuelle — on cherche
+        // le sort que le perso CAST quand il est en portée.
+        // Heuristique : on prend la 1re règle de la rotation avec :
+        //   - sort connu de BaseSorts
+        //   - sort appris (niveau > 0) par le membre
+        //   - PorteeMax > 0 (sort offensif distance ou CAC)
+        //   - cible existe selon Focus
+        foreach (var regle in cfg.Regles.OrderByDescending(r => r.Priorite))
+        {
+            if (regle.IdSort <= 0) continue;
+            if (!membre.SortsAppris.TryGetValue(regle.IdSort, out var niveau) || niveau <= 0) continue;
+            var sort = Divers.Jeu.Personnage.Spells.BaseSorts.Instance.Trouver(regle.IdSort);
+            if (sort == null) continue;
+            var stats = sort.Stats(niveau);
+            int porteeMax = stats?.PorteeMax ?? sort.PorteeMax;
+            if (porteeMax <= 0) continue;
+            int porteeMin = stats?.PorteeMin ?? sort.PorteeMin;
+            int coutPA = stats?.CoutPA ?? sort.CoutPA;
+
+            // Cible selon Focus — on choisit dans les ennemis vivants pour les
+            // règles offensives. Pour les règles soin/buff, on saute (pas un
+            // candidat pour pré-move offensif).
+            Combats.Combattants.Combattant? cible = regle.Focus switch
+            {
+                FocusSort.EnnemiLePlusProche => ennemisVivants
+                    .OrderBy(e => DistanceChebyshev(moi.CellulePosition, e.CellulePosition, mapWidth))
+                    .FirstOrDefault(),
+                FocusSort.EnnemiLePlusFaible => ennemisVivants
+                    .Where(e => !e.EstInvocation).DefaultIfEmpty(ennemisVivants.FirstOrDefault())
+                    .OrderBy(e => e?.PV ?? int.MaxValue).FirstOrDefault(),
+                FocusSort.EnnemiLePlusFort => ennemisVivants
+                    .Where(e => !e.EstInvocation).DefaultIfEmpty(ennemisVivants.FirstOrDefault())
+                    .OrderByDescending(e => e?.PV ?? -1).FirstOrDefault(),
+                FocusSort.EnnemiLePlusLoin => ennemisVivants
+                    .OrderByDescending(e => DistanceChebyshev(moi.CellulePosition, e.CellulePosition, mapWidth))
+                    .FirstOrDefault(),
+                _ => null,  // sorts non-offensifs (Moi, Allié, Cellule…) — skip pour pré-move
+            };
+            if (cible == null) continue;
+
+            // Distance actuelle (pour info, pas pour filtrage — on bouge pour atteindre).
+            int dist = DistanceChebyshev(moi.CellulePosition, cible.CellulePosition, mapWidth);
+            var resultat = new MoteurReglesCombat.ResultatRegle(
+                regle, sort, cible, dist, coutPA, porteeMin, porteeMax, niveau);
+            return (resultat, cible);
+        }
+        return (null, null);
     }
 
     /// <summary>
-    /// Toutes les cellules d'où le sort <paramref name="stats"/> peut être lancé
-    /// sur <paramref name="cible"/> : distance ∈ [min, max], LOS OK (si requis),
-    /// cell libre. Cap distance maximale au pathfinder via budget PM.
+    /// Test LOS depuis <paramref name="depuis"/> vers <paramref name="vers"/>
+    /// en considérant les combattants vivants (sauf moi et la cible) comme
+    /// obstacles. Retourne <c>true</c> si LOS dégagée.
     /// </summary>
+    private static bool TesterLos(Carte carte, Cellule? depuis, Cellule? vers, Combat combat, int idMoi)
+    {
+        if (depuis == null || vers == null) return true;
+        var occupees = new HashSet<int>();
+        foreach (var a in combat.Allies)
+            if (!a.EstMort && a.CellulePosition > 0 && a.Identifiant != idMoi) occupees.Add(a.CellulePosition);
+        foreach (var e in combat.Ennemis)
+            if (!e.EstMort && e.CellulePosition > 0 && e.CellulePosition != vers.Identifiant)
+                occupees.Add(e.CellulePosition);
+        return !LigneVisuelle.EstObstruee(carte, depuis, vers, occupees);
+    }
+
+    /// <summary>
+    /// Pré-mouvement legacy — utilisé en fallback quand aucun sort principal
+    /// n'est identifiable (config combat sans sorts offensifs, perso sans
+    /// sort appris, etc.). Logique multi-mobs simple (Σ distance ennemis).
+    /// </summary>
+    private static async Task PreMouvementLegacyAsync(
+        string tag, Combats.Combattants.Combattant moi, MembreHeros membre,
+        Combat combat, Carte carte, ConfigCombat cfg,
+        List<Combats.Combattants.Combattant> ennemisVivants, SessionProxy session)
+    {
+        int maCellId = moi.CellulePosition;
+        var depart = carte.Obtenir(maCellId);
+        if (depart == null) return;
+        var mode = cfg.Mode;
+        int mw = carte.Largeur > 0 ? carte.Largeur : Carte.LargeurParDefaut;
+        var ennemisXY = ScorePositionCombat.CoordsEnnemis(ennemisVivants, mw);
+        var (xMoi, yMoi) = Cellule.CalculerCoordonnees(maCellId, mw);
+        int distActuelle = ScorePositionCombat.DistanceMin(xMoi, yMoi, ennemisXY);
+        double scoreActuel = ScorePositionCombat.ScoreCellule(xMoi, yMoi, ennemisXY, mode, cfg.DistancePreferee, cfg.DistanceMinEloigne);
+
+        switch (mode)
+        {
+            case ModeCombat.Agressif when distActuelle <= 1: return;
+            case ModeCombat.Equilibre when System.Math.Abs(distActuelle - cfg.DistancePreferee) <= 1: return;
+        }
+
+        int pmMax = moi.PM;
+        var interdites = ConstruireInterdites(carte, combat, moi.Identifiant);
+
+        Cellule? meilleureCible = null;
+        List<Cellule>? meilleurChemin = null;
+        double meilleurScore = scoreActuel;
+        int meilleurNbPasTie = int.MaxValue;
+
+        foreach (var c in carte.Cellules)
+        {
+            if (c == null || !c.EstMarchable || c.IdInteractif >= 0 || interdites.Contains(c)) continue;
+            int dEst = System.Math.Abs(c.X - depart.X) + System.Math.Abs(c.Y - depart.Y);
+            if (dEst == 0 || dEst > pmMax) continue;
+            double score = ScorePositionCombat.ScoreCellule(c.X, c.Y, ennemisXY, mode, cfg.DistancePreferee, cfg.DistanceMinEloigne);
+            var chemin = Pathfinder.Trouver(carte, depart, c, interdites, combat: true);
+            if (chemin == null) continue;
+            int nbPas = chemin.Count - 1;
+            if (nbPas <= 0 || nbPas > pmMax) continue;
+            if (score < meilleurScore || (score == meilleurScore && nbPas < meilleurNbPasTie))
+            {
+                meilleurScore = score;
+                meilleurNbPasTie = nbPas;
+                meilleureCible = c;
+                meilleurChemin = chemin;
+            }
+        }
+        if (meilleureCible == null || meilleurChemin == null || meilleurScore >= scoreActuel) return;
+        Journaliseur.Info($"[{tag}] TACTIC fallback legacy : cell {maCellId}→{meilleureCible.Identifiant} ({meilleurNbPasTie} pas)");
+        int cellReelle = await DeplacerAsync(tag, combat, moi.Identifiant, session, meilleurChemin).ConfigureAwait(false);
+        if (cellReelle > 0)
+        {
+            moi.CellulePosition = cellReelle;
+            membre.Cellule = cellReelle;
+            moi.PM = System.Math.Max(0, moi.PM - meilleurNbPasTie);
+        }
+    }
+
+    // =============================================================
+    // (2) ENVOI CAST SynFus (analogue TrameJeu.EnvoyerCastAsync)
+    // =============================================================
+
+    private static async Task<bool> EnvoyerCastSynFusAsync(
+        string tag, Combats.Combattants.Combattant moi, Combat combat, Carte carte,
+        MoteurReglesCombat.ResultatRegle r, SessionProxy session)
+    {
+        Journaliseur.Info(
+            $"[{tag}] DECIDEUR : « {r.Sort.Nom} » (#{r.Sort.Identifiant} niv{r.NiveauAppris}) "
+            + $"focus={r.Regle.Focus}, cible « {r.Cible.Nom} » cell {r.Cible.CellulePosition} "
+            + $"(dist={r.Distance}, {r.CoutPA} PA, portée {r.PorteeMin}-{r.PorteeMax})");
+
+        int mw = carte.Largeur > 0 ? carte.Largeur : Carte.LargeurParDefaut;
+
+        // GARDE-FOU ANTI-BAN : recalcule distance réelle avec position actuelle.
+        int distReelle = DistanceChebyshev(moi.CellulePosition, r.Cible.CellulePosition, mw);
+        if (distReelle < r.PorteeMin || (r.PorteeMax > 0 && distReelle > r.PorteeMax))
+        {
+            Journaliseur.Avertir(
+                $"[{tag}] ANTI-BAN refuse « {r.Sort.Nom} » : dist réelle {distReelle} "
+                + $"hors portée [{r.PorteeMin}-{r.PorteeMax}] (ma cell {moi.CellulePosition}, "
+                + $"cible {r.Cible.CellulePosition}).");
+            // Bloque cette règle pour le reste du tour (clé cloisonnée par caster).
+            var cleAR = (moi.Identifiant, r.Sort.Identifiant);
+            combat.CompteursRegleParTour[cleAR] =
+                (combat.CompteursRegleParTour.TryGetValue(cleAR, out var cnt) ? cnt : 0)
+                + System.Math.Max(1, r.Regle.NombreParTour);
+            return false;
+        }
+
+        // LOS check si requis.
+        var statsR = r.Sort.Stats(r.NiveauAppris);
+        bool besoinLOS = statsR?.NecessiteLOS ?? false;
+        if (besoinLOS && distReelle > 1)
+        {
+            var celluleMoi = carte.Obtenir(moi.CellulePosition);
+            var celluleCible = carte.Obtenir(r.Cible.CellulePosition);
+            if (celluleMoi != null && celluleCible != null)
+            {
+                var occupees = new HashSet<int>(
+                    combat.Allies.Where(a => !a.EstMort).Select(a => a.CellulePosition)
+                        .Concat(combat.Ennemis.Where(e => !e.EstMort).Select(e => e.CellulePosition)));
+                if (LigneVisuelle.EstObstruee(carte, celluleMoi, celluleCible, occupees))
+                {
+                    Journaliseur.Avertir(
+                        $"[{tag}] ANTI-BAN refuse « {r.Sort.Nom} » : LOS obstruée "
+                        + $"entre cell {moi.CellulePosition} et {r.Cible.CellulePosition}.");
+                    var cleALos = (moi.Identifiant, r.Sort.Identifiant);
+                    combat.CompteursRegleParTour[cleALos] =
+                        (combat.CompteursRegleParTour.TryGetValue(cleALos, out var cntLos) ? cntLos : 0)
+                        + System.Math.Max(1, r.Regle.NombreParTour);
+                    return false;
+                }
+            }
+        }
+
+        // Tracking invocations attendues (pour l'héritage GTM ennemi→allié).
+        if (r.Regle.Focus == FocusSort.CelluleVide
+            || r.Regle.Focus == FocusSort.CelluleAdjacenteEnnemi)
+        {
+            combat.CellsInvocationsAttendues.Add(r.Cible.CellulePosition);
+        }
+
+        Journaliseur.Info(
+            $"[{tag}] CAST « {r.Sort.Nom} » niv{r.NiveauAppris} sur cell {r.Cible.CellulePosition} "
+            + $"({r.CoutPA} PA, portée {r.PorteeMin}-{r.PorteeMax}, dist={distReelle})");
+        combat.DeclencherCast(r.Sort.Identifiant, r.Sort.Nom, r.Cible.CellulePosition);
+
+        try
+        {
+            await session.EnvoyerAuServeurAsync($"GA300{r.Sort.Identifiant};{r.Cible.CellulePosition}")
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Journaliseur.Avertir($"[{tag}] échec cast #{r.Sort.Identifiant} : {ex.Message}");
+            return false;
+        }
+
+        // Compteurs (pareil que TrameJeu.EnvoyerCastAsync) — cloisonnés par caster.
+        var cleT = (moi.Identifiant, r.Sort.Identifiant);
+        combat.CompteursRegleParTour[cleT] =
+            (combat.CompteursRegleParTour.TryGetValue(cleT, out var ct) ? ct : 0) + 1;
+        var cleC = (moi.Identifiant, r.Sort.Identifiant, r.Cible.Identifiant);
+        combat.CompteursRegleParCible[cleC] =
+            (combat.CompteursRegleParCible.TryGetValue(cleC, out var ctc) ? ctc : 0) + 1;
+        combat.DernierTourLanceParSort[r.Sort.Identifiant] = combat.NumeroTour;
+
+        // Décrément PA optimiste (la prochaine itération du moteur voit le bon budget).
+        if (moi.PA >= r.CoutPA) moi.PA -= r.CoutPA;
+
+        await Task.Delay(TimingsCombat.Delai(300, 500)).ConfigureAwait(false);
+        try { await session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false); } catch { /* ack best-effort */ }
+        await Task.Delay(TimingsCombat.Delai(500, 900)).ConfigureAwait(false);
+        return true;
+    }
+
+    // =============================================================
+    // (3) FALLBACK : déplacement + cast (sort hors portée + PM dispos)
+    // =============================================================
+
+    private static async Task<bool> TenterDeplacementPuisCastAsync(
+        string tag, Combats.Combattants.Combattant moi, MembreHeros membre,
+        Combat combat, Carte carte, ConfigCombat cfg,
+        List<Combats.Combattants.Combattant> ennemisVivants, SessionProxy session)
+    {
+        var depart = carte.Obtenir(moi.CellulePosition);
+        if (depart == null) return false;
+        int mw = carte.Largeur > 0 ? carte.Largeur : Carte.LargeurParDefaut;
+
+        // Choisir la cible : ennemi le plus proche par défaut.
+        var cible = ennemisVivants
+            .OrderBy(e => DistanceChebyshev(moi.CellulePosition, e.CellulePosition, mw))
+            .First();
+        var cibleCell = carte.Obtenir(cible.CellulePosition);
+        if (cibleCell == null) return false;
+
+        // Itère les règles par priorité décroissante, garde la 1re qui matche
+        // (sort appris + PA OK) — la portée est gérée par TrouverCellulesCast.
+        foreach (var regle in cfg.Regles.OrderByDescending(r => r.Priorite))
+        {
+            if (regle.IdSort <= 0) continue;
+            if (!membre.SortsAppris.TryGetValue(regle.IdSort, out var niveau) || niveau <= 0) continue;
+            var sort = BaseSorts.Instance.Trouver(regle.IdSort);
+            if (sort == null) continue;
+            var stats = sort.Stats(niveau);
+            if (stats == null || stats.CoutPA <= 0 || stats.CoutPA > moi.PA) continue;
+
+            // NombreParTour check (cloisonné par caster).
+            var cleFb = (moi.Identifiant, regle.IdSort);
+            if (regle.NombreParTour > 0
+                && combat.CompteursRegleParTour.TryGetValue(cleFb, out var dejaT)
+                && dejaT >= regle.NombreParTour)
+                continue;
+
+            var interdits = ConstruireInterdites(carte, combat, moi.Identifiant);
+            // Cherche cell de cast atteignable (dist ∈ [portéeMin, portéeMax],
+            // LOS OK si requis, PM atteignable).
+            var candidats = TrouverCellulesCast(
+                carte, cibleCell, stats, interdits, depart, moi.PM, mw);
+            if (candidats.Count == 0) continue;
+
+            // Trie selon ModeCombat (Agressif : minDist, Eloigne/Fuyard : maxDist, Equilibre : DistPref).
+            var ordre = TrierCellsSelonMode(candidats, depart, cibleCell, cfg, stats, mw);
+            List<Cellule>? cheminChoisi = null;
+            Cellule? cellArrivee = null;
+            int pmRequis = 0;
+            foreach (var cand in ordre)
+            {
+                var chemin = Pathfinder.Trouver(carte, depart, cand, interdits, combat: true);
+                if (chemin == null || chemin.Count < 2) continue;
+                int pmCh = chemin.Count - 1;
+                if (pmCh > moi.PM) continue;
+                cheminChoisi = chemin;
+                cellArrivee = cand;
+                pmRequis = pmCh;
+                break;
+            }
+            if (cheminChoisi == null || cellArrivee == null) continue;
+
+            Journaliseur.Info(
+                $"[{tag}] FALLBACK : déplacement cell {moi.CellulePosition}→{cellArrivee.Identifiant} "
+                + $"({pmRequis} PM) puis cast « {sort.Nom } » niv{niveau} sur cell {cibleCell.Identifiant}");
+
+            int cellReelleFb = await DeplacerAsync(tag, combat, moi.Identifiant, session, cheminChoisi)
+                .ConfigureAwait(false);
+            if (cellReelleFb < 0) return false;
+            moi.CellulePosition = cellReelleFb;
+            membre.Cellule = cellReelleFb;
+            moi.PM = System.Math.Max(0, moi.PM - pmRequis);
+
+            // Construire le ResultatRegle équivalent et l'exécuter via EnvoyerCastSynFusAsync.
+            // (On contourne MoteurReglesCombat.Evaluer car il filtrerait sur la cell de départ
+            // qui n'est plus la même — on a déjà fait le travail de vérif portée/LOS).
+            var resultat = new MoteurReglesCombat.ResultatRegle(
+                regle, sort, cible,
+                Distance: DistanceChebyshev(cellArrivee.Identifiant, cible.CellulePosition, mw),
+                CoutPA: stats.CoutPA,
+                PorteeMin: stats.PorteeMin,
+                PorteeMax: stats.PorteeMax,
+                NiveauAppris: niveau);
+
+            await Task.Delay(TimingsCombat.Delai(300, 500)).ConfigureAwait(false);
+            return await EnvoyerCastSynFusAsync(tag, moi, combat, carte, resultat, session).ConfigureAwait(false);
+        }
+        return false;
+    }
+
+    // =============================================================
+    // (4) GET_FIN_TURNO — repositionnement fin de tour (dyshay)
+    // =============================================================
+
+    /// <summary>
+    /// Repositionnement style dyshay <c>get_Fin_Turno</c> :
+    /// <list type="bullet">
+    ///   <item>Agressif sans CAC → avance (minimise sum dist tous ennemis).</item>
+    ///   <item>Fuyard en CAC OU ennemi proche &lt; 8 → recule (max sum dist).</item>
+    ///   <item>Fuyard ennemi loin &gt; 12 → avance (reste en portée).</item>
+    ///   <item>Equilibre / Tactique → rien (préserve PM).</item>
+    /// </list>
+    /// Appelée APRÈS la boucle multi-cast pour préparer le tour suivant.
+    /// </summary>
+    private static async Task RepositionnerFinTourAsync(
+        string tag, Combats.Combattants.Combattant moi, MembreHeros membre,
+        Combat combat, Carte carte, ConfigCombat cfg, SessionProxy session)
+    {
+        if (moi.PM <= 0) return;
+        var ennemisVivants = combat.Ennemis.Where(e => !e.EstMort && e.PV > 0).ToList();
+        if (ennemisVivants.Count == 0) return;
+        int mw = carte.Largeur > 0 ? carte.Largeur : Carte.LargeurParDefaut;
+
+        int distMin = ennemisVivants.Min(e => DistanceChebyshev(moi.CellulePosition, e.CellulePosition, mw));
+
+        bool avancer = false, reculer = false;
+        switch (cfg.Mode)
+        {
+            case ModeCombat.Agressif when distMin > 1:
+                avancer = true;
+                break;
+            case ModeCombat.Fuyard when distMin <= 1:
+            case ModeCombat.Fuyard when distMin < 8:
+                reculer = true;
+                break;
+            case ModeCombat.Fuyard when distMin > 12:
+                avancer = true;
+                break;
+            case ModeCombat.Eloigne when distMin < cfg.DistanceMinEloigne:
+                reculer = true;
+                break;
+        }
+        if (!avancer && !reculer) return;
+
+        Journaliseur.Info(
+            $"[{tag}] FIN-TOUR Mode={cfg.Mode}, distMin={distMin} → {(avancer ? "AVANCE" : "RECULE")}");
+
+        await DeplacerVersAsync(tag, moi, membre, combat, carte, ennemisVivants, !reculer, session)
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Déplacement multi-ennemis : énumère cells atteignables, score =
+    /// somme distances Chebyshev à TOUS les ennemis (style dyshay
+    /// <c>Get_Total_Distancia_Enemigo</c>). <c>cercano=true</c> minimise (avance),
+    /// <c>cercano=false</c> maximise (recule).
+    /// </summary>
+    private static async Task DeplacerVersAsync(
+        string tag, Combats.Combattants.Combattant moi, MembreHeros membre,
+        Combat combat, Carte carte, List<Combats.Combattants.Combattant> ennemisVivants,
+        bool cercano, SessionProxy session)
+    {
+        var depart = carte.Obtenir(moi.CellulePosition);
+        if (depart == null) return;
+        int mw = carte.Largeur > 0 ? carte.Largeur : Carte.LargeurParDefaut;
+        int pmMax = moi.PM;
+
+        var interdites = ConstruireInterdites(carte, combat, moi.Identifiant);
+
+        // Coords ennemis (pré-calculées).
+        var ennemisXY = ennemisVivants
+            .Select(e => Cellule.CalculerCoordonnees(e.CellulePosition, mw))
+            .ToArray();
+
+        int distDepart = SommeDistancesEnnemis(depart.X, depart.Y, ennemisXY);
+
+        Cellule? meilleure = null;
+        List<Cellule>? meilleurChemin = null;
+        int meilleurScore = distDepart;
+        int meilleurPmConsomme = cercano ? int.MaxValue : -1;
+
+        foreach (var c in carte.Cellules)
+        {
+            if (c == null || !c.EstMarchable || c.IdInteractif >= 0 || interdites.Contains(c)) continue;
+            int dEst = System.Math.Abs(c.X - depart.X) + System.Math.Abs(c.Y - depart.Y);
+            if (dEst == 0 || dEst > pmMax) continue;
+
+            int score = SommeDistancesEnnemis(c.X, c.Y, ennemisXY);
+            bool ameliore = cercano ? score <= meilleurScore : score >= meilleurScore;
+            if (!ameliore) continue;
+
+            var chemin = Pathfinder.Trouver(carte, depart, c, interdites, combat: true);
+            if (chemin == null) continue;
+            int nbPas = chemin.Count - 1;
+            if (nbPas <= 0 || nbPas > pmMax) continue;
+
+            // Tie-break : pour reculer, MAXIMISE pmConsommé (= s'éloigne au max).
+            // Pour avancer, minimise pmConsommé (économise PM).
+            bool premier = meilleure == null;
+            bool meilleurPm = cercano ? nbPas < meilleurPmConsomme : nbPas > meilleurPmConsomme;
+            if (premier || score != meilleurScore || meilleurPm)
+            {
+                meilleure = c;
+                meilleurChemin = chemin;
+                meilleurScore = score;
+                meilleurPmConsomme = nbPas;
+            }
+        }
+
+        if (meilleure == null || meilleurChemin == null) return;
+        if (meilleureCellEqualsDepart(meilleure, depart)) return;
+        // Skip si pas d'amélioration réelle.
+        if (cercano && meilleurScore >= distDepart) return;
+        if (!cercano && meilleurScore <= distDepart) return;
+
+        Journaliseur.Info(
+            $"[{tag}] FIN-TOUR move cell {moi.CellulePosition}→{meilleure.Identifiant} "
+            + $"({meilleurPmConsomme} PM, ΣdistEnnemis {distDepart}→{meilleurScore})");
+
+        int cellReelleFt = await DeplacerAsync(tag, combat, moi.Identifiant, session, meilleurChemin)
+            .ConfigureAwait(false);
+        if (cellReelleFt > 0)
+        {
+            moi.CellulePosition = cellReelleFt;
+            membre.Cellule = cellReelleFt;
+            moi.PM = System.Math.Max(0, moi.PM - meilleurPmConsomme);
+        }
+    }
+
+    private static bool meilleureCellEqualsDepart(Cellule a, Cellule b)
+        => a.Identifiant == b.Identifiant;
+
+    private static int SommeDistancesEnnemis(int x, int y, (int x, int y)[] ennemisXY)
+    {
+        int total = 0;
+        foreach (var (ex, ey) in ennemisXY)
+            total += System.Math.Max(System.Math.Abs(x - ex), System.Math.Abs(y - ey));
+        return total;
+    }
+
+    // =============================================================
+    // Helpers cells / pathfinder / réseau
+    // =============================================================
+
     private static List<Cellule> TrouverCellulesCast(
-        Carte carte,
-        Cellule cible,
-        StatsNiveau stats,
-        ISet<int> cellsOccupees,
-        Cellule depart,
-        int pmDispo)
+        Carte carte, Cellule cible, StatsNiveau stats, ICollection<Cellule> interdites,
+        Cellule depart, int pmDispo, int mw)
     {
         var cellsValides = new List<Cellule>(64);
-        // Balayage par déplacement Chebyshev = on regarde les cells autour de la cible.
-        int rmin = Math.Max(1, stats.PorteeMin);
-        int rmax = Math.Max(rmin, stats.PorteeMax);
+        int rmin = System.Math.Max(0, stats.PorteeMin);
+        int rmax = System.Math.Max(rmin, stats.PorteeMax);
+        if (rmax <= 0) return cellsValides;
+
+        var (xC, yC) = (cible.X, cible.Y);
+        var occupeesInts = new HashSet<int>(interdites.Select(c => c.Identifiant));
+
         for (int dx = -rmax; dx <= rmax; dx++)
         {
             for (int dy = -rmax; dy <= rmax; dy++)
             {
-                int chebyCible = Math.Max(Math.Abs(dx), Math.Abs(dy));
-                if (chebyCible < rmin || chebyCible > rmax) continue;
-                var cell = carte.ObtenirParCoords(cible.X + dx, cible.Y + dy);
-                if (cell is null) continue;
+                int cheby = System.Math.Max(System.Math.Abs(dx), System.Math.Abs(dy));
+                if (cheby < rmin || cheby > rmax) continue;
+                var cell = carte.ObtenirParCoords(xC + dx, yC + dy);
+                if (cell == null) continue;
                 if (cell.Identifiant == cible.Identifiant) continue;
-                if (cellsOccupees.Contains(cell.Identifiant)) continue;
+                if (occupeesInts.Contains(cell.Identifiant)) continue;
                 if (!cell.EstMarchable && cell.Identifiant != depart.Identifiant) continue;
-                // Pré-filtre distance à départ pour pathfinder (gain perf).
-                int chebyDepart = depart.DistanceChebyshev(cell);
-                if (chebyDepart > pmDispo + 1) continue;
-                if (stats.NecessiteLOS && LigneVisuelle.EstObstruee(cell, cible, cellsOccupees)) continue;
+                // Pré-filtre PM (estim Manhattan).
+                int dEstim = System.Math.Abs(cell.X - depart.X) + System.Math.Abs(cell.Y - depart.Y);
+                if (dEstim > pmDispo + 1) continue;
+                // LOS check.
+                if (stats.NecessiteLOS && LigneVisuelle.EstObstruee(carte, cell, cible, occupeesInts)) continue;
                 cellsValides.Add(cell);
             }
         }
         return cellsValides;
     }
 
-    /// <summary>Trie les candidats selon le <see cref="ModeCombat"/>.</summary>
     private static IEnumerable<Cellule> TrierCellsSelonMode(
-        List<Cellule> candidats, Cellule depart, Cellule cible, ConfigCombat cfg, StatsNiveau stats)
+        List<Cellule> candidats, Cellule depart, Cellule cible, ConfigCombat cfg, StatsNiveau stats, int mw)
     {
-        // Critère commun : moins de PM = mieux (préserve mobilité), sauf pour
-        // les modes qui veulent vraiment éloigner.
-        int distancePref = Math.Clamp(cfg.DistancePreferee, stats.PorteeMin, stats.PorteeMax);
-        int distanceMinEloigne = Math.Clamp(cfg.DistanceMinEloigne, stats.PorteeMin, stats.PorteeMax);
+        int distancePref = System.Math.Clamp(cfg.DistancePreferee, stats.PorteeMin, stats.PorteeMax);
         return cfg.Mode switch
         {
-            // Agressif : se colle au mob (distance minimale à la cible).
             ModeCombat.Agressif => candidats
-                .OrderBy(c => c.DistanceChebyshev(cible))
-                .ThenBy(c => depart.DistanceChebyshev(c)),
-            // Eloigne / Fuyard : max distance à la cible mais en portée.
-            ModeCombat.Eloigne => candidats
-                .OrderByDescending(c => c.DistanceChebyshev(cible))
-                .ThenBy(c => depart.DistanceChebyshev(c)),
-            ModeCombat.Fuyard => candidats
-                .OrderByDescending(c => c.DistanceChebyshev(cible))
-                .ThenBy(c => depart.DistanceChebyshev(c)),
-            // Equilibre : vise distancePref + minimise les PM (cast prioritaire).
+                .OrderBy(c => System.Math.Max(System.Math.Abs(c.X - cible.X), System.Math.Abs(c.Y - cible.Y)))
+                .ThenBy(c => System.Math.Abs(c.X - depart.X) + System.Math.Abs(c.Y - depart.Y)),
+            ModeCombat.Eloigne or ModeCombat.Fuyard => candidats
+                .OrderByDescending(c => System.Math.Max(System.Math.Abs(c.X - cible.X), System.Math.Abs(c.Y - cible.Y)))
+                .ThenBy(c => System.Math.Abs(c.X - depart.X) + System.Math.Abs(c.Y - depart.Y)),
             _ => candidats
-                .OrderBy(c => Math.Abs(c.DistanceChebyshev(cible) - distancePref))
-                .ThenBy(c => depart.DistanceChebyshev(c)),
+                .OrderBy(c => System.Math.Abs(System.Math.Max(System.Math.Abs(c.X - cible.X), System.Math.Abs(c.Y - cible.Y)) - distancePref))
+                .ThenBy(c => System.Math.Abs(c.X - depart.X) + System.Math.Abs(c.Y - depart.Y)),
         };
     }
 
-    private static HashSet<int> SnapshotCellsOccupees(Combat combat, int idMembreActif)
+    private static HashSet<Cellule> ConstruireInterdites(Carte carte, Combat combat, int idMoi)
     {
-        var set = new HashSet<int>();
-        foreach (var a in combat.Allies)
-            if (!a.EstMort && a.CellulePosition > 0 && a.Identifiant != idMembreActif)
-                set.Add(a.CellulePosition);
-        foreach (var e in combat.Ennemis)
-            if (!e.EstMort && e.CellulePosition > 0)
-                set.Add(e.CellulePosition);
-        return set;
-    }
-
-    private static List<Cellule> ConstruireInterdits(Carte carte, Combat combat, int idMembreActif)
-    {
-        var interdits = new List<Cellule>();
+        var interdites = new HashSet<Cellule>();
         foreach (var c in combat.Allies.Concat(combat.Ennemis))
         {
             if (c.EstMort || c.CellulePosition <= 0) continue;
-            if (c.Identifiant == idMembreActif) continue;
+            if (c.Identifiant == idMoi) continue;
             var cell = carte.Obtenir(c.CellulePosition);
-            if (cell != null) interdits.Add(cell);
+            if (cell != null) interdites.Add(cell);
         }
-        return interdits;
+        return interdites;
     }
 
-    private static bool LosOk(StatsNiveau stats, Cellule a, Cellule b, ISet<int> cellsOccupees)
-        => !stats.NecessiteLOS || !LigneVisuelle.EstObstruee(a, b, cellsOccupees);
-
-    // ----- Mouvement de repli (rien à caster) -----
-
-    private static async Task ApprocherAsync(
-        MembreHeros membre, Cellule depart, Cellule cible,
-        Carte carte, Combat combat, ConfigCombat cfg, int pmDispo,
-        SessionProxy session)
+    private static int DistanceChebyshev(int idA, int idB, int mw)
     {
-        // On veut aller le plus près possible de la cible (Agressif) ou s'éloigner (Eloigne/Fuyard).
-        Cellule? destination = null;
-        if (cfg.Mode == ModeCombat.Agressif)
-        {
-            // Cell adjacente à la cible la plus accessible.
-            destination = ChoisirCellAdjacente(carte, cible, combat, membre.IdJeu);
-        }
-        else if (cfg.Mode == ModeCombat.Eloigne || cfg.Mode == ModeCombat.Fuyard)
-        {
-            // Cell la plus éloignée à portée pmDispo.
-            destination = ChoisirCellFuite(carte, depart, cible, combat, membre.IdJeu, pmDispo);
-        }
-        if (destination is null || destination.Identifiant == depart.Identifiant) return;
-
-        var interdits = ConstruireInterdits(carte, combat, membre.IdJeu);
-        var chemin = Pathfinder.Trouver(carte, depart, destination, interdits, combat: true);
-        if (chemin is null || chemin.Count < 2) return;
-
-        // Tronque au budget PM si nécessaire.
-        if (chemin.Count - 1 > pmDispo)
-        {
-            chemin = chemin.Take(pmDispo + 1).ToList();
-        }
-        Journaliseur.Info(
-            $"[IA-HEROS:{membre.Nom}] approche {depart.Identifiant}→{chemin[^1].Identifiant} ({chemin.Count - 1} PM)");
-        await DeplacerAsync(session, chemin);
-        membre.Cellule = chemin[^1].Identifiant;
+        var (xA, yA) = Cellule.CalculerCoordonnees(idA, mw);
+        var (xB, yB) = Cellule.CalculerCoordonnees(idB, mw);
+        return System.Math.Max(System.Math.Abs(xA - xB), System.Math.Abs(yA - yB));
     }
 
-    private static Cellule? ChoisirCellAdjacente(Carte carte, Cellule cible, Combat combat, int idMembre)
-    {
-        var occ = SnapshotCellsOccupees(combat, idMembre);
-        for (int dx = -1; dx <= 1; dx++)
-            for (int dy = -1; dy <= 1; dy++)
-            {
-                if (dx == 0 && dy == 0) continue;
-                var c = carte.ObtenirParCoords(cible.X + dx, cible.Y + dy);
-                if (c is null) continue;
-                if (occ.Contains(c.Identifiant)) continue;
-                if (!c.EstMarchable) continue;
-                return c;
-            }
-        return null;
-    }
-
-    private static Cellule? ChoisirCellFuite(
-        Carte carte, Cellule depart, Cellule cible, Combat combat, int idMembre, int pmDispo)
-    {
-        var occ = SnapshotCellsOccupees(combat, idMembre);
-        Cellule? best = null;
-        int meilleureDist = -1;
-        for (int dx = -pmDispo; dx <= pmDispo; dx++)
-            for (int dy = -pmDispo; dy <= pmDispo; dy++)
-            {
-                if (Math.Max(Math.Abs(dx), Math.Abs(dy)) > pmDispo) continue;
-                var c = carte.ObtenirParCoords(depart.X + dx, depart.Y + dy);
-                if (c is null) continue;
-                if (occ.Contains(c.Identifiant)) continue;
-                if (!c.EstMarchable) continue;
-                int d = c.DistanceChebyshev(cible);
-                if (d > meilleureDist)
-                {
-                    meilleureDist = d;
-                    best = c;
-                }
-            }
-        return best;
-    }
-
-    // ----- Réseau -----
-
-    private static async Task<bool> CastAsync(SessionProxy session, int idSort, int cellCible)
-    {
-        try
-        {
-            await session.EnvoyerAuServeurAsync($"GA300{idSort};{cellCible}").ConfigureAwait(false);
-            await Task.Delay(DelaiAvantAckMs).ConfigureAwait(false);
-            await session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
-            await Task.Delay(DelaiEntreActionsMs).ConfigureAwait(false);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Journaliseur.Avertir($"[IA-HEROS] échec cast #{idSort}@{cellCible} : {ex.Message}");
-            return false;
-        }
-    }
-
-    private static async Task<bool> DeplacerAsync(SessionProxy session, IReadOnlyList<Cellule> chemin)
+    /// <summary>
+    /// Envoie <c>GA001</c> puis attend la confirmation serveur via
+    /// <see cref="PipelineDeplacementCombat.AttendreMouvementOuTimeoutAsync"/>
+    /// (broadcast <c>GA;0/1;&lt;idMoi&gt;</c>). Bien plus rapide et fiable que
+    /// le <c>Task.Delay</c> aveugle car on poursuit dès que le serveur a
+    /// validé le déplacement (souvent ~100-200 ms après l'envoi en LAN).
+    /// </summary>
+    /// <returns>
+    /// La cellule d'arrivée réelle confirmée par le serveur (cf. cas
+    /// <see cref="ResultatDeplacementCombat.ConfirmePartiel"/> = troncature
+    /// chemin) ; ou <c>-1</c> si timeout / erreur réseau.
+    /// </returns>
+    private static async Task<int> DeplacerAsync(
+        string tag, Combat combat, int idMoi, SessionProxy session,
+        IReadOnlyList<Cellule> chemin)
     {
         try
         {
             var encodage = Pathfinder.EncoderChemin(chemin);
-            if (string.IsNullOrEmpty(encodage)) return false;
+            if (string.IsNullOrEmpty(encodage)) return -1;
+            int cellAttendue = chemin[chemin.Count - 1].Identifiant;
+            int nbPas = chemin.Count - 1;
+
+            // Timeout généreux : 1.5s + 500ms par case (couvre lag réseau).
+            // En turbo on garde la même borne haute car c'est juste un timeout
+            // de sécurité, pas un délai actif (l'event broadcast peut arriver
+            // beaucoup plus tôt).
+            int timeoutMs = System.Math.Max(1500, nbPas * 500 + 1500);
+
             await session.EnvoyerAuServeurAsync($"GA001{encodage}").ConfigureAwait(false);
-            // Attente proportionnelle au nombre de pas.
-            int delaiAttente = Math.Max(150, DelaiParCasePmMs * (chemin.Count - 1));
-            await Task.Delay(delaiAttente).ConfigureAwait(false);
-            await session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
-            await Task.Delay(150).ConfigureAwait(false);
-            return true;
+
+            var resultat = await PipelineDeplacementCombat
+                .AttendreMouvementOuTimeoutAsync(combat, idMoi, cellAttendue, timeoutMs, default)
+                .ConfigureAwait(false);
+
+            switch (resultat)
+            {
+                case ResultatDeplacementCombat.Confirme:
+                    return cellAttendue;
+                case ResultatDeplacementCombat.ConfirmePartiel:
+                    // Combat.Allies a déjà été mis à jour par OnActionJeu →
+                    // récupère la cell réelle depuis le Combattant.
+                    var moiC = combat.Allies.FirstOrDefault(a => a.Identifiant == idMoi);
+                    int cellAtteinte = moiC?.CellulePosition ?? cellAttendue;
+                    Journaliseur.Avertir(
+                        $"[{tag}] déplacement TRONQUÉ par le serveur : visé {cellAttendue}, atteint {cellAtteinte}");
+                    return cellAtteinte;
+                case ResultatDeplacementCombat.TimeoutSilencieux:
+                default:
+                    // Fallback : on suppose que le déplacement a marché (mode
+                    // optimistic legacy) — c'est cohérent avec le master quand
+                    // ModeDeplacementOptimisteSecours=true. Le broadcast a peut-être
+                    // été émis avant qu'on s'abonne (race), ou le serveur a
+                    // simplement avalé le paquet sans broadcaster.
+                    Journaliseur.Avertir(
+                        $"[{tag}] timeout déplacement ({timeoutMs}ms) — fallback optimistic");
+                    return cellAttendue;
+            }
         }
         catch (Exception ex)
         {
-            Journaliseur.Avertir($"[IA-HEROS] échec déplacement : {ex.Message}");
-            return false;
+            Journaliseur.Avertir($"[{tag}] échec déplacement : {ex.Message}");
+            return -1;
         }
     }
 
@@ -464,6 +914,4 @@ public sealed class IACombatHerosSimple
             Journaliseur.Avertir($"[IA-HEROS] échec Gt : {ex.Message}");
         }
     }
-
-    private sealed record CheminChoisi(IReadOnlyList<Cellule> Chemin, int PmRequis, Cellule Cellule);
 }

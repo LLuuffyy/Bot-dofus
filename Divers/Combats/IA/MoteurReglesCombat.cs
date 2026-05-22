@@ -45,12 +45,21 @@ public static class MoteurReglesCombat
     /// au test LOS Bresenham (cf. <see cref="Cartes.LigneVisuelle"/>) quand
     /// le sort a <c>NecessiteLOS=true</c>.
     /// </param>
-    public static ResultatRegle? Evaluer(Combat combat, ConfigCombat cfg, IReadOnlyDictionary<int, int> sortsAppris, Carte carte)
+    /// <param name="casterExplicite">
+    /// Si fourni, c'est ce combattant qui « lance » les sorts (utilisé pour le
+    /// mode héros Abrak où chaque héros lié a sa propre IA mais partage le
+    /// même <see cref="Combat"/>). Null = on infère depuis
+    /// <see cref="Combat.IdentifiantAllie"/> = master.
+    /// </param>
+    public static ResultatRegle? Evaluer(
+        Combat combat, ConfigCombat cfg, IReadOnlyDictionary<int, int> sortsAppris, Carte carte,
+        Combattant? casterExplicite = null)
     {
         int mapWidth = carte.Largeur > 0 ? carte.Largeur : Carte.LargeurParDefaut;
         if (cfg.Regles.Count == 0) return null;
 
-        var moi = combat.Allies.FirstOrDefault(c => c.Identifiant == combat.IdentifiantAllie);
+        var moi = casterExplicite
+                  ?? combat.Allies.FirstOrDefault(c => c.Identifiant == combat.IdentifiantAllie);
         if (moi == null) return null;
 
         // Tri par priorité décroissante (l'ordre dans la liste = ordre UI SynFus,
@@ -74,9 +83,12 @@ public static class MoteurReglesCombat
 
             // Compteur NombreParTour : la règle a-t-elle déjà été lancée
             // le nombre max de fois autorisé ce tour ? (limite SynFus)
+            // CLÉ = (caster, sort) — cloisonné par caster pour ne pas bloquer
+            // les autres alliés (cf. doc Combat.CompteursRegleParTour).
             if (regle.NombreParTour > 0)
             {
-                int dejaLance = combat.CompteursRegleParTour.TryGetValue(regle.IdSort, out var cnt) ? cnt : 0;
+                var cleT = (moi.Identifiant, regle.IdSort);
+                int dejaLance = combat.CompteursRegleParTour.TryGetValue(cleT, out var cnt) ? cnt : 0;
                 if (dejaLance >= regle.NombreParTour)
                 { Diag($"NombreParTour atteint ({dejaLance}/{regle.NombreParTour})"); continue; }
             }
@@ -150,9 +162,10 @@ public static class MoteurReglesCombat
             }
 
             // NombreParCible — max N casts sur la même cible ce tour.
+            // CLÉ = (caster, sort, cible) — cloisonné par caster.
             if (regle.NombreParCible > 0)
             {
-                var cleC = (regle.IdSort, cible.Identifiant);
+                var cleC = (moi.Identifiant, regle.IdSort, cible.Identifiant);
                 int dejaSurCible = combat.CompteursRegleParCible.TryGetValue(cleC, out var cntC) ? cntC : 0;
                 if (dejaSurCible >= regle.NombreParCible)
                 { Diag($"NombreParCible atteint ({dejaSurCible}/{regle.NombreParCible}) sur #{cible.Identifiant}"); continue; }
@@ -233,9 +246,12 @@ public static class MoteurReglesCombat
         return focus switch
         {
             // === ENNEMIS ===
-            FocusSort.EnnemiLePlusProche => ennemisVivants
-                .OrderBy(e => DistanceDofus(moi.CellulePosition, e.CellulePosition, mapWidth))
-                .FirstOrDefault(),
+            // EnnemiLePlusProche : si déjà au CAC (dist=1) on garde, sinon on
+            // préfère l'ennemi NON-INVOCATION le plus FAIBLE PV parmi les
+            // 5 plus proches (heuristique dyshay « achève les mourants »,
+            // cf. Fight.get_Obtener_Enemigo_Mas_Cercano(range)). Tombe sur
+            // « ennemi le plus proche » si tous à dist > 5 ou tous invoc.
+            FocusSort.EnnemiLePlusProche => EnnemiPlusProcheOuLowHp(ennemisVivants, moi, mapWidth),
             FocusSort.EnnemiLePlusFaible => ennemisPrincipaux
                 .OrderBy(e => e.PV)
                 .FirstOrDefault(),
@@ -403,6 +419,50 @@ public static class MoteurReglesCombat
             .OrderByDescending(t => t.dx * sx + t.dy * sy)
             .First();
         return new CombattantMonstre { Identifiant = -9002, CellulePosition = meilleure.cell.Identifiant, Nom = "(adj. moi, fallback)" };
+    }
+
+    /// <summary>
+    /// Heuristique dyshay <c>get_Obtener_Enemigo_Mas_Cercano(range)</c> :
+    /// si je suis au CAC d'un ennemi → je garde celui-là (priorité à ne pas
+    /// rompre le tacle). Sinon, dans les 5 ennemis les plus proches, je
+    /// vise le mob NON-INVOCATION avec le moins de PV (achève le mourant).
+    /// Si que des invocations dans le radar, fallback sur celle low-HP.
+    /// </summary>
+    private static Combattant? EnnemiPlusProcheOuLowHp(
+        List<Combattant> ennemisVivants, Combattant moi, int mapWidth)
+    {
+        if (ennemisVivants.Count == 0) return null;
+
+        // Cible la + proche (tie-break par PV pour reproductibilité).
+        var plusProche = ennemisVivants
+            .OrderBy(e => DistanceDofus(moi.CellulePosition, e.CellulePosition, mapWidth))
+            .ThenBy(e => e.PV)
+            .First();
+        int distMin = DistanceDofus(moi.CellulePosition, plusProche.CellulePosition, mapWidth);
+
+        // Au CAC d'un mob → on reste sur lui (sortir du CAC ferait perdre PA
+        // au tacle dans la plupart des cas).
+        if (distMin <= 1) return plusProche;
+
+        // Radar des 5 plus proches : priorité au mob NON-invocation low-HP.
+        var radar = ennemisVivants
+            .Select(e => new
+            {
+                E = e,
+                D = DistanceDofus(moi.CellulePosition, e.CellulePosition, mapWidth)
+            })
+            .OrderBy(x => x.D)
+            .Take(5)
+            .ToList();
+
+        var lowHpNonInvoc = radar
+            .Where(x => !x.E.EstInvocation)
+            .OrderBy(x => x.E.PV)
+            .FirstOrDefault();
+        if (lowHpNonInvoc != null) return lowHpNonInvoc.E;
+
+        // Que des invoc dans les 5 plus proches → on prend l'invoc low-HP.
+        return radar.OrderBy(x => x.E.PV).First().E;
     }
 
     /// <summary>
