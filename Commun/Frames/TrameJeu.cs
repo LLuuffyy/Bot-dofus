@@ -1354,6 +1354,13 @@ public sealed class TrameJeu : TrameBase
                         }
                     }
                 }
+                // GKK0 final pour fermer toute action en cours (déplacement
+                // post-cast) avant le Gt. Sans ça, le serveur peut ignorer
+                // le Gt jusqu'à 13s — forensic 2026-05-22 18:39:51 Ukdeshan.
+                // Les GKK0 redondants sont safe (serveur ignore).
+                try { await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false); } catch { /* best-effort */ }
+                await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(150, 300)).ConfigureAwait(false);
+
                 // Pass turn après tous les casts effectués ce tour.
                 await Task.Delay(Divers.Combats.IA.TimingsCombat.Delai(800, 1300)).ConfigureAwait(false);
                 Journaliseur.Info($"[ACTION] Passe le tour (Gt) — {castsEffectues} cast(s) ce tour");

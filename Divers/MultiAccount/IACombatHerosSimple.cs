@@ -162,24 +162,21 @@ public static class IACombatHerosSimple
         Journaliseur.Info(
             $"[{tag}] Fin tour ({castsEffectues} cast(s), PA restants {moi.PA}, PM restants {moi.PM})");
 
-        // SÉCURITÉ Gt : si aucun cast n'a été envoyé MAIS qu'on a bougé (GA001),
-        // le serveur Hystoria attend un GKK0 final pour fermer l'action de
-        // déplacement avant d'accepter le Gt. Sans ça, observé jusqu'à 13s
-        // d'attente avant qu'un Gt manuel finisse par passer (forensic
-        // 2026-05-22 14:38:28 Athabiel — Gt ignoré 13s).
-        // Quand castsEffectues>0, EnvoyerCastSynFusAsync envoie déjà GKK0
-        // après chaque GA300, donc inutile de doubler.
-        if (castsEffectues == 0)
+        // SÉCURITÉ Gt : on envoie un GKK0 SYSTÉMATIQUEMENT avant le Gt.
+        // Pourquoi : le PreMouvementSelonModeAsync / RepositionnerFinTourAsync
+        // post-cast envoient un GA001 final qui doit être fermé par un GKK0
+        // sinon le serveur Hystoria ignore le Gt suivant (forensic
+        // 2026-05-22 18:39:51 — Ukdeshan, 8 casts puis déplacement
+        // post-cast, Gt bot ignoré pendant 13s jusqu'à intervention user).
+        // Les GKK0 redondants sont ignorés par le serveur, donc safe.
+        try
         {
-            try
-            {
-                await session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
-                await Task.Delay(TimingsCombat.Delai(150, 300)).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Journaliseur.Avertir($"[{tag}] échec GKK0 fin-action : {ex.Message}");
-            }
+            await session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
+            await Task.Delay(TimingsCombat.Delai(150, 300)).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Journaliseur.Avertir($"[{tag}] échec GKK0 fin-action : {ex.Message}");
         }
 
         await Task.Delay(TimingsCombat.DelaiFixe(DelaiAvantFinTourMs)).ConfigureAwait(false);
