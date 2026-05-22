@@ -46,6 +46,8 @@ public partial class VueGroupeHeros : UserControl
             // groupe est typiquement encore null (créé au 1er GTSX), il faut
             // se ré-attacher dès qu'il apparaît côté Compte.
             _contexte.Compte.GroupeHerosChange += OnGroupeAffecte;
+            // Synchro UI checkbox auto-invit avec la config persistée.
+            ChkAutoInvit.IsChecked = _contexte.ConfigGroupeHeros.AutoInvitationActive;
         }
         AttacherAuGroupe(_contexte?.Compte.GroupeHeros);
         Rafraichir();
@@ -103,6 +105,86 @@ public partial class VueGroupeHeros : UserControl
     private void OnStatsChange(object? sender, MembreHeros membre)
         => Dispatcher.BeginInvoke(new Action(Rafraichir),
                                   System.Windows.Threading.DispatcherPriority.Background);
+
+    private void ChkAutoInvit_Click(object sender, System.Windows.RoutedEventArgs e)
+    {
+        if (_contexte is null) return;
+        _contexte.ConfigGroupeHeros.AutoInvitationActive = ChkAutoInvit.IsChecked == true;
+        _contexte.ConfigGroupeHeros.Sauvegarder(_contexte.Compte.Identifiant);
+        BotDofus.Utilitaires.Journaux.Journaliseur.Info(
+            $"[GH-INVIT] Auto-invitation {(ChkAutoInvit.IsChecked == true ? "activée" : "désactivée")} pour {_contexte.Compte.Identifiant}");
+    }
+
+    private async void BtnInviterMaintenant_Click(object sender, System.Windows.RoutedEventArgs e)
+    {
+        if (_contexte is null) return;
+        // Force l'activation temporaire pour permettre LancerAsync de tourner.
+        var save = _contexte.ConfigGroupeHeros.AutoInvitationActive;
+        _contexte.ConfigGroupeHeros.AutoInvitationActive = true;
+        try
+        {
+            await _contexte.InviterHerosMaintenantAsync();
+        }
+        finally
+        {
+            _contexte.ConfigGroupeHeros.AutoInvitationActive = save;
+        }
+    }
+
+    private void BtnOuvrirCfgGroupe_Click(object sender, System.Windows.RoutedEventArgs e)
+    {
+        if (_contexte is null) return;
+        var path = System.IO.Path.GetFullPath(
+            BotDofus.Divers.MultiAccount.ConfigGroupeHeros.CheminPour(_contexte.Compte.Identifiant));
+        // Crée le fichier s'il n'existe pas pour que l'éditeur ouvre quelque chose.
+        if (!System.IO.File.Exists(path))
+        {
+            _contexte.ConfigGroupeHeros.Sauvegarder(_contexte.Compte.Identifiant);
+        }
+        OuvrirFichierExterne(path);
+    }
+
+    private void BtnEditerMembre_Click(object sender, System.Windows.RoutedEventArgs e)
+    {
+        if (sender is not System.Windows.Controls.Button b) return;
+        if (b.Tag is not int idJeu || idJeu == 0) return;
+        // Construit le chemin canonique peleas/heros/<id>.json.
+        var path = System.IO.Path.GetFullPath(
+            System.IO.Path.Combine("peleas", "heros", $"{idJeu}.json"));
+        // Si pas encore créé (pas reçu de Nh), on crée un squelette via Sauvegarder.
+        if (!System.IO.File.Exists(path))
+        {
+            var membre = _groupeLie?.TrouverParIdJeu(idJeu);
+            if (membre is not null)
+                BotDofus.Divers.MultiAccount.ServiceConfigsHeros.Sauvegarder(membre);
+        }
+        OuvrirFichierExterne(path);
+    }
+
+    private static void OuvrirFichierExterne(string chemin)
+    {
+        try
+        {
+            if (!System.IO.File.Exists(chemin))
+            {
+                System.Windows.MessageBox.Show(
+                    $"Fichier introuvable :\n{chemin}\n\nIl sera créé après la prochaine réception de données serveur.",
+                    "Config héros",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Information);
+                return;
+            }
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = chemin,
+                UseShellExecute = true,
+            });
+        }
+        catch (System.Exception ex)
+        {
+            BotDofus.Utilitaires.Journaux.Journaliseur.Avertir($"[GH-CFG] Ouverture {chemin} échec : {ex.Message}");
+        }
+    }
 
     private void Rafraichir()
     {

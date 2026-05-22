@@ -35,6 +35,10 @@ public sealed class ContexteCompte : IDisposable
     public BotDofus.Divers.Banque.ConfigBanque ConfigBanque { get; }
     public BotDofus.Divers.MultiAccount.ConfigGroupeHeros ConfigGroupeHeros { get; }
     private readonly BotDofus.Divers.MultiAccount.AutoInviteurHeros _inviteurHeros;
+
+    /// <summary>Bouton « Inviter maintenant » côté UI : déclenche l'auto-inviteur indépendamment du toggle.</summary>
+    public System.Threading.Tasks.Task InviterHerosMaintenantAsync()
+        => _inviteurHeros.LancerAsync(SessionJeuActive);
     public BotDofus.Divers.Securite.DetecteurStaff DetecteurStaff { get; }
     public StatsSession Stats { get; } = new();
     public BotDofus.Divers.Interception.GestionnaireInterception Interception { get; } = new();
