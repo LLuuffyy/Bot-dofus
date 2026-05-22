@@ -218,6 +218,16 @@ public sealed class ApiBot
             if ((_etat.Personnage.CarteCourante ?? 0) != mapAvant)
                 break; // transition franchie → fini
 
+            // Si un combat démarre EN COURS de boucle multi-saut (protecteur
+            // de ressource agressif), on ARRÊTE immédiatement. Sinon le bot
+            // continue à pousser des GA001 hors-combat → serveur répond GAF
+            // code=2 « hors portée » en spam (log 02:51:21+ : 454 GAFs sur 2h).
+            if (_etat.Combat.Etat != EtatCombat.Inactif)
+            {
+                Journaliseur.Info($"[NAV] Combat démarré mid-déplacement (état={_etat.Combat.Etat}) — arrêt du multi-saut");
+                break;
+            }
+
             var carte = _etat.CarteCourante;
             if (carte == null) break;
             if (_etat.Personnage.CellulePosition is not int posCur)
