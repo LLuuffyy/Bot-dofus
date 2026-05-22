@@ -97,6 +97,11 @@ public sealed class TrameJeu : TrameBase
             _etat.CarteCourante?.Entites.Clear();
             _etat.CarteCourante?.SignalerRechargee();
             _compte.ChangerEtat(EtatsCompte.EnJeu);
+            // Force refresh des vues inventaire/perso : le loot reçu pendant
+            // le combat (OQ/OAK) a déjà mis à jour Personnage.Inventaire, mais
+            // l'UI peut être en retard (ex: pods/equip). Ré-émettre garantit
+            // un snapshot propre à la sortie de combat.
+            _etat.Personnage.NotifierInventaireChange();
             Journaliseur.Info("[COMBAT] Combat terminé");
         });
         Ecouter<MessageTourCombat>(async msg =>
@@ -373,6 +378,10 @@ public sealed class TrameJeu : TrameBase
     {
         Journaliseur.Info($"Changement de carte : #{msg.IdentifiantCarte}");
         _etat.ChangerCarte(msg.IdentifiantCarte, msg.DateVersion, msg.ClefCarte);
+        // Snapshot inventaire à chaque changement de map : assure que les vues
+        // affichent l'état courant (utile quand on déplace pendant un script Lua
+        // sans qu'un OQ ait été reçu sur la map précédente).
+        _etat.Personnage.NotifierInventaireChange();
     }
 
     private void OnPositionsCombat(MessagePositionsCombat msg)

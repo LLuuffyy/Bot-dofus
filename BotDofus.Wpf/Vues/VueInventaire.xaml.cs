@@ -143,9 +143,10 @@ public partial class VueInventaire : UserControl
 
     /// <summary>
     /// Catégorie « jeu » (onglets Dofus) déduite du type d'item.
-    /// Mapping aligné sur <see cref="BotDofus.Divers.Banque.CategoriseurObjet"/>
-    /// (importé de dyshay/InventoryUtilities.cs) + raffinements UI :
-    /// Familiers/Dofus/Pierres d'âme = sous-catégories distinctes.
+    /// Mapping aligné sur dyshay/SynFus + extension Hystoria : on parcourt
+    /// l'arborescence réelle de items_merged.json pour qu'aucun type ne soit
+    /// listé deux fois (un même switch case ne peut pas matcher deux branches).
+    /// Référence dyshay/InventoryUtilities.cs:76-150 + recensement local.
     /// </summary>
     private static string CategorieItem(int type) => type switch
     {
@@ -153,23 +154,42 @@ public partial class VueInventaire : UserControl
         18 => "Familiers",
         23 => "Dofus",
         85 => "Pierres d'âme",
-        86 => "Boissons",
 
         // === Équipement (armes + accessoires portables) ===
         1 or 2 or 3 or 4 or 5 or 6 or 7 or 8 or 9 or 10
-            or 11 or 16 or 17 or 19 or 20 or 21 or 22 or 82 or 83 => "Équipement",
+            or 11 or 16 or 17 or 19 or 20 or 21 or 22
+            or 82 or 83 or 113 or 114 => "Équipement",
 
-        // === Consommables (potions, parchemins, nourriture) ===
-        12 or 13 or 33 or 34 or 36 => "Consommables",
+        // === Consommables (potions, parchemins, boissons, bonbons, buffs) ===
+        // 12=potion (Potion de Rappel, Fiole de Soin) — 13=parchemin
+        // 14=Sang de Phénix — 26=potion élément — 28=bonbon — 29/30/31=buffs
+        // 33=Pain — 37=bière — 42=Pomme/Shigekax — 43/44/45=potions d'oubli
+        // 49=poisson cuisiné — 69=Nuggets — 73/75/76=parchemins sort/maitrise/carac
+        // 79=Lailait/fioles — 86=potion oubli percepteur — 110=Gelées
+        // 180=potion changement de classe
+        12 or 13 or 14 or 26 or 28 or 29 or 30 or 31
+            or 33 or 37 or 42 or 43 or 44 or 45 or 49 or 69
+            or 73 or 75 or 76 or 79 or 86 or 110 or 180 => "Consommables",
 
-        // === Ressources (matériaux récoltés/dropés — mapping dyshay) ===
-        15 or 34 or 35 or 38 or 41 or 46 or 47 or 48 or 50
-            or 51 or 53 or 54 or 55 or 56 or 57 or 58 or 59 or 60
-            or 63 or 65 or 68 or 84 or 96 or 98
-            or 100 or 103 or 104 or 105 or 106
-            or 107 or 108 or 109 or 111 => "Ressources",
+        // === Ressources (matériaux récoltés/dropés — mapping dyshay étendu) ===
+        // 15=loot brut/champi — 34=céréales (Blé/Orge/Lin/Houblon) — 35=fleurs
+        // 36=plantes — 38=bois — 39=minerais — 40=lingots — 41=poissons
+        // 46=fruits récoltés — 47=os/dents/becs — 48=ingrédients (sel/levure)
+        // 50/51=pierres — 52=farines — 53-60=fibres/cuirs/laines/peaux/huiles
+        // 62/63/64=poissons & viandes (préparés/conservés) — 65=queues
+        // 68=légumes/tubercules — 78=runes — 95=planches — 96=écorces
+        // 98=racines — 100=sacs de céréales — 103-109=morceaux mob (pattes,
+        // ailes, oeufs, oreilles, carapaces, bourgeons, yeux) — 111=coquilles
+        // 115=fragments
+        15 or 34 or 35 or 36 or 38 or 39 or 40 or 41 or 47 or 48
+            or 50 or 51 or 52 or 53 or 54 or 55 or 56 or 57 or 58 or 59 or 60
+            or 62 or 63 or 64 or 65 or 68 or 78 or 95 or 96 or 98
+            or 100 or 103 or 104 or 105 or 106 or 107 or 108 or 109 or 111
+            or 115 => "Ressources",
 
+        // === Items de quête ===
         24 => "Quête",
+
         _ => "Divers",
     };
 
