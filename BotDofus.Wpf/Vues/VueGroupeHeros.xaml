@@ -4,6 +4,7 @@
     <Grid Margin="12" Background="#1A1F2C">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -42,8 +43,24 @@
             </StackPanel>
         </Border>
 
+        <!-- Bandeau info — explique le mode héros Abrak (mono-client serveur-side) -->
+        <Border Grid.Row="1"
+                x:Name="BandeauInfoAbrak"
+                Background="#1F2B3D"
+                BorderBrush="#3A5680"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="10,8"
+                Margin="0,0,0,10"
+                Visibility="Collapsed">
+            <TextBlock Foreground="#9AB8E0"
+                       FontSize="11"
+                       TextWrapping="Wrap"
+                       Text="Mode héros Abrak — mono-client : le serveur joue les héros liés tout seul (le bot n'envoie aucune action pour eux). Cette vue est en lecture seule, les stats sont rafraîchies en temps réel via GTM."/>
+        </Border>
+
         <!-- Corps : 2 colonnes (membres + ordre tours) -->
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="300"/>
@@ -98,6 +115,12 @@
                                             <TextBlock Text="{Binding SousTitre}"
                                                        FontSize="10"
                                                        Foreground="#7F89A0"/>
+                                            <TextBlock Text="{Binding StatsTexte}"
+                                                       Visibility="{Binding StatsVisible}"
+                                                       FontFamily="Consolas"
+                                                       FontSize="11"
+                                                       Foreground="#9AB8E0"
+                                                       Margin="0,3,0,0"/>
                                         </StackPanel>
                                         <TextBlock Grid.Column="2"
                                                    Text="{Binding IndicateurTour}"

@@ -190,4 +190,64 @@ public class GroupeHerosTests
         var g = new GroupeHeros();
         Assert.True(g.EstMonoClient);
     }
+
+    [Fact]
+    public void NotifierStatsCombattant_DeclencheStatsMembreChange_SiValeurDifferente()
+    {
+        var g = new GroupeHeros();
+        g.AjouterMembre(new MembreHeros { IdJeu = 100, Role = RoleDansGroupe.Leader });
+
+        MembreHeros? capture = null;
+        g.StatsMembreChange += (_, m) => capture = m;
+
+        var change = g.NotifierStatsCombattant(100, pv: 50, pvMax: 100, pa: 6, pm: 3, cellule: 42, vivant: true);
+        Assert.True(change);
+        Assert.NotNull(capture);
+        Assert.Equal(50, capture!.Pv);
+        Assert.Equal(100, capture.PvMax);
+        Assert.Equal(6, capture.Pa);
+        Assert.Equal(3, capture.Pm);
+        Assert.Equal(42, capture.Cellule);
+        Assert.True(capture.EstVivant);
+    }
+
+    [Fact]
+    public void NotifierStatsCombattant_NeDeclenchePasSiAucunChangement()
+    {
+        var g = new GroupeHeros();
+        g.AjouterMembre(new MembreHeros { IdJeu = 100, Pv = 50, PvMax = 100, Pa = 6, Pm = 3, Cellule = 42, EstVivant = true });
+
+        int compteur = 0;
+        g.StatsMembreChange += (_, _) => compteur++;
+
+        var change = g.NotifierStatsCombattant(100, 50, 100, 6, 3, 42, true);
+        Assert.False(change);
+        Assert.Equal(0, compteur);
+    }
+
+    [Fact]
+    public void NotifierStatsCombattant_IgnoreNonMembre()
+    {
+        var g = new GroupeHeros();
+        bool declenche = false;
+        g.StatsMembreChange += (_, _) => declenche = true;
+        var change = g.NotifierStatsCombattant(999, 50, 100, 6, 3, 42, true);
+        Assert.False(change);
+        Assert.False(declenche);
+    }
+
+    [Fact]
+    public void NotifierStatsCombattant_PassageEnMort()
+    {
+        var g = new GroupeHeros();
+        var membre = new MembreHeros { IdJeu = 100, Pv = 50, PvMax = 100, EstVivant = true };
+        g.AjouterMembre(membre);
+        MembreHeros? capture = null;
+        g.StatsMembreChange += (_, m) => capture = m;
+
+        g.NotifierStatsCombattant(100, pv: 0, pvMax: 100, pa: 0, pm: 0, cellule: 42, vivant: false);
+        Assert.NotNull(capture);
+        Assert.False(capture!.EstVivant);
+        Assert.Equal(0, capture.Pv);
+    }
 }

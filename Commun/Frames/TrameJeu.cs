@@ -318,6 +318,17 @@ public sealed class TrameJeu : TrameBase
 
         _etat.Combat.SignalerCombattantsMaj();
 
+        // Fan-out vers les MembreHeros du groupe (s'il existe) — met à jour PV/PA/PM/cell
+        // live pour l'UI VueGroupeHeros. Ne déclenche d'event que si une valeur a changé.
+        var groupe = _compte.GroupeHeros;
+        if (groupe != null)
+        {
+            foreach (var c in msg.Combattants)
+            {
+                groupe.NotifierStatsCombattant(c.Id, c.Pv, c.PvMax, c.Pa, c.Pm, c.Cellule, c.Vivant);
+            }
+        }
+
         int vivants = msg.Combattants.Count(x => x.Vivant);
         // Anti-spam : GTM arrive à CHAQUE tour avec souvent la même compo.
         // On ne loggue le détail que si la composition change (mort, arrivée).

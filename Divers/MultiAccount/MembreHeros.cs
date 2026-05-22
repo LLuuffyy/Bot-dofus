@@ -50,10 +50,26 @@ public sealed class MembreHeros
     public int Pv { get; set; }
 
     [JsonIgnore]
+    public int PvMax { get; set; }
+
+    [JsonIgnore]
     public int Pa { get; set; }
 
     [JsonIgnore]
     public int Pm { get; set; }
+
+    /// <summary>Dernière cellule observée (depuis <c>GTM</c>).</summary>
+    [JsonIgnore]
+    public int Cellule { get; set; }
+
+    /// <summary>
+    /// Config combat persistée par perso lié (<c>peleas/heros/&lt;idJeu&gt;.json</c>).
+    /// Sur Abrak, n'a pas d'effet runtime (le serveur joue les liés), mais
+    /// permet de préparer la base pour un éventuel serveur N-clients où la
+    /// config par perso pilote son IA.
+    /// </summary>
+    [JsonIgnore]
+    public BotDofus.Divers.Combats.IA.ConfigCombat? ConfigCombat { get; set; }
 }
 
 /// <summary>Rôle d'un <see cref="MembreHeros"/> dans son <see cref="GroupeHeros"/>.</summary>

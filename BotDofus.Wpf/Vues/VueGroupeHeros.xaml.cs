@@ -67,6 +67,7 @@ public partial class VueGroupeHeros : UserControl
             _groupeLie.TourDeMembre -= OnTourChange;
             _groupeLie.GroupeActive -= OnGroupeChange;
             _groupeLie.GroupeDissous -= OnGroupeChange;
+            _groupeLie.StatsMembreChange -= OnStatsChange;
         }
         _groupeLie = gh;
         if (_groupeLie != null)
@@ -75,6 +76,7 @@ public partial class VueGroupeHeros : UserControl
             _groupeLie.TourDeMembre += OnTourChange;
             _groupeLie.GroupeActive += OnGroupeChange;
             _groupeLie.GroupeDissous += OnGroupeChange;
+            _groupeLie.StatsMembreChange += OnStatsChange;
         }
     }
 
@@ -96,6 +98,10 @@ public partial class VueGroupeHeros : UserControl
         => Dispatcher.BeginInvoke(new Action(Rafraichir),
                                   System.Windows.Threading.DispatcherPriority.Background);
 
+    private void OnStatsChange(object? sender, MembreHeros membre)
+        => Dispatcher.BeginInvoke(new Action(Rafraichir),
+                                  System.Windows.Threading.DispatcherPriority.Background);
+
     private void Rafraichir()
     {
         // Re-attache si le compte a reçu son GroupeHeros entre temps (1er GTSX).
@@ -108,10 +114,14 @@ public partial class VueGroupeHeros : UserControl
             BadgeEtat.Background = new SolidColorBrush(Color.FromRgb(0x3D, 0x44, 0x53));
             TxtResume.Text = "Pas de mode héros détecté sur ce compte.";
             TxtTourCourant.Text = "—";
+            BandeauInfoAbrak.Visibility = System.Windows.Visibility.Collapsed;
             Membres.Clear();
             Ordre.Clear();
             return;
         }
+
+        // Le bandeau d'info s'affiche dès qu'un groupe existe (mode héros détecté).
+        BandeauInfoAbrak.Visibility = System.Windows.Visibility.Visible;
 
         // Badge état
         if (_groupeLie.EstActif)
@@ -178,7 +188,13 @@ public sealed class LigneMembre
                 CouleurRole = new SolidColorBrush(Color.FromRgb(0x55, 0x5C, 0x6D));
                 break;
         }
-        if (estTour)
+        if (!m.EstVivant)
+        {
+            BackgroundLigne = new SolidColorBrush(Color.FromRgb(0x3D, 0x1F, 0x1F));
+            BorderBrushLigne = new SolidColorBrush(Color.FromRgb(0xC9, 0x57, 0x61));
+            IndicateurTour = "✖";
+        }
+        else if (estTour)
         {
             BackgroundLigne = new SolidColorBrush(Color.FromRgb(0x15, 0x3C, 0x34));
             BorderBrushLigne = new SolidColorBrush(Color.FromRgb(0x43, 0xA0, 0x47));
@@ -190,6 +206,19 @@ public sealed class LigneMembre
             BorderBrushLigne = new SolidColorBrush(Color.FromRgb(0x3C, 0x44, 0x58));
             IndicateurTour = string.Empty;
         }
+
+        // Stats live (depuis GTM via GroupeHeros.NotifierStatsCombattant).
+        // Tant que pas observé, on affiche "—" plutôt que "0/0".
+        if (m.PvMax > 0)
+        {
+            StatsTexte = $"PV {m.Pv}/{m.PvMax}   PA {m.Pa}   PM {m.Pm}";
+            StatsVisible = System.Windows.Visibility.Visible;
+        }
+        else
+        {
+            StatsTexte = "Stats indisponibles (pas en combat)";
+            StatsVisible = System.Windows.Visibility.Collapsed;
+        }
     }
 
     public int IdJeu { get; }
@@ -200,6 +229,8 @@ public sealed class LigneMembre
     public Brush BackgroundLigne { get; }
     public Brush BorderBrushLigne { get; }
     public string IndicateurTour { get; }
+    public string StatsTexte { get; }
+    public System.Windows.Visibility StatsVisible { get; }
 }
 
 /// <summary>Ligne de la liste « Ordre des tours » — projection lisible.</summary>

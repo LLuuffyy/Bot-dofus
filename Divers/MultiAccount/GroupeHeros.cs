@@ -56,6 +56,8 @@ public sealed class GroupeHeros : IDisposable
     public event EventHandler<MembreHeros>? TourDeMembre;
     public event EventHandler? GroupeActive;
     public event EventHandler? GroupeDissous;
+    /// <summary>Déclenché quand PV/PA/PM/vivant d'un membre changent (live via GTM).</summary>
+    public event EventHandler<MembreHeros>? StatsMembreChange;
 
     // ----- Composition : mutations -----
 
@@ -195,6 +197,36 @@ public sealed class GroupeHeros : IDisposable
                 return _membres.FirstOrDefault(m => m.IdJeu == id);
             }
         }
+    }
+
+    /// <summary>
+    /// Met à jour les stats live d'un membre (PV/PA/PM/cell/vivant) — typiquement
+    /// appelé par <c>TrameJeu.OnCombattantsAbrak</c> à chaque <c>GTM</c> reçu.
+    /// Émet <see cref="StatsMembreChange"/> uniquement si une valeur a effectivement
+    /// changé, pour éviter de spammer l'UI à chaque refresh.
+    /// </summary>
+    public bool NotifierStatsCombattant(int idJeu, int pv, int pvMax, int pa, int pm, int cellule, bool vivant)
+    {
+        MembreHeros? membre;
+        bool change = false;
+        lock (_verrouEtat)
+        {
+            membre = _membres.FirstOrDefault(m => m.IdJeu == idJeu);
+            if (membre is null) return false;
+            if (membre.Pv != pv) { membre.Pv = pv; change = true; }
+            if (membre.Pa != pa) { membre.Pa = pa; change = true; }
+            if (membre.Pm != pm) { membre.Pm = pm; change = true; }
+            if (membre.EstVivant != vivant) { membre.EstVivant = vivant; change = true; }
+            // PvMax exposé sur MembreHeros via une propriété — ajouté plus bas.
+            if (membre.PvMax != pvMax) { membre.PvMax = pvMax; change = true; }
+            if (membre.Cellule != cellule) { membre.Cellule = cellule; change = true; }
+        }
+        if (change)
+        {
+            membre.DerniereActivite = DateTime.UtcNow;
+            StatsMembreChange?.Invoke(this, membre);
+        }
+        return change;
     }
 
     /// <summary>Reset l'ordre des tours (à appeler entre 2 combats si désactivation conservée).</summary>
