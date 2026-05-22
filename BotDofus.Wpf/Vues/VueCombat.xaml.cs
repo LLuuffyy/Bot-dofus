@@ -20,10 +20,30 @@ public partial class VueCombat : UserControl
     private ContexteCompte? _contexte;
     private Personnage? _personnageLie;
     private Combat? _combatLie;
+    /// <summary>
+    /// Perso cible de l'édition. null = on édite la ConfigCombat du master
+    /// (cas legacy). Non-null = on édite la ConfigCombat d'un membre lié
+    /// (peleas/heros/&lt;idJeu&gt;.json), avec ses sorts à lui.
+    /// </summary>
+    private BotDofus.Divers.MultiAccount.MembreHeros? _persoCible;
     /// <summary>Timer debounce de la sauvegarde auto config combat (800 ms, ADR-001 §5).</summary>
     private DispatcherTimer? _timerSauvegarde;
     /// <summary>true pendant l'init des contrôles UI depuis ConfigCombat (évite déclencher les Changed).</summary>
     private bool _initEnCours;
+
+    /// <summary>
+    /// ConfigCombat en cours d'édition. Si <see cref="_persoCible"/> est null,
+    /// retourne la ConfigCombat du contexte (legacy master). Sinon retourne
+    /// celle du membre lié (peuplée par <see cref="BotDofus.Divers.MultiAccount.ServiceConfigsHeros"/>).
+    /// </summary>
+    public BotDofus.Divers.Combats.IA.ConfigCombat? ConfigActive
+        => _persoCible?.ConfigCombat ?? _contexte?.ConfigCombat;
+
+    /// <summary>Sorts à afficher dans la rotation : ceux du master ou ceux du membre lié.</summary>
+    private System.Collections.Generic.IDictionary<int, int> SortsLookup
+        => _persoCible?.SortsAppris
+           ?? (System.Collections.Generic.IDictionary<int, int>?)_contexte?.EtatJeu.Personnage.SortsAppris
+           ?? new System.Collections.Generic.Dictionary<int, int>();
     /// <summary>
     /// Timer de polling défensif des sorts appris (G.1) : si le paquet SL
     /// arrive APRÈS que la vue soit liée, l'event SortsChanges peut être
@@ -51,6 +71,7 @@ public partial class VueCombat : UserControl
     {
         if (ReferenceEquals(_contexte, ctx))
         {
+            PeuplerComboPersoCible();
             Rafraichir();
             RafraichirSortsAppris();
             RafraichirCombatLive();
@@ -61,21 +82,152 @@ public partial class VueCombat : UserControl
         _contexte = ctx;
         _personnageLie = ctx.EtatJeu.Personnage;
         _combatLie = ctx.EtatJeu.Combat;
+        // Bascule par défaut sur le master à chaque nouveau contexte attaché.
+        _persoCible = null;
         InitialiserModeEtTactique(ctx.ConfigCombat);
         ctx.PaquetRecu += OnPaquetRecu;
         _personnageLie.SortsChanges += OnSortsChanges;
         _combatLie.EtatChange += OnCombatChange;
         _combatLie.TourChange += OnCombatChange;
+        ctx.Compte.GroupeHerosChange += OnGroupeAffecte;
+        AttacherAuGroupePourCombo(ctx.Compte.GroupeHeros);
+        PeuplerComboPersoCible();
         Rafraichir();
         RafraichirSortsAppris();
         RafraichirCombatLive();
     }
+
+    /// <summary>Item d'affichage du combo « Configurer pour ».</summary>
+    public sealed class PersoCibleVm
+    {
+        public BotDofus.Divers.MultiAccount.MembreHeros? Membre { get; init; } // null = master
+        public string Etiquette { get; init; } = string.Empty;
+    }
+
+    private void PeuplerComboPersoCible()
+    {
+        if (CmbPersoCible is null) return;
+        var items = new System.Collections.Generic.List<PersoCibleVm>();
+        // Master (toujours en haut, null = ConfigCombat du contexte = legacy).
+        var nomMaster = _contexte?.EtatJeu.Personnage.Nom ?? _contexte?.Compte.Identifiant ?? "Master";
+        items.Add(new PersoCibleVm { Membre = null, Etiquette = $"{nomMaster} (master)" });
+        // Liés.
+        var groupe = _contexte?.Compte.GroupeHeros;
+        if (groupe is not null)
+        {
+            foreach (var m in groupe.Membres)
+            {
+                if (m.Role == BotDofus.Divers.MultiAccount.RoleDansGroupe.Leader) continue;
+                var label = string.IsNullOrWhiteSpace(m.Nom) ? $"Perso #{m.IdJeu}" : m.Nom;
+                items.Add(new PersoCibleVm { Membre = m, Etiquette = $"{label} (id {m.IdJeu})" });
+            }
+        }
+        CmbPersoCible.ItemsSource = items;
+        CmbPersoCible.DisplayMemberPath = nameof(PersoCibleVm.Etiquette);
+        // Resélectionne le perso courant.
+        int idx = 0;
+        if (_persoCible is not null)
+        {
+            for (int i = 0; i < items.Count; i++)
+                if (ReferenceEquals(items[i].Membre, _persoCible)) { idx = i; break; }
+        }
+        CmbPersoCible.SelectedIndex = idx;
+        MajResumePersoCible();
+    }
+
+    private void CmbPersoCible_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (CmbPersoCible?.SelectedItem is not PersoCibleVm vm) return;
+        if (ReferenceEquals(vm.Membre, _persoCible)) return;
+        _persoCible = vm.Membre;
+        BotDofus.Utilitaires.Journaux.Journaliseur.Info(
+            $"[VUE-COMBAT] Bascule sur {(vm.Membre is null ? "master" : vm.Membre.Nom)} (config + sorts associés)");
+        // Re-init complète depuis la nouvelle ConfigActive.
+        if (ConfigActive is not null)
+            InitialiserModeEtTactique(ConfigActive);
+        Rafraichir();
+        RafraichirSortsAppris();
+        MajResumePersoCible();
+    }
+
+    /// <summary>
+    /// API publique : sélectionne un perso cible (master si null). Appelée
+    /// par <c>VueGroupeHeros</c> via le MainWindow quand l'user clique sur
+    /// « Éditer » dans la liste des membres.
+    /// </summary>
+    public void AssignerPersoCible(BotDofus.Divers.MultiAccount.MembreHeros? membre)
+    {
+        if (CmbPersoCible is null) return;
+        if (CmbPersoCible.ItemsSource is not System.Collections.Generic.IEnumerable<PersoCibleVm> items) return;
+        foreach (var vm in items)
+        {
+            if (ReferenceEquals(vm.Membre, membre))
+            {
+                CmbPersoCible.SelectedItem = vm;
+                return;
+            }
+        }
+        // Pas trouvé (membre absent du combo) : ne fait rien.
+    }
+
+    private void MajResumePersoCible()
+    {
+        if (TxtPersoCibleResume is null) return;
+        if (_persoCible is null)
+        {
+            TxtPersoCibleResume.Text = $"Config = peleas/{_contexte?.Compte.Identifiant}.json";
+        }
+        else
+        {
+            var nbSorts = _persoCible.SortsAppris.Count;
+            TxtPersoCibleResume.Text = $"Config = peleas/heros/{_persoCible.IdJeu}.json • {nbSorts} sort(s) connu(s)";
+        }
+    }
+
+    private BotDofus.Divers.MultiAccount.GroupeHeros? _groupePourCombo;
+
+    private void AttacherAuGroupePourCombo(BotDofus.Divers.MultiAccount.GroupeHeros? gh)
+    {
+        if (ReferenceEquals(_groupePourCombo, gh)) return;
+        if (_groupePourCombo is not null)
+        {
+            _groupePourCombo.MembresChanges -= OnGroupeMembresChanges;
+            _groupePourCombo.SortsMembreChange -= OnSortsMembreChange;
+        }
+        _groupePourCombo = gh;
+        if (_groupePourCombo is not null)
+        {
+            _groupePourCombo.MembresChanges += OnGroupeMembresChanges;
+            _groupePourCombo.SortsMembreChange += OnSortsMembreChange;
+        }
+    }
+
+    private void OnGroupeAffecte(object? sender, BotDofus.Divers.MultiAccount.GroupeHeros? gh)
+        => Dispatcher.BeginInvoke(new Action(() =>
+        {
+            AttacherAuGroupePourCombo(gh);
+            PeuplerComboPersoCible();
+        }), DispatcherPriority.Background);
+
+    private void OnGroupeMembresChanges(object? sender, EventArgs e)
+        => Dispatcher.BeginInvoke(new Action(PeuplerComboPersoCible),
+                                  DispatcherPriority.Background);
+
+    private void OnSortsMembreChange(object? sender, BotDofus.Divers.MultiAccount.MembreHeros m)
+        => Dispatcher.BeginInvoke(new Action(() =>
+        {
+            MajResumePersoCible();
+            // Si on est en train d'éditer ce membre, refresh la rotation.
+            if (ReferenceEquals(m, _persoCible))
+                RafraichirSortsAppris();
+        }), DispatcherPriority.Background);
 
     private void Detacher()
     {
         if (_contexte != null)
         {
             _contexte.PaquetRecu -= OnPaquetRecu;
+            _contexte.Compte.GroupeHerosChange -= OnGroupeAffecte;
         }
 
         if (_personnageLie != null)
@@ -89,6 +241,8 @@ public partial class VueCombat : UserControl
             _combatLie.TourChange -= OnCombatChange;
         }
 
+        AttacherAuGroupePourCombo(null);
+        _persoCible = null;
         _personnageLie = null;
         _combatLie = null;
     }
@@ -192,7 +346,7 @@ public partial class VueCombat : UserControl
 
         SortsAppris.Clear();
         // Snapshot ToList() AVANT OrderBy (cf. crash 06:27 VuePersonnage L 84).
-        foreach (var (id, niv) in _contexte.EtatJeu.Personnage.SortsAppris.ToList().OrderBy(kv => kv.Key))
+        foreach (var (id, niv) in SortsLookup.ToList().OrderBy(kv => kv.Key))
         {
             var info = BaseSorts.Instance.Trouver(id);
             SortsAppris.Add(new SortItemVm(id, niv, info?.Nom ?? $"Sort #{id}", info));
@@ -222,7 +376,7 @@ public partial class VueCombat : UserControl
                 ArreterPollSortsAppris();
                 return;
             }
-            if (_contexte.EtatJeu.Personnage.SortsAppris.Count > 0)
+            if (SortsLookup.Count > 0)
             {
                 RafraichirSortsAppris();  // peuple + arrête le timer
             }
@@ -242,7 +396,7 @@ public partial class VueCombat : UserControl
 
         SortsConfig.Clear();
         int n = 1;
-        foreach (var r in _contexte.ConfigCombat.Regles)
+        foreach (var r in ConfigActive!.Regles)
         {
             var info = BaseSorts.Instance.Trouver(r.IdSort);
             SortsConfig.Add(new SortConfigureVm(n++, r, info));
@@ -260,7 +414,7 @@ public partial class VueCombat : UserControl
     private void CmbStrategie_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_contexte == null) return;
-        _contexte.ConfigCombat.Strategie = (StrategieCombat)CmbStrategie.SelectedIndex;
+        ConfigActive!.Strategie = (StrategieCombat)CmbStrategie.SelectedIndex;
     }
 
     private void BtnAjouter_Click(object sender, RoutedEventArgs e)
@@ -274,7 +428,7 @@ public partial class VueCombat : UserControl
         }
         // Validation : doublons (1 règle par sort suffit la plupart du temps,
         // mais l'user peut en vouloir 2 si conditions différentes — juste warn).
-        if (_contexte.ConfigCombat.Regles.Any(r => r.IdSort == sortVm.Identifiant))
+        if (ConfigActive!.Regles.Any(r => r.IdSort == sortVm.Identifiant))
         {
             var rep = MessageBox.Show(
                 $"Le sort #{sortVm.Identifiant} '{sortVm.Affichage}' est déjà dans la rotation.\nL'ajouter en double ?",
@@ -312,7 +466,7 @@ public partial class VueCombat : UserControl
             NombreParCible = int.TryParse(TxtFoisCible.Text, out var nc) ? nc : 0,
         };
 
-        _contexte.ConfigCombat.Regles.Add(regle);
+        ConfigActive!.Regles.Add(regle);
         DemanderSauvegardeDebouncee();
         Rafraichir();
     }
@@ -342,7 +496,7 @@ public partial class VueCombat : UserControl
         // pour que les cells dans la portée soient surlignées sur la grille.
         if (_contexte != null)
         {
-            int niv = _contexte.EtatJeu.Personnage.SortsAppris.TryGetValue(vm.Regle.IdSort, out var n) ? n : 1;
+            int niv = SortsLookup.TryGetValue(vm.Regle.IdSort, out var n) ? n : 1;
             var info = vm.Info;
             int pmin = info?.Stats(niv)?.PorteeMin ?? vm.Regle.PorteeMin;
             int pmax = info?.Stats(niv)?.PorteeMax ?? vm.Regle.PorteeMax;
@@ -434,7 +588,7 @@ public partial class VueCombat : UserControl
     {
         if (sender is Button b && b.Tag is SortConfigureVm vm && _contexte != null)
         {
-            _contexte.ConfigCombat.Regles.Remove(vm.Regle);
+            ConfigActive!.Regles.Remove(vm.Regle);
             DemanderSauvegardeDebouncee();
             Rafraichir();
         }
@@ -444,11 +598,11 @@ public partial class VueCombat : UserControl
     {
         if (sender is Button b && b.Tag is SortConfigureVm vm && _contexte != null)
         {
-            int idx = _contexte.ConfigCombat.Regles.IndexOf(vm.Regle);
+            int idx = ConfigActive!.Regles.IndexOf(vm.Regle);
             if (idx > 0)
             {
-                _contexte.ConfigCombat.Regles.RemoveAt(idx);
-                _contexte.ConfigCombat.Regles.Insert(idx - 1, vm.Regle);
+                ConfigActive!.Regles.RemoveAt(idx);
+                ConfigActive!.Regles.Insert(idx - 1, vm.Regle);
                 Rafraichir();
             }
         }
@@ -458,11 +612,11 @@ public partial class VueCombat : UserControl
     {
         if (sender is Button b && b.Tag is SortConfigureVm vm && _contexte != null)
         {
-            int idx = _contexte.ConfigCombat.Regles.IndexOf(vm.Regle);
-            if (idx >= 0 && idx < _contexte.ConfigCombat.Regles.Count - 1)
+            int idx = ConfigActive!.Regles.IndexOf(vm.Regle);
+            if (idx >= 0 && idx < ConfigActive!.Regles.Count - 1)
             {
-                _contexte.ConfigCombat.Regles.RemoveAt(idx);
-                _contexte.ConfigCombat.Regles.Insert(idx + 1, vm.Regle);
+                ConfigActive!.Regles.RemoveAt(idx);
+                ConfigActive!.Regles.Insert(idx + 1, vm.Regle);
                 Rafraichir();
             }
         }
@@ -471,10 +625,28 @@ public partial class VueCombat : UserControl
     private void BtnSauver_Click(object sender, RoutedEventArgs e)
     {
         if (_contexte == null) return;
+        var chemin = SauverConfigActive();
+        if (chemin != null)
+            MessageBox.Show($"Sauvegarde : {chemin}", "OK", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
 
-        var chemin = Path.Combine("peleas", $"{_contexte.Compte.Identifiant}.json");
-        _contexte.ConfigCombat.Sauvegarder(chemin);
-        MessageBox.Show($"Sauvegarde : {chemin}", "OK", MessageBoxButton.OK, MessageBoxImage.Information);
+    /// <summary>Route la sauvegarde vers peleas/&lt;master&gt;.json ou peleas/heros/&lt;id&gt;.json selon le perso cible courant.</summary>
+    private string? SauverConfigActive()
+    {
+        if (_contexte == null || ConfigActive == null) return null;
+        if (_persoCible is null)
+        {
+            // Master : sauvegarde legacy peleas/<id-compte>.json
+            var chemin = Path.Combine("peleas", $"{_contexte.Compte.Identifiant}.json");
+            ConfigActive.Sauvegarder(chemin);
+            return chemin;
+        }
+        else
+        {
+            // Lié : sauvegarde dans peleas/heros/<idJeu>.json via ServiceConfigsHeros.
+            BotDofus.Divers.MultiAccount.ServiceConfigsHeros.Sauvegarder(_persoCible);
+            return Path.GetFullPath(Path.Combine("peleas", "heros", $"{_persoCible.IdJeu}.json"));
+        }
     }
 
     private async void BtnFinirTour_Click(object sender, RoutedEventArgs e)
@@ -541,7 +713,7 @@ public partial class VueCombat : UserControl
         if (_initEnCours || _contexte == null || sender is not RadioButton rb || rb.Tag is not string tag) return;
         if (System.Enum.TryParse<ModeCombat>(tag, out var mode))
         {
-            _contexte.ConfigCombat.Mode = mode;
+            ConfigActive!.Mode = mode;
             DemanderSauvegardeDebouncee();
         }
     }
@@ -551,7 +723,7 @@ public partial class VueCombat : UserControl
         int v = (int)e.NewValue;
         if (TxtDistancePref != null) TxtDistancePref.Text = v.ToString();
         if (_initEnCours || _contexte == null) return;
-        _contexte.ConfigCombat.DistancePreferee = v;
+        ConfigActive!.DistancePreferee = v;
         DemanderSauvegardeDebouncee();
     }
 
@@ -560,7 +732,7 @@ public partial class VueCombat : UserControl
         int v = (int)e.NewValue;
         if (TxtSeuilFuite != null) TxtSeuilFuite.Text = v.ToString();
         if (_initEnCours || _contexte == null) return;
-        _contexte.ConfigCombat.SeuilFuitePv = v;
+        ConfigActive!.SeuilFuitePv = v;
         DemanderSauvegardeDebouncee();
     }
 
@@ -569,7 +741,7 @@ public partial class VueCombat : UserControl
         int v = (int)e.NewValue;
         if (TxtDistanceMin != null) TxtDistanceMin.Text = v.ToString();
         if (_initEnCours || _contexte == null) return;
-        _contexte.ConfigCombat.DistanceMinEloigne = v;
+        ConfigActive!.DistanceMinEloigne = v;
         DemanderSauvegardeDebouncee();
     }
 
@@ -586,14 +758,14 @@ public partial class VueCombat : UserControl
             "Préset Sadida", MessageBoxButton.YesNo, MessageBoxImage.Question);
         if (rep != MessageBoxResult.Yes) return;
 
-        var sortsAppris = _contexte.EtatJeu.Personnage.SortsAppris;
-        _contexte.ConfigCombat.Regles.Clear();
+        var sortsAppris = SortsLookup;
+        ConfigActive!.Regles.Clear();
         void Ajout(int id, string nom, FocusSort focus, int prio, int nbParTour = 1,
                    MethodeLancement methode = MethodeLancement.LesDeux, bool premierTour = false,
                    int cooldown = 0)
         {
             if (!sortsAppris.ContainsKey(id)) return;
-            _contexte.ConfigCombat.Regles.Add(new RegleSort
+            ConfigActive!.Regles.Add(new RegleSort
             {
                 IdSort = id, Nom = nom, Focus = focus, Priorite = prio,
                 NombreParTour = nbParTour, MethodeLancement = methode,
@@ -613,7 +785,7 @@ public partial class VueCombat : UserControl
 
         DemanderSauvegardeDebouncee();
         Rafraichir();
-        TxtEtatSauvegarde.Text = $"Préset Sadida appliqué ({_contexte.ConfigCombat.Regles.Count} règles)";
+        TxtEtatSauvegarde.Text = $"Préset Sadida appliqué ({ConfigActive!.Regles.Count} règles)";
     }
 
     /// <summary>
@@ -628,13 +800,13 @@ public partial class VueCombat : UserControl
             "Préset Cra", MessageBoxButton.YesNo, MessageBoxImage.Question);
         if (rep != MessageBoxResult.Yes) return;
 
-        var sortsAppris = _contexte.EtatJeu.Personnage.SortsAppris;
-        _contexte.ConfigCombat.Regles.Clear();
+        var sortsAppris = SortsLookup;
+        ConfigActive!.Regles.Clear();
         void Ajout(int id, string nom, FocusSort focus, int prio, int nbParTour = 1,
                    MethodeLancement methode = MethodeLancement.Distance)
         {
             if (!sortsAppris.ContainsKey(id)) return;
-            _contexte.ConfigCombat.Regles.Add(new RegleSort
+            ConfigActive!.Regles.Add(new RegleSort
             {
                 IdSort = id, Nom = nom, Focus = focus, Priorite = prio,
                 NombreParTour = nbParTour, MethodeLancement = methode,
@@ -649,12 +821,12 @@ public partial class VueCombat : UserControl
         Ajout(166, "Flèche Glacée",        FocusSort.EnnemiLePlusFort,   65, 1);
         Ajout(167, "Tir de Diversion",     FocusSort.EnnemiLePlusFaible, 60, 1);
 
-        _contexte.ConfigCombat.Mode = ModeCombat.Eloigne;  // Cra = kite par défaut
-        _contexte.ConfigCombat.DistanceMinEloigne = 6;
-        InitialiserModeEtTactique(_contexte.ConfigCombat);
+        ConfigActive!.Mode = ModeCombat.Eloigne;  // Cra = kite par défaut
+        ConfigActive!.DistanceMinEloigne = 6;
+        InitialiserModeEtTactique(ConfigActive!);
         DemanderSauvegardeDebouncee();
         Rafraichir();
-        TxtEtatSauvegarde.Text = $"Préset Cra appliqué ({_contexte.ConfigCombat.Regles.Count} règles, mode=Eloigne)";
+        TxtEtatSauvegarde.Text = $"Préset Cra appliqué ({ConfigActive!.Regles.Count} règles, mode=Eloigne)";
     }
 
     /// <summary>
@@ -668,9 +840,9 @@ public partial class VueCombat : UserControl
             "Cela va REMPLACER toute la rotation actuelle par tous les sorts offensifs appris.\nContinuer ?",
             "Auto-config", MessageBoxButton.YesNo, MessageBoxImage.Question);
         if (rep != MessageBoxResult.Yes) return;
-        var def = ConfigCombat.GenererParDefaut(_contexte.EtatJeu.Personnage.SortsAppris.Keys);
-        _contexte.ConfigCombat.Regles.Clear();
-        foreach (var r in def.Regles) _contexte.ConfigCombat.Regles.Add(r);
+        var def = ConfigCombat.GenererParDefaut(SortsLookup.Keys);
+        ConfigActive!.Regles.Clear();
+        foreach (var r in def.Regles) ConfigActive!.Regles.Add(r);
         DemanderSauvegardeDebouncee();
         Rafraichir();
         TxtEtatSauvegarde.Text = $"Auto-config offensifs : {def.Regles.Count} règles";
@@ -692,16 +864,16 @@ public partial class VueCombat : UserControl
         if (dlg.ShowDialog() != true) return;
         var nouvelleConfig = BotDofus.Divers.Combats.IA.ConfigCombat.Charger(dlg.FileName);
         // Remplace la config dans le contexte et resynchronise l'UI
-        _contexte.ConfigCombat.Regles.Clear();
-        foreach (var r in nouvelleConfig.Regles) _contexte.ConfigCombat.Regles.Add(r);
-        _contexte.ConfigCombat.Mode = nouvelleConfig.Mode;
-        _contexte.ConfigCombat.Strategie = nouvelleConfig.Strategie;
-        _contexte.ConfigCombat.DistancePreferee = nouvelleConfig.DistancePreferee;
-        _contexte.ConfigCombat.DistanceMinEloigne = nouvelleConfig.DistanceMinEloigne;
-        _contexte.ConfigCombat.SeuilFuitePv = nouvelleConfig.SeuilFuitePv;
-        _contexte.ConfigCombat.DelaiEntreActionsMs = nouvelleConfig.DelaiEntreActionsMs;
-        _contexte.ConfigCombat.ModeDeplacementOptimisteSecours = nouvelleConfig.ModeDeplacementOptimisteSecours;
-        InitialiserModeEtTactique(_contexte.ConfigCombat);
+        ConfigActive!.Regles.Clear();
+        foreach (var r in nouvelleConfig.Regles) ConfigActive!.Regles.Add(r);
+        ConfigActive!.Mode = nouvelleConfig.Mode;
+        ConfigActive!.Strategie = nouvelleConfig.Strategie;
+        ConfigActive!.DistancePreferee = nouvelleConfig.DistancePreferee;
+        ConfigActive!.DistanceMinEloigne = nouvelleConfig.DistanceMinEloigne;
+        ConfigActive!.SeuilFuitePv = nouvelleConfig.SeuilFuitePv;
+        ConfigActive!.DelaiEntreActionsMs = nouvelleConfig.DelaiEntreActionsMs;
+        ConfigActive!.ModeDeplacementOptimisteSecours = nouvelleConfig.ModeDeplacementOptimisteSecours;
+        InitialiserModeEtTactique(ConfigActive!);
         Rafraichir();
         TxtEtatSauvegarde.Text = $"Chargé : {System.IO.Path.GetFileName(dlg.FileName)} ({nouvelleConfig.Regles.Count} règle(s))";
     }
@@ -711,7 +883,7 @@ public partial class VueCombat : UserControl
         int v = (int)e.NewValue;
         if (TxtDelaiActions != null) TxtDelaiActions.Text = v.ToString();
         if (_initEnCours || _contexte == null) return;
-        _contexte.ConfigCombat.DelaiEntreActionsMs = v;
+        ConfigActive!.DelaiEntreActionsMs = v;
         DemanderSauvegardeDebouncee();
     }
 
@@ -737,8 +909,7 @@ public partial class VueCombat : UserControl
             {
                 _timerSauvegarde!.Stop();
                 if (_contexte == null) return;
-                var chemin = Path.Combine("peleas", $"{_contexte.Compte.Identifiant}.json");
-                _contexte.ConfigCombat.Sauvegarder(chemin);
+                _ = SauverConfigActive();
                 if (TxtEtatSauvegarde != null)
                 {
                     TxtEtatSauvegarde.Text = $"✓ Enregistré ({DateTime.Now:HH:mm:ss})";

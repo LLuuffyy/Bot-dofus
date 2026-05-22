@@ -219,6 +219,27 @@
                   PanningMode="VerticalOnly"
                   Padding="12">
         <StackPanel>
+            <!-- ===== SÉLECTEUR PERSO CIBLE ===== -->
+            <Border Style="{StaticResource SectionBorderStyle}" Padding="14,10">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Configurer pour :"
+                               Foreground="#ECEFF5"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Margin="0,0,10,0"/>
+                    <ComboBox x:Name="CmbPersoCible"
+                              MinWidth="220"
+                              SelectionChanged="CmbPersoCible_SelectionChanged"
+                              ToolTip="Bascule entre le master (Sadida) et les héros liés. Les modifications s'appliquent au perso sélectionné."/>
+                    <TextBlock x:Name="TxtPersoCibleResume"
+                               Foreground="#8AA0BC"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               Margin="14,0,0,0"
+                               Text="—"/>
+                </StackPanel>
+            </Border>
+
             <!-- ===== ÉTAT COMBAT LIVE ===== -->
             <Border Style="{StaticResource SectionBorderStyle}">
                 <StackPanel>

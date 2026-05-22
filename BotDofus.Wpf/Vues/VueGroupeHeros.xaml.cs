@@ -148,17 +148,28 @@ public partial class VueGroupeHeros : UserControl
     {
         if (sender is not System.Windows.Controls.Button b) return;
         if (b.Tag is not int idJeu || idJeu == 0) return;
-        // Construit le chemin canonique peleas/heros/<id>.json.
-        var path = System.IO.Path.GetFullPath(
-            System.IO.Path.Combine("peleas", "heros", $"{idJeu}.json"));
-        // Si pas encore créé (pas reçu de Nh), on crée un squelette via Sauvegarder.
-        if (!System.IO.File.Exists(path))
+        var membre = _groupeLie?.TrouverParIdJeu(idJeu);
+        if (membre is null) return;
+
+        // Bascule vers l'onglet « Combat » du MainWindow et assigne le perso
+        // cible à VueCombat — l'user édite ainsi avec la même UI que le master.
+        var fenetre = System.Windows.Window.GetWindow(this);
+        if (fenetre is null) return;
+        var tabsContent = fenetre.FindName("TabsContent") as System.Windows.Controls.TabControl;
+        var vueCombat = fenetre.FindName("VueCombatTab") as VueCombat;
+        if (tabsContent is null || vueCombat is null) return;
+
+        // Trouve l'index de l'onglet Combat dans le TabControl.
+        foreach (var item in tabsContent.Items)
         {
-            var membre = _groupeLie?.TrouverParIdJeu(idJeu);
-            if (membre is not null)
-                BotDofus.Divers.MultiAccount.ServiceConfigsHeros.Sauvegarder(membre);
+            if (item is System.Windows.Controls.TabItem ti
+                && ti.Content is VueCombat)
+            {
+                tabsContent.SelectedItem = ti;
+                break;
+            }
         }
-        OuvrirFichierExterne(path);
+        vueCombat.AssignerPersoCible(membre);
     }
 
     private static void OuvrirFichierExterne(string chemin)
