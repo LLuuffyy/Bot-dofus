@@ -877,6 +877,11 @@
                                 Style="{StaticResource TopNavButtonStyle}"
                                 Content="Charger"
                                 Margin="0,0,6,6"/>
+                        <Button Click="BtnCopierVers_Click"
+                                Style="{StaticResource TopNavButtonStyle}"
+                                Content="Copier vers..."
+                                Margin="0,0,6,6"
+                                ToolTip="Copie la config combat courante (mode, distances, rotation, conditions) vers d'autres persos du groupe."/>
                     </WrapPanel>
 
                     <!-- Presets de classe (barre dédiée, WrapPanel pour visibilité totale) -->

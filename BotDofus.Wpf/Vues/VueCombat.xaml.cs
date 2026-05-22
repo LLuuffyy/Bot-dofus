@@ -688,6 +688,16 @@ public partial class VueCombat : UserControl
             MessageBox.Show($"Sauvegarde : {chemin}", "OK", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
+    private void BtnCopierVers_Click(object sender, RoutedEventArgs e)
+    {
+        if (_contexte == null || ConfigActive == null) return;
+        var fen = new FenetreCopierConfig(_contexte, ConfigActive, _persoCible)
+        {
+            Owner = Window.GetWindow(this),
+        };
+        fen.ShowDialog();
+    }
+
     /// <summary>Route la sauvegarde vers peleas/&lt;master&gt;.json ou peleas/heros/&lt;id&gt;.json selon le perso cible courant.</summary>
     private string? SauverConfigActive()
     {
