@@ -135,13 +135,35 @@ public sealed class MessageTourCombatAbrak : MessageDofus, IMessageVersClient
     /// préfixe "GTS" mais ne sont PAS un changement de tour.</summary>
     public bool EstTour { get; private set; }
 
+    /// <summary>
+    /// <c>true</c> si le paquet est un <c>GTSX&lt;idMaster&gt;;&lt;idPersoLié&gt;;0;1;0;&lt;5stats&gt;</c>
+    /// — signal exclusif mode héros sur Abrak (cf. docs/PROTOCOLE-MODE-HEROS-ABRAK.md).
+    /// </summary>
+    public bool EstGTSX { get; private set; }
+    /// <summary>Master du groupe héros (= notre perso connecté). Renseigné si <see cref="EstGTSX"/>.</summary>
+    public int IdMaster { get; private set; }
+    /// <summary>Perso lié auquel ce GTSX initialise les buffs. Renseigné si <see cref="EstGTSX"/>.</summary>
+    public int IdPersoLie { get; private set; }
+    /// <summary>Charge brute du GTSX (sans le préfixe "X") — diag/debug.</summary>
+    public string DonneesGTSX { get; private set; } = string.Empty;
+
     public override void Desserialiser(string charge)
     {
         Charge = charge;
-        // GTSX… = sorts d'un combattant, PAS un tour → on ignore.
+        // GTSX<idMaster>;<idLié>;0;1;0;<5stats> = signal mode héros, PAS un tour.
         if (charge.StartsWith("X", StringComparison.Ordinal))
         {
             EstTour = false;
+            EstGTSX = true;
+            DonneesGTSX = charge[1..];
+            var champs = DonneesGTSX.Split(';');
+            if (champs.Length >= 2
+                && int.TryParse(champs[0], out var idM)
+                && int.TryParse(champs[1], out var idL))
+            {
+                IdMaster = idM;
+                IdPersoLie = idL;
+            }
             return;
         }
         var p = charge.Split('|');

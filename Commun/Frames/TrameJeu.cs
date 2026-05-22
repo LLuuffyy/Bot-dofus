@@ -27,6 +27,9 @@ public sealed class TrameJeu : TrameBase
     private readonly EtatJeu _etat;
     private readonly SessionProxy _session;
 
+    /// <summary>Détecteur mode héros (Abrak) — observe les GTSX pour enrôler les héros liés.</summary>
+    private readonly BotDofus.Divers.MultiAccount.DetecteurModeHeros _detecteurHeros;
+
     // Anti-spam logs : acteurs déjà annoncés, et dernier état de combat loggué.
     private readonly System.Collections.Generic.HashSet<int> _acteursVus = new();
     private int _dernierNbVivants = -1;
@@ -38,6 +41,7 @@ public sealed class TrameJeu : TrameBase
         _compte = compte;
         _etat = etat;
         _session = session;
+        _detecteurHeros = new BotDofus.Divers.MultiAccount.DetecteurModeHeros(_compte, _etat);
     }
 
     protected override void EnregistrerGestionnaires()
@@ -102,6 +106,10 @@ public sealed class TrameJeu : TrameBase
             // l'UI peut être en retard (ex: pods/equip). Ré-émettre garantit
             // un snapshot propre à la sortie de combat.
             _etat.Personnage.NotifierInventaireChange();
+            // Reset l'ordre des tours du groupe héros (le combat suivant aura
+            // un nouvel ordre — la compo elle-même reste, on ne dissout qu'à
+            // la déconnexion).
+            _compte.GroupeHeros?.ReinitialiserOrdreTours();
             Journaliseur.Info("[COMBAT] Combat terminé");
         });
         Ecouter<MessageTourCombat>(async msg =>
@@ -156,11 +164,22 @@ public sealed class TrameJeu : TrameBase
         Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageCombattantsAbrak>(OnCombattantsAbrak);
         Ecouter<BotDofus.Commun.Messages.VersClient.Jeu.MessageTourCombatAbrak>(async msg =>
         {
-            if (!msg.EstTour) return; // GTSX (sorts) — pas un tour
+            // Mode héros (Abrak) : GTSX = signal exclusif d'enrôlement, pas un tour.
+            // Le détecteur instancie / enrichit le GroupeHeros du compte si applicable.
+            if (msg.EstGTSX)
+            {
+                _detecteurHeros.OnGTSX(msg);
+                return;
+            }
+            if (!msg.EstTour) return; // GTS mal formé
             _etat.Combat.IdentifiantAllie = _etat.Personnage.Identifiant;
             _etat.Combat.PassageEnCombat();
             _etat.Combat.NouveauTour(msg.IdentifiantCombattant);
             _compte.ChangerEtat(EtatsCompte.EnCombat);
+
+            // Tracking ordre des tours pour l'UI groupe (no-op si pas en mode héros).
+            _compte.GroupeHeros?.NotifierTourServeur(msg.IdentifiantCombattant, msg.NumeroTour);
+
             Journaliseur.Info($"[COMBAT] Tour de #{msg.IdentifiantCombattant} (tour {msg.NumeroTour})"
                 + (msg.IdentifiantCombattant == _etat.Personnage.Identifiant ? " ← MOI" : ""));
 

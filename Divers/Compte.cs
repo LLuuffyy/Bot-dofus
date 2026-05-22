@@ -53,6 +53,14 @@ public sealed class Compte : IEffacable
     public BotDofus.Divers.Banque.ConfigBanque? ConfigBanque { get; set; }
 
     /// <summary>
+    /// Groupe héros actuellement attaché à ce compte (null si pas en mode héros).
+    /// Instancié par <see cref="BotDofus.Divers.MultiAccount.DetecteurModeHeros"/>
+    /// à la réception du 1er <c>GTSX</c> d'un combat. Dissous à la déconnexion.
+    /// Cf. <c>docs/SYNTHESE-MODE-HEROS-PHASE1.md</c> (Phase 3).
+    /// </summary>
+    public BotDofus.Divers.MultiAccount.GroupeHeros? GroupeHeros { get; set; }
+
+    /// <summary>
     /// URL webhook Discord pour notifications événements importants (mort,
     /// level up, banque pleine, déconnexion). Vide = pas de notif.
     /// Format : <c>https://discord.com/api/webhooks/&lt;id&gt;/&lt;token&gt;</c>.
