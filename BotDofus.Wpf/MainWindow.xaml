@@ -491,6 +491,9 @@
                                 <TabItem Header="Combat">
                                     <vues:VueCombat x:Name="VueCombatTab" />
                                 </TabItem>
+                                <TabItem Header="Groupe">
+                                    <vues:VueGroupeHeros x:Name="VueGroupeTab" />
+                                </TabItem>
                                 <TabItem Header="Carte">
                                     <vues:VueMapViewer x:Name="VueMap" />
                                 </TabItem>

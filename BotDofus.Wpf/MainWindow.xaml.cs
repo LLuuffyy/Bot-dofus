@@ -305,6 +305,7 @@ public partial class MainWindow : Window
             VueInvTab.Lier(_contexteSelectionne);
             VueBanqueTab.Lier(_contexteSelectionne);
             VueCombatTab.Lier(_contexteSelectionne);
+            VueGroupeTab.Lier(_contexteSelectionne);
             VueToolsTab.Lier(_contexteSelectionne);
             VueScriptsTab.Lier(_contexteSelectionne);
             VueConfigTab.Lier(_contexteSelectionne);

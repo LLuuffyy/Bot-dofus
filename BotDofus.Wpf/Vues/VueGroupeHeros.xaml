@@ -1,0 +1,191 @@
+<UserControl x:Class="BotDofus.Wpf.Vues.VueGroupeHeros"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="12" Background="#1A1F2C">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- En-tête : état du groupe -->
+        <Border Grid.Row="0"
+                Background="#23293A"
+                BorderBrush="#3C4458"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="14,10"
+                Margin="0,0,0,10">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Groupe Héros"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           Foreground="#E0E5F0"
+                           VerticalAlignment="Center"
+                           Margin="0,0,16,0"/>
+                <Border x:Name="BadgeEtat"
+                        Background="#3D4453"
+                        CornerRadius="10"
+                        Padding="10,4"
+                        Margin="0,0,12,0"
+                        VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtEtat"
+                               Text="Inactif"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               Foreground="#C0C6D4"/>
+                </Border>
+                <TextBlock x:Name="TxtResume"
+                           Text="—"
+                           FontSize="12"
+                           Foreground="#9098AC"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Corps : 2 colonnes (membres + ordre tours) -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Membres -->
+            <Border Grid.Column="0"
+                    Background="#23293A"
+                    BorderBrush="#3C4458"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="12"
+                    Margin="0,0,8,0">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top"
+                               Text="Membres"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Foreground="#C0C6D4"
+                               Margin="0,0,0,8"/>
+                    <ItemsControl x:Name="ListeMembres"
+                                  ItemsSource="{Binding Membres, ElementName=Self}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{Binding BackgroundLigne}"
+                                        BorderBrush="{Binding BorderBrushLigne}"
+                                        BorderThickness="1"
+                                        CornerRadius="3"
+                                        Padding="10,8"
+                                        Margin="0,0,0,6">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0"
+                                                Background="{Binding CouleurRole}"
+                                                CornerRadius="3"
+                                                Padding="6,2"
+                                                Margin="0,0,10,0">
+                                            <TextBlock Text="{Binding RoleTexte}"
+                                                       FontSize="10"
+                                                       FontWeight="Bold"
+                                                       Foreground="#101418"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{Binding NomAffiche}"
+                                                       FontSize="13"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#E0E5F0"/>
+                                            <TextBlock Text="{Binding SousTitre}"
+                                                       FontSize="10"
+                                                       Foreground="#7F89A0"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="2"
+                                                   Text="{Binding IndicateurTour}"
+                                                   FontSize="14"
+                                                   FontWeight="Bold"
+                                                   Foreground="#43A047"
+                                                   VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </DockPanel>
+            </Border>
+
+            <!-- Ordre des tours -->
+            <Border Grid.Column="1"
+                    Background="#23293A"
+                    BorderBrush="#3C4458"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="12"
+                    Margin="8,0,0,0">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top"
+                               Text="Ordre des tours"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Foreground="#C0C6D4"
+                               Margin="0,0,0,8"/>
+                    <TextBlock DockPanel.Dock="Top"
+                               x:Name="TxtTourCourant"
+                               Text="—"
+                               FontSize="10"
+                               Foreground="#7F89A0"
+                               Margin="0,0,0,6"/>
+                    <ListBox x:Name="ListeOrdre"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             VirtualizingPanel.IsVirtualizing="True"
+                             VirtualizingPanel.VirtualizationMode="Recycling">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Margin" Value="0,0,0,3"/>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{Binding BackgroundOrdre}"
+                                        BorderBrush="{Binding BorderOrdre}"
+                                        BorderThickness="1"
+                                        CornerRadius="3"
+                                        Padding="8,4">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="20"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding Index}"
+                                                   FontFamily="Consolas"
+                                                   FontSize="11"
+                                                   FontWeight="Bold"
+                                                   Foreground="#7F89A0"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding Etiquette}"
+                                                   FontSize="11"
+                                                   Foreground="#E0E5F0"
+                                                   VerticalAlignment="Center"
+                                                   Margin="6,0,0,0"/>
+                                        <TextBlock Grid.Column="2"
+                                                   Text="{Binding Marqueur}"
+                                                   FontSize="14"
+                                                   FontWeight="Bold"
+                                                   Foreground="#43A047"
+                                                   VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
