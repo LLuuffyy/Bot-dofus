@@ -285,18 +285,18 @@ public sealed partial class ApiLua
         };
 
         var cible = args.Get("cible").CastToString();
-        regle.Cible = cible switch
+        regle.Focus = cible switch
         {
-            "ennemi_proche" => CibleSort.EnnemiPlusProche,
-            "ennemi_faible" => CibleSort.EnnemiPlusFaible,
-            "ennemi_fort" => CibleSort.EnnemiPlusFort,
-            "soi" => CibleSort.Soi,
-            "allie_blesse" => CibleSort.AlliePlusBlesse,
-            _ => CibleSort.EnnemiPlusProche,
+            "ennemi_proche" => FocusSort.EnnemiLePlusProche,
+            "ennemi_faible" => FocusSort.EnnemiLePlusFaible,
+            "ennemi_fort" => FocusSort.EnnemiLePlusFort,
+            "soi" => FocusSort.Moi,
+            "allie_blesse" => FocusSort.AllieLePlusBlesse,
+            _ => FocusSort.EnnemiLePlusProche,
         };
 
         _configCombat.Regles.Add(regle);
-        Journaliseur.Info($"[LUA] Sort ajouté : id={regle.IdSort} cible={regle.Cible} priorite={regle.Priorite}");
+        Journaliseur.Info($"[LUA] Sort ajouté : id={regle.IdSort} focus={regle.Focus} priorite={regle.Priorite}");
     }
 
     // ---------------------------------------------------------------
@@ -358,14 +358,14 @@ public sealed partial class ApiLua
             CoutPA = info.CoutPA,
             PorteeMin = info.PorteeMin,
             PorteeMax = info.PorteeMax,
-            Cible = cible switch
+            Focus = cible switch
             {
-                "ennemi_proche" => CibleSort.EnnemiPlusProche,
-                "ennemi_faible" => CibleSort.EnnemiPlusFaible,
-                "ennemi_fort" => CibleSort.EnnemiPlusFort,
-                "soi" => CibleSort.Soi,
-                "allie_blesse" => CibleSort.AlliePlusBlesse,
-                _ => CibleSort.EnnemiPlusProche,
+                "ennemi_proche" => FocusSort.EnnemiLePlusProche,
+                "ennemi_faible" => FocusSort.EnnemiLePlusFaible,
+                "ennemi_fort" => FocusSort.EnnemiLePlusFort,
+                "soi" => FocusSort.Moi,
+                "allie_blesse" => FocusSort.AllieLePlusBlesse,
+                _ => FocusSort.EnnemiLePlusProche,
             },
         };
         _configCombat.Regles.Add(regle);

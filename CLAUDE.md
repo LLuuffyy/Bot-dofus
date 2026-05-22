@@ -440,3 +440,34 @@ npx @claude-flow/cli@latest hooks route --task "[description]"
 - Compte cadernis dédié : `toukiki83@gmail.com`
 - Préfère WPF (PAS revenir en WinForms)
 - Communication FR
+
+---
+
+## Health Stack
+
+- typecheck: dotnet build BotDofus.sln -c Debug --nologo -v minimal
+- test: dotnet test BotDofus.Tests/BotDofus.Tests.csproj --nologo
+- lint: (warnings du build .NET, count CS0618 etc.)
+
+---
+
+## 🔧 gstack (outils dev partagés)
+
+Use the `/browse` skill from gstack for ALL web browsing. **Never** use `mcp__claude-in-chrome__*` tools.
+
+Available gstack skills:
+- **Planning / review** : `/office-hours`, `/plan-ceo-review`, `/plan-eng-review`, `/plan-design-review`, `/plan-devex-review`, `/devex-review`, `/autoplan`
+- **Design** : `/design-consultation`, `/design-shotgun`, `/design-html`, `/design-review`
+- **Code review & ship** : `/review`, `/ship`, `/land-and-deploy`, `/canary`, `/benchmark`
+- **QA & browser** : `/browse`, `/connect-chrome`, `/qa`, `/qa-only`, `/setup-browser-cookies`
+- **Setup / infra** : `/setup-deploy`, `/setup-gbrain`
+- **Process** : `/retro`, `/investigate`, `/document-release`, `/document-generate`
+- **Agents** : `/codex`, `/cso`
+- **Safety** : `/careful`, `/freeze`, `/guard`, `/unfreeze`
+- **Maintenance** : `/gstack-upgrade`, `/learn`
+
+Installation (à exécuter une fois) :
+```bash
+git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/.claude/skills/gstack
+cd ~/.claude/skills/gstack && ./setup
+```

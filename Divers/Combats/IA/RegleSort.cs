@@ -39,6 +39,7 @@ public sealed class RegleSort
 
     /// <summary>Compat : alias direct de <see cref="Focus"/> sous l'ancien nom.</summary>
     [System.Text.Json.Serialization.JsonIgnore]
+#pragma warning disable CS0618 // Layer de compat — l'usage de CibleSort est intentionnel ici.
     public CibleSort Cible
     {
         get => Focus switch
@@ -60,6 +61,7 @@ public sealed class RegleSort
             _                           => FocusSort.EnnemiLePlusProche
         };
     }
+#pragma warning restore CS0618
 
     /// <summary>Compat : seuils PV anciens (synonymes des nouveaux *PvInfPourcent).</summary>
     [System.Text.Json.Serialization.JsonIgnore]
