@@ -102,7 +102,40 @@ public partial class VueCombat : UserControl
     {
         public BotDofus.Divers.MultiAccount.MembreHeros? Membre { get; init; } // null = master
         public string Etiquette { get; init; } = string.Empty;
+        public string Nom { get; init; } = string.Empty;
+        public string SousTitre { get; init; } = string.Empty;
+        public string Initiale { get; init; } = "?";
+        public string Badge { get; init; } = string.Empty;
+        public System.Windows.Media.Brush CouleurClasse { get; init; } = System.Windows.Media.Brushes.Gray;
+        public System.Windows.Media.Brush CouleurBadge { get; init; } = System.Windows.Media.Brushes.Gray;
+        public override string ToString() => Etiquette;
     }
+
+    /// <summary>Palette couleurs Dofus Retro par idClasse (Feca=1, Osamodas=2, ..., Sadida=10).</summary>
+    private static System.Windows.Media.Brush CouleurPourClasse(int idClasse) => idClasse switch
+    {
+        1  => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6F, 0xC4, 0xE8)), // Féca (bleu)
+        2  => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x9C, 0xD8, 0x5D)), // Osamodas (vert)
+        3  => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF2, 0xC8, 0x4B)), // Enutrof (or)
+        4  => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xE0, 0x84, 0xC6)), // Sram (rose)
+        5  => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xD0, 0x67, 0x5F)), // Xelor (rouge sombre)
+        6  => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xC8, 0xB0, 0x84)), // Ecaflip (brun-or)
+        7  => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0xA8, 0x5C)), // Eniripsa (orange)
+        8  => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xEF, 0x6B, 0x6B)), // Iop (rouge)
+        9  => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xB5, 0xC8, 0xD8)), // Cra (gris-bleu)
+        10 => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x8B, 0xD0, 0x8B)), // Sadida (vert clair)
+        11 => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xD2, 0x9A, 0xE8)), // Sacrieur (violet)
+        12 => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xE8, 0xC8, 0x6F)), // Pandawa (jaune-ocre)
+        _  => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xA0, 0xA8, 0xB8)),
+    };
+
+    private static string NomClasse(int idClasse) => idClasse switch
+    {
+        1 => "Féca", 2 => "Osamodas", 3 => "Enutrof", 4 => "Sram",
+        5 => "Xelor", 6 => "Ecaflip", 7 => "Eniripsa", 8 => "Iop",
+        9 => "Cra", 10 => "Sadida", 11 => "Sacrieur", 12 => "Pandawa",
+        _ => $"Classe {idClasse}",
+    };
 
     private void PeuplerComboPersoCible()
     {
@@ -110,7 +143,21 @@ public partial class VueCombat : UserControl
         var items = new System.Collections.Generic.List<PersoCibleVm>();
         // Master (toujours en haut, null = ConfigCombat du contexte = legacy).
         var nomMaster = _contexte?.EtatJeu.Personnage.Nom ?? _contexte?.Compte.Identifiant ?? "Master";
-        items.Add(new PersoCibleVm { Membre = null, Etiquette = $"{nomMaster} (master)" });
+        var idClasseMaster = _contexte?.EtatJeu.Personnage.IdClasse ?? 0;
+        int nivMaster = _contexte?.EtatJeu.Personnage.Niveau ?? 0;
+        items.Add(new PersoCibleVm
+        {
+            Membre = null,
+            Etiquette = $"{nomMaster} (master)",
+            Nom = nomMaster,
+            SousTitre = idClasseMaster > 0
+                ? $"{NomClasse(idClasseMaster)} • niv {nivMaster} • master"
+                : "Master",
+            Initiale = string.IsNullOrEmpty(nomMaster) ? "?" : nomMaster[0].ToString().ToUpperInvariant(),
+            Badge = "LEADER",
+            CouleurClasse = CouleurPourClasse(idClasseMaster),
+            CouleurBadge = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0xCD, 0x52)),
+        });
         // Liés.
         var groupe = _contexte?.Compte.GroupeHeros;
         if (groupe is not null)
@@ -118,12 +165,23 @@ public partial class VueCombat : UserControl
             foreach (var m in groupe.Membres)
             {
                 if (m.Role == BotDofus.Divers.MultiAccount.RoleDansGroupe.Leader) continue;
-                var label = string.IsNullOrWhiteSpace(m.Nom) ? $"Perso #{m.IdJeu}" : m.Nom;
-                items.Add(new PersoCibleVm { Membre = m, Etiquette = $"{label} (id {m.IdJeu})" });
+                var nom = string.IsNullOrWhiteSpace(m.Nom) ? $"Perso #{m.IdJeu}" : m.Nom;
+                items.Add(new PersoCibleVm
+                {
+                    Membre = m,
+                    Etiquette = $"{nom} (id {m.IdJeu})",
+                    Nom = nom,
+                    SousTitre = m.IdClasse > 0
+                        ? $"{NomClasse(m.IdClasse)} • niv {m.Niveau} • id {m.IdJeu}"
+                        : $"id {m.IdJeu}",
+                    Initiale = nom[0].ToString().ToUpperInvariant(),
+                    Badge = "LIÉ",
+                    CouleurClasse = CouleurPourClasse(m.IdClasse),
+                    CouleurBadge = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6C, 0x76, 0xFF)),
+                });
             }
         }
         CmbPersoCible.ItemsSource = items;
-        CmbPersoCible.DisplayMemberPath = nameof(PersoCibleVm.Etiquette);
         // Resélectionne le perso courant.
         int idx = 0;
         if (_persoCible is not null)

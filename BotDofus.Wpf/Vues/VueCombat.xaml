@@ -220,24 +220,77 @@
                   Padding="12">
         <StackPanel>
             <!-- ===== SÉLECTEUR PERSO CIBLE ===== -->
-            <Border Style="{StaticResource SectionBorderStyle}" Padding="14,10">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Configurer pour :"
-                               Foreground="#ECEFF5"
-                               FontWeight="SemiBold"
-                               VerticalAlignment="Center"
-                               Margin="0,0,10,0"/>
-                    <ComboBox x:Name="CmbPersoCible"
-                              MinWidth="220"
+            <Border Style="{StaticResource SectionBorderStyle}" Padding="16,12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                        <Border Background="#2D3548" CornerRadius="3" Padding="6,2" Margin="0,0,8,0">
+                            <TextBlock Text="CONFIGURER POUR" FontSize="10" FontWeight="Bold" Foreground="#9AB8E0"/>
+                        </Border>
+                    </StackPanel>
+                    <ComboBox Grid.Row="1"
+                              x:Name="CmbPersoCible"
+                              MinWidth="280"
+                              HorizontalAlignment="Stretch"
                               SelectionChanged="CmbPersoCible_SelectionChanged"
-                              ToolTip="Bascule entre le master (Sadida) et les héros liés. Les modifications s'appliquent au perso sélectionné."/>
-                    <TextBlock x:Name="TxtPersoCibleResume"
+                              ToolTip="Bascule entre le master (Sadida) et les héros liés. Les modifications s'appliquent au perso sélectionné.">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="2,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <!-- Avatar rond avec initiale + couleur classe -->
+                                    <Grid Grid.Column="0" Width="32" Height="32" Margin="0,0,12,0">
+                                        <Ellipse Fill="{Binding CouleurClasse}"/>
+                                        <TextBlock Text="{Binding Initiale}"
+                                                   FontSize="14"
+                                                   FontWeight="Bold"
+                                                   Foreground="#101418"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Grid>
+                                    <!-- Nom + sous-titre -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Nom}"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#ECEFF5"/>
+                                        <TextBlock Text="{Binding SousTitre}"
+                                                   FontSize="10"
+                                                   Foreground="#8AA0BC"/>
+                                    </StackPanel>
+                                    <!-- Badge rôle -->
+                                    <Border Grid.Column="2"
+                                            Background="{Binding CouleurBadge}"
+                                            CornerRadius="3"
+                                            Padding="6,2"
+                                            VerticalAlignment="Center"
+                                            Margin="8,0,0,0">
+                                        <TextBlock Text="{Binding Badge}"
+                                                   FontSize="9"
+                                                   FontWeight="Bold"
+                                                   Foreground="#101418"/>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBlock Grid.Row="1"
+                               x:Name="TxtPersoCibleResume"
                                Foreground="#8AA0BC"
-                               FontSize="11"
-                               VerticalAlignment="Center"
-                               Margin="14,0,0,0"
+                               FontSize="10"
+                               FontStyle="Italic"
+                               VerticalAlignment="Top"
+                               HorizontalAlignment="Right"
+                               Margin="0,40,4,0"
                                Text="—"/>
-                </StackPanel>
+                </Grid>
             </Border>
 
             <!-- ===== ÉTAT COMBAT LIVE ===== -->
