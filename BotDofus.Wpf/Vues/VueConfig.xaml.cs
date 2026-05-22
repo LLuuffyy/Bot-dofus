@@ -16,6 +16,53 @@ public partial class VueConfig : UserControl
     public VueConfig()
     {
         InitializeComponent();
+        // À l'attachement à la fenêtre, applique l'état persisté du mode dev.
+        Loaded += (_, _) =>
+        {
+            try
+            {
+                var fichier = System.IO.Path.Combine(System.AppContext.BaseDirectory, "ui-prefs.json");
+                if (System.IO.File.Exists(fichier))
+                {
+                    var json = System.IO.File.ReadAllText(fichier);
+                    using var doc = System.Text.Json.JsonDocument.Parse(json);
+                    if (doc.RootElement.TryGetProperty("ModeDev", out var v) && v.GetBoolean())
+                    {
+                        ChkModeDev.IsChecked = true;
+                        AppliquerModeDev(true);
+                    }
+                }
+            }
+            catch { /* swallow — defaults to off */ }
+        };
+    }
+
+    private void ChkModeDev_Click(object sender, RoutedEventArgs e)
+    {
+        bool actif = ChkModeDev.IsChecked == true;
+        AppliquerModeDev(actif);
+        // Persistance simple dans ui-prefs.json à la racine.
+        try
+        {
+            var fichier = System.IO.Path.Combine(System.AppContext.BaseDirectory, "ui-prefs.json");
+            var json = System.Text.Json.JsonSerializer.Serialize(new { ModeDev = actif });
+            System.IO.File.WriteAllText(fichier, json);
+        }
+        catch (System.Exception ex)
+        {
+            BotDofus.Utilitaires.Journaux.Journaliseur.Avertir($"[UI-PREFS] Écriture échec : {ex.Message}");
+        }
+    }
+
+    private void AppliquerModeDev(bool actif)
+    {
+        var fen = Window.GetWindow(this);
+        if (fen is null) return;
+        var sniffer = fen.FindName("OngletSniffer") as TabItem;
+        var tools = fen.FindName("OngletTools") as TabItem;
+        var visibility = actif ? Visibility.Visible : Visibility.Collapsed;
+        if (sniffer is not null) sniffer.Visibility = visibility;
+        if (tools is not null) tools.Visibility = visibility;
     }
 
     public void Lier(ContexteCompte ctx)

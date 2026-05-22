@@ -516,7 +516,6 @@ public partial class MainWindow : Window
         foreach (var vm in Comptes) vm.Refresh();
 
         TxtProxyButton.Text = _contexteSelectionne.Proxy.EnEcoute ? "Stop proxy" : "Proxy";
-        if (TxtQuotaComptes != null) TxtQuotaComptes.Text = $"{Comptes.Count}/200";
     }
 
     // ----------------------------------------------------------------
@@ -536,8 +535,6 @@ public partial class MainWindow : Window
     }
 
     private void BtnParametres_Click(object sender, RoutedEventArgs e) => SelectionnerOnglet("Config");
-
-    private void BtnAdmin_Click(object sender, RoutedEventArgs e) => SelectionnerOnglet("Tools");
 
     private void BtnDeconnecterTout_Click(object sender, RoutedEventArgs e)
     {

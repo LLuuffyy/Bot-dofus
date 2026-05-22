@@ -71,6 +71,17 @@
                 </StackPanel>
             </materialDesign:Card>
 
+            <materialDesign:Card Margin="0,0,0,10" Padding="14">
+                <StackPanel>
+                    <TextBlock Text="AFFICHAGE" Foreground="#9AB8E0" FontWeight="Bold" FontSize="11" Margin="0,0,0,8"/>
+                    <CheckBox x:Name="ChkModeDev"
+                              Content="Mode développeur (affiche les onglets Sniffer et Tools)"
+                              Click="ChkModeDev_Click"
+                              Foreground="#ECEFF5"
+                              ToolTip="Pratique pour le debug : sniffer paquets en temps réel + diagnostic interne."/>
+                </StackPanel>
+            </materialDesign:Card>
+
             <Button Click="BtnSauver_Click" Style="{StaticResource MaterialDesignRaisedButton}" HorizontalAlignment="Right">
                 <StackPanel Orientation="Horizontal">
                     <materialDesign:PackIcon Kind="ContentSave"/>
