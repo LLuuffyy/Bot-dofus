@@ -69,14 +69,34 @@ public partial class VueBanque : UserControl
             TxtSeuils.Text = string.Join(Environment.NewLine,
                 cfg.SeuilParTemplate.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}={kv.Value}"));
 
-            TxtEtatLive.Text = cfg.Active
-                ? $"✅ Actif — déclenchement automatique à {cfg.SeuilPoidsPct}% de pods"
-                : "⏸ Inactif (cocher 'Activer' pour démarrer)";
+            MajEtatLive(cfg);
         }
         finally
         {
             _initEnCours = false;
         }
+    }
+
+    /// <summary>
+    /// Met à jour le bandeau d'état + warning rouge si seuil ≤ cible
+    /// (config invalide → l'auto-trigger ne ferait que tourner en rond).
+    /// </summary>
+    private void MajEtatLive(ConfigBanque cfg)
+    {
+        if (cfg.SeuilPoidsPct <= cfg.CiblePoidsPct)
+        {
+            TxtEtatLive.Foreground = System.Windows.Media.Brushes.IndianRed;
+            TxtEtatLive.Text =
+                $"⚠ Config invalide : seuil ({cfg.SeuilPoidsPct}%) doit être SUPÉRIEUR à la cible ({cfg.CiblePoidsPct}%). "
+                + "Le seuil déclenche le dépôt, la cible est le poids final voulu après dépôt.";
+            return;
+        }
+        TxtEtatLive.Foreground = cfg.Active
+            ? System.Windows.Media.Brushes.LightGreen
+            : System.Windows.Media.Brushes.Goldenrod;
+        TxtEtatLive.Text = cfg.Active
+            ? $"✅ Actif — déclenchement à {cfg.SeuilPoidsPct}% pods → vide jusqu'à {cfg.CiblePoidsPct}%"
+            : "⏸ Inactif (cocher 'Activer' pour démarrer)";
     }
 
     // === Lecture des contrôles → ConfigBanque ===
@@ -130,9 +150,7 @@ public partial class VueBanque : UserControl
         cfg.IdsADeposerForce = ParseListeIds(TxtIdsDeposer.Text);
         cfg.SeuilParTemplate = ParseSeuils(TxtSeuils.Text);
 
-        TxtEtatLive.Text = cfg.Active
-            ? $"✅ Actif — déclenchement automatique à {cfg.SeuilPoidsPct}% de pods"
-            : "⏸ Inactif (cocher 'Activer' pour démarrer)";
+        MajEtatLive(cfg);
     }
 
     // === Handlers UI ===

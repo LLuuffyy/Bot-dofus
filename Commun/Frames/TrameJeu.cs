@@ -62,6 +62,14 @@ public sealed class TrameJeu : TrameBase
         });
         Ecouter<MessageObjetAjout>(OnObjetAjout);
         Ecouter<MessageObjetRetrait>(OnObjetRetrait);
+        Ecouter<BotDofus.Commun.Messages.VersClient.Objet.MessageEchangeFin>(_ =>
+        {
+            // EV reçu : fenêtre échange/banque fermée. Le PiloteBanque en cours
+            // détecte ce flag et arrête ses dépôts pour éviter de spammer le
+            // serveur après fermeture user (cas observé log 17:10:38).
+            BotDofus.Divers.Banque.PiloteBanque.BanqueFermeeObservee = true;
+            BotDofus.Utilitaires.Journaux.Journaliseur.Debogue("[BANQUE] EV reçu → flag fermée");
+        });
         Ecouter<MessageObjetQuantite>(OnObjetQuantite);
         Ecouter<MessageObjetPoids>(msg => _etat.Personnage.ActualiserPoids(msg.PoidsActuel, msg.PoidsMax));
         Ecouter<MessageMouvementCarte>(OnMouvementCarte);

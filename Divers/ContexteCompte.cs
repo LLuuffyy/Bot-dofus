@@ -108,6 +108,9 @@ public sealed class ContexteCompte : IDisposable
 
         // Hook event poids → check seuil + Discord notif si configuré.
         EtatJeu.Personnage.Mis_A_Jour += OnPersonnageMisAJour;
+        // Tag du timestamp à chaque changement de carte — sert au délai de grâce
+        // banque (pas de trigger pendant que la map se synchronise).
+        EtatJeu.CarteChangee += (_, _) => _dernierChangementCarteUtc = DateTime.UtcNow;
         ApiLua = new ApiLua(Api, EtatJeu, ConfigCombat, Interception);
         Scripts = new GestionnaireScripts(compte, Api);
         Lua = new MoteurLuaInteractif(ApiLua);
@@ -263,6 +266,10 @@ public sealed class ContexteCompte : IDisposable
     // ============================================================
     private bool _banqueDeclenchee;
     private bool _mortNotifiee;
+    /// <summary>Timestamp UTC du dernier changement de carte — sert à imposer
+    /// un délai de grâce de 2s avant de déclencher la banque (le perso vient
+    /// de zaap, l'inventaire peut encore se synchroniser).</summary>
+    private DateTime _dernierChangementCarteUtc = DateTime.MinValue;
 
     private void OnPersonnageMisAJour(object? sender, EventArgs e)
     {
@@ -287,9 +294,15 @@ public sealed class ContexteCompte : IDisposable
         }
 
         // ----- Trigger banque (poids ≥ seuil) -----
+        // Délai de grâce 2s après changement de carte : sinon le trigger peut
+        // fire pendant que la map se synchronise (CarteCourante null, inventaire
+        // pas encore complet) → log 17:10:22 cas observé.
+        bool grace = (DateTime.UtcNow - _dernierChangementCarteUtc).TotalMilliseconds < 2000;
         if (ConfigBanque.Active
             && !_banqueDeclenchee
+            && !grace
             && perso.PourcentagePoids >= ConfigBanque.SeuilPoidsPct
+            && ConfigBanque.SeuilPoidsPct > ConfigBanque.CiblePoidsPct  // config valide
             && EtatJeu.Combat.Etat == BotDofus.Divers.Combats.Enums.EtatCombat.Inactif)
         {
             _banqueDeclenchee = true;
@@ -329,16 +342,22 @@ public sealed class ContexteCompte : IDisposable
                                 Compte.WebhookDiscordUrl, perso.Nom, $"workflow banque : {bex.Message}");
                         }
                     }
+                    finally
+                    {
+                        // Reset SEULEMENT à la fin du workflow (succès ou exception).
+                        // Avant : reset sur `poids < cible` → la moindre fluctuation
+                        // pendant les dépôts re-déclenchait un workflow concurrent
+                        // (log 17:10:22+17:10:52+17:11:30… 4× workflows pour 1 trigger).
+                        _banqueDeclenchee = false;
+                        Journaliseur.Debogue("[BANQUE] Flag déclenchement reset après fin workflow");
+                    }
                 });
             }
             else
             {
                 Journaliseur.Avertir("[BANQUE] Session jeu inactive — workflow skip");
+                _banqueDeclenchee = false;  // pas de Task → reset immédiat sinon blocage
             }
-        }
-        else if (perso.PourcentagePoids < ConfigBanque.CiblePoidsPct)
-        {
-            _banqueDeclenchee = false;  // reset après dépôt manuel ou auto
         }
 
         // ----- Anti-stuck timer (track dernier changement map) -----

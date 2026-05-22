@@ -36,6 +36,11 @@ public sealed class PiloteBanque
     /// attendre la confirmation serveur entre 2 dépôts.</summary>
     public static int CompteurObjectRemove;
 
+    /// <summary>Flag set à true quand un paquet <c>EV</c> est observé (S→C ou C→S)
+    /// — la banque est fermée. Le pilote en cours doit arrêter ses dépôts.
+    /// Reset à false par le pilote au début du workflow.</summary>
+    public static volatile bool BanqueFermeeObservee;
+
     public PiloteBanque(ApiBot api, SessionProxy session, Personnage perso, ConfigBanque cfg)
     {
         _api = api;
@@ -122,6 +127,10 @@ public sealed class PiloteBanque
     {
         Journaliseur.Info($"[BANQUE] Démarrage dépôt — poids actuel {_perso.PourcentagePoids:F1}% (seuil={_cfg.SeuilPoidsPct}%, cible={_cfg.CiblePoidsPct}%)");
 
+        // Reset des flags observateurs avant ouverture (sinon un EV résiduel
+        // d'un workflow précédent ferait croire que la banque est déjà fermée).
+        BanqueFermeeObservee = false;
+
         // === Étape 1 : ouvrir le coffre banque (ApS, CLAIR) ===
         // ⚠ PROTOCOLE Hystoria : pas de dialogue NPC, le coffre interactif s'ouvre directement.
         // Le serveur répond ECK5 (Échange Créé kind=5) puis EL (liste vide ou contenu).
@@ -140,17 +149,29 @@ public sealed class PiloteBanque
         foreach (var item in aDeposer)
         {
             if (ct.IsCancellationRequested) break;
+            // L'user (ou un autre process) a fermé la banque → on stoppe net,
+            // sans envoyer la fermeture EV nous-mêmes (déjà fait).
+            if (BanqueFermeeObservee)
+            {
+                Journaliseur.Avertir(
+                    $"[BANQUE] EV observé pendant dépôt — arrêt immédiat ({deposes} item(s) déposés, "
+                    + $"{aDeposer.Count - deposes} restants annulés).");
+                return _perso.PourcentagePoids <= _cfg.CiblePoidsPct;
+            }
             if (_perso.PourcentagePoids <= _cfg.CiblePoidsPct)
             {
                 Journaliseur.Info($"[BANQUE] Cible {_cfg.CiblePoidsPct}% atteinte ({_perso.PourcentagePoids:F1}%), arrêt dépôt");
                 break;
             }
 
-            // Sécurité ultime : si l'item est dans IdsAGarder OU est de catégorie Quête
-            // décochée, on REFUSE de déposer même par erreur de calcul amont.
+            // Sécurité ultime (relue à CHAQUE item car l'user peut éditer la config
+            // pendant le workflow → IdsAGarder peut grandir, catégorie peut être
+            // décochée). Cause normale du refus à mi-workflow ; pas un bug.
             if (!EstAutoriseADeposer(item))
             {
-                Journaliseur.Avertir($"[BANQUE] SÉCURITÉ : refus dépôt #{item.Identifiant} template={item.IdTemplate} (filtre amont divergent)");
+                Journaliseur.Debogue(
+                    $"[BANQUE] item refusé en cours de dépôt #{item.Identifiant} template={item.IdTemplate} "
+                    + "(config a probablement été éditée en live ou item décoché)");
                 rejetesSec++;
                 continue;
             }

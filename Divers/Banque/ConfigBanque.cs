@@ -98,6 +98,33 @@ public sealed class ConfigBanque
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
 
+    /// <summary>
+    /// Vérifie la cohérence seuil/cible : le seuil DOIT être strictement
+    /// supérieur à la cible (déclenchement à X% pods → vider jusqu'à Y%
+    /// avec X &gt; Y). Si inversé, on swap et on log un avertissement
+    /// (cas observé log 17:10:09 : user avait seuil=20%/cible=30% = invalide).
+    /// </summary>
+    public void Valider()
+    {
+        if (SeuilPoidsPct <= CiblePoidsPct)
+        {
+            int seuilAvant = SeuilPoidsPct, cibleAvant = CiblePoidsPct;
+            // Auto-correction : on remonte le seuil au-dessus de la cible.
+            // Min seuil après correction = 50% (assez bas pour déclenchements
+            // fréquents, assez haut pour ne pas spammer la banque).
+            SeuilPoidsPct = System.Math.Max(50, cibleAvant + 30);
+            if (SeuilPoidsPct > 99) SeuilPoidsPct = 90;
+            Journaliseur.Avertir(
+                $"[CFG-BANQUE] ⚠ Config invalide : seuil({seuilAvant}%) ≤ cible({cibleAvant}%). "
+                + $"Auto-correction seuil → {SeuilPoidsPct}% (le seuil de déclenchement doit "
+                + "TOUJOURS être supérieur à la cible post-dépôt).");
+        }
+        if (DelaiActionMaxMs < DelaiActionMinMs)
+        {
+            int tmp = DelaiActionMinMs; DelaiActionMinMs = DelaiActionMaxMs; DelaiActionMaxMs = tmp;
+        }
+    }
+
     public static ConfigBanque Charger(string cheminFichier)
     {
         if (!File.Exists(cheminFichier))
@@ -109,6 +136,7 @@ public sealed class ConfigBanque
         {
             var json = File.ReadAllText(cheminFichier);
             var cfg = JsonSerializer.Deserialize<ConfigBanque>(json, Options) ?? new ConfigBanque();
+            cfg.Valider();
             Journaliseur.Info(
                 $"[CFG-BANQUE] Chargé : actif={cfg.Active}, seuil={cfg.SeuilPoidsPct}%, "
                 + $"cible={cfg.CiblePoidsPct}%, map={cfg.MapBanqueId}, "

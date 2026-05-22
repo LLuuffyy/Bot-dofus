@@ -164,6 +164,7 @@ public static class FabriqueMessages
         EnregistrerVersClient<VersClient.Objet.MessageObjetQuantite>("OQ");
         EnregistrerVersClient<VersClient.Objet.MessageObjetPoids>("Ow");
         EnregistrerVersClient<VersClient.Objet.MessageObjetDeplacement>("OM");
+        EnregistrerVersClient<VersClient.Objet.MessageEchangeFin>("EV");
 
         // --- VersServeur : Authentification ---
         EnregistrerVersServeur<VersServeur.Authentification.MessageAuthentification>("AA");
