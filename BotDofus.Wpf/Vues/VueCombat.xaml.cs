@@ -498,6 +498,11 @@ public partial class VueCombat : UserControl
             var info = BaseSorts.Instance.Trouver(r.IdSort);
             SortsConfig.Add(new SortConfigureVm(n++, r, info));
         }
+
+        // Inventaire pour consommable (master uniquement). Si on édite un héros,
+        // on liste quand même l'inventaire du master mais le soin ne marchera
+        // pas pour les héros sur Abrak.
+        RafraichirListeConsommables();
     }
 
     private void CmbSort_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -808,6 +813,19 @@ public partial class VueCombat : UserControl
             TxtSeuilFuite.Text    = cfg.SeuilFuitePv.ToString();
             SldDelaiActions.Value = cfg.DelaiEntreActionsMs;
             TxtDelaiActions.Text  = cfg.DelaiEntreActionsMs.ToString();
+            ChkTurboCombat.IsChecked = cfg.TurboCombat;
+
+            // Sync sliders consommable (les valeurs viennent de la config).
+            if (SldConsoSeuilInf != null)
+            {
+                SldConsoSeuilInf.Value = cfg.ConsommableUtiliserSiPvInfPct;
+                TxtConsoSeuilInf.Text = cfg.ConsommableUtiliserSiPvInfPct + "%";
+            }
+            if (SldConsoSeuilSup != null)
+            {
+                SldConsoSeuilSup.Value = cfg.ConsommableJusquaPvSupPct;
+                TxtConsoSeuilSup.Text = cfg.ConsommableJusquaPvSupPct + "%";
+            }
         }
         finally
         {
@@ -850,6 +868,59 @@ public partial class VueCombat : UserControl
         if (_initEnCours || _contexte == null) return;
         ConfigActive!.DistanceMinEloigne = v;
         DemanderSauvegardeDebouncee();
+    }
+
+    /// <summary>
+    /// Préset auto par classe du perso ÉDITÉ : récupère IdClasse depuis le
+    /// master ou le membre lié sélectionné, et applique la configuration
+    /// recommandée via <see cref="BotDofus.Divers.MultiAccount.ServiceConfigsHeros.PresetParClasse"/>.
+    /// Couvre les 12 classes Dofus Retro 1.29 (cf. ADR-008).
+    /// </summary>
+    private void BtnPresetParClasse_Click(object sender, RoutedEventArgs e)
+    {
+        if (_contexte == null || ConfigActive == null) return;
+
+        int idClasse;
+        string nomPerso;
+        if (_persoCible != null)
+        {
+            idClasse = _persoCible.IdClasse;
+            nomPerso = _persoCible.Nom;
+        }
+        else
+        {
+            idClasse = _contexte.EtatJeu.Personnage.IdClasse;
+            nomPerso = _contexte.EtatJeu.Personnage.Nom;
+        }
+
+        var nomClasse = idClasse switch
+        {
+            1 => "Feca", 2 => "Osamodas", 3 => "Enutrof", 4 => "Sram",
+            5 => "Xelor", 6 => "Ecaflip", 7 => "Eniripsa", 8 => "Iop",
+            9 => "Cra", 10 => "Sadida", 11 => "Sacrieur", 12 => "Pandawa",
+            _ => $"inconnue (#{idClasse})",
+        };
+
+        var rep = MessageBox.Show(
+            $"Cela va REMPLACER toute la configuration actuelle de « {nomPerso} »\n"
+            + $"par le preset officiel pour la classe {nomClasse}.\n"
+            + "Mode, distance préférée, rotation des sorts : tout sera remis.\nContinuer ?",
+            $"Préset {nomClasse}", MessageBoxButton.YesNo, MessageBoxImage.Question);
+        if (rep != MessageBoxResult.Yes) return;
+
+        var preset = BotDofus.Divers.MultiAccount.ServiceConfigsHeros.PresetParClasse(idClasse);
+        ConfigActive.Mode = preset.Mode;
+        ConfigActive.Strategie = preset.Strategie;
+        ConfigActive.Positionnement = preset.Positionnement;
+        ConfigActive.DistancePreferee = preset.DistancePreferee;
+        ConfigActive.DistanceMinEloigne = preset.DistanceMinEloigne;
+        ConfigActive.Regles.Clear();
+        foreach (var r in preset.Regles) ConfigActive.Regles.Add(r);
+
+        InitialiserModeEtTactique(ConfigActive);
+        Rafraichir();
+        DemanderSauvegardeDebouncee();
+        TxtEtatSauvegarde.Text = $"✓ Préset {nomClasse} appliqué à {nomPerso} ({preset.Regles.Count} règles).";
     }
 
     /// <summary>
@@ -980,6 +1051,7 @@ public partial class VueCombat : UserControl
         ConfigActive!.SeuilFuitePv = nouvelleConfig.SeuilFuitePv;
         ConfigActive!.DelaiEntreActionsMs = nouvelleConfig.DelaiEntreActionsMs;
         ConfigActive!.ModeDeplacementOptimisteSecours = nouvelleConfig.ModeDeplacementOptimisteSecours;
+        ConfigActive!.TurboCombat = nouvelleConfig.TurboCombat;
         InitialiserModeEtTactique(ConfigActive!);
         Rafraichir();
         TxtEtatSauvegarde.Text = $"Chargé : {System.IO.Path.GetFileName(dlg.FileName)} ({nouvelleConfig.Regles.Count} règle(s))";
@@ -991,6 +1063,133 @@ public partial class VueCombat : UserControl
         if (TxtDelaiActions != null) TxtDelaiActions.Text = v.ToString();
         if (_initEnCours || _contexte == null) return;
         ConfigActive!.DelaiEntreActionsMs = v;
+        DemanderSauvegardeDebouncee();
+    }
+
+    private void ChkTurboCombat_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_initEnCours || _contexte == null) return;
+        ConfigActive!.TurboCombat = ChkTurboCombat.IsChecked == true;
+        // Si l'utilisateur l'active pendant un combat, on l'applique tout de suite ;
+        // sinon le prochain tour le verra.
+        BotDofus.Divers.Combats.IA.TimingsCombat.AppliquerConfig(ConfigActive);
+        DemanderSauvegardeDebouncee();
+    }
+
+    // ============================================================
+    // CONSOMMABLE DE SOIN (master uniquement)
+    // ============================================================
+
+    /// <summary>Item affiché dans la ComboBox CmbConsommable.</summary>
+    public sealed class ItemConsommableVm
+    {
+        public int IdTemplate { get; set; }
+        public string Nom { get; set; } = "";
+        public int Quantite { get; set; }
+        public string Affichage => $"#{IdTemplate} {Nom} (x{Quantite})";
+    }
+
+    private void RafraichirListeConsommables()
+    {
+        if (CmbConsommable == null) return;
+        var items = new ObservableCollection<ItemConsommableVm>();
+        items.Add(new ItemConsommableVm { IdTemplate = 0, Nom = "— aucun (désactivé) —", Quantite = 0 });
+
+        var inv = _contexte?.EtatJeu.Personnage.Inventaire;
+        var bdd = BotDofus.Divers.Donnees.BaseDonnees.Instance;
+        if (inv != null && bdd != null)
+        {
+            // Agrège par IdTemplate (un même template peut avoir plusieurs piles).
+            var grpd = inv
+                .Where(o => o.Quantite > 0)
+                .GroupBy(o => o.IdTemplate)
+                .OrderBy(g => bdd.Item(g.Key)?.Nom ?? "")
+                .ToList();
+            foreach (var g in grpd)
+            {
+                var info = bdd.Item(g.Key);
+                items.Add(new ItemConsommableVm
+                {
+                    IdTemplate = g.Key,
+                    Nom = info?.Nom ?? $"(item {g.Key} inconnu)",
+                    Quantite = g.Sum(o => o.Quantite),
+                });
+            }
+        }
+
+        bool prevInit = _initEnCours;
+        _initEnCours = true;
+        try
+        {
+            CmbConsommable.ItemsSource = items;
+            int idSel = ConfigActive?.ConsommableSoinIdTemplate ?? 0;
+            CmbConsommable.SelectedValue = idSel;
+            if (CmbConsommable.SelectedItem == null && items.Count > 0)
+                CmbConsommable.SelectedItem = items[0];
+            MajEtatConsoUI();
+        }
+        finally { _initEnCours = prevInit; }
+    }
+
+    private void MajEtatConsoUI()
+    {
+        if (ConfigActive == null) { if (TxtConsoEtat != null) TxtConsoEtat.Text = ""; return; }
+        if (ConfigActive.ConsommableSoinIdTemplate <= 0)
+        {
+            if (TxtConsoEtat != null) TxtConsoEtat.Text = "Aucun consommable configuré.";
+            return;
+        }
+        if (TxtConsoEtat != null)
+            TxtConsoEtat.Text =
+                $"Actif : boire « {ConfigActive.ConsommableSoinNom} » si PV < {ConfigActive.ConsommableUtiliserSiPvInfPct}% "
+                + $"jusqu'à {ConfigActive.ConsommableJusquaPvSupPct}%.";
+    }
+
+    private void CmbConsommable_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_initEnCours || _contexte == null) return;
+        if (CmbConsommable.SelectedItem is not ItemConsommableVm vm) return;
+        ConfigActive!.ConsommableSoinIdTemplate = vm.IdTemplate;
+        ConfigActive!.ConsommableSoinNom = vm.IdTemplate > 0 ? vm.Nom : "";
+        MajEtatConsoUI();
+        DemanderSauvegardeDebouncee();
+    }
+
+    private void BtnRafraichirConsos_Click(object sender, RoutedEventArgs e)
+        => RafraichirListeConsommables();
+
+    private void BtnConsoAucun_Click(object sender, RoutedEventArgs e)
+    {
+        if (_contexte == null) return;
+        ConfigActive!.ConsommableSoinIdTemplate = 0;
+        ConfigActive!.ConsommableSoinNom = "";
+        if (CmbConsommable.Items.Count > 0)
+        {
+            bool prev = _initEnCours;
+            _initEnCours = true;
+            try { CmbConsommable.SelectedIndex = 0; } finally { _initEnCours = prev; }
+        }
+        MajEtatConsoUI();
+        DemanderSauvegardeDebouncee();
+    }
+
+    private void SldConsoSeuilInf_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        int v = (int)e.NewValue;
+        if (TxtConsoSeuilInf != null) TxtConsoSeuilInf.Text = v + "%";
+        if (_initEnCours || _contexte == null) return;
+        ConfigActive!.ConsommableUtiliserSiPvInfPct = v;
+        MajEtatConsoUI();
+        DemanderSauvegardeDebouncee();
+    }
+
+    private void SldConsoSeuilSup_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        int v = (int)e.NewValue;
+        if (TxtConsoSeuilSup != null) TxtConsoSeuilSup.Text = v + "%";
+        if (_initEnCours || _contexte == null) return;
+        ConfigActive!.ConsommableJusquaPvSupPct = v;
+        MajEtatConsoUI();
         DemanderSauvegardeDebouncee();
     }
 

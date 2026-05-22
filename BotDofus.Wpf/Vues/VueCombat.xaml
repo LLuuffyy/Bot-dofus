@@ -866,6 +866,91 @@
                         </ComboBox>
                     </StackPanel>
 
+                    <!-- Mode TURBO COMBAT : réduit les délais IA à 50ms uniquement
+                         pendant un combat (overworld reste humanisé). -->
+                    <CheckBox x:Name="ChkTurboCombat"
+                              Content="⚡ Mode Turbo combat (délais minimum, combat uniquement)"
+                              Margin="0,0,0,12"
+                              Checked="ChkTurboCombat_Changed"
+                              Unchecked="ChkTurboCombat_Changed"
+                              ToolTip="Réduit tous les délais IA en combat à 50ms (réaction, GKK0, Gt, inter-cast). Les délais OVERWORLD (récolte, zaap, déplacement carte) restent humanisés. Utile pour finir vite les combats de farm."/>
+
+                    <!-- ===== CONSOMMABLE DE SOIN (master uniquement, les héros liés
+                         n'ont pas d'inventaire individuel sur Abrak Hystoria) ===== -->
+                    <Border Background="{DynamicResource SurfaceBrushSoft}"
+                            BorderBrush="{DynamicResource BorderSoftBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="10"
+                            Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="🧪 CONSOMMABLE DE SOIN (master uniquement)"
+                                       Foreground="#ECEFF5"
+                                       FontWeight="SemiBold"
+                                       FontSize="11"
+                                       Margin="0,0,0,6"/>
+                            <TextBlock Text="Sélectionner un objet de l'inventaire à boire si PV bas en combat. Le bot envoie OAU(uid) automatiquement avant son cast."
+                                       Foreground="#8AA0BC"
+                                       FontSize="10"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,8"/>
+
+                            <TextBlock Text="OBJET" Style="{StaticResource SectionLabelStyle}"/>
+                            <ComboBox x:Name="CmbConsommable"
+                                      DisplayMemberPath="Affichage"
+                                      SelectedValuePath="IdTemplate"
+                                      SelectionChanged="CmbConsommable_SelectionChanged"
+                                      Margin="0,0,0,10"
+                                      ToolTip="Liste des objets de l'inventaire avec leur quantité. Bouton 🔄 pour rafraîchir."/>
+                            <WrapPanel Margin="0,0,0,10">
+                                <Button x:Name="BtnRafraichirConsos"
+                                        Click="BtnRafraichirConsos_Click"
+                                        Style="{StaticResource TopNavButtonStyle}"
+                                        Content="🔄 Rafraîchir liste"
+                                        Margin="0,0,6,0"
+                                        ToolTip="Recharge la liste depuis l'inventaire courant."/>
+                                <Button x:Name="BtnConsoAucun"
+                                        Click="BtnConsoAucun_Click"
+                                        Style="{StaticResource TopNavButtonStyle}"
+                                        Content="🚫 Désactiver"
+                                        ToolTip="Désactive le soin auto par consommable."/>
+                            </WrapPanel>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                    <DockPanel>
+                                        <TextBlock Text="SI PV &lt;" Style="{StaticResource SectionLabelStyle}" DockPanel.Dock="Left"/>
+                                        <TextBlock x:Name="TxtConsoSeuilInf" Text="50%" DockPanel.Dock="Right" HorizontalAlignment="Right"/>
+                                    </DockPanel>
+                                    <Slider x:Name="SldConsoSeuilInf" Minimum="5" Maximum="95" TickFrequency="5"
+                                            IsSnapToTickEnabled="True" Value="50"
+                                            ValueChanged="SldConsoSeuilInf_Changed"
+                                            ToolTip="Si PV % &lt; ce seuil, le bot boit le consommable au début du tour."/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1">
+                                    <DockPanel>
+                                        <TextBlock Text="JUSQU'À PV &gt;" Style="{StaticResource SectionLabelStyle}" DockPanel.Dock="Left"/>
+                                        <TextBlock x:Name="TxtConsoSeuilSup" Text="100%" DockPanel.Dock="Right" HorizontalAlignment="Right"/>
+                                    </DockPanel>
+                                    <Slider x:Name="SldConsoSeuilSup" Minimum="10" Maximum="100" TickFrequency="5"
+                                            IsSnapToTickEnabled="True" Value="100"
+                                            ValueChanged="SldConsoSeuilSup_Changed"
+                                            ToolTip="Le bot arrête de boire dès que PV % &gt;= ce seuil."/>
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock x:Name="TxtConsoEtat"
+                                       Text=""
+                                       Foreground="#65C56F"
+                                       FontSize="10"
+                                       Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </Border>
+
                     <!-- Sauvegarde / Chargement (WrapPanel = wrap si pas assez large) -->
                     <TextBlock Text="SAUVEGARDE / CHARGEMENT" Style="{StaticResource SectionLabelStyle}"/>
                     <WrapPanel Margin="0,0,0,8">
@@ -887,6 +972,13 @@
                     <!-- Presets de classe (barre dédiée, WrapPanel pour visibilité totale) -->
                     <TextBlock Text="PRESETS DE CLASSE" Style="{StaticResource SectionLabelStyle}"/>
                     <WrapPanel Margin="0,0,0,4">
+                        <Button Click="BtnPresetParClasse_Click"
+                                x:Name="BtnPresetParClasse"
+                                Style="{StaticResource TopNavButtonStyle}"
+                                Content="✨ Préset auto (classe du perso)"
+                                Margin="0,0,6,6"
+                                FontWeight="SemiBold"
+                                ToolTip="Détecte la classe du perso ÉDITÉ (master ou héros lié) et applique le preset officiel ADR-008 (12 classes Retro 1.29 supportées : Feca, Osa, Enutrof, Sram, Xelor, Eca, Eni, Iop, Cra, Sadida, Sacri, Panda)."/>
                         <Button Click="BtnPresetSadida_Click"
                                 Style="{StaticResource TopNavButtonStyle}"
                                 Content="Préset Sadida"
