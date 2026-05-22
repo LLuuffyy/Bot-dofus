@@ -35,6 +35,7 @@ public sealed class ContexteCompte : IDisposable
     public BotDofus.Divers.Banque.ConfigBanque ConfigBanque { get; }
     public BotDofus.Divers.MultiAccount.ConfigGroupeHeros ConfigGroupeHeros { get; }
     private readonly BotDofus.Divers.MultiAccount.AutoInviteurHeros _inviteurHeros;
+    public readonly BotDofus.Divers.MultiAccount.ActivateurHerosAbrak ActivateurHerosAbrak;
 
     /// <summary>Bouton « Inviter maintenant » côté UI : déclenche l'auto-inviteur indépendamment du toggle.</summary>
     public System.Threading.Tasks.Task InviterHerosMaintenantAsync()
@@ -115,6 +116,8 @@ public sealed class ContexteCompte : IDisposable
         // Config groupe héros (multi-account/<perso>.json) + auto-inviteur.
         ConfigGroupeHeros = BotDofus.Divers.MultiAccount.ConfigGroupeHeros.Charger(compte.Identifiant);
         _inviteurHeros = new BotDofus.Divers.MultiAccount.AutoInviteurHeros(compte, ConfigGroupeHeros);
+        ActivateurHerosAbrak = new BotDofus.Divers.MultiAccount.ActivateurHerosAbrak(compte);
+        compte.ActivateurHerosAbrak = ActivateurHerosAbrak;
 
         // Hook event poids → check seuil + Discord notif si configuré.
         EtatJeu.Personnage.Mis_A_Jour += OnPersonnageMisAJour;
@@ -225,6 +228,10 @@ public sealed class ContexteCompte : IDisposable
     {
         SessionJeuActive = session;
         Api.LierSession(session);
+        // Pose la session sur l'activateur héros DÈS l'attache jeu : le client
+        // Dofus envoie souvent son propre NOL avant que ChangerEtat(EnJeu) ne
+        // tire, et on veut que OnHerosOrdre puisse réagir en ayant la session.
+        ActivateurHerosAbrak.AttacherSession(session);
 
         // TOUJOURS TrameJeu (observation + parseurs combat/entités), que l'on
         // soit passif ou actif : le client réel gère sélection perso/serveur.
@@ -392,6 +399,13 @@ public sealed class ContexteCompte : IDisposable
         // Skip en mode passif / si déjà tournée (le service est anti-réentrant).
         if (etat == Enums.EtatsCompte.EnJeu && SessionJeuActive != null && !ModePassif)
         {
+            // ActivateurHerosAbrak DÉSACTIVÉ (demande user 2026-05-22) :
+            // les paquets NOL / NS qu'il envoie déclenchent l'ouverture de
+            // la fenêtre « Recherche de héros » côté client Dofus à chaque
+            // démarrage, ce qui est gênant. Le mode héros marche déjà sans
+            // (les héros sont activés serveur-side via GTSX en combat).
+            // → seul l'AutoInviteur PI<Nom> classique tourne, pour les vrais
+            //   PJs externes invités via la liste NomsHeros.
             _ = _inviteurHeros.LancerAsync(SessionJeuActive);
         }
     }
