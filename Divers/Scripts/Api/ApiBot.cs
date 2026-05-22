@@ -969,7 +969,19 @@ public sealed class ApiBot
         var carte = _etat.CarteCourante;
         if (carte == null) return null;
         int moi = _etat.Personnage.CellulePosition ?? 0;
+        int monId = _etat.Personnage.Identifiant;
+        // FIX 2026-05-22 20:34 : filtrer les fausses EntiteMonstre :
+        //   - Sur Dofus 1.29, les groupes de mobs ont des IDs NÉGATIFS (-300, -302, ...).
+        //     Les IDs positifs sont les joueurs/héros/PNJs → JAMAIS attaquables.
+        //   - Exclure aussi mon propre ID (defense in depth).
+        //   - Exclure les entités à la même cell que moi (fantômes parsés à
+        //     ma position quand le combat finit).
+        // Forensic : [FARM] cible #401770 « Monstre #0 » cell 350 (perso 350, dist 0)
+        // → tentative d'auto-engagement, serveur ignore GA907, timeout 2s.
         return carte.Entites.Values.OfType<EntiteMonstre>()
+            .Where(m => m.Identifiant < 0
+                     && m.Identifiant != monId
+                     && m.CellulePosition != moi)
             .OrderBy(m => Math.Abs(m.CellulePosition - moi))
             .FirstOrDefault();
     }
