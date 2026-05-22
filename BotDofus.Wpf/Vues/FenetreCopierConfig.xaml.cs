@@ -60,7 +60,7 @@ public partial class FenetreCopierConfig : Window
         var groupe = _contexte.Compte.GroupeHeros;
         if (groupe is not null)
         {
-            foreach (var m in groupe.Membres)
+            foreach (var m in groupe.SnapshotMembres())
             {
                 if (m.Role == RoleDansGroupe.Leader) continue;
                 if (_membreSource is not null && m.IdJeu == _membreSource.IdJeu) continue;

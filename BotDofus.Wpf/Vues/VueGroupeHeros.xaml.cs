@@ -46,11 +46,33 @@ public partial class VueGroupeHeros : UserControl
             // groupe est typiquement encore null (créé au 1er GTSX), il faut
             // se ré-attacher dès qu'il apparaît côté Compte.
             _contexte.Compte.GroupeHerosChange += OnGroupeAffecte;
-            // Synchro UI checkbox auto-invit avec la config persistée.
+            // Synchro UI checkbox auto-invit + textarea noms avec la config persistée.
             ChkAutoInvit.IsChecked = _contexte.ConfigGroupeHeros.AutoInvitationActive;
+            TxtNomsHeros.Text = string.Join("\r\n", _contexte.ConfigGroupeHeros.NomsHeros);
         }
         AttacherAuGroupe(_contexte?.Compte.GroupeHeros);
         Rafraichir();
+    }
+
+    private void BtnSauverNomsHeros_Click(object sender, System.Windows.RoutedEventArgs e)
+    {
+        if (_contexte is null) return;
+        var lignes = (TxtNomsHeros.Text ?? string.Empty)
+            .Split(new[] { "\r\n", "\r", "\n" }, System.StringSplitOptions.RemoveEmptyEntries)
+            .Select(l => l.Trim())
+            .Where(l => l.Length > 0)
+            .Distinct()
+            .ToList();
+        _contexte.ConfigGroupeHeros.NomsHeros.Clear();
+        _contexte.ConfigGroupeHeros.NomsHeros.AddRange(lignes);
+        _contexte.ConfigGroupeHeros.Sauvegarder(_contexte.Compte.Identifiant);
+        BotDofus.Utilitaires.Journaux.Journaliseur.Info(
+            $"[GH-INVIT] Liste sauvegardée — {lignes.Count} héros : {string.Join(", ", lignes)}");
+        System.Windows.MessageBox.Show(
+            $"{lignes.Count} héros enregistrés. Coche « Auto-invitation » pour activer à la connexion.",
+            "Auto-invitation",
+            System.Windows.MessageBoxButton.OK,
+            System.Windows.MessageBoxImage.Information);
     }
 
     private void OnGroupeAffecte(object? sender, BotDofus.Divers.MultiAccount.GroupeHeros? nouveau)
@@ -209,14 +231,13 @@ public partial class VueGroupeHeros : UserControl
             BadgeEtat.Background = new SolidColorBrush(Color.FromRgb(0x3D, 0x44, 0x53));
             TxtResume.Text = "Pas de mode héros détecté sur ce compte.";
             TxtTourCourant.Text = "—";
-            BandeauInfoAbrak.Visibility = System.Windows.Visibility.Collapsed;
+            // L'éditeur de noms reste toujours visible : c'est précisément ce
+            // dont l'user a besoin pour configurer l'invitation avant tout
+            // combat (et donc avant détection du groupe).
             Membres.Clear();
             Ordre.Clear();
             return;
         }
-
-        // Le bandeau d'info s'affiche dès qu'un groupe existe (mode héros détecté).
-        BandeauInfoAbrak.Visibility = System.Windows.Visibility.Visible;
 
         // Badge état
         if (_groupeLie.EstActif)
@@ -231,12 +252,18 @@ public partial class VueGroupeHeros : UserControl
             BadgeEtat.Background = new SolidColorBrush(Color.FromRgb(0x3D, 0x44, 0x53));
             TxtEtat.Foreground = new SolidColorBrush(Color.FromRgb(0xC0, 0xC6, 0xD4));
         }
-        TxtResume.Text = $"{_groupeLie.Membres.Count} membre(s) • leader = {_groupeLie.Leader?.Nom ?? "?"}";
+        // Snapshots atomiques pour échapper à la race avec le thread réseau
+        // qui peut ajouter/retirer un membre pendant l'itération de l'UI.
+        var membresSnap = _groupeLie.SnapshotMembres();
+        var ordreSnap = _groupeLie.SnapshotOrdreTours();
+        var idxActuel = _groupeLie.IndexMembreActuel;
+        var actuel = _groupeLie.JoueurActuel;
+
+        TxtResume.Text = $"{membresSnap.Length} membre(s) • leader = {_groupeLie.Leader?.Nom ?? "?"}";
 
         // Liste membres
         Membres.Clear();
-        var actuel = _groupeLie.JoueurActuel;
-        foreach (var m in _groupeLie.Membres)
+        foreach (var m in membresSnap)
         {
             bool estTour = actuel != null && actuel.IdJeu == m.IdJeu;
             Membres.Add(new LigneMembre(m, estTour));
@@ -247,12 +274,11 @@ public partial class VueGroupeHeros : UserControl
             ? $"Tour actuel : {actuel.Nom} (id {actuel.IdJeu})"
             : "Aucun tour en cours";
         Ordre.Clear();
-        var ordreList = _groupeLie.OrdreToursCourant;
-        for (int i = 0; i < ordreList.Count; i++)
+        for (int i = 0; i < ordreSnap.Length; i++)
         {
-            int id = ordreList[i];
+            int id = ordreSnap[i];
             var membre = _groupeLie.TrouverParIdJeu(id);
-            bool estCourant = i == _groupeLie.IndexMembreActuel;
+            bool estCourant = i == idxActuel;
             Ordre.Add(new LigneOrdre(i + 1, id, membre, estCourant));
         }
     }

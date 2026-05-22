@@ -44,6 +44,38 @@ public static class ServiceConfigsHeros
 
     private static string Chemin(int idJeu) => Path.Combine(Dossier, $"{idJeu}.json");
 
+    /// <summary>
+    /// Liste toutes les configs héros persistées (un fichier par <c>peleas/heros/&lt;id&gt;.json</c>).
+    /// Utilisé par l'UI pour proposer l'édition des persos même sans groupe
+    /// actif en RAM (= avant le 1er combat).
+    /// </summary>
+    public static IReadOnlyList<ConfigHeros> ListerToutes()
+    {
+        var resultat = new List<ConfigHeros>();
+        if (!Directory.Exists(Dossier)) return resultat;
+        foreach (var fichier in Directory.EnumerateFiles(Dossier, "*.json"))
+        {
+            try
+            {
+                var json = File.ReadAllText(fichier);
+                var cfg = JsonSerializer.Deserialize<ConfigHeros>(json, Options);
+                if (cfg is null) continue;
+                if (cfg.IdJeu == 0)
+                {
+                    // Fallback : nom du fichier = id.
+                    var nom = Path.GetFileNameWithoutExtension(fichier);
+                    if (int.TryParse(nom, out var idParse)) cfg.IdJeu = idParse;
+                }
+                if (cfg.IdJeu != 0) resultat.Add(cfg);
+            }
+            catch (Exception ex)
+            {
+                Journaliseur.Avertir($"[HEROS-CFG] Scan {fichier} échec : {ex.Message}");
+            }
+        }
+        return resultat;
+    }
+
     /// <summary>Charge la config persistée d'un héros, ou null si absente.</summary>
     public static ConfigHeros? Charger(int idJeu)
     {

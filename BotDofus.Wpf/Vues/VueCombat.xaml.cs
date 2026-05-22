@@ -158,13 +158,15 @@ public partial class VueCombat : UserControl
             CouleurClasse = CouleurPourClasse(idClasseMaster),
             CouleurBadge = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0xCD, 0x52)),
         });
-        // Liés.
+        // Liés en RAM (groupe détecté).
         var groupe = _contexte?.Compte.GroupeHeros;
+        var idsDejaListes = new System.Collections.Generic.HashSet<int>();
         if (groupe is not null)
         {
-            foreach (var m in groupe.Membres)
+            foreach (var m in groupe.SnapshotMembres())
             {
                 if (m.Role == BotDofus.Divers.MultiAccount.RoleDansGroupe.Leader) continue;
+                idsDejaListes.Add(m.IdJeu);
                 var nom = string.IsNullOrWhiteSpace(m.Nom) ? $"Perso #{m.IdJeu}" : m.Nom;
                 items.Add(new PersoCibleVm
                 {
@@ -180,6 +182,43 @@ public partial class VueCombat : UserControl
                     CouleurBadge = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x6C, 0x76, 0xFF)),
                 });
             }
+        }
+
+        // Persos PERSISTÉS sur disque (peleas/heros/<id>.json) qui ne sont
+        // pas en RAM — permet de configurer l'IA des autres héros sans avoir
+        // à lancer un combat au préalable (cas user 2026-05-22 : « ils
+        // n'apparaissent pas dans la liste avant le combat »).
+        foreach (var cfg in BotDofus.Divers.MultiAccount.ServiceConfigsHeros.ListerToutes())
+        {
+            if (idsDejaListes.Contains(cfg.IdJeu)) continue;
+            var nom = string.IsNullOrWhiteSpace(cfg.Nom) ? $"Perso #{cfg.IdJeu}" : cfg.Nom;
+            // Crée un MembreHeros « fantôme » (pas attaché au groupe RAM) pour
+            // permettre l'édition. Sa ConfigCombat est celle persistée.
+            var membreFantome = new BotDofus.Divers.MultiAccount.MembreHeros
+            {
+                IdJeu = cfg.IdJeu,
+                Nom = cfg.Nom,
+                IdClasse = cfg.IdClasse,
+                Niveau = cfg.Niveau,
+                Role = BotDofus.Divers.MultiAccount.RoleDansGroupe.Suiveur,
+                ConfigCombat = cfg.ConfigCombat
+                    ?? BotDofus.Divers.MultiAccount.ServiceConfigsHeros.PresetParClasse(cfg.IdClasse),
+            };
+            foreach (var kv in cfg.SortsAppris) membreFantome.SortsAppris[kv.Key] = kv.Value;
+            foreach (var kv in cfg.PositionsBarre) membreFantome.PositionsBarre[kv.Key] = kv.Value;
+            items.Add(new PersoCibleVm
+            {
+                Membre = membreFantome,
+                Etiquette = $"{nom} (id {cfg.IdJeu}) — hors combat",
+                Nom = nom,
+                SousTitre = cfg.IdClasse > 0
+                    ? $"{NomClasse(cfg.IdClasse)} • niv {cfg.Niveau} • id {cfg.IdJeu} • disque"
+                    : $"id {cfg.IdJeu} • disque",
+                Initiale = nom[0].ToString().ToUpperInvariant(),
+                Badge = "DISQUE",
+                CouleurClasse = CouleurPourClasse(cfg.IdClasse),
+                CouleurBadge = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x55, 0x5C, 0x6D)),
+            });
         }
         CmbPersoCible.ItemsSource = items;
         // Resélectionne le perso courant.

@@ -74,20 +74,51 @@
             </Grid>
         </Border>
 
-        <!-- Bandeau info — explique le mode héros Abrak (mono-client serveur-side) -->
+        <!-- Bandeau Auto-invitation : édition inline des noms à inviter -->
         <Border Grid.Row="1"
                 x:Name="BandeauInfoAbrak"
                 Background="#1F2B3D"
                 BorderBrush="#3A5680"
                 BorderThickness="1"
                 CornerRadius="4"
-                Padding="10,8"
-                Margin="0,0,0,10"
-                Visibility="Collapsed">
-            <TextBlock Foreground="#9AB8E0"
-                       FontSize="11"
-                       TextWrapping="Wrap"
-                       Text="Mode héros Abrak — mono-client. Le bot peut piloter chaque héros (à chaque GTS le serveur attribue les actions au perso actif). Mais les sorts des liés ne sont pas transmis par le serveur : il faudra les configurer manuellement (peleas/heros/&lt;id&gt;.json + UI à venir). Pour l'instant cette vue affiche le groupe en lecture seule, stats live via GTM. Voir docs/ADDENDUM-MODE-HEROS-PILOTAGE-CLIENT.md."/>
+                Padding="12,10"
+                Margin="0,0,0,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Foreground="#9AB8E0" FontWeight="SemiBold" FontSize="12"
+                               Text="Auto-invitation des héros (Abrak — un nom par ligne)"/>
+                    <TextBlock Foreground="#7F89A0" FontSize="10" TextWrapping="Wrap" Margin="0,2,0,6"
+                               Text="À chaque connexion en jeu (mode actif), envoie PI&lt;nom&gt; pour chacun. Saisis les pseudos des 7 Enutrof."/>
+                    <TextBox x:Name="TxtNomsHeros"
+                             MinHeight="80"
+                             MaxHeight="120"
+                             AcceptsReturn="True"
+                             TextWrapping="NoWrap"
+                             VerticalScrollBarVisibility="Auto"
+                             HorizontalScrollBarVisibility="Auto"
+                             FontFamily="Consolas"
+                             FontSize="11"
+                             Background="#15192A"
+                             Foreground="#E0E5F0"
+                             BorderBrush="#3C4458"
+                             BorderThickness="1"
+                             Padding="6,4"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Bottom">
+                    <Button x:Name="BtnSauverNomsHeros"
+                            Content="Sauvegarder"
+                            Padding="10,4"
+                            Background="#3D5580"
+                            Foreground="#FFFFFF"
+                            BorderThickness="0"
+                            FontWeight="SemiBold"
+                            Click="BtnSauverNomsHeros_Click"/>
+                </StackPanel>
+            </Grid>
         </Border>
 
         <!-- Corps : 2 colonnes (membres + ordre tours) -->

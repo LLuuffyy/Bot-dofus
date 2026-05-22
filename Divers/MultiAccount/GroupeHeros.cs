@@ -116,6 +116,22 @@ public sealed class GroupeHeros : IDisposable
         lock (_verrouEtat) return _membres.FirstOrDefault(m => m.IdJeu == idJeu);
     }
 
+    /// <summary>
+    /// Copie atomique de la liste des membres — à utiliser par l'UI pour itérer
+    /// sans risque de <c>InvalidOperationException</c> « Collection was modified »
+    /// quand le thread réseau ajoute/retire un membre pendant l'itération.
+    /// </summary>
+    public MembreHeros[] SnapshotMembres()
+    {
+        lock (_verrouEtat) return _membres.ToArray();
+    }
+
+    /// <summary>Snapshot atomique de l'ordre des tours (même raison que <see cref="SnapshotMembres"/>).</summary>
+    public int[] SnapshotOrdreTours()
+    {
+        lock (_verrouEtat) return _ordreToursCourant.ToArray();
+    }
+
     // ----- Lifecycle -----
 
     public void Activer()

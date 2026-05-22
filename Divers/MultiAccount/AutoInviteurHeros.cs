@@ -41,11 +41,31 @@ public sealed class AutoInviteurHeros
     /// </summary>
     public async Task LancerAsync(SessionProxy? session, CancellationToken ct = default)
     {
-        if (session is null) return;
-        if (_compte.ModePassif) return;
-        if (!_config.AutoInvitationActive) return;
-        if (_config.NomsHeros.Count == 0) return;
-        if (Interlocked.Exchange(ref _enCours, 1) == 1) return;
+        if (session is null)
+        {
+            Journaliseur.Debogue("[GH-INVIT] skip : pas de session jeu active");
+            return;
+        }
+        if (_compte.ModePassif)
+        {
+            Journaliseur.Info("[GH-INVIT] skip : mode passif activé");
+            return;
+        }
+        if (!_config.AutoInvitationActive)
+        {
+            Journaliseur.Info("[GH-INVIT] skip : auto-invitation désactivée (cocher dans onglet Groupe ou éditer multi-account/<id>.json)");
+            return;
+        }
+        if (_config.NomsHeros.Count == 0)
+        {
+            Journaliseur.Info("[GH-INVIT] skip : aucun nom configuré (éditer la liste dans l'onglet Groupe)");
+            return;
+        }
+        if (Interlocked.Exchange(ref _enCours, 1) == 1)
+        {
+            Journaliseur.Debogue("[GH-INVIT] skip : procédure déjà en cours");
+            return;
+        }
 
         try
         {
