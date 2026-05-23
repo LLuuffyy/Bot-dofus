@@ -9,6 +9,7 @@ namespace BotDofus.Divers.Scripts;
 public sealed class ConfigurationScript
 {
     public bool AfficherCompteurCombats { get; set; } = true;
+    /// <summary>Seuil pods (%) déclenchant le détour <c>banque()</c>. Lu de <c>MAX_PODS</c>.</summary>
     public int PodsMax { get; set; } = 90;
 
     /// <summary>
@@ -24,6 +25,31 @@ public sealed class ConfigurationScript
     /// mouvement. Lu depuis le global Lua <c>FORCE_FIGHT = true</c>.
     /// </summary>
     public bool ForceFight { get; set; } = false;
+
+    /// <summary>
+    /// IDs des templates de ressources à récolter (filtre récolte).
+    /// Lu de <c>ELEMENTS_TO_GATHER = {254, 256, ...}</c>. Vide = tout récolter.
+    /// </summary>
+    public List<int> ElementsToGather { get; set; } = new();
+
+    /// <summary>Nombre minimum de mobs dans un groupe pour engager (1 par défaut).</summary>
+    public int MinMonsters { get; set; } = 1;
+
+    /// <summary>Nombre maximum de mobs dans un groupe pour engager (8 par défaut).</summary>
+    public int MaxMonsters { get; set; } = 8;
+
+    /// <summary>
+    /// Liste des IdGabarit de monstres OBLIGATOIRES pour engager le groupe
+    /// (au moins 1 du groupe doit être dans cette liste). Vide = pas de filtre.
+    /// Lu de <c>OK_MONSTER = {651}</c>.
+    /// </summary>
+    public List<int> OkMonsters { get; set; } = new();
+
+    /// <summary>
+    /// Liste des IdGabarit de monstres À ÉVITER (si présents dans le groupe,
+    /// on n'engage pas). Vide = pas de filtre. Lu de <c>NO_MONSTER = {652}</c>.
+    /// </summary>
+    public List<int> NoMonsters { get; set; } = new();
 
     public RegenerationAuto? RegenerationAutomatique { get; set; }
     public List<int> CartesDonjon { get; set; } = new();

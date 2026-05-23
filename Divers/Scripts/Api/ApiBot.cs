@@ -1058,22 +1058,51 @@ public sealed class ApiBot
         return true;
     }
 
-    /// <summary>Groupe de monstres le plus proche du perso sur la carte courante.</summary>
+    /// <summary>
+    /// Groupe de monstres le plus proche du perso sur la carte courante,
+    /// filtré selon la <see cref="ConfigurationScript"/> du script Lua actif
+    /// (si chargé) : OK_MONSTER, NO_MONSTER, MIN_MONSTERS, MAX_MONSTERS.
+    /// </summary>
     public EntiteMonstre? MonstreLePlusProche()
     {
         var carte = _etat.CarteCourante;
         if (carte == null) return null;
         int moi = _etat.Personnage.CellulePosition ?? 0;
         int monId = _etat.Personnage.Identifiant;
-        // Filtre les fausses EntiteMonstre : doit être un vrai groupe (id < 0),
-        // pas mon perso, pas à ma cell (fantôme), et pas blacklisté temporairement.
+        var cfg = _compte.ConfigScriptCourante;
+
+        // Filtres de base : vrai groupe (id<0), pas mon perso, pas à ma cell,
+        // pas blacklisté + filtres script (OK_MONSTER / NO_MONSTER / MIN/MAX).
         return carte.Entites.Values.OfType<EntiteMonstre>()
             .Where(m => m.EstGroupeAttaquable
                      && m.Identifiant != monId
                      && m.CellulePosition != moi
-                     && !EstBlackliste(m.Identifiant))
+                     && !EstBlackliste(m.Identifiant)
+                     && CorrespondAuxFiltresScript(m, cfg))
             .OrderBy(m => Math.Abs(m.CellulePosition - moi))
             .FirstOrDefault();
+    }
+
+    /// <summary>
+    /// Applique les filtres du script Lua actif (MIN/MAX_MONSTERS, OK_/NO_MONSTER).
+    /// Retourne true si null (= pas de script chargé → tout est OK).
+    /// </summary>
+    private static bool CorrespondAuxFiltresScript(EntiteMonstre m, BotDofus.Divers.Scripts.ConfigurationScript? cfg)
+    {
+        if (cfg == null) return true;
+        int taille = Math.Max(1, m.TailleGroupe);
+        if (cfg.MinMonsters > 0 && taille < cfg.MinMonsters) return false;
+        if (cfg.MaxMonsters > 0 && taille > cfg.MaxMonsters) return false;
+
+        // OK_MONSTER : si liste non vide, au moins 1 gabarit du groupe doit y figurer.
+        // Note : actuellement EntiteMonstre stocke IdGabarit (1er gabarit du groupe).
+        // Pour la vraie liste complète, il faudrait l'étendre — V1 utilise IdGabarit principal.
+        if (cfg.OkMonsters.Count > 0 && !cfg.OkMonsters.Contains(m.IdGabarit)) return false;
+
+        // NO_MONSTER : si gabarit principal du groupe est blacklisté, skip.
+        if (cfg.NoMonsters.Count > 0 && cfg.NoMonsters.Contains(m.IdGabarit)) return false;
+
+        return true;
     }
 
     /// <summary>

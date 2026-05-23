@@ -63,6 +63,22 @@ public sealed class ChargeurLua
         var forceFight = script.Globals.Get("FORCE_FIGHT");
         if (forceFight.Type == DataType.Boolean) config.ForceFight = forceFight.Boolean;
 
+        // Filtres farm/récolte
+        var elements = script.Globals.Get("ELEMENTS_TO_GATHER");
+        if (elements.Type == DataType.Table) config.ElementsToGather = ExtraireListeInt(elements);
+
+        var minMobs = script.Globals.Get("MIN_MONSTERS");
+        if (minMobs.Type == DataType.Number) config.MinMonsters = (int)minMobs.Number;
+
+        var maxMobs = script.Globals.Get("MAX_MONSTERS");
+        if (maxMobs.Type == DataType.Number) config.MaxMonsters = (int)maxMobs.Number;
+
+        var okMobs = script.Globals.Get("OK_MONSTER");
+        if (okMobs.Type == DataType.Table) config.OkMonsters = ExtraireListeInt(okMobs);
+
+        var noMobs = script.Globals.Get("NO_MONSTER");
+        if (noMobs.Type == DataType.Table) config.NoMonsters = ExtraireListeInt(noMobs);
+
         var autoRegen = script.Globals.Get("AUTO_REGEN");
         if (autoRegen.Type == DataType.Table)
         {

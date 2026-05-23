@@ -121,6 +121,13 @@ public sealed class Compte : IEffacable
     public bool BanqueEnCours { get; set; }
 
     /// <summary>
+    /// Config du script Lua actuellement chargé (globals MAX_PODS, OK_MONSTER,
+    /// MIN_MONSTERS, etc.). Set par <see cref="BotDofus.Divers.Scripts.GestionnaireScripts"/>
+    /// au chargement d'un script. Null = pas de script actif (filtres désactivés).
+    /// </summary>
+    public BotDofus.Divers.Scripts.ConfigurationScript? ConfigScriptCourante { get; set; }
+
+    /// <summary>
     /// URL webhook Discord pour notifications événements importants (mort,
     /// level up, banque pleine, déconnexion). Vide = pas de notif.
     /// Format : <c>https://discord.com/api/webhooks/&lt;id&gt;/&lt;token&gt;</c>.

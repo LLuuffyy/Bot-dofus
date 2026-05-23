@@ -17,9 +17,22 @@
 -- =====================================================================
 
 SHOW_FIGHT_COUNTER = true
-MAX_PODS = 95
-MARCHAND_SEUIL_PODS = 80   -- au-dessus de 80% pods → détour taverne
-FORCE_FIGHT = true         -- farme TOUS les groupes de chaque map
+
+-- === SEUILS DE POIDS ===
+MAX_PODS = 90              -- % poids déclenchant le détour banque() (override ConfigBanque)
+MARCHAND_SEUIL_PODS = 80   -- % poids déclenchant le détour marchand()
+
+-- === COMPORTEMENT FARM ===
+FORCE_FIGHT = true         -- farme TOUS les groupes de chaque map avant de bouger
+
+-- === FILTRES MONSTRES ===
+MIN_MONSTERS = 1           -- nb min de mobs dans le groupe pour engager
+MAX_MONSTERS = 8           -- nb max de mobs dans le groupe pour engager
+OK_MONSTER = {651}         -- IdGabarit obligatoire (vide = pas de filtre)
+NO_MONSTER = {652}         -- IdGabarit à éviter (vide = pas de filtre)
+
+-- === RÉCOLTE ===
+ELEMENTS_TO_GATHER = {254} -- IDs des templates de ressources à récolter (vide = tout)
 
 -- Trajet farm principal — boucle de combats.
 function mouvement()

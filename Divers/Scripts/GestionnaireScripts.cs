@@ -46,6 +46,9 @@ public sealed class GestionnaireScripts : IDisposable
         ScriptCourant = script;
         IndexEtapeCourante = 0;
         CompteurCombats = 0;
+        // Expose la config script au Compte pour que ApiBot.MonstreLePlusProche
+        // puisse appliquer les filtres OK_MONSTER / NO_MONSTER / MIN-MAX_MONSTERS.
+        _compte.ConfigScriptCourante = script.Configuration;
         _porteMobile.Set();
         _annulation = new CancellationTokenSource();
 

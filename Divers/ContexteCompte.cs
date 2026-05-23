@@ -347,12 +347,17 @@ public sealed class ContexteCompte : IDisposable
         // fire pendant que la map se synchronise (CarteCourante null, inventaire
         // pas encore complet) → log 17:10:22 cas observé.
         bool grace = (DateTime.UtcNow - _dernierChangementCarteUtc).TotalMilliseconds < 2000;
+        // MAX_PODS du script Lua override le seuil de la config banque
+        // (permet à l'user d'avoir un seuil différent par trajet).
+        int seuilEffectif = Compte.ConfigScriptCourante?.PodsMax > 0
+            ? Compte.ConfigScriptCourante.PodsMax
+            : ConfigBanque.SeuilPoidsPct;
         if (ConfigBanque.Active
             && !ModePassif                                              // mode passif → AUCUNE action auto, y compris banque
             && !_banqueDeclenchee
             && !grace
-            && perso.PourcentagePoids >= ConfigBanque.SeuilPoidsPct
-            && ConfigBanque.SeuilPoidsPct > 0  // seuil valide
+            && perso.PourcentagePoids >= seuilEffectif
+            && seuilEffectif > 0  // seuil valide
             && EtatJeu.Combat.Etat == BotDofus.Divers.Combats.Enums.EtatCombat.Inactif)
         {
             _banqueDeclenchee = true;
