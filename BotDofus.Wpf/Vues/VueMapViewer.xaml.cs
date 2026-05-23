@@ -369,9 +369,10 @@ public partial class VueMapViewer : UserControl
             // figé, pas de cells de placement résiduelles (cf. H.4
             // DessinerCellulesPlacement gate Placement only).
             DessinerCombattants(carte);
-            // Cells atteignables avec mes PM courants (BFS 4-dir), vert pâle.
-            // Donne immédiatement la zone de mouvement ce tour (ADR-003).
-            DessinerCellulesAtteignablesAvecPM(carte);
+            // DessinerCellulesAtteignablesAvecPM(carte) DÉSACTIVÉ :
+            // crash OutOfMemoryException (forensic 2026-05-23 18:07) car
+            // Pathfinder.Trouver appelé ~560× par refresh × refresh fréquent.
+            // À ré-implémenter avec BFS limité (vs A* exhaustif) si besoin.
             // Highlights : si un sort est sélectionné dans l'onglet Combat,
             // surligne les cells dans sa portée autour de ma position actuelle.
             DessinerHighlightsSortSelectionne(carte);
