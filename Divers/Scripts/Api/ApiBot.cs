@@ -373,8 +373,11 @@ public sealed class ApiBot
         {
             await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
             // GA907 doit partir APRÈS l'arrivée du perso sinon serveur l'ignore
-            // silencieusement (perso pas à destination). 330ms/case ≈ vrai client.
-            int delaiMarcheMs = Math.Clamp((cases - 1) * 330, 250, 3500);
+            // silencieusement (perso pas à destination). 350ms/case (+ marge safety
+            // 500ms) ≈ vrai client. Clamp max relevé à 10s pour gérer les chemins
+            // longs (17 cases = ~6.5s) — bug forensic 20260522-205230 où 17 cases
+            // étaient tronquées à 3.5s → GA907 ignoré × 10 essais.
+            int delaiMarcheMs = Math.Clamp((cases - 1) * 350 + 500, 250, 10000);
             await Task.Delay(delaiMarcheMs, ct).ConfigureAwait(false);
         }
         await EnvoyerHumaniseAsync($"GA907{cellule};{idGroupe}", ct).ConfigureAwait(false);
@@ -384,7 +387,10 @@ public sealed class ApiBot
             await EnvoyerHumaniseAsync("GKK0", ct).ConfigureAwait(false);
         }
         // Attendre la confirmation serveur que le combat démarre (max 4s).
-        await AttendreDebutCombatAsync(4000, ct).ConfigureAwait(false);
+        // Si timeout, signaler échec pour la blacklist anti-retry-infini.
+        bool combatDemarre = await AttendreDebutCombatAsync(4000, ct).ConfigureAwait(false);
+        if (combatDemarre) SignalerSuccesEngagement(idGroupe);
+        else SignalerEchecEngagement(idGroupe);
     }
 
     /// <summary>
@@ -961,6 +967,49 @@ public sealed class ApiBot
         }
     }
 
+    // Blacklist temporaire des groupes inaccessibles (timeout GA907 répété).
+    // (idGroupe, mapId) → expirationUtc. Skip MonstreLePlusProche pendant 45s
+    // après 3 timeouts consécutifs sur la même cible (forensic 2026-05-22 21:00
+    // où #-490 sur cell 266 a été retried 10× en 1min40 sans succès).
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<(int idGroupe, int mapId), DateTime> _blacklistGroupes = new();
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<(int idGroupe, int mapId), int> _compteurEchecsGroupes = new();
+    private const int SeuilEchecsAvantBlacklist = 3;
+    private const int DureeBlacklistSecondes = 45;
+
+    /// <summary>Marque un groupe comme ayant échoué (timeout GA907). Si seuil atteint, blacklist 45s.</summary>
+    public void SignalerEchecEngagement(int idGroupe)
+    {
+        var mapId = _etat.CarteCourante?.Identifiant ?? 0;
+        var cle = (idGroupe, mapId);
+        int n = _compteurEchecsGroupes.AddOrUpdate(cle, 1, (_, v) => v + 1);
+        if (n >= SeuilEchecsAvantBlacklist)
+        {
+            _blacklistGroupes[cle] = DateTime.UtcNow.AddSeconds(DureeBlacklistSecondes);
+            _compteurEchecsGroupes.TryRemove(cle, out _);
+            Journaliseur.Avertir($"[FARM] Groupe #{idGroupe} blacklisté {DureeBlacklistSecondes}s (3 timeouts consécutifs).");
+        }
+    }
+
+    /// <summary>Reset le compteur d'échec pour ce groupe (succès d'engagement).</summary>
+    public void SignalerSuccesEngagement(int idGroupe)
+    {
+        var mapId = _etat.CarteCourante?.Identifiant ?? 0;
+        _compteurEchecsGroupes.TryRemove((idGroupe, mapId), out _);
+    }
+
+    private bool EstBlackliste(int idGroupe)
+    {
+        var mapId = _etat.CarteCourante?.Identifiant ?? 0;
+        var cle = (idGroupe, mapId);
+        if (!_blacklistGroupes.TryGetValue(cle, out var expire)) return false;
+        if (DateTime.UtcNow >= expire)
+        {
+            _blacklistGroupes.TryRemove(cle, out _);
+            return false;
+        }
+        return true;
+    }
+
     /// <summary>Groupe de monstres le plus proche du perso sur la carte courante.</summary>
     public EntiteMonstre? MonstreLePlusProche()
     {
@@ -969,11 +1018,12 @@ public sealed class ApiBot
         int moi = _etat.Personnage.CellulePosition ?? 0;
         int monId = _etat.Personnage.Identifiant;
         // Filtre les fausses EntiteMonstre : doit être un vrai groupe (id < 0),
-        // pas mon perso, et pas à ma cell (fantôme parsé en fin de combat).
+        // pas mon perso, pas à ma cell (fantôme), et pas blacklisté temporairement.
         return carte.Entites.Values.OfType<EntiteMonstre>()
             .Where(m => m.EstGroupeAttaquable
                      && m.Identifiant != monId
-                     && m.CellulePosition != moi)
+                     && m.CellulePosition != moi
+                     && !EstBlackliste(m.Identifiant))
             .OrderBy(m => Math.Abs(m.CellulePosition - moi))
             .FirstOrDefault();
     }
@@ -1002,8 +1052,11 @@ public sealed class ApiBot
         await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
         // ATTENTE DÉBUT COMBAT — bloque jusqu'à ce que le serveur confirme
         // (passage Combat.Etat = EnCours / Placement) ou timeout 4s.
-        await AttendreDebutCombatAsync(4000, ct).ConfigureAwait(false);
-        return true;
+        // Si timeout, signaler échec pour la blacklist anti-retry-infini.
+        bool ok = await AttendreDebutCombatAsync(4000, ct).ConfigureAwait(false);
+        if (ok) SignalerSuccesEngagement(cible.Identifiant);
+        else SignalerEchecEngagement(cible.Identifiant);
+        return ok;
     }
 
     /// <summary>
