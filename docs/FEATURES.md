@@ -2,18 +2,23 @@
 
 Inventaire des features actuellement implémentées et de leur statut.
 
-Dernière maj : 2026-05-23
+Dernière maj : 2026-05-23 (Phase 4 IA améliorations majeures)
 
 ## ✅ Implémentées et stables
 
 ### Combat IA tactique
 - **Moteur règles SynFus/dyshay** (`Divers/Combats/IA/MoteurReglesCombat.cs`) — priorités, conditions (Focus/PV%/tour/ennemis), multi-cast ≤8 par tour
-- **Moteur tactique** (`MoteurTactique.cs`) — score multi-critères, kite intelligent (porteeMax + PM_ennemi), LOS combatants
-- **12 presets de classe** (`ServiceConfigsHeros.PresetParClasse`)
+- **Moteur tactique** (`MoteurTactique.cs`) — score multi-critères, kite intelligent (porteeMax + PM_ennemi), LOS combatants + **murs MapData**
+- **12 presets de classe** (`ServiceConfigsHeros.PresetParClasse`), Sadida complet (7 sorts)
 - **Ordre cast → move** : préserve le tacle CAC, repositionne après les casts
 - **GKK0 systématique avant Gt** : débloque tour après déplacement post-cast
 - **Cooldown mort 30s** : anti-spam Sacrifice Poupesque
 - **Relax LOS** : repositionne même si dist OK quand LOS bloquée
+- **PmEnnemiCible fallback adaptatif** : suppose 3/4/5 PM selon portée du sort
+- **Mode "ACHEVER"** : mob PV%<15 et accessible → cible prioritaire absolue
+- **`PasSiTacle` heuristique** : skip sorts mobilité si ennemi adjacent
+- **`FocusSort.EnnemiAdjacentInvocAllie`** : synergie multi-perso (héros tirent sur mob bloqué par invocation master)
+- **`ConfigCombat.ModeEffectif`** : bascule auto en Fuyard si PV < seuil (`FuirSiPvBas` enfin actif)
 
 ### Panneau délais SynFus
 - **ConfigDelaisCombat** : 14 plages min/max éditables
@@ -76,10 +81,10 @@ Dernière maj : 2026-05-23
 
 | Feature | Statut | Gap |
 |---------|--------|-----|
-| LOS Bresenham | Partiel | Murs/decor MapData non décodés (TODO 4-6h) |
-| Preset Sadida (classe 10) | Partiel | Manque 193 (Bloqueuse), 195 (Larme), 198 (Sacrifice Poupesque) |
-| Encodage pathfinder | Suspect | Caractères majuscules dans GA001 non confirmés |
+| Encodage pathfinder | Suspect | Caractères majuscules dans GA001 non confirmés (chemin 17 cases observé) |
 | UI caracs auto | Backend OK | Pas de sliders UI — éditer `caracs/<perso>.json` à la main pour l'instant |
+| Détection effets de zone | Non | Sorts en croix/ligne pas optimisés pour cibles multiples |
+| Dégâts attendus | Non | Sort choisi par priorité, pas par dégâts max optimal |
 
 ## ❌ Non implémentées (roadmap)
 
@@ -116,5 +121,29 @@ Dernière maj : 2026-05-23
 
 - **Build** : `dotnet build BotDofus.sln -c Debug --nologo -v minimal`
 - **Tests** : `dotnet test BotDofus.Tests/BotDofus.Tests.csproj --nologo`
-- **Tests count** : 107/107 verts (au 2026-05-23)
+- **Tests count** : **120/120 verts** (au 2026-05-23, Phase 4 IA)
 - **Warnings** : 1 résiduel (CS1998 SessionProxy:121, méthode async sans await — design intentionnel)
+
+## 🎮 Comment configurer / tester
+
+### Combat IA — Beiloddurul Sadida master
+
+Édite `peleas/test.json` (déjà fait pour ton compte « test »). Les paliers
+sont :
+- `mode` : `Equilibre` / `Agressif` / `Eloigne` / `Fuyard`
+- `regles[]` : liste de sorts avec priorité + conditions
+- `fuirSiPvBas` : true → bascule auto Fuyard si PV < `seuilFuitePv`
+
+### Caracs auto — distribution au level-up
+
+Crée `caracs/<perso>.json` :
+```json
+{ "mode": "Preview", "pctIntelligence": 70, "pctSagesse": 30 }
+```
+Modes : `Manuel` (skip) / `Preview` (log only) / `Automatique` (envoi AB)
+
+### Héros liés — synergie
+
+Si master Sadida pose une invocation T1 (Folle/Bloqueuse), les héros
+Enutrof/Cra avec preset standard ciblent automatiquement les mobs
+adjacents à l'invocation (Focus `EnnemiAdjacentInvocAllie`).
