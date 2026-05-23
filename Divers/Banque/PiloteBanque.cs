@@ -219,12 +219,23 @@ public sealed class PiloteBanque
         var bdd = BaseDonnees.Instance;
         var resultat = new List<ObjetInventaire>();
 
-        // 1) Compter le total par template (pour les seuils).
-        var totalParTemplate = new Dictionary<int, int>();
+        // FILTRE SAC UNIQUEMENT : Position==63 sur Dofus 1.29 = sac.
+        // Les autres positions sont les équipements (amulette, arme, etc.)
+        // qu'il ne faut JAMAIS déposer automatiquement. Aussi : quand le coffre
+        // banque est ouvert, Hystoria ajoute parfois les items du coffre dans
+        // la même liste avec d'autres positions → on aurait essayé de
+        // « déposer » les items déjà dans le coffre (bug 2026-05-23 15:26 :
+        // 25/817 items sélectionnés car 792 items hors-sac).
+        var itemsSac = new List<ObjetInventaire>();
         foreach (var o in inventaire)
+            if (o.Position == 63 && o.Quantite > 0) itemsSac.Add(o);
+
+        // 1) Compter le total par template (pour les seuils) — sur les items du sac seulement.
+        var totalParTemplate = new Dictionary<int, int>();
+        foreach (var o in itemsSac)
             totalParTemplate[o.IdTemplate] = totalParTemplate.GetValueOrDefault(o.IdTemplate) + o.Quantite;
 
-        foreach (var item in inventaire)
+        foreach (var item in itemsSac)
         {
             // Liste noire : on garde TOUJOURS.
             if (_cfg.IdsAGarder.Contains(item.IdTemplate)) continue;
