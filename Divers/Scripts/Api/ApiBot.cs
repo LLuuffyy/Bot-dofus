@@ -1129,16 +1129,17 @@ public sealed class ApiBot
         }
         var cible = MonstreLePlusProche();
         if (cible == null) { Journaliseur.Info("[FARM] aucun monstre sur la carte."); return false; }
-        var paquet = $"GA907{cible.CellulePosition};{cible.Identifiant}";
+
+        // Délègue à EngagerGroupeAsync qui fait le DÉPLACEMENT (GA001) +
+        // attente marche + GA907 + GKK0 + AttendreDebutCombatAsync. Si on
+        // envoyait juste GA907 sans GA001 préalable (cas observé log 16:46-49),
+        // le serveur ignore quand la cible est à distance ≥2 → 4s timeout
+        // × 3 → blacklist. Avec EngagerGroupeAsync, le perso s'approche
+        // d'abord.
         Journaliseur.Info(
-            $"[FARM] cible groupe #{cible.Identifiant} « {cible.Nom} » cell {cible.CellulePosition} → {paquet}");
-        await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
-        // ATTENTE DÉBUT COMBAT — bloque jusqu'à ce que le serveur confirme
-        // (passage Combat.Etat = EnCours / Placement) ou timeout 4s.
-        // Si timeout, signaler échec pour la blacklist anti-retry-infini.
-        bool ok = await AttendreDebutCombatAsync(4000, ct).ConfigureAwait(false);
-        if (ok) SignalerSuccesEngagement(cible.Identifiant);
-        else SignalerEchecEngagement(cible.Identifiant);
+            $"[FARM] cible groupe #{cible.Identifiant} « {cible.Nom} » cell {cible.CellulePosition} → engage via déplacement");
+        await EngagerGroupeAsync(cible.CellulePosition, cible.Identifiant, ct).ConfigureAwait(false);
+        bool ok = _etat.Combat.Etat != BotDofus.Divers.Combats.Enums.EtatCombat.Inactif;
         return ok;
     }
 
