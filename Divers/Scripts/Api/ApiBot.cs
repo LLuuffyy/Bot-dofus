@@ -1123,10 +1123,26 @@ public sealed class ApiBot
         if (_compte.BanqueEnCours)
         {
             Journaliseur.Info("[FARM] Engagement bloqué : workflow banque en cours.");
+            await Task.Delay(500, ct).ConfigureAwait(false);
+            return false;
+        }
+        // GUARD session morte : pas d'engagement si session fermée
+        // (sinon spam d'erreurs réseau, cf. forensic 2026-05-23 18:15:56).
+        if (SessionMorte || _session is null)
+        {
+            await Task.Delay(2000, ct).ConfigureAwait(false);
             return false;
         }
         var cible = MonstreLePlusProche();
-        if (cible == null) { Journaliseur.Info("[FARM] aucun monstre sur la carte."); return false; }
+        if (cible == null)
+        {
+            Journaliseur.Info("[FARM] aucun monstre sur la carte.");
+            // Délai anti-spam : sans ce delai, les appels en boucle (forcefight,
+            // boucle autonome, scripts Lua) sortent du log à 1000+/sec quand
+            // la map est vide.
+            await Task.Delay(3000, ct).ConfigureAwait(false);
+            return false;
+        }
 
         // Délègue à EngagerGroupeAsync qui fait le DÉPLACEMENT (GA001) +
         // attente marche + GA907 + GKK0 + AttendreDebutCombatAsync. Si on
