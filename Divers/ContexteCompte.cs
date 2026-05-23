@@ -400,8 +400,14 @@ public sealed class ContexteCompte : IDisposable
                         // pendant les dépôts re-déclenchait un workflow concurrent
                         // (log 17:10:22+17:10:52+17:11:30… 4× workflows pour 1 trigger).
                         _banqueDeclenchee = false;
+                        // PÉRIODE DE GRÂCE 3s avant de débloquer le farm :
+                        // après la fermeture EV du coffre, le serveur Hystoria a besoin
+                        // de stabiliser l'état du perso. Si on relance GA907 trop tôt
+                        // (forensic 2026-05-23 15:32:37 : GA907 envoyé 1s après EV →
+                        // 7 timeouts consécutifs → kick anti-bot à 15:33:13).
+                        try { await System.Threading.Tasks.Task.Delay(3000); } catch { }
                         Compte.BanqueEnCours = false;  // débloque les engagements combat
-                        Journaliseur.Debogue("[BANQUE] Flag déclenchement reset après fin workflow");
+                        Journaliseur.Debogue("[BANQUE] Flag déclenchement reset après fin workflow + grâce 3s");
                     }
                 });
             }
