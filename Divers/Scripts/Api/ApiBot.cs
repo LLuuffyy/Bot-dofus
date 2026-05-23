@@ -499,6 +499,44 @@ public sealed class ApiBot
         await Task.Delay(120, ct).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Vend tous les items du sac matchant la config marchand au PNJ donné.
+    /// Pipeline : DC ouvrir dialogue → EMO+ pour chaque item → DV fermeture.
+    /// La config est chargée depuis <c>marchand/&lt;perso&gt;.json</c> ou fournie
+    /// directement. Bloque le farm pendant la vente (via BanqueEnCours).
+    /// </summary>
+    /// <param name="idPnj">ID gabarit du PNJ marchand (positif, ex. 464 = taverne Astrub).</param>
+    /// <param name="cfg">Config marchand. Si null, charge depuis fichier ou utilise défauts.</param>
+    public async Task VendreToutAuPnjAsync(int idPnj, BotDofus.Divers.Marchand.ConfigMarchand? cfg = null, CancellationToken ct = default)
+    {
+        cfg ??= new BotDofus.Divers.Marchand.ConfigMarchand
+        {
+            Active = true,
+            IdPnjMarchand = idPnj,
+            VendreEquipements = true,
+            VendreInconnus = true,
+        };
+        cfg.IdPnjMarchand = idPnj;  // override l'id en cas d'usage Lua direct
+
+        bool flagPrec = _compte.BanqueEnCours;
+        _compte.BanqueEnCours = true;  // bloque farm pendant vente (réutilise le flag banque)
+        try
+        {
+            var pilote = new BotDofus.Divers.Marchand.PiloteMarchand(this, _session!, _etat.Personnage, cfg);
+            await pilote.VendreToutAsync(ct).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Journaliseur.Avertir($"[MARCHAND] Échec vente : {ex.Message}");
+        }
+        finally
+        {
+            // Grâce 2s avant déblocage farm (le serveur stabilise après DV).
+            try { await Task.Delay(2000, ct).ConfigureAwait(false); } catch { }
+            _compte.BanqueEnCours = flagPrec;
+        }
+    }
+
     public async Task ParlerPnjAsync(int cellule, int idPnj, CancellationToken ct = default)
     {
         // Le DC du serveur attend l'id CONTEXTUEL (négatif, propre à la carte).

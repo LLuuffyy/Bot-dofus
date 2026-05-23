@@ -240,6 +240,47 @@ public sealed partial class ApiLua
     public void parler_pnj(int idPnj)
         => _api.ParlerPnjAsync(0, idPnj, _ct).GetAwaiter().GetResult();
 
+    /// <summary>
+    /// Vend tous les items du sac matchant la config marchand au PNJ donné.
+    /// Charge la config depuis <c>marchand/&lt;perso&gt;.json</c> si elle existe,
+    /// sinon utilise des défauts (équipements + inconnus vendus, ressources +
+    /// consommables non).
+    ///
+    /// <para>Usage Lua :</para>
+    /// <code>
+    /// -- Dans un trajet, après être arrivé sur la map du PNJ marchand :
+    /// vendre_tout_pnj(464)   -- 464 = ID gabarit du PNJ (ex. tavernier Astrub)
+    /// </code>
+    /// </summary>
+    public void vendre_tout_pnj(int idPnj)
+    {
+        var cfg = ChargerConfigMarchandFichier();
+        _api.VendreToutAuPnjAsync(idPnj, cfg, _ct).GetAwaiter().GetResult();
+    }
+
+    /// <summary>
+    /// Variante avec contrôle de seuil : vend uniquement si le poids actuel
+    /// dépasse <paramref name="seuilPct"/>. Retourne <c>true</c> si la vente
+    /// a été lancée.
+    /// </summary>
+    public bool vendre_si_charge(int idPnj, int seuilPct)
+    {
+        if (_etat.Personnage.PourcentagePoids < seuilPct) return false;
+        vendre_tout_pnj(idPnj);
+        return true;
+    }
+
+    private BotDofus.Divers.Marchand.ConfigMarchand? ChargerConfigMarchandFichier()
+    {
+        try
+        {
+            var nom = _etat.Personnage.Nom ?? "perso";
+            var chemin = System.IO.Path.Combine("marchand", $"{nom}.json");
+            return BotDofus.Divers.Marchand.ConfigMarchand.Charger(chemin);
+        }
+        catch { return null; }
+    }
+
     /// <summary>Répond dans le dialogue PNJ : question + réponse.</summary>
     public void repondre(int question, int reponse)
         => _api.RepondreDialogueAsync(question, reponse, _ct).GetAwaiter().GetResult();
