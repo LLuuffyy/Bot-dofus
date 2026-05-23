@@ -50,8 +50,6 @@ public partial class VueBanque : UserControl
             ChkActive.IsChecked = cfg.Active;
             SldSeuil.Value = cfg.SeuilPoidsPct;
             TxtSeuil.Text = cfg.SeuilPoidsPct.ToString();
-            SldCible.Value = cfg.CiblePoidsPct;
-            TxtCible.Text = cfg.CiblePoidsPct.ToString();
             TxtMapBanque.Text = cfg.MapBanqueId.ToString();
             ChkOuvertureDirecte.IsChecked = cfg.OuvertureDirecte;
             ChkRetourFarm.IsChecked = cfg.RetourFarmApresDepot;
@@ -77,25 +75,14 @@ public partial class VueBanque : UserControl
         }
     }
 
-    /// <summary>
-    /// Met à jour le bandeau d'état + warning rouge si seuil ≤ cible
-    /// (config invalide → l'auto-trigger ne ferait que tourner en rond).
-    /// </summary>
+    /// <summary>Met à jour le bandeau d'état.</summary>
     private void MajEtatLive(ConfigBanque cfg)
     {
-        if (cfg.SeuilPoidsPct <= cfg.CiblePoidsPct)
-        {
-            TxtEtatLive.Foreground = System.Windows.Media.Brushes.IndianRed;
-            TxtEtatLive.Text =
-                $"⚠ Config invalide : seuil ({cfg.SeuilPoidsPct}%) doit être SUPÉRIEUR à la cible ({cfg.CiblePoidsPct}%). "
-                + "Le seuil déclenche le dépôt, la cible est le poids final voulu après dépôt.";
-            return;
-        }
         TxtEtatLive.Foreground = cfg.Active
             ? System.Windows.Media.Brushes.LightGreen
             : System.Windows.Media.Brushes.Goldenrod;
         TxtEtatLive.Text = cfg.Active
-            ? $"✅ Actif — déclenchement à {cfg.SeuilPoidsPct}% pods → vide jusqu'à {cfg.CiblePoidsPct}%"
+            ? $"✅ Actif — déclenchement à {cfg.SeuilPoidsPct}% pods → dépose tout ce qui est coché"
             : "⏸ Inactif (cocher 'Activer' pour démarrer)";
     }
 
@@ -133,7 +120,6 @@ public partial class VueBanque : UserControl
         var cfg = _contexte.ConfigBanque;
         cfg.Active = ChkActive.IsChecked == true;
         cfg.SeuilPoidsPct = (int)SldSeuil.Value;
-        cfg.CiblePoidsPct = (int)SldCible.Value;
         if (int.TryParse(TxtMapBanque.Text, out var map) && map > 0) cfg.MapBanqueId = map;
         cfg.OuvertureDirecte = ChkOuvertureDirecte.IsChecked == true;
         cfg.RetourFarmApresDepot = ChkRetourFarm.IsChecked == true;
@@ -158,11 +144,6 @@ public partial class VueBanque : UserControl
     private void SldSeuil_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         if (TxtSeuil != null) TxtSeuil.Text = ((int)e.NewValue).ToString();
-        AppliquerEnConfig();
-    }
-    private void SldCible_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
-    {
-        if (TxtCible != null) TxtCible.Text = ((int)e.NewValue).ToString();
         AppliquerEnConfig();
     }
     private void TxtMapBanque_Changed(object sender, TextChangedEventArgs e) => AppliquerEnConfig();
@@ -198,7 +179,6 @@ public partial class VueBanque : UserControl
         var cfg = _contexte.ConfigBanque;
         cfg.Active = fresh.Active;
         cfg.SeuilPoidsPct = fresh.SeuilPoidsPct;
-        cfg.CiblePoidsPct = fresh.CiblePoidsPct;
         cfg.MapBanqueId = fresh.MapBanqueId;
         cfg.OuvertureDirecte = fresh.OuvertureDirecte;
         cfg.RetourFarmApresDepot = fresh.RetourFarmApresDepot;

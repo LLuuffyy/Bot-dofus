@@ -27,7 +27,10 @@ public sealed class ConfigBanque
     /// <summary>Pourcentage de poids déclencheur (par défaut 80% — laisse marge avant FULL).</summary>
     public int SeuilPoidsPct { get; set; } = 80;
 
-    /// <summary>Pourcentage de poids cible APRÈS dépôt (relâcher au moins jusqu'à X% — 30% par défaut).</summary>
+    /// <summary>OBSOLÈTE — plus utilisé. Le bot dépose maintenant TOUT ce qui
+    /// matche les catégories cochées (cf. user feedback 2026-05-23).
+    /// Gardé pour rétrocompat des JSON existants.</summary>
+    [System.Obsolete("Plus utilisé — le bot dépose tout ce qui matche les catégories cochées.")]
     public int CiblePoidsPct { get; set; } = 30;
 
     /// <summary>ID de la map où se trouve la banque (Astrub bank Hystoria = 10306, confirmé capture user 16:52).</summary>
@@ -99,26 +102,13 @@ public sealed class ConfigBanque
     };
 
     /// <summary>
-    /// Vérifie la cohérence seuil/cible : le seuil DOIT être strictement
-    /// supérieur à la cible (déclenchement à X% pods → vider jusqu'à Y%
-    /// avec X &gt; Y). Si inversé, on swap et on log un avertissement
-    /// (cas observé log 17:10:09 : user avait seuil=20%/cible=30% = invalide).
+    /// Validation des paramètres. CiblePoidsPct n'est plus utilisé (le bot
+    /// dépose TOUT ce qui matche les catégories cochées, sans arrêt précoce).
     /// </summary>
     public void Valider()
     {
-        if (SeuilPoidsPct <= CiblePoidsPct)
-        {
-            int seuilAvant = SeuilPoidsPct, cibleAvant = CiblePoidsPct;
-            // Auto-correction : on remonte le seuil au-dessus de la cible.
-            // Min seuil après correction = 50% (assez bas pour déclenchements
-            // fréquents, assez haut pour ne pas spammer la banque).
-            SeuilPoidsPct = System.Math.Max(50, cibleAvant + 30);
-            if (SeuilPoidsPct > 99) SeuilPoidsPct = 90;
-            Journaliseur.Avertir(
-                $"[CFG-BANQUE] ⚠ Config invalide : seuil({seuilAvant}%) ≤ cible({cibleAvant}%). "
-                + $"Auto-correction seuil → {SeuilPoidsPct}% (le seuil de déclenchement doit "
-                + "TOUJOURS être supérieur à la cible post-dépôt).");
-        }
+        if (SeuilPoidsPct < 30) SeuilPoidsPct = 30;
+        if (SeuilPoidsPct > 99) SeuilPoidsPct = 90;
         if (DelaiActionMaxMs < DelaiActionMinMs)
         {
             int tmp = DelaiActionMinMs; DelaiActionMinMs = DelaiActionMaxMs; DelaiActionMaxMs = tmp;

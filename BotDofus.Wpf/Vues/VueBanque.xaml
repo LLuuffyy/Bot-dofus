@@ -34,14 +34,6 @@
                                 ValueChanged="SldSeuil_Changed"/>
                     </DockPanel>
 
-                    <DockPanel Margin="0,4">
-                        <TextBlock Text="Cible après dépôt (%) :" Width="220" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="TxtCible" Width="40" Text="30" VerticalAlignment="Center"/>
-                        <Slider x:Name="SldCible" Minimum="0" Maximum="80" Value="30"
-                                TickFrequency="5" IsSnapToTickEnabled="True"
-                                ValueChanged="SldCible_Changed"/>
-                    </DockPanel>
-
                     <DockPanel Margin="0,8">
                         <TextBlock Text="Map banque (ID) :" Width="220" VerticalAlignment="Center"/>
                         <TextBox x:Name="TxtMapBanque" Width="100" Text="10306"

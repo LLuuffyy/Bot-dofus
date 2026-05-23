@@ -352,7 +352,7 @@ public sealed class ContexteCompte : IDisposable
             && !_banqueDeclenchee
             && !grace
             && perso.PourcentagePoids >= ConfigBanque.SeuilPoidsPct
-            && ConfigBanque.SeuilPoidsPct > ConfigBanque.CiblePoidsPct  // config valide
+            && ConfigBanque.SeuilPoidsPct > 0  // seuil valide
             && EtatJeu.Combat.Etat == BotDofus.Divers.Combats.Enums.EtatCombat.Inactif)
         {
             _banqueDeclenchee = true;

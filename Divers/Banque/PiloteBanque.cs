@@ -89,11 +89,7 @@ public sealed class PiloteBanque
 
         // 2) Dépôt items.
         Journaliseur.Info("[BANQUE] Étape 2/4 : dépôt items");
-        var depotOk = await DeposerToutAsync(ct).ConfigureAwait(false);
-        if (!depotOk)
-        {
-            Journaliseur.Avertir($"[BANQUE] Dépôt incomplet (poids={_perso.PourcentagePoids:F1}% > cible {_cfg.CiblePoidsPct}%)");
-        }
+        await DeposerToutAsync(ct).ConfigureAwait(false);
 
         // 3) Retour vers la map de farm (zaap aller-retour — skip si banque mobile).
         if (_cfg.OuvertureDirecte)
@@ -116,7 +112,7 @@ public sealed class PiloteBanque
         }
 
         Journaliseur.Info($"[BANQUE] === Workflow terminé (poids final {_perso.PourcentagePoids:F1}%) ===");
-        return depotOk;
+        return true;
     }
 
     /// <summary>
@@ -125,7 +121,7 @@ public sealed class PiloteBanque
     /// </summary>
     public async Task<bool> DeposerToutAsync(CancellationToken ct = default)
     {
-        Journaliseur.Info($"[BANQUE] Démarrage dépôt — poids actuel {_perso.PourcentagePoids:F1}% (seuil={_cfg.SeuilPoidsPct}%, cible={_cfg.CiblePoidsPct}%)");
+        Journaliseur.Info($"[BANQUE] Démarrage dépôt — poids actuel {_perso.PourcentagePoids:F1}% (seuil={_cfg.SeuilPoidsPct}%)");
 
         // Reset des flags observateurs avant ouverture (sinon un EV résiduel
         // d'un workflow précédent ferait croire que la banque est déjà fermée).
@@ -156,11 +152,9 @@ public sealed class PiloteBanque
                 Journaliseur.Avertir(
                     $"[BANQUE] EV observé pendant dépôt — arrêt immédiat ({deposes} item(s) déposés, "
                     + $"{aDeposer.Count - deposes} restants annulés).");
-                return _perso.PourcentagePoids <= _cfg.CiblePoidsPct;
+                return true;  // arrêt user → succès partiel
             }
-            // Pas d'arrêt précoce sur CiblePoidsPct : on dépose TOUT ce qui matche
-            // les catégories cochées (demande user 2026-05-23). La cible reste
-            // utilisée comme indicateur dans les logs mais ne stoppe pas le dépôt.
+            // On dépose TOUT ce qui matche les catégories cochées (pas d'arrêt cible).
 
             // Sécurité ultime (relue à CHAQUE item car l'user peut éditer la config
             // pendant le workflow → IdsAGarder peut grandir, catégorie peut être
@@ -204,7 +198,7 @@ public sealed class PiloteBanque
         await Delai(ct).ConfigureAwait(false);
 
         Journaliseur.Info($"[BANQUE] Dépôt terminé — {deposes} item(s) déposés, {rejetesSec} refusés (sécurité), poids final {_perso.PourcentagePoids:F1}%");
-        return _perso.PourcentagePoids <= _cfg.CiblePoidsPct;
+        return true;
     }
 
     /// <summary>
