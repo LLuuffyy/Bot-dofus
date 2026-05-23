@@ -89,9 +89,18 @@ public sealed class GestionnaireScripts : IDisposable
 
         try
         {
-            while (!ct.IsCancellationRequested && IndexEtapeCourante < ScriptCourant.EtapesMouvement.Count)
+            while (!ct.IsCancellationRequested)
             {
                 _porteMobile.Wait(ct);
+
+                // BOUCLE INFINIE : si on atteint la fin du mouvement, on
+                // reprend depuis l'étape 0 (= farm en continu). L'user
+                // arrête manuellement via le bouton Stop.
+                if (IndexEtapeCourante >= ScriptCourant.EtapesMouvement.Count)
+                {
+                    Journaliseur.Info($"[SCRIPT] Fin du mouvement atteinte → reboucle à l'étape 1");
+                    IndexEtapeCourante = 0;
+                }
 
                 // === Détour MARCHAND auto ===
                 // Si pods >= MARCHAND_SEUIL_PODS et trajet marchand défini, on
