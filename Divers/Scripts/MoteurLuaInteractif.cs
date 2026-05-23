@@ -153,6 +153,17 @@ public sealed class MoteurLuaInteractif : IDisposable
         var rnd = new Random();
         var ct = _annulation!.Token;
         var anka = _api.Anka;
+
+        // Lecture des seuils globaux du script (chaque tour pour permettre
+        // override à chaud — mais en pratique lus 1 fois après loadString).
+        int seuilMarchand = 0;
+        int seuilBanque = 98;
+        var smp = _script!.Globals.Get("MARCHAND_SEUIL_PODS");
+        if (smp.Type == DataType.Number) seuilMarchand = (int)smp.Number;
+        var mxp = _script.Globals.Get("MAX_PODS");
+        if (mxp.Type == DataType.Number) seuilBanque = (int)mxp.Number;
+        Journaliseur.Info($"[ANKA] Seuils farm : banque={seuilBanque}% (MAX_PODS), marchand={seuilMarchand}% (MARCHAND_SEUIL_PODS), si marchand=0 → désactivé");
+
         while (!ct.IsCancellationRequested)
         {
             try
@@ -161,9 +172,22 @@ public sealed class MoteurLuaInteractif : IDisposable
                     && _script!.Globals.Get("phenix").Type == DataType.Function)
                 { SuivreUnTour("phenix", rnd, ct); continue; }
 
+                // Détour MARCHAND auto si seuil défini ET section marchand() présente.
+                var fnMarchand = NomFn("marchand", "merchant");
+                if (seuilMarchand > 0 && anka.Inventory.podsP() >= seuilMarchand && fnMarchand != null)
+                {
+                    Journaliseur.Info($"[ANKA] 📦 Pods {anka.Inventory.podsP()}% ≥ MARCHAND_SEUIL_PODS {seuilMarchand}% → détour marchand()");
+                    SuivreUnTour(fnMarchand, rnd, ct);
+                    continue;
+                }
+
                 var fnBanque = NomFn("bank", "banque");
-                if (anka.Inventory.podsP() >= 98 && fnBanque != null)
-                { SuivreUnTour(fnBanque, rnd, ct); continue; }
+                if (anka.Inventory.podsP() >= seuilBanque && fnBanque != null)
+                {
+                    Journaliseur.Info($"[ANKA] 💰 Pods {anka.Inventory.podsP()}% ≥ MAX_PODS {seuilBanque}% → détour banque()");
+                    SuivreUnTour(fnBanque, rnd, ct);
+                    continue;
+                }
 
                 SuivreUnTour(NomFn("move", "mouvement") ?? "move", rnd, ct);
             }
@@ -297,7 +321,16 @@ public sealed class MoteurLuaInteractif : IDisposable
             AttendreChangementCarte(avant, ct);
         }
         // 3b) PNJ : npc = <idPnj>, answers = { r1, r2, ... }  (format SynFus)
+        // Si npc_marchand=true, on déclenche la VENTE AUTO complète au PNJ
+        // (DC → EMO+ par item → DV) au lieu du dialogue classique.
         var npcV = row.Get("npc");
+        if (npcV.Type == DataType.Number && B("npc_marchand", "npcMarchand"))
+        {
+            int idPnj = (int)npcV.Number;
+            Journaliseur.Info($"[ANKA] npc_marchand=true → vente auto au PNJ #{idPnj}");
+            _api.vendre_tout_pnj(idPnj);
+            return;  // sortie de l'étape, prochaine étape démarre
+        }
         if (npcV.Type == DataType.Number)
         {
             int idPnj = (int)npcV.Number;
