@@ -382,12 +382,10 @@ public sealed class ApiBot
         if (paquet != null)
         {
             await EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
-            // GA907 doit partir APRÈS l'arrivée du perso sinon serveur l'ignore
-            // silencieusement (perso pas à destination). 350ms/case (+ marge safety
-            // 500ms) ≈ vrai client. Clamp max relevé à 10s pour gérer les chemins
-            // longs (17 cases = ~6.5s) — bug forensic 20260522-205230 où 17 cases
-            // étaient tronquées à 3.5s → GA907 ignoré × 10 essais.
-            int delaiMarcheMs = Math.Clamp((cases - 1) * 350 + 500, 250, 10000);
+            // GA907 doit partir APRÈS l'arrivée du perso sinon serveur l'ignore.
+            // 250ms/case + 300ms safety (vs 350ms+500ms avant) — accéléré pour
+            // l'engagement. Clamp max 10s pour chemins longs (forensic 17 cases).
+            int delaiMarcheMs = Math.Clamp((cases - 1) * 250 + 300, 250, 10000);
             await Task.Delay(delaiMarcheMs, ct).ConfigureAwait(false);
         }
         await EnvoyerHumaniseAsync($"GA907{cellule};{idGroupe}", ct).ConfigureAwait(false);
