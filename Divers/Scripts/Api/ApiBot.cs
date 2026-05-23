@@ -342,6 +342,16 @@ public sealed class ApiBot
     /// </summary>
     public async Task EngagerGroupeAsync(int cellule, int idGroupe, CancellationToken ct = default)
     {
+        // SKIP si banque en cours — empêche les combats lancés concurrent du
+        // workflow banque (sinon chaos : GA907 envoyé pendant dépôt EMO+ →
+        // crash / désync). Forensic 2026-05-23 11:42 : combat « Bouftou »
+        // lancé pendant que la banque déposait des items.
+        if (_compte.BanqueEnCours)
+        {
+            BotDofus.Utilitaires.Journaux.Journaliseur.Avertir(
+                "[FARM] Engagement bloqué : workflow banque en cours.");
+            return;
+        }
         // === Engage DIRECT (style SynFus / vrai client) ===
         // Capture réelle 11:48 : le client envoie GA001<path> PUIS GA907
         // IMMÉDIATEMENT (sans attendre la marche, sans GKK0 entre). Le
@@ -1044,6 +1054,12 @@ public sealed class ApiBot
     /// </summary>
     public async Task<bool> EngagerCombatAsync(CancellationToken ct)
     {
+        // SKIP si banque en cours (cf. EngagerGroupeAsync).
+        if (_compte.BanqueEnCours)
+        {
+            Journaliseur.Info("[FARM] Engagement bloqué : workflow banque en cours.");
+            return false;
+        }
         var cible = MonstreLePlusProche();
         if (cible == null) { Journaliseur.Info("[FARM] aucun monstre sur la carte."); return false; }
         var paquet = $"GA907{cible.CellulePosition};{cible.Identifiant}";

@@ -356,6 +356,7 @@ public sealed class ContexteCompte : IDisposable
             && EtatJeu.Combat.Etat == BotDofus.Divers.Combats.Enums.EtatCombat.Inactif)
         {
             _banqueDeclenchee = true;
+            Compte.BanqueEnCours = true;  // bloque les engagements combat concurrents (cf. ApiBot)
             Journaliseur.Avertir(
                 $"[BANQUE] 📦 Poids {perso.PourcentagePoids:F1}% ≥ seuil {ConfigBanque.SeuilPoidsPct}% "
                 + "→ déclenchement workflow banque");
@@ -399,6 +400,7 @@ public sealed class ContexteCompte : IDisposable
                         // pendant les dépôts re-déclenchait un workflow concurrent
                         // (log 17:10:22+17:10:52+17:11:30… 4× workflows pour 1 trigger).
                         _banqueDeclenchee = false;
+                        Compte.BanqueEnCours = false;  // débloque les engagements combat
                         Journaliseur.Debogue("[BANQUE] Flag déclenchement reset après fin workflow");
                     }
                 });
@@ -407,6 +409,7 @@ public sealed class ContexteCompte : IDisposable
             {
                 Journaliseur.Avertir("[BANQUE] Session jeu inactive — workflow skip");
                 _banqueDeclenchee = false;  // pas de Task → reset immédiat sinon blocage
+                Compte.BanqueEnCours = false;
             }
         }
 

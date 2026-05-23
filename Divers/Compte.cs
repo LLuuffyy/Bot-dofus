@@ -113,6 +113,14 @@ public sealed class Compte : IEffacable
     public BotDofus.Divers.Scripts.Api.ApiBot? Api { get; set; }
 
     /// <summary>
+    /// <c>true</c> pendant que le workflow de dépôt banque tourne. Permet aux
+    /// API de farm (EngagerCombat/EngagerGroupe) de skipper les engagements
+    /// concurrents qui causent du chaos (combats lancés pendant que la banque
+    /// dépose → crash, désync canaux). Set par <see cref="ContexteCompte"/>.
+    /// </summary>
+    public bool BanqueEnCours { get; set; }
+
+    /// <summary>
     /// URL webhook Discord pour notifications événements importants (mort,
     /// level up, banque pleine, déconnexion). Vide = pas de notif.
     /// Format : <c>https://discord.com/api/webhooks/&lt;id&gt;/&lt;token&gt;</c>.
