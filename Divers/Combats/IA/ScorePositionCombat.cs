@@ -165,9 +165,15 @@ public static class ScorePositionCombat
             ModeCombat.Agressif => Math.Max(1, pMin),
             // Eloigne / Fuyard : kite parfait.
             // distIdeale = porteeMax + pmEnnemi (l'ennemi peut nous rattraper à porteeMax).
-            // Si pmEnnemi inconnu (=0), on suppose 3 PM (valeur conservative pour mob lvl ~10).
+            // Si pmEnnemi inconnu (=0), fallback adaptatif selon portée du sort :
+            // - Sort courte portée (pMax <= 3) : suppose 3 PM (mob faible)
+            // - Sort moyenne portée (4-7) : suppose 4 PM (mob standard)
+            // - Sort longue portée (8+) : suppose 5 PM (mob endgame)
+            // Mieux que le 3 hardcoded — préserve la marge de sécurité kite.
             ModeCombat.Eloigne or ModeCombat.Fuyard
-                => pMax + (ctx.PmEnnemiCible > 0 ? ctx.PmEnnemiCible : 3),
+                => pMax + (ctx.PmEnnemiCible > 0
+                    ? ctx.PmEnnemiCible
+                    : pMax <= 3 ? 3 : pMax <= 7 ? 4 : 5),
             // Equilibre : clamp dist préférée dans la portée.
             ModeCombat.Equilibre => Math.Clamp(ctx.DistancePreferee, Math.Max(1, pMin), Math.Max(1, pMax)),
             _ => Math.Max(1, pMin),

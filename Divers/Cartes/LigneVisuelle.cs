@@ -161,7 +161,14 @@ public static class LigneVisuelle
             if (cellX == prevCellX && cellY == prevCellY) continue;
             prevCellX = cellX;
             prevCellY = cellY;
+
+            // 1) Combattant sur cell intermédiaire → bloque la vue.
             if (occupees_xy.Contains((cellX, cellY))) return true;
+
+            // 2) Mur / décor / arbre — la cell a EnLigneDeVue=false dans MapData.
+            // Décodé par DecompresseurMapData.cs:88 depuis le bit LOS Hystoria.
+            var cellInter = carte.ObtenirParCoords(cellX, cellY);
+            if (cellInter != null && !cellInter.EnLigneDeVue) return true;
         }
         return false;
     }

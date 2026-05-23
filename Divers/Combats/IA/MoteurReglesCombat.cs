@@ -113,7 +113,16 @@ public static class MoteurReglesCombat
             }
             // Présence d'une invocation alliée vivante (ex. Sadida Surpuissante/Folle).
             if (regle.SiInvocPresente && !combat.Allies.Any(a => a.EstInvocation && !a.EstMort)) continue;
-            // PasSiTacle : nécessite détection « tacle subi » (effets GAS/GA), TODO.
+            // PasSiTacle : heuristique = si au moins 1 ennemi vivant adjacent (dist≤1),
+            // on considère que le perso est potentiellement taclé. Utile pour skip
+            // les sorts de déplacement (Recul, Bond, etc.) quand pris au CAC.
+            if (regle.PasSiTacle)
+            {
+                bool potentiellementTacle = combat.Ennemis.Any(e =>
+                    !e.EstMort && e.PV > 0
+                    && DistanceDofus(moi.CellulePosition, e.CellulePosition, mapWidth) <= 1);
+                if (potentiellementTacle) { Diag($"PasSiTacle : ennemi adjacent → skip {regle.Nom}"); continue; }
+            }
 
             // === Conditions Situation (bloc « Situation » SynFus) ===
             int nbEnnemisVivants = combat.Ennemis.Count(e => !e.EstMort && e.PV > 0 && e.PVMax > 0);
@@ -443,6 +452,17 @@ public static class MoteurReglesCombat
         // Au CAC d'un mob → on reste sur lui (sortir du CAC ferait perdre PA
         // au tacle dans la plupart des cas).
         if (distMin <= 1) return plusProche;
+
+        // PRIORITÉ "ACHEVER" : mob non-invocation avec PV% < 15 et accessible
+        // (dist ≤ 8 = portée raisonnable). Un coup peut le tuer → XP loot prioritaire.
+        var aAchever = ennemisVivants
+            .Where(e => !e.EstInvocation
+                     && e.PVMax > 0
+                     && (100 * e.PV / e.PVMax) < 15
+                     && DistanceDofus(moi.CellulePosition, e.CellulePosition, mapWidth) <= 8)
+            .OrderBy(e => e.PV)  // le plus faible en premier
+            .FirstOrDefault();
+        if (aAchever != null) return aAchever;
 
         // Radar des 5 plus proches : priorité au mob NON-invocation low-HP.
         var radar = ennemisVivants

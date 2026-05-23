@@ -54,15 +54,37 @@ public class MoteurTactiqueTests
     }
 
     [Fact]
-    public void DistanceIdeale_EloignePMEnnemi0_FallbackConservatif3()
+    public void DistanceIdeale_EloignePMEnnemi0_FallbackAdaptatifLonguePortee()
     {
-        // Si PM ennemi inconnu (= 0), on suppose 3 PM conservateur
-        // (mob lvl ~10 standard).
+        // PM ennemi inconnu (= 0), pMax 8 (longue portée) → fallback 5 PM
+        // (mob endgame). distIdeale = 8 + 5 = 13.
         var ctx = new ScorePositionCombat.ContexteTactique(
             Mode: ModeCombat.Eloigne, PorteeMinSort: 1, PorteeMaxSort: 8,
             SortNecessiteLOS: false, PmEnnemiCible: 0,
             DistancePreferee: 5, DistanceMinEloigne: 6);
-        Assert.Equal(11, ScorePositionCombat.DistanceIdeale(ctx));
+        Assert.Equal(13, ScorePositionCombat.DistanceIdeale(ctx));
+    }
+
+    [Fact]
+    public void DistanceIdeale_EloignePMEnnemi0_PorteeCourteFallback3()
+    {
+        // pMax 3 (courte portée) → fallback 3 PM (mob faible). distIdeale = 3 + 3 = 6.
+        var ctx = new ScorePositionCombat.ContexteTactique(
+            Mode: ModeCombat.Eloigne, PorteeMinSort: 1, PorteeMaxSort: 3,
+            SortNecessiteLOS: false, PmEnnemiCible: 0,
+            DistancePreferee: 3, DistanceMinEloigne: 3);
+        Assert.Equal(6, ScorePositionCombat.DistanceIdeale(ctx));
+    }
+
+    [Fact]
+    public void DistanceIdeale_EloignePMEnnemi0_PorteeMoyenneFallback4()
+    {
+        // pMax 6 (portée moyenne) → fallback 4 PM. distIdeale = 6 + 4 = 10.
+        var ctx = new ScorePositionCombat.ContexteTactique(
+            Mode: ModeCombat.Eloigne, PorteeMinSort: 1, PorteeMaxSort: 6,
+            SortNecessiteLOS: false, PmEnnemiCible: 0,
+            DistancePreferee: 5, DistanceMinEloigne: 5);
+        Assert.Equal(10, ScorePositionCombat.DistanceIdeale(ctx));
     }
 
     [Fact]

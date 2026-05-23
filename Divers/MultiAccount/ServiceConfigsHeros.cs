@@ -322,6 +322,9 @@ public static class ServiceConfigsHeros
             // === 10 — SADIDA : invocations + DoT + soin (Beiloddurul) ===
             // NOTE : pour le master Beiloddurul, la config est dans peleas/<compte>.json
             // (édité par l'user via UI). Ce preset sert quand un héros lié est Sadida.
+            // Sorts complets (sorts appris Beiloddurul) :
+            // 182 La Folle | 183 Ronce | 192 Ronce Apaisante | 193 La Bloqueuse
+            // 195 Larme | 198 Sacrifice Poupesque | 200 Poison Paralysant
             10 => new ConfigCombat
             {
                 Mode = ModeCombat.Equilibre,
@@ -330,10 +333,18 @@ public static class ServiceConfigsHeros
                 DistanceMinEloigne = 5,
                 Regles =
                 {
-                    new RegleSort { IdSort = 182, Priorite = 10, NombreParTour = 1, PremierTour = true, Nom = "La Folle (invocation)", Focus = FocusSort.CelluleAdjacenteMoi },
-                    new RegleSort { IdSort = 183, Priorite = 9,  NombreParTour = 99, Nom = "Ronce" },
-                    new RegleSort { IdSort = 200, Priorite = 7,  NombreParTour = 1,  CooldownTours = 3, Nom = "Poison Paralysant", Focus = FocusSort.EnnemiLePlusFaible },
-                    new RegleSort { IdSort = 192, Priorite = 5,  NombreParTour = 99, Nom = "Ronce Apaisante", Focus = FocusSort.AllieLePlusBlesse, CiblePvInfPourcent = 60 },
+                    // T1 invocations : poser La Folle (bloque) puis La Bloqueuse (tank).
+                    new RegleSort { IdSort = 182, Priorite = 100, NombreParTour = 1, PremierTour = true, Nom = "La Folle (invocation)", Focus = FocusSort.CelluleAdjacenteMoi },
+                    new RegleSort { IdSort = 193, Priorite = 95,  NombreParTour = 1, PremierTour = true, Nom = "La Bloqueuse (invocation)", Focus = FocusSort.CelluleAdjacenteMoi },
+                    // Dégâts principaux.
+                    new RegleSort { IdSort = 183, Priorite = 90,  NombreParTour = 99, Nom = "Ronce" },
+                    new RegleSort { IdSort = 195, Priorite = 80,  NombreParTour = 99, Nom = "Larme" },
+                    // Poison long terme.
+                    new RegleSort { IdSort = 200, Priorite = 70,  NombreParTour = 1, NombreParCible = 1, CooldownTours = 3, Nom = "Poison Paralysant", Focus = FocusSort.EnnemiLePlusFaible },
+                    // Soin allié blessé.
+                    new RegleSort { IdSort = 192, Priorite = 60,  NombreParTour = 2, Nom = "Ronce Apaisante", Focus = FocusSort.AllieLePlusBlesse, CiblePvInfPourcent = 60 },
+                    // Sacrifice Poupesque (sacrifie une invoc pour PV) — uniquement si bas PV.
+                    new RegleSort { IdSort = 198, Priorite = 50,  NombreParTour = 1, Nom = "Sacrifice Poupesque", Focus = FocusSort.Moi, MesPvInfPourcent = 30, SiInvocPresente = true },
                 },
             },
 
