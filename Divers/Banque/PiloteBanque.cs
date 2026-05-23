@@ -158,11 +158,9 @@ public sealed class PiloteBanque
                     + $"{aDeposer.Count - deposes} restants annulés).");
                 return _perso.PourcentagePoids <= _cfg.CiblePoidsPct;
             }
-            if (_perso.PourcentagePoids <= _cfg.CiblePoidsPct)
-            {
-                Journaliseur.Info($"[BANQUE] Cible {_cfg.CiblePoidsPct}% atteinte ({_perso.PourcentagePoids:F1}%), arrêt dépôt");
-                break;
-            }
+            // Pas d'arrêt précoce sur CiblePoidsPct : on dépose TOUT ce qui matche
+            // les catégories cochées (demande user 2026-05-23). La cible reste
+            // utilisée comme indicateur dans les logs mais ne stoppe pas le dépôt.
 
             // Sécurité ultime (relue à CHAQUE item car l'user peut éditer la config
             // pendant le workflow → IdsAGarder peut grandir, catégorie peut être
