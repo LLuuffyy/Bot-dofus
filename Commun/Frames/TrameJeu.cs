@@ -1850,7 +1850,16 @@ public sealed class TrameJeu : TrameBase
             case BotDofus.Divers.Combats.IA.ModeCombat.Equilibre when System.Math.Abs(distActuelle - distPref) <= 1: return;
         }
 
-        int pmMax = perso.PM;
+        // RÉSERVE PM tour suivant : en Eloigne/Fuyard on garde 2 PM pour kiter
+        // au prochain tour si pris au CAC. Equilibre 1 PM. Agressif 0 (rush).
+        int reservePm = mode switch
+        {
+            BotDofus.Divers.Combats.IA.ModeCombat.Eloigne or BotDofus.Divers.Combats.IA.ModeCombat.Fuyard => 2,
+            BotDofus.Divers.Combats.IA.ModeCombat.Equilibre => 1,
+            _ => 0
+        };
+        int pmMax = System.Math.Max(1, perso.PM - reservePm);
+        if (perso.PM <= reservePm + 1) pmMax = perso.PM;  // edge case : peu de PM, on dépense tout
 
         // === MOTEUR TACTIQUE AVANCÉ (ADR-008) : tente d'abord la fonction
         // CalculerMeilleureCellule qui prend en compte sort principal + LOS +
@@ -2074,9 +2083,16 @@ public sealed class TrameJeu : TrameBase
         Divers.Combats.IA.MoteurTactique.TestLosDelegate testLos = (depuis, vers) =>
             !BotDofus.Divers.Cartes.LigneVisuelle.EstObstruee(carte, depuis, vers, interdites_int);
 
+        // Coords des invocations alliées vivantes pour le bonus cover.
+        var invocsAlliesXY = combat.Allies
+            .Where(a => a.EstInvocation && !a.EstMort && a.Identifiant != perso.Identifiant)
+            .Select(a => BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees(a.CellulePosition, mapWidth))
+            .ToArray();
+
         var resultat = Divers.Combats.IA.MoteurTactique.CalculerMeilleureCellule(
             carte, depart, pmMax, interdites, ennemisXY, (xCible, yCible), ctx, testLos,
-            exigeAmelioration: true);
+            exigeAmelioration: true,
+            invocsAlliesXY: invocsAlliesXY);
 
         if (resultat == null) return null;
         return (resultat.Cible, new System.Collections.Generic.List<BotDofus.Divers.Cartes.Cellule>(resultat.Chemin), resultat.PmConsommes, resultat.DistanceFinaleCible);

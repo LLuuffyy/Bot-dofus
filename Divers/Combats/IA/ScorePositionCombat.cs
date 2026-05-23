@@ -249,6 +249,71 @@ public static class ScorePositionCombat
         return score;
     }
 
+    /// <summary>
+    /// Version ENRICHIE du scoring tactique (Phase 4 IA, demande user
+    /// « intelligence de combat sur déplacements/LOS/obstacles »).
+    /// Ajoute 3 critères au-dessus de <see cref="ScoreCelluleAvance"/> :
+    /// <list type="number">
+    ///   <item><b>Exposition</b> : pénalité par ennemi à courte distance (≤6).
+    ///         En Eloigne/Fuyard : on évite les cells "exposées" à plusieurs mobs.</item>
+    ///   <item><b>Cover invocation</b> : bonus si invocation alliée adjacente
+    ///         (cell ≤1) — elle tank pour nous, on peut cast tranquille.</item>
+    ///   <item><b>Pénalité coincé</b> : si la cellule a &lt;3 cases marchables
+    ///         adjacentes, on est piégé au tour suivant → pénalité.</item>
+    /// </list>
+    /// </summary>
+    /// <param name="invocsAlliesXY">Coordonnées (x,y) des invocations alliées vivantes.</param>
+    /// <param name="nbCasesAdjacentesMarchables">Nombre de cases (parmi 8 voisines)
+    /// qui sont marchables et libres (vérification appelant via Carte).</param>
+    public static double ScoreCelluleTactique(
+        int xCell, int yCell,
+        (int x, int y)[] ennemisXY,
+        (int x, int y) cibleXY,
+        (int x, int y)[] invocsAlliesXY,
+        int nbCasesAdjacentesMarchables,
+        ContexteTactique ctx,
+        bool losOk,
+        PoidsScoreCellule? poids = null)
+    {
+        var w = poids ?? PoidsScoreCellule.Defaut;
+        double score = ScoreCelluleAvance(xCell, yCell, ennemisXY, cibleXY, ctx, losOk, w);
+
+        // (6) Pénalité exposition : chaque ennemi à dist ≤ 6 augmente la pression.
+        // Pertinent surtout en Eloigne/Fuyard (s'éloigner du groupe).
+        // En Agressif : on s'en fout (on cherche le combat, déjà couvert par W4).
+        if (ctx.Mode is ModeCombat.Eloigne or ModeCombat.Fuyard or ModeCombat.Equilibre)
+        {
+            int nbEnnemisProches = 0;
+            foreach (var (ex, ey) in ennemisXY)
+            {
+                int d = Math.Max(Math.Abs(ex - xCell), Math.Abs(ey - yCell));
+                if (d <= 6) nbEnnemisProches++;
+            }
+            score += w.W6_Exposition * nbEnnemisProches;
+        }
+
+        // (7) Bonus cover invocation : invoc alliée adjacente → elle tank pour nous.
+        // Bonus négatif (= mieux). Utile pour combos Sadida (Folle) / Osa.
+        if (invocsAlliesXY != null && invocsAlliesXY.Length > 0)
+        {
+            foreach (var (ix, iy) in invocsAlliesXY)
+            {
+                int d = Math.Max(Math.Abs(ix - xCell), Math.Abs(iy - yCell));
+                if (d <= 1) { score += w.W7_BonusCoverInvoc; break; }  // une seule cover suffit
+            }
+        }
+
+        // (8) Pénalité "coincé" : moins de 3 cases marchables adjacentes
+        // = au tour suivant on aura du mal à bouger (corner trap).
+        // Important en Eloigne/Fuyard où on a besoin de mobilité.
+        if (nbCasesAdjacentesMarchables < 3)
+        {
+            score += w.W8_PenaliteCoince * (3 - nbCasesAdjacentesMarchables);
+        }
+
+        return score;
+    }
+
     /// <summary>Poids configurables du scoring avancé. Valeurs par défaut tunées
     /// pour 1-3 ennemis lvl 1-50. Ajuster en cas de besoin (UI sliders viendront).</summary>
     public sealed record PoidsScoreCellule(
@@ -256,7 +321,13 @@ public static class ScorePositionCombat
         double W2_LosBloquee = 1000.0,
         double W3_HorsPortee = 500.0,
         double W4_MultiMobs = 1.0,
-        double W5_LosBonus = 2.0)
+        double W5_LosBonus = 2.0,
+        /// <summary>Pénalité par ennemi à courte distance (≤6). Modes Eloigne/Fuyard : favorise les cells loin de mobs.</summary>
+        double W6_Exposition = 8.0,
+        /// <summary>Bonus si invocation alliée adjacente (cover/tank). Modes Tactique/Agressif.</summary>
+        double W7_BonusCoverInvoc = -15.0,
+        /// <summary>Pénalité si moins de 3 cases marchables adjacentes (cell coincée).</summary>
+        double W8_PenaliteCoince = 25.0)
     {
         public static PoidsScoreCellule Defaut { get; } = new();
     }

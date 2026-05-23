@@ -254,7 +254,19 @@ public static class IACombatHerosSimple
             return;
         }
 
-        int pmMax = moi.PM;
+        // RÉSERVE PM tour suivant : en Eloigne/Fuyard, on garde ≥2 PM pour
+        // pouvoir kiter au prochain tour si pris au CAC. En Equilibre, ≥1 PM.
+        // En Agressif, on dépense tout (objectif rapprochement maximal).
+        int reservePm = mode switch
+        {
+            ModeCombat.Eloigne or ModeCombat.Fuyard => 2,
+            ModeCombat.Equilibre => 1,
+            _ => 0
+        };
+        int pmMax = System.Math.Max(1, moi.PM - reservePm);
+        if (moi.PM <= reservePm + 1) pmMax = moi.PM;  // edge case : peu de PM, on dépense tout
+        if (pmMax < moi.PM)
+            Journaliseur.Info($"[{tag}] TACTIC réserve {moi.PM - pmMax} PM pour kite tour suivant (mode {mode})");
         var interdites = ConstruireInterdites(carte, combat, moi.Identifiant);
         var interdites_int = new HashSet<int>(System.Linq.Enumerable.Select(interdites, c => c.Identifiant));
 
@@ -262,11 +274,18 @@ public static class IACombatHerosSimple
         MoteurTactique.TestLosDelegate testLos = (depuis, vers) =>
             !LigneVisuelle.EstObstruee(carte, depuis, vers, interdites_int);
 
+        // Coords invocations alliées vivantes pour scoring tactique enrichi.
+        var invocsAlliesXY = combat.Allies
+            .Where(a => a.EstInvocation && !a.EstMort && a.Identifiant != moi.Identifiant)
+            .Select(a => BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees(a.CellulePosition, mw))
+            .ToArray();
+
         var resultat = MoteurTactique.CalculerMeilleureCellule(
             carte, depart, pmMax, interdites,
             ennemisXY, (xCible, yCible),
             ctx, testLos,
-            exigeAmelioration: true);
+            exigeAmelioration: true,
+            invocsAlliesXY: invocsAlliesXY);
 
         if (resultat == null)
         {

@@ -75,16 +75,20 @@ public static class MoteurTactique
         ScorePositionCombat.ContexteTactique ctx,
         TestLosDelegate? testLos = null,
         bool exigeAmelioration = true,
-        ScorePositionCombat.PoidsScoreCellule? poids = null)
+        ScorePositionCombat.PoidsScoreCellule? poids = null,
+        (int x, int y)[]? invocsAlliesXY = null)
     {
         if (carte == null || depart == null) return null;
         if (pmDispo <= 0) return null;
         if (ennemisXY.Length == 0) return null;
 
+        invocsAlliesXY ??= System.Array.Empty<(int, int)>();
+
         // Score de départ (référence pour exigeAmelioration).
         bool losDepart = testLos == null ? true : !ctx.SortNecessiteLOS || EvaluerLos(testLos, depart, cibleXY, carte);
-        double scoreDepart = ScorePositionCombat.ScoreCelluleAvance(
-            depart.X, depart.Y, ennemisXY, cibleXY, ctx, losDepart, poids);
+        int nbAdjDepart = CompterAdjacentesMarchables(carte, depart, interdites);
+        double scoreDepart = ScorePositionCombat.ScoreCelluleTactique(
+            depart.X, depart.Y, ennemisXY, cibleXY, invocsAlliesXY, nbAdjDepart, ctx, losDepart, poids);
 
         // Si LOS bloquée au départ, accepter une cellule équivalente en distance
         // qui dégage la LOS (sinon le perso reste planté avec 0 cast par tour).
@@ -120,8 +124,9 @@ public static class MoteurTactique
                 ? true
                 : !ctx.SortNecessiteLOS || EvaluerLos(testLos, c, cibleXY, carte);
 
-            double score = ScorePositionCombat.ScoreCelluleAvance(
-                c.X, c.Y, ennemisXY, cibleXY, ctx, losCandidate, poids);
+            int nbAdj = CompterAdjacentesMarchables(carte, c, interdites);
+            double score = ScorePositionCombat.ScoreCelluleTactique(
+                c.X, c.Y, ennemisXY, cibleXY, invocsAlliesXY, nbAdj, ctx, losCandidate, poids);
 
             // Skip si pas mieux que le meilleur actuel.
             if (score > meilleurScore) continue;
@@ -170,5 +175,29 @@ public static class MoteurTactique
         var cellCible = carte.ObtenirParCoords(cibleXY.x, cibleXY.y);
         if (cellCible == null) return true;
         return testLos(depuis, cellCible);
+    }
+
+    /// <summary>
+    /// Compte les cellules adjacentes (8 voisines incluant diagonales) qui
+    /// sont marchables ET libres (pas dans interdites). Utilisé par le scoring
+    /// tactique pour pénaliser les cells "coincées" qui auront <3 sorties au
+    /// tour suivant (corner trap).
+    /// </summary>
+    private static int CompterAdjacentesMarchables(Carte carte, Cellule c, ICollection<Cellule> interdites)
+    {
+        int compte = 0;
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                if (dx == 0 && dy == 0) continue;
+                var voisine = carte.ObtenirParCoords(c.X + dx, c.Y + dy);
+                if (voisine == null) continue;
+                if (!voisine.EstMarchable || voisine.IdInteractif >= 0) continue;
+                if (interdites.Contains(voisine)) continue;
+                compte++;
+            }
+        }
+        return compte;
     }
 }
