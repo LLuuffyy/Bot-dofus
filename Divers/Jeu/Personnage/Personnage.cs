@@ -122,8 +122,40 @@ public sealed class Personnage
         Mis_A_Jour?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>
+    /// Recalcule <see cref="PoidsActuel"/> localement depuis l'inventaire
+    /// (Σ poids unitaire × quantité). À appeler après chaque modification
+    /// d'inventaire (OQ/OR/OAK/EMO+ dépôt banque), car Hystoria n'envoie pas
+    /// systématiquement un Ow mis à jour après ces événements.
+    /// Bug forensic 2026-05-23 07:10 : 31 items déposés en banque, mais
+    /// PourcentagePoids reste à 100% car aucun Ow reçu → banque pense que
+    /// le dépôt a échoué et arrête.
+    /// </summary>
+    public void RecalculerPoidsLocal()
+    {
+        var bdd = BotDofus.Divers.Donnees.BaseDonnees.Instance;
+        if (bdd == null) return;
+        long total = 0;
+        lock (Inventaire)
+        {
+            foreach (var o in Inventaire)
+            {
+                if (o.Quantite <= 0) continue;
+                var info = bdd.Item(o.IdTemplate);
+                if (info == null) continue;
+                total += (long)info.Poids * o.Quantite;
+            }
+        }
+        if (total > int.MaxValue) total = int.MaxValue;
+        PoidsActuel = (int)total;
+        Mis_A_Jour?.Invoke(this, EventArgs.Empty);
+    }
+
     public void NotifierInventaireChange()
     {
+        // Recalcul local avant de notifier — assure que PourcentagePoids
+        // est cohérent avec l'inventaire actuel même sans paquet Ow serveur.
+        RecalculerPoidsLocal();
         InventaireChange?.Invoke(this, EventArgs.Empty);
         Mis_A_Jour?.Invoke(this, EventArgs.Empty);
     }
