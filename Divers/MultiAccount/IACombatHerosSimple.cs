@@ -100,7 +100,7 @@ public static class IACombatHerosSimple
             return;
         }
 
-        int delaiReaction = TimingsCombat.Delai(1100, 1700);
+        int delaiReaction = TimingsCombat.DelaiActionCombat(1100, 1700);
         Journaliseur.Info(
             $"[{tag}] Tour — cell {moi.CellulePosition}, PA={moi.PA}, PM={moi.PM}, "
             + $"alliés={combat.Allies.Count}, ennemis={ennemisVivants.Count}, "
@@ -254,19 +254,9 @@ public static class IACombatHerosSimple
             return;
         }
 
-        // RÉSERVE PM tour suivant : en Eloigne/Fuyard, on garde ≥2 PM pour
-        // pouvoir kiter au prochain tour si pris au CAC. En Equilibre, ≥1 PM.
-        // En Agressif, on dépense tout (objectif rapprochement maximal).
-        int reservePm = mode switch
-        {
-            ModeCombat.Eloigne or ModeCombat.Fuyard => 2,
-            ModeCombat.Equilibre => 1,
-            _ => 0
-        };
-        int pmMax = System.Math.Max(1, moi.PM - reservePm);
-        if (moi.PM <= reservePm + 1) pmMax = moi.PM;  // edge case : peu de PM, on dépense tout
-        if (pmMax < moi.PM)
-            Journaliseur.Info($"[{tag}] TACTIC réserve {moi.PM - pmMax} PM pour kite tour suivant (mode {mode})");
+        // PM utilisés à fond : sur Dofus les PM ne se cumulent PAS entre tours
+        // (reset à 100% du max chaque tour) → garder une réserve est inutile.
+        int pmMax = moi.PM;
         var interdites = ConstruireInterdites(carte, combat, moi.Identifiant);
         var interdites_int = new HashSet<int>(System.Linq.Enumerable.Select(interdites, c => c.Identifiant));
 
@@ -649,7 +639,7 @@ public static class IACombatHerosSimple
                 PorteeMax: stats.PorteeMax,
                 NiveauAppris: niveau);
 
-            await Task.Delay(TimingsCombat.Delai(300, 500)).ConfigureAwait(false);
+            await Task.Delay(TimingsCombat.DelaiApresDeplacement(300, 500)).ConfigureAwait(false);
             return await EnvoyerCastSynFusAsync(tag, moi, combat, carte, resultat, session).ConfigureAwait(false);
         }
         return false;
@@ -894,11 +884,14 @@ public static class IACombatHerosSimple
             int cellAttendue = chemin[chemin.Count - 1].Identifiant;
             int nbPas = chemin.Count - 1;
 
-            // Timeout généreux : 1.5s + 500ms par case (couvre lag réseau).
-            // En turbo on garde la même borne haute car c'est juste un timeout
-            // de sécurité, pas un délai actif (l'event broadcast peut arriver
-            // beaucoup plus tôt).
-            int timeoutMs = System.Math.Max(1500, nbPas * 500 + 1500);
+            // Timeout adaptatif selon le profil de vitesse :
+            // - Rapide / HumainNormal : 1.5s + 500ms/case (couvre lag réseau)
+            // - UltraRapide : TimeoutMouvement de la config (500ms par défaut)
+            // C'est juste un timeout de sécurité, le broadcast arrive
+            // généralement bien avant. En UltraRapide on accepte de passer
+            // en optimistic plus vite (gain ~500ms par déplacement).
+            int timeoutBase = TimingsCombat.TimeoutMouvementMs();
+            int timeoutMs = System.Math.Max(timeoutBase, nbPas * 200 + timeoutBase);
 
             await session.EnvoyerAuServeurAsync($"GA001{encodage}").ConfigureAwait(false);
 

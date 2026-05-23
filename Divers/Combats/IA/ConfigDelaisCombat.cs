@@ -119,16 +119,20 @@ public sealed class ConfigDelaisCombat
                 break;
 
             case ProfilVitesseCombat.UltraRapide:
+                // Délais quasi-instantanés. Timeouts coupés au minimum :
+                // si le broadcast serveur n'arrive pas en 500ms on continue
+                // en optimistic. DureeParCase 150ms (vs 330ms anim normale)
+                // = on suppose que le serveur traite le déplacement en ~150ms.
                 ActionCombatGeneral = new(5, 15);
                 CliquerPnb = new(5, 15);
                 LancerSort = new(5, 15);
                 EntreDeuxSorts = new(5, 15);
                 PasserTour = new(5, 15);
                 ApresDeplacement = new(5, 15);
-                TimeoutCast = new(400, 400);
-                TimeoutMouvement = new(1000, 1000);
-                PlacementCombat = new(50, 100);
-                DureeParCaseMs = new(150, 200);
+                TimeoutCast = new(250, 250);          // -150ms (vs 400)
+                TimeoutMouvement = new(500, 500);     // -500ms (vs 1000)
+                PlacementCombat = new(20, 50);        // -50ms (vs 50)
+                DureeParCaseMs = new(100, 150);       // -50ms (vs 150)
                 DeplacementMap = new(20, 50);
                 ChangementMap = new(50, 100);
                 EngagerCombat = new(50, 100);

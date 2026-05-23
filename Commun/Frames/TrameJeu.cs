@@ -1518,7 +1518,8 @@ public sealed class TrameJeu : TrameBase
                     // sur cartes laggy — agent DIAG063 a vu jusqu'à 45s en cas
                     // extrême mais 3500ms suffit pour le cas typique laggy).
                     int idMoi = _etat.Personnage.Identifiant;
-                    int timeoutMs = System.Math.Max(3500, nbPasMove * 500 + 1500);
+                    int timeoutBase = Divers.Combats.IA.TimingsCombat.TimeoutMouvementMs();
+                    int timeoutMs = System.Math.Max(timeoutBase, nbPasMove * 200 + timeoutBase);
                     await _session.EnvoyerAuServeurAsync(paquetDep).ConfigureAwait(false);
 
                     var resultat = await Divers.Combats.IA.PipelineDeplacementCombat
@@ -1850,16 +1851,9 @@ public sealed class TrameJeu : TrameBase
             case BotDofus.Divers.Combats.IA.ModeCombat.Equilibre when System.Math.Abs(distActuelle - distPref) <= 1: return;
         }
 
-        // RÉSERVE PM tour suivant : en Eloigne/Fuyard on garde 2 PM pour kiter
-        // au prochain tour si pris au CAC. Equilibre 1 PM. Agressif 0 (rush).
-        int reservePm = mode switch
-        {
-            BotDofus.Divers.Combats.IA.ModeCombat.Eloigne or BotDofus.Divers.Combats.IA.ModeCombat.Fuyard => 2,
-            BotDofus.Divers.Combats.IA.ModeCombat.Equilibre => 1,
-            _ => 0
-        };
-        int pmMax = System.Math.Max(1, perso.PM - reservePm);
-        if (perso.PM <= reservePm + 1) pmMax = perso.PM;  // edge case : peu de PM, on dépense tout
+        // PM utilisés à fond : sur Dofus les PM ne se cumulent PAS entre tours
+        // (reset à 100% du max chaque tour) → pas de réserve à garder.
+        int pmMax = perso.PM;
 
         // === MOTEUR TACTIQUE AVANCÉ (ADR-008) : tente d'abord la fonction
         // CalculerMeilleureCellule qui prend en compte sort principal + LOS +
@@ -1874,7 +1868,8 @@ public sealed class TrameJeu : TrameBase
             var paquetDepTac = BotDofus.Divers.Cartes.Deplacement.Pathfinder.PaquetDeplacement(cheminTac);
             await _session.EnvoyerAuServeurAsync(paquetDepTac).ConfigureAwait(false);
 
-            int timeoutTac = System.Math.Max(3500, pmTac * 500 + 1500);
+            int timeoutBaseTac = Divers.Combats.IA.TimingsCombat.TimeoutMouvementMs();
+            int timeoutTac = System.Math.Max(timeoutBaseTac, pmTac * 200 + timeoutBaseTac);
             var resTac = await Divers.Combats.IA.PipelineDeplacementCombat
                 .AttendreMouvementOuTimeoutAsync(combat, perso.Identifiant, cellTac.Identifiant, timeoutTac, default)
                 .ConfigureAwait(false);
@@ -1963,7 +1958,8 @@ public sealed class TrameJeu : TrameBase
         Journaliseur.Info($"[ACTION-MV] Envoi GA001 (pré-mouvement) → '{paquetDep}'");
         await _session.EnvoyerAuServeurAsync(paquetDep).ConfigureAwait(false);
 
-        int timeoutMs = System.Math.Max(3500, meilleurNbPasTie * 500 + 1500);
+        int timeoutBasePre = Divers.Combats.IA.TimingsCombat.TimeoutMouvementMs();
+        int timeoutMs = System.Math.Max(timeoutBasePre, meilleurNbPasTie * 200 + timeoutBasePre);
         var resultat = await Divers.Combats.IA.PipelineDeplacementCombat
             .AttendreMouvementOuTimeoutAsync(combat, perso.Identifiant, meilleureCible.Identifiant, timeoutMs, default)
             .ConfigureAwait(false);
