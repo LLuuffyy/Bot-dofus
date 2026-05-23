@@ -316,6 +316,14 @@ dotnet build BotDofus.Wpf/BotDofus.Wpf.csproj -c Debug --nologo -v minimal
 - [x] Déplacement combat (move + cast)
 - [x] Mode passif global
 - [x] Décideur IA refondu avec conditions SynFus (Focus, NombreParTour, Distance, Méthode, PV%, tours, ennemis) — moteur règles `MoteurReglesCombat` Phase 1/2/3
+- [x] Moteur tactique avancé (kite, LOS, portée min) — `MoteurTactique`
+- [x] Panneau délais SynFus (14 catégories, 4 profils, UI Expander)
+- [x] Distribution caracs auto au level-up — `Divers/Caracteristiques/`
+- [x] Blacklist temporaire groupes inaccessibles (3 timeouts → 45s)
+- [x] GA907 timing chemin long (Clamp jusqu'à 10s pour 17+ cases)
+- [x] Détection déconnexion + alerte Discord
+- [x] MapViewer mode combat (overlay portée + cells PM)
+- [x] Stats live Dashboard (kamas/h, xp/h, combats/h)
 - [ ] UI WPF onglet Combat (équivalent SynFus : tableau sorts + form conditions + consommable soin)
 - [ ] Multi-cast par tour (drain PA, respecte maxParTour)
 - [ ] LDV (Bresenham) avant cast si NecessiteLOS
