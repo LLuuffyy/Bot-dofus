@@ -208,6 +208,8 @@ public static class ServiceConfigsHeros
             },
 
             // === 3 — ENUTROF : kite distance, Lancer de Pièces emblématique ===
+            // SYNERGIE multi-perso : Lancer de Pièces priorise les mobs bloqués
+            // par les invocations alliées (master Sadida posant Folle/Bloqueuse).
             3 => new ConfigCombat
             {
                 Mode = ModeCombat.Eloigne,
@@ -216,7 +218,7 @@ public static class ServiceConfigsHeros
                 DistanceMinEloigne = 6,
                 Regles =
                 {
-                    new RegleSort { IdSort = 51, Priorite = 10, NombreParTour = 99, Nom = "Lancer de Pièces" },
+                    new RegleSort { IdSort = 51, Priorite = 10, NombreParTour = 99, Nom = "Lancer de Pièces (combo)", Focus = FocusSort.EnnemiAdjacentInvocAllie },
                     new RegleSort { IdSort = 41, Priorite = 8,  NombreParTour = 99, Nom = "Lancer de Pelle" },
                     new RegleSort { IdSort = 43, Priorite = 7,  NombreParTour = 1,  Nom = "Sac Animé", Focus = FocusSort.CelluleAdjacenteMoi },
                     new RegleSort { IdSort = 45, Priorite = 5,  NombreParTour = 1,  Nom = "Prospection (buff)", Focus = FocusSort.Moi, PremierTour = true },
@@ -303,6 +305,8 @@ public static class ServiceConfigsHeros
             },
 
             // === 9 — CRA : kite distance pur, Flèches ===
+            // SYNERGIE multi-perso : Flèche Magique cible mobs bloqués par
+            // invocations Sadida (achever en duo).
             9 => new ConfigCombat
             {
                 Mode = ModeCombat.Eloigne,
@@ -311,7 +315,7 @@ public static class ServiceConfigsHeros
                 DistanceMinEloigne = 6,
                 Regles =
                 {
-                    new RegleSort { IdSort = 161, Priorite = 10, NombreParTour = 99, Nom = "Flèche Magique" },
+                    new RegleSort { IdSort = 161, Priorite = 10, NombreParTour = 99, Nom = "Flèche Magique (combo)", Focus = FocusSort.EnnemiAdjacentInvocAllie },
                     new RegleSort { IdSort = 167, Priorite = 9,  NombreParTour = 99, Nom = "Flèche Empoisonnée" },
                     new RegleSort { IdSort = 169, Priorite = 7,  NombreParTour = 99, Nom = "Flèche Cinglante" },
                     new RegleSort { IdSort = 173, Priorite = 5,  NombreParTour = 99, Nom = "Flèche Punitive" },

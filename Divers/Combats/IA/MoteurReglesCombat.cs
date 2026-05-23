@@ -271,6 +271,13 @@ public static class MoteurReglesCombat
                 .OrderByDescending(e => DistanceDofus(moi.CellulePosition, e.CellulePosition, mapWidth))
                 .FirstOrDefault(),
 
+            // Synergie multi-perso : mob adjacent à une de mes invocations.
+            // Combat.Allies contient TOUTES les invocations vivantes (master +
+            // héros + leurs invocs). Si aucun mob adjacent à invoc → fallback
+            // sur ennemi le + proche standard (mode "achever" inclus).
+            FocusSort.EnnemiAdjacentInvocAllie => EnnemiAdjacentInvocOuFallback(
+                ennemisVivants, alliesVivants, moi, mapWidth),
+
             // === SOI / ALLIÉS ===
             // Note : AllieLePlusBlesse et AlliePlusGrosHeal EXCLUENT le caster
             // (= moi) sinon, en solo, le moteur retourne moi → Ronce Apaisante
@@ -437,6 +444,27 @@ public static class MoteurReglesCombat
     /// vise le mob NON-INVOCATION avec le moins de PV (achève le mourant).
     /// Si que des invocations dans le radar, fallback sur celle low-HP.
     /// </summary>
+    /// <summary>
+    /// Mob non-invocation adjacent (dist≤1) à une de mes invocations alliées.
+    /// Tie-break : le mob avec le plus bas PV (= plus achevable).
+    /// Fallback si aucun mob adjacent à invoc : EnnemiPlusProcheOuLowHp standard.
+    /// </summary>
+    private static Combattant? EnnemiAdjacentInvocOuFallback(
+        List<Combattant> ennemisVivants, List<Combattant> alliesVivants,
+        Combattant moi, int mapWidth)
+    {
+        var mesInvocs = alliesVivants.Where(a => a.EstInvocation).ToList();
+        if (mesInvocs.Count == 0)
+            return EnnemiPlusProcheOuLowHp(ennemisVivants, moi, mapWidth);
+
+        var bloque = ennemisVivants
+            .Where(e => !e.EstInvocation
+                     && mesInvocs.Any(inv => DistanceDofus(inv.CellulePosition, e.CellulePosition, mapWidth) <= 1))
+            .OrderBy(e => e.PV)
+            .FirstOrDefault();
+        return bloque ?? EnnemiPlusProcheOuLowHp(ennemisVivants, moi, mapWidth);
+    }
+
     private static Combattant? EnnemiPlusProcheOuLowHp(
         List<Combattant> ennemisVivants, Combattant moi, int mapWidth)
     {

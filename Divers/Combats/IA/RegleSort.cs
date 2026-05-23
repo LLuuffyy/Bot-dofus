@@ -138,6 +138,13 @@ public enum FocusSort
     EnnemiLePlusFort,
     /// <summary>Ennemi le plus éloigné (utile sort à portée min, ex. Tir Lourd Cra).</summary>
     EnnemiLePlusLoin,
+    /// <summary>
+    /// Ennemi adjacent à une de mes invocations alliées (Sadida Folle/Bloqueuse,
+    /// Osamodas invocs). Permet la synergie multi-perso : le master pose une
+    /// invocation qui bloque, les héros liés ciblent le mob bloqué en priorité.
+    /// Fallback : si aucun mob adjacent à invoc, ennemi le + proche.
+    /// </summary>
+    EnnemiAdjacentInvocAllie,
 
     // === SOI / ALLIÉS ===
     Moi,
