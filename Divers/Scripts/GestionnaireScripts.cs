@@ -95,28 +95,28 @@ public sealed class GestionnaireScripts : IDisposable
 
                 // === Détour MARCHAND auto ===
                 // Si pods >= MARCHAND_SEUIL_PODS et trajet marchand défini, on
-                // suit la section marchand() (aller jusqu'au PNJ + vente),
-                // puis le bot cherche dans EtapesMouvement une étape qui matche
-                // la map courante (= continuation du trajet mouvement depuis
-                // l'endroit où il s'est arrêté pour aller au marchand).
-                // L'user doit s'assurer que mouvement() couvre AUSSI les maps
-                // de retour depuis la taverne.
+                // suit la section marchand() (aller jusqu'au PNJ + vente).
+                // Après vente, le bot est sur la map du PNJ. Il cherche dans
+                // EtapesMouvement une étape qui matche cette map pour reprendre
+                // le mouvement à cet index (= début du chemin retour).
+                // Convention : l'user place les maps de retour APRÈS la zone
+                // farm dans mouvement(), la PREMIÈRE étape retour étant la
+                // map du PNJ marchand elle-même.
                 int seuilM = ScriptCourant.Configuration.MarchandSeuilPods;
                 if (seuilM > 0 && ScriptCourant.EtapesMarchand.Count > 0
                     && _api.PourcentagePoids >= seuilM)
                 {
                     Journaliseur.Info($"[SCRIPT] 📦 Poids {_api.PourcentagePoids:F1}% ≥ MARCHAND_SEUIL_PODS {seuilM}% → détour trajet marchand");
                     await ExecuterSectionMarchandAsync(ct).ConfigureAwait(false);
-                    // Cherche une étape mouvement matchant la map courante pour
-                    // reprendre le farm. Si introuvable → reset à 0 (= début).
                     int mapApres = _api.CartesCourantes;
-                    int idxRetour = ScriptCourant.EtapesMouvement
-                        .Select((e, i) => (e, i))
-                        .Where(x => int.TryParse(x.e.IdentifiantCarte, out int m) && m == mapApres)
-                        .Select(x => (int?)x.i)
-                        .FirstOrDefault() ?? 0;
-                    IndexEtapeCourante = idxRetour;
-                    Journaliseur.Info($"[SCRIPT] Détour marchand terminé → reprise mouvement à l'étape {idxRetour + 1} (map {mapApres})");
+                    int idxRetour = -1;
+                    for (int i = 0; i < ScriptCourant.EtapesMouvement.Count; i++)
+                    {
+                        if (int.TryParse(ScriptCourant.EtapesMouvement[i].IdentifiantCarte, out int m) && m == mapApres)
+                        { idxRetour = i; break; }
+                    }
+                    IndexEtapeCourante = idxRetour >= 0 ? idxRetour : 0;
+                    Journaliseur.Info($"[SCRIPT] Détour marchand terminé → reprise mouvement étape {IndexEtapeCourante + 1} (map {mapApres})");
                     continue;
                 }
 
@@ -128,9 +128,10 @@ public sealed class GestionnaireScripts : IDisposable
 
                 // === FORCEFIGHT : boucle de combats sur la même map ===
                 // Si l'étape a forcefight=true, on reste sur la map et on engage
-                // tous les groupes attaquables (= filtres OK/NO_MONSTER + MIN/MAX
-                // appliqués via MonstreLePlusProche) avant de passer à l'étape
-                // suivante. Le fight=true classique fait UN combat puis avance.
+                // tous les groupes attaquables. Quand plus de mobs, on NE passe
+                // PAS à l'étape suivante (sinon le bot quitterait la zone farm
+                // pour aller sur les maps retour). On boucle indéfiniment sur
+                // cette étape — seul un détour marchand/banque peut sortir.
                 if (etape.ForcerFightBoucle)
                 {
                     while (!ct.IsCancellationRequested
@@ -141,6 +142,12 @@ public sealed class GestionnaireScripts : IDisposable
                         if (!ok) break;
                         CompteurCombats++;  // n'incrémente qu'après succès
                     }
+                    EtapeTerminee?.Invoke(this, etape);
+                    // PAS d'incrément : on reste sur la même étape (rebascule
+                    // dans la boucle while du début pour re-check marchand/pods
+                    // puis re-tenter la map).
+                    await System.Threading.Tasks.Task.Delay(1000, ct).ConfigureAwait(false);
+                    continue;
                 }
 
                 EtapeTerminee?.Invoke(this, etape);
