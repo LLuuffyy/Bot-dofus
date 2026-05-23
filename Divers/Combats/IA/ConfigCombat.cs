@@ -90,6 +90,21 @@ public sealed class ConfigCombat
     /// <summary>Seuil PV (0-100) pour déclencher la fuite.</summary>
     public int SeuilFuitePv { get; set; } = 20;
 
+    /// <summary>
+    /// Retourne le mode à utiliser pour ce tour : si <see cref="FuirSiPvBas"/>
+    /// et que PV%&lt;<see cref="SeuilFuitePv"/>, bascule en <see cref="ModeCombat.Fuyard"/>
+    /// même si <see cref="Mode"/> est Agressif/Equilibre. Sinon retourne <see cref="Mode"/>.
+    /// </summary>
+    public ModeCombat ModeEffectif(int pv, int pvMax)
+    {
+        if (FuirSiPvBas && pvMax > 0)
+        {
+            int pvPct = 100 * pv / pvMax;
+            if (pvPct < SeuilFuitePv) return ModeCombat.Fuyard;
+        }
+        return Mode;
+    }
+
     /// <summary>Délai entre actions IA combat (ms) — humanise les casts.
     /// 1000ms par défaut (humain réel = 1400-2100ms observé, on prend un milieu).
     /// Ne JAMAIS descendre &lt; 500ms = signature anti-bot évidente.</summary>

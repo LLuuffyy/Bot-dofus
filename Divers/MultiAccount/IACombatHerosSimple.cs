@@ -197,7 +197,8 @@ public static class IACombatHerosSimple
         var depart = carte.Obtenir(maCellId);
         if (depart == null) return;
 
-        var mode = cfg.Mode;
+        // Mode effectif : bascule en Fuyard si bas PV (FuirSiPvBas + SeuilFuitePv).
+        var mode = cfg.ModeEffectif(moi.PV, moi.PVMax);
         int distPref = cfg.DistancePreferee;
         int distMinEloigne = cfg.DistanceMinEloigne;
         int mw = carte.Largeur > 0 ? carte.Largeur : Carte.LargeurParDefaut;
@@ -396,7 +397,7 @@ public static class IACombatHerosSimple
         int maCellId = moi.CellulePosition;
         var depart = carte.Obtenir(maCellId);
         if (depart == null) return;
-        var mode = cfg.Mode;
+        var mode = cfg.ModeEffectif(moi.PV, moi.PVMax);
         int mw = carte.Largeur > 0 ? carte.Largeur : Carte.LargeurParDefaut;
         var ennemisXY = ScorePositionCombat.CoordsEnnemis(ennemisVivants, mw);
         var (xMoi, yMoi) = Cellule.CalculerCoordonnees(maCellId, mw);

@@ -2034,8 +2034,13 @@ public sealed class TrameJeu : TrameBase
         }
         if (sortPrincipal == null || cible == null) return null;
 
+        // Mode effectif : si bas PV et FuirSiPvBas activé, bascule en Fuyard
+        // même si la config dit Agressif/Equilibre. Permet la "désengagement
+        // d'urgence" automatique sans toucher au mode global.
+        var modeEffectif = cfg.ModeEffectif(perso.Vie, perso.VieMax);
+
         var ctx = new Divers.Combats.IA.ScorePositionCombat.ContexteTactique(
-            Mode: cfg.Mode,
+            Mode: modeEffectif,
             PorteeMinSort: porteeMinSort,
             PorteeMaxSort: porteeMaxSort,
             SortNecessiteLOS: sortLOS,
@@ -2045,8 +2050,9 @@ public sealed class TrameJeu : TrameBase
 
         int distIdeale = Divers.Combats.IA.ScorePositionCombat.DistanceIdeale(ctx);
         var (xCible, yCible) = BotDofus.Divers.Cartes.Cellule.CalculerCoordonnees(cible.CellulePosition, mapWidth);
+        string suffixMode = modeEffectif != cfg.Mode ? $" (effectif {modeEffectif} car bas PV)" : "";
         Journaliseur.Info(
-            $"[TACTIC] Mode={cfg.Mode}, sort=#{sortPrincipal.Identifiant} portée [{porteeMinSort}-{porteeMaxSort}] LOS={sortLOS} "
+            $"[TACTIC] Mode={cfg.Mode}{suffixMode}, sort=#{sortPrincipal.Identifiant} portée [{porteeMinSort}-{porteeMaxSort}] LOS={sortLOS} "
             + $"| cible #{cible.Identifiant} cell {cible.CellulePosition} pmEnnemi={cible.PM} → distIdéale={distIdeale}");
 
         // Interdites = combattants vivants sauf moi.

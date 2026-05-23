@@ -83,6 +83,56 @@ public class IACombatAmeliorationTests
     }
 
     [Fact]
+    public void ModeEffectif_PvBas_Bascule_Fuyard()
+    {
+        // FuirSiPvBas=true + PV<seuil → mode effectif = Fuyard
+        var cfg = new ConfigCombat
+        {
+            Mode = ModeCombat.Agressif,
+            FuirSiPvBas = true,
+            SeuilFuitePv = 25,
+        };
+        Assert.Equal(ModeCombat.Fuyard, cfg.ModeEffectif(pv: 100, pvMax: 1000));  // 10%
+    }
+
+    [Fact]
+    public void ModeEffectif_PvHaut_Garde_Mode_Original()
+    {
+        var cfg = new ConfigCombat
+        {
+            Mode = ModeCombat.Agressif,
+            FuirSiPvBas = true,
+            SeuilFuitePv = 25,
+        };
+        Assert.Equal(ModeCombat.Agressif, cfg.ModeEffectif(pv: 800, pvMax: 1000));  // 80%
+    }
+
+    [Fact]
+    public void ModeEffectif_FuirDesactive_Garde_Mode_Meme_Si_BasPv()
+    {
+        var cfg = new ConfigCombat
+        {
+            Mode = ModeCombat.Equilibre,
+            FuirSiPvBas = false,  // désactivé
+            SeuilFuitePv = 25,
+        };
+        Assert.Equal(ModeCombat.Equilibre, cfg.ModeEffectif(pv: 10, pvMax: 1000));
+    }
+
+    [Fact]
+    public void ModeEffectif_PvMaxZero_Garde_Mode_Original()
+    {
+        // Edge case : PVMax pas encore initialisé (avant GTM complet).
+        var cfg = new ConfigCombat
+        {
+            Mode = ModeCombat.Agressif,
+            FuirSiPvBas = true,
+            SeuilFuitePv = 25,
+        };
+        Assert.Equal(ModeCombat.Agressif, cfg.ModeEffectif(pv: 0, pvMax: 0));
+    }
+
+    [Fact]
     public void DistanceIdeale_Agressif_Toujours_CAC()
     {
         // Mode Agressif : CAC=1 si pMax≤1, sinon dist=1 (min).
