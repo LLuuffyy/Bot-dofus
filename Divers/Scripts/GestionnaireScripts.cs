@@ -124,31 +124,37 @@ public sealed class GestionnaireScripts : IDisposable
                 EtapeDemarree?.Invoke(this, etape);
                 Journaliseur.Info($"Étape {IndexEtapeCourante + 1}/{ScriptCourant.EtapesMouvement.Count} : {etape}");
 
-                await ExecuterEtapeAsync(etape, ct).ConfigureAwait(false);
-
-                // === FORCEFIGHT : boucle de combats sur la même map ===
-                // Si l'étape a forcefight=true, on reste sur la map et on engage
-                // tous les groupes attaquables. Quand plus de mobs, on NE passe
-                // PAS à l'étape suivante (sinon le bot quitterait la zone farm
-                // pour aller sur les maps retour). On boucle indéfiniment sur
-                // cette étape — seul un détour marchand/banque peut sortir.
+                // === FORCEFIGHT : reste sur la map et farme tous les groupes ===
+                // CAS SPÉCIAL : on n'exécute le path/cell qu'au PREMIER passage
+                // (ou si on a quitté la map). Sinon on lance directement la boucle
+                // combats. Sans ce check, le path "raw:GA001..." était rejoué à
+                // chaque combat → le perso traversait la transition vers la map
+                // voisine (bug forensic 17:17-23 où bot oscillait 7804↔7799).
                 if (etape.ForcerFightBoucle)
                 {
+                    int mapEtape = int.TryParse(etape.IdentifiantCarte, out var mE) ? mE : 0;
+                    int mapActuelle = _api.CartesCourantes;
+                    if (mapActuelle != mapEtape)
+                    {
+                        // On n'est pas sur la map cible — exécuter le déplacement.
+                        await ExecuterEtapeAsync(etape, ct).ConfigureAwait(false);
+                    }
                     while (!ct.IsCancellationRequested
                         && _api.MonstreLePlusProche() != null)
                     {
                         Journaliseur.Info("[SCRIPT] forcefight=true : encore un groupe sur la map → re-engage");
                         bool ok = await _api.EngagerCombatAsync(ct).ConfigureAwait(false);
                         if (!ok) break;
-                        CompteurCombats++;  // n'incrémente qu'après succès
+                        CompteurCombats++;
                     }
                     EtapeTerminee?.Invoke(this, etape);
-                    // PAS d'incrément : on reste sur la même étape (rebascule
-                    // dans la boucle while du début pour re-check marchand/pods
-                    // puis re-tenter la map).
-                    await System.Threading.Tasks.Task.Delay(1000, ct).ConfigureAwait(false);
+                    // Reste sur la même étape — délai 2s pour laisser respawn éventuel.
+                    await System.Threading.Tasks.Task.Delay(2000, ct).ConfigureAwait(false);
                     continue;
                 }
+
+                // Étape normale : exécute déplacement + dialogue + combat éventuel.
+                await ExecuterEtapeAsync(etape, ct).ConfigureAwait(false);
 
                 EtapeTerminee?.Invoke(this, etape);
                 IndexEtapeCourante++;
