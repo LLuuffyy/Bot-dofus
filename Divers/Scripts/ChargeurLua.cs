@@ -149,6 +149,7 @@ public sealed class ChargeurLua
                 ReponsesDialogue = t.Get("answers").Type == DataType.Table ? ExtraireListeInt(t.Get("answers")) : null,
                 CelluleCible = t.Get("cell").Type == DataType.Number ? (int)t.Get("cell").Number : null,
                 EngagerCombat = t.Get("fight").Type == DataType.Boolean && t.Get("fight").Boolean,
+                ForcerFightBoucle = t.Get("forcefight").Type == DataType.Boolean && t.Get("forcefight").Boolean,
                 UtiliserBanque = t.Get("npc_bank").Type == DataType.Boolean && t.Get("npc_bank").Boolean,
                 UtiliserMarchand = t.Get("npc_marchand").Type == DataType.Boolean && t.Get("npc_marchand").Boolean,
             });

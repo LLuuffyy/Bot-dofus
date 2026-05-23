@@ -1706,4 +1706,7 @@ public sealed class ApiBot
 
     /// <summary>Pourcentage de poids actuel (0-100). Accesseur public pour les autres modules.</summary>
     public double PourcentagePoids => _etat.Personnage.PourcentagePoids;
+
+    /// <summary>ID de la carte courante (0 si inconnu).</summary>
+    public int CartesCourantes => _etat.CarteCourante?.Identifiant ?? 0;
 }

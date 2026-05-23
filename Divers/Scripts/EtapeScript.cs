@@ -24,8 +24,15 @@ public sealed class EtapeScript
     /// <summary>Numéro de cellule cible sur la carte (déplacement précis).</summary>
     public int? CelluleCible { get; init; }
 
-    /// <summary>Indique que la carte comporte un combat à engager.</summary>
+    /// <summary>Indique que la carte comporte un combat à engager (1 seul combat puis passe à l'étape suivante).</summary>
     public bool EngagerCombat { get; init; }
+
+    /// <summary>
+    /// Boucle de combats sur la même map : tant qu'il reste un groupe
+    /// attaquable, on engage en cascade. Pratique pour les zones de farm
+    /// répétitif. Activé via <c>forcefight = true</c> dans l'étape Lua.
+    /// </summary>
+    public bool ForcerFightBoucle { get; init; }
 
     /// <summary>Indique qu'on doit passer à la banque (PNJ banquier ou phénix).</summary>
     public bool UtiliserBanque { get; init; }

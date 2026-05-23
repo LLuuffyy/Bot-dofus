@@ -95,14 +95,29 @@ public sealed class GestionnaireScripts : IDisposable
 
                 // === Détour MARCHAND auto ===
                 // Si pods >= MARCHAND_SEUIL_PODS et trajet marchand défini, on
-                // suit la section marchand() avant de continuer le mouvement.
+                // suit la section marchand() (aller jusqu'au PNJ + vente),
+                // puis le bot cherche dans EtapesMouvement une étape qui matche
+                // la map courante (= continuation du trajet mouvement depuis
+                // l'endroit où il s'est arrêté pour aller au marchand).
+                // L'user doit s'assurer que mouvement() couvre AUSSI les maps
+                // de retour depuis la taverne.
                 int seuilM = ScriptCourant.Configuration.MarchandSeuilPods;
                 if (seuilM > 0 && ScriptCourant.EtapesMarchand.Count > 0
                     && _api.PourcentagePoids >= seuilM)
                 {
                     Journaliseur.Info($"[SCRIPT] 📦 Poids {_api.PourcentagePoids:F1}% ≥ MARCHAND_SEUIL_PODS {seuilM}% → détour trajet marchand");
                     await ExecuterSectionMarchandAsync(ct).ConfigureAwait(false);
-                    Journaliseur.Info("[SCRIPT] Détour marchand terminé → reprise mouvement");
+                    // Cherche une étape mouvement matchant la map courante pour
+                    // reprendre le farm. Si introuvable → reset à 0 (= début).
+                    int mapApres = _api.CartesCourantes;
+                    int idxRetour = ScriptCourant.EtapesMouvement
+                        .Select((e, i) => (e, i))
+                        .Where(x => int.TryParse(x.e.IdentifiantCarte, out int m) && m == mapApres)
+                        .Select(x => (int?)x.i)
+                        .FirstOrDefault() ?? 0;
+                    IndexEtapeCourante = idxRetour;
+                    Journaliseur.Info($"[SCRIPT] Détour marchand terminé → reprise mouvement à l'étape {idxRetour + 1} (map {mapApres})");
+                    continue;
                 }
 
                 var etape = ScriptCourant.EtapesMouvement[IndexEtapeCourante];
@@ -111,18 +126,20 @@ public sealed class GestionnaireScripts : IDisposable
 
                 await ExecuterEtapeAsync(etape, ct).ConfigureAwait(false);
 
-                // === FORCE_FIGHT : rester sur la map et farmer tous les groupes ===
-                // Si flag actif et l'étape avait fight=true, on re-engage tant
-                // qu'il reste des groupes attaquables sur la même map.
-                if (ScriptCourant.Configuration.ForceFight && etape.EngagerCombat)
+                // === FORCEFIGHT : boucle de combats sur la même map ===
+                // Si l'étape a forcefight=true, on reste sur la map et on engage
+                // tous les groupes attaquables (= filtres OK/NO_MONSTER + MIN/MAX
+                // appliqués via MonstreLePlusProche) avant de passer à l'étape
+                // suivante. Le fight=true classique fait UN combat puis avance.
+                if (etape.ForcerFightBoucle)
                 {
                     while (!ct.IsCancellationRequested
                         && _api.MonstreLePlusProche() != null)
                     {
-                        Journaliseur.Info("[SCRIPT] FORCE_FIGHT : encore un groupe sur la map → re-engage");
-                        CompteurCombats++;
+                        Journaliseur.Info("[SCRIPT] forcefight=true : encore un groupe sur la map → re-engage");
                         bool ok = await _api.EngagerCombatAsync(ct).ConfigureAwait(false);
                         if (!ok) break;
+                        CompteurCombats++;  // n'incrémente qu'après succès
                     }
                 }
 
@@ -186,8 +203,8 @@ public sealed class GestionnaireScripts : IDisposable
 
         if (etape.EngagerCombat)
         {
-            CompteurCombats++;
-            await _api.EngagerCombatAsync(ct).ConfigureAwait(false);
+            bool ok = await _api.EngagerCombatAsync(ct).ConfigureAwait(false);
+            if (ok) CompteurCombats++;  // n'incrémente que si combat vraiment lancé
         }
 
         if (etape.UtiliserBanque)
