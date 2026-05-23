@@ -46,6 +46,13 @@ public sealed class Compte : IEffacable
     public BotDofus.Divers.Combats.IA.ConfigCombat? ConfigCombat { get; set; }
 
     /// <summary>
+    /// Répartition automatique des points de caractéristique au level-up.
+    /// Si <c>null</c> ou <c>Mode=Manuel</c>, pas de distribution auto.
+    /// Configurable via UI ou fichier <c>caracs/&lt;perso&gt;.json</c>.
+    /// </summary>
+    public BotDofus.Divers.Caracteristiques.ConfigRepartitionCaracs? ConfigCaracs { get; set; }
+
+    /// <summary>
     /// Config dépôt banque automatique (banque/&lt;perso&gt;.json).
     /// Si <c>Active</c> et poids ≥ <c>SeuilPoidsPct</c>, le bot interrompt le
     /// farm pour déposer ses items à la banque (cf. <see cref="Banque.PiloteBanque"/>).
@@ -96,6 +103,14 @@ public sealed class Compte : IEffacable
     /// le contexte n'est pas créé.
     /// </summary>
     public BotDofus.Divers.MultiAccount.ActivateurHerosAbrak? ActivateurHerosAbrak { get; set; }
+
+    /// <summary>
+    /// Référence vers l'ApiBot du <see cref="ContexteCompte"/>. Set par
+    /// ContexteCompte à l'init. Permet aux trames (ex. TrameJeu pour
+    /// distribution caracs auto au level-up) d'accéder à l'API sans
+    /// dépendance circulaire ContexteCompte ↔ Trames.
+    /// </summary>
+    public BotDofus.Divers.Scripts.Api.ApiBot? Api { get; set; }
 
     /// <summary>
     /// URL webhook Discord pour notifications événements importants (mort,

@@ -596,6 +596,29 @@ public sealed class TrameJeu : TrameBase
             var webhook = _compte.WebhookDiscordUrl;
             if (!string.IsNullOrWhiteSpace(webhook))
                 _ = Divers.Notifications.NotificateurDiscord.NotifierLevelUpAsync(webhook, perso.Nom, nouveauNiveau);
+
+            // Distribution auto des points carac selon la config du compte.
+            // Fire-and-forget : si la config est Manuel ou null, le distributeur
+            // retourne immédiatement sans envoyer de paquet.
+            var cfgCaracs = _compte.ConfigCaracs;
+            if (cfgCaracs != null && cfgCaracs.Mode != Divers.Caracteristiques.ModeDistribCaracs.Manuel
+                && _compte.Api is { } api)
+            {
+                _ = System.Threading.Tasks.Task.Run(async () =>
+                {
+                    try
+                    {
+                        // Petite pause pour laisser le serveur stabiliser les points caracs côté Personnage.
+                        await System.Threading.Tasks.Task.Delay(800).ConfigureAwait(false);
+                        var distrib = new Divers.Caracteristiques.DistributeurCaracs(api, perso, cfgCaracs);
+                        await distrib.DistribuerAsync().ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Journaliseur.Avertir($"[CARACS] Distribution auto échouée : {ex.Message}");
+                    }
+                });
+            }
         }
     }
 

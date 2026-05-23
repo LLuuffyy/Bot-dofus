@@ -102,6 +102,11 @@ public sealed class ContexteCompte : IDisposable
         Trames = new GestionnaireTrames();
         EtatJeu = new EtatJeu();
         Api = new ApiBot(compte, EtatJeu);
+        compte.Api = Api;  // permet aux trames d'accéder à l'API (caracs auto, etc.)
+
+        // Config caracs (caracs/<perso>.json) — null si pas configuré
+        // → mode Manuel implicite (pas de distribution auto).
+        compte.ConfigCaracs = BotDofus.Divers.Caracteristiques.ServiceConfigsCaracs.Charger(compte.Identifiant);
         ConfigCombat = ConfigCombat.Charger(Path.Combine("peleas", $"{compte.Identifiant}.json"));
         // Expose la config au Compte pour que TrameJeu y accède au moment
         // de jouer le tour (le décideur IA en a besoin pour appliquer les
