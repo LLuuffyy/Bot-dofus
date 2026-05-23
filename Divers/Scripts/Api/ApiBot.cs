@@ -1674,4 +1674,7 @@ public sealed class ApiBot
 
     /// <summary>Récupère les PV actuels / max du personnage (exposable aux scripts Lua).</summary>
     public (int pv, int pvMax) ObtenirVie() => (_etat.Personnage.Vie, _etat.Personnage.VieMax);
+
+    /// <summary>Pourcentage de poids actuel (0-100). Accesseur public pour les autres modules.</summary>
+    public double PourcentagePoids => _etat.Personnage.PourcentagePoids;
 }

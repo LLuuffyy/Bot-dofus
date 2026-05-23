@@ -34,6 +34,7 @@ public sealed class ChargeurLua
         var config = ExtraireConfiguration(script);
         var mouvements = ExtraireEtapes(script, "mouvement", "movement");
         var banque = ExtraireEtapes(script, "banque", "bank");
+        var marchand = ExtraireEtapes(script, "marchand", "merchant");
 
         return new ScriptCharge
         {
@@ -41,7 +42,8 @@ public sealed class ChargeurLua
             Nom = Path.GetFileNameWithoutExtension(cheminFichier),
             Configuration = config,
             EtapesMouvement = mouvements,
-            EtapesBanque = banque
+            EtapesBanque = banque,
+            EtapesMarchand = marchand
         };
     }
 
@@ -54,6 +56,12 @@ public sealed class ChargeurLua
 
         var maxPods = script.Globals.Get("MAX_PODS");
         if (maxPods.Type == DataType.Number) config.PodsMax = (int)maxPods.Number;
+
+        var seuilMarchand = script.Globals.Get("MARCHAND_SEUIL_PODS");
+        if (seuilMarchand.Type == DataType.Number) config.MarchandSeuilPods = (int)seuilMarchand.Number;
+
+        var forceFight = script.Globals.Get("FORCE_FIGHT");
+        if (forceFight.Type == DataType.Boolean) config.ForceFight = forceFight.Boolean;
 
         var autoRegen = script.Globals.Get("AUTO_REGEN");
         if (autoRegen.Type == DataType.Table)
@@ -125,7 +133,8 @@ public sealed class ChargeurLua
                 ReponsesDialogue = t.Get("answers").Type == DataType.Table ? ExtraireListeInt(t.Get("answers")) : null,
                 CelluleCible = t.Get("cell").Type == DataType.Number ? (int)t.Get("cell").Number : null,
                 EngagerCombat = t.Get("fight").Type == DataType.Boolean && t.Get("fight").Boolean,
-                UtiliserBanque = t.Get("npc_bank").Type == DataType.Boolean && t.Get("npc_bank").Boolean
+                UtiliserBanque = t.Get("npc_bank").Type == DataType.Boolean && t.Get("npc_bank").Boolean,
+                UtiliserMarchand = t.Get("npc_marchand").Type == DataType.Boolean && t.Get("npc_marchand").Boolean,
             });
         }
         return resultat;

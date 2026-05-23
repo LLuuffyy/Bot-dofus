@@ -30,10 +30,17 @@ public sealed class EtapeScript
     /// <summary>Indique qu'on doit passer à la banque (PNJ banquier ou phénix).</summary>
     public bool UtiliserBanque { get; init; }
 
+    /// <summary>
+    /// Indique qu'on doit vendre au PNJ marchand sur cette étape.
+    /// Si <see cref="IdentifiantPNJ"/> est aussi set, c'est l'id du marchand.
+    /// </summary>
+    public bool UtiliserMarchand { get; init; }
+
     public override string ToString()
     {
         var verbe = EngagerCombat ? "combat"
                  : UtiliserBanque ? "banque"
+                 : UtiliserMarchand ? "marchand"
                  : IdentifiantPNJ.HasValue ? $"PNJ #{IdentifiantPNJ}"
                  : CelluleCible.HasValue ? $"cellule {CelluleCible}"
                  : Direction is not null ? $"sortie {Direction}"

@@ -14,6 +14,8 @@ public sealed class ScriptCharge
     public ConfigurationScript Configuration { get; init; } = new();
     public IReadOnlyList<EtapeScript> EtapesMouvement { get; init; } = new List<EtapeScript>();
     public IReadOnlyList<EtapeScript> EtapesBanque { get; init; } = new List<EtapeScript>();
+    /// <summary>Trajet jusqu'au PNJ marchand (vente items équipements/items combat).</summary>
+    public IReadOnlyList<EtapeScript> EtapesMarchand { get; init; } = new List<EtapeScript>();
 
-    public override string ToString() => $"Script « {Nom} » ({EtapesMouvement.Count} étapes, {EtapesBanque.Count} banque)";
+    public override string ToString() => $"Script « {Nom} » ({EtapesMouvement.Count} étapes, {EtapesBanque.Count} banque, {EtapesMarchand.Count} marchand)";
 }

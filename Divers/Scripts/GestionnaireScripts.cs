@@ -90,11 +90,38 @@ public sealed class GestionnaireScripts : IDisposable
             {
                 _porteMobile.Wait(ct);
 
+                // === Détour MARCHAND auto ===
+                // Si pods >= MARCHAND_SEUIL_PODS et trajet marchand défini, on
+                // suit la section marchand() avant de continuer le mouvement.
+                int seuilM = ScriptCourant.Configuration.MarchandSeuilPods;
+                if (seuilM > 0 && ScriptCourant.EtapesMarchand.Count > 0
+                    && _api.PourcentagePoids >= seuilM)
+                {
+                    Journaliseur.Info($"[SCRIPT] 📦 Poids {_api.PourcentagePoids:F1}% ≥ MARCHAND_SEUIL_PODS {seuilM}% → détour trajet marchand");
+                    await ExecuterSectionMarchandAsync(ct).ConfigureAwait(false);
+                    Journaliseur.Info("[SCRIPT] Détour marchand terminé → reprise mouvement");
+                }
+
                 var etape = ScriptCourant.EtapesMouvement[IndexEtapeCourante];
                 EtapeDemarree?.Invoke(this, etape);
                 Journaliseur.Info($"Étape {IndexEtapeCourante + 1}/{ScriptCourant.EtapesMouvement.Count} : {etape}");
 
                 await ExecuterEtapeAsync(etape, ct).ConfigureAwait(false);
+
+                // === FORCE_FIGHT : rester sur la map et farmer tous les groupes ===
+                // Si flag actif et l'étape avait fight=true, on re-engage tant
+                // qu'il reste des groupes attaquables sur la même map.
+                if (ScriptCourant.Configuration.ForceFight && etape.EngagerCombat)
+                {
+                    while (!ct.IsCancellationRequested
+                        && _api.MonstreLePlusProche() != null)
+                    {
+                        Journaliseur.Info("[SCRIPT] FORCE_FIGHT : encore un groupe sur la map → re-engage");
+                        CompteurCombats++;
+                        bool ok = await _api.EngagerCombatAsync(ct).ConfigureAwait(false);
+                        if (!ok) break;
+                    }
+                }
 
                 EtapeTerminee?.Invoke(this, etape);
                 IndexEtapeCourante++;
@@ -112,6 +139,31 @@ public sealed class GestionnaireScripts : IDisposable
         {
             Journaliseur.Critique($"Script {ScriptCourant?.Nom} arrêté sur erreur", ex);
             ChangerEtat(EtatScript.Erreur);
+        }
+    }
+
+    /// <summary>
+    /// Suit la section <c>marchand()</c> du script : déplacements jusqu'au
+    /// PNJ + vente automatique de tous les items équipements sur place
+    /// (via <see cref="EtapeScript.UtiliserMarchand"/> ou
+    /// <see cref="EtapeScript.IdentifiantPNJ"/>).
+    /// </summary>
+    private async Task ExecuterSectionMarchandAsync(CancellationToken ct)
+    {
+        if (ScriptCourant == null) return;
+        foreach (var etape in ScriptCourant.EtapesMarchand)
+        {
+            if (ct.IsCancellationRequested) break;
+            Journaliseur.Info($"[SCRIPT-MARCHAND] {etape}");
+            await ExecuterEtapeAsync(etape, ct).ConfigureAwait(false);
+
+            // Vente PNJ : si l'étape est marquée UtiliserMarchand OU si elle
+            // a un IdentifiantPNJ et qu'on est arrivé sur la map du marchand,
+            // déclenche la vente complète.
+            if (etape.UtiliserMarchand && etape.IdentifiantPNJ.HasValue)
+            {
+                await _api.VendreToutAuPnjAsync(etape.IdentifiantPNJ.Value, null, ct).ConfigureAwait(false);
+            }
         }
     }
 
