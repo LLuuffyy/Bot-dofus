@@ -1,4 +1,4 @@
-using BotDofus.Commun.Messages.VersClient.Authentification;
+﻿using BotDofus.Commun.Messages.VersClient.Authentification;
 using BotDofus.Commun.Messages.VersClient.Base;
 using BotDofus.Commun.Messages.VersClient.Chat;
 using BotDofus.Commun.Messages.VersClient.Info;
@@ -46,6 +46,36 @@ public sealed class TrameJeu : TrameBase
         _detecteurHeros = new BotDofus.Divers.MultiAccount.DetecteurModeHeros(_compte, _etat);
     }
 
+    /// <summary>
+    /// Envoie un paquet au serveur en routant automatiquement entre la
+    /// <see cref="SessionProxy"/> (mode MITM avec vrai client Dofus) et le
+    /// <c>ApiBot.EnvoyerHumaniseAsync</c> (qui route lui-même vers
+    /// <c>ClientAutonomeAbrak</c> en mode client autonome).
+    /// <para>
+    /// CRUCIAL : forensic 06:41:17 — en mode CLIENT AUTONOME, <c>_session</c>
+    /// est <c>null!</c> (passé par <c>BrancherClientAutonome</c>). Tous les
+    /// <c>EnvoyerAsync(...)</c> de l'IA combat plantaient
+    /// silencieusement avec NullRef → 45s de silence puis kick serveur.
+    /// </para>
+    /// </summary>
+    private async System.Threading.Tasks.Task EnvoyerAsync(
+        string paquet,
+        System.Threading.CancellationToken ct = default)
+    {
+        if (_session is not null)
+        {
+            await _session.EnvoyerAuServeurAsync(paquet, ct).ConfigureAwait(false);
+            return;
+        }
+        var api = _compte.Api;
+        if (api is not null)
+        {
+            await api.EnvoyerHumaniseAsync(paquet, ct).ConfigureAwait(false);
+            return;
+        }
+        Journaliseur.Avertir($"[TRAME] Envoi « {paquet[..System.Math.Min(20, paquet.Length)]} » impossible : ni _session ni Api disponibles.");
+    }
+
     protected override void EnregistrerGestionnaires()
     {
         Ecouter<MessageDonneesCarte>(OnDonneesCarte);
@@ -75,6 +105,26 @@ public sealed class TrameJeu : TrameBase
             // serveur après fermeture user (cas observé log 17:10:38).
             BotDofus.Divers.Banque.PiloteBanque.BanqueFermeeObservee = true;
             BotDofus.Utilitaires.Journaux.Journaliseur.Debogue("[BANQUE] EV reçu → flag fermée");
+        });
+        Ecouter<BotDofus.Commun.Messages.VersClient.Objet.MessageEchangeCree>(msg =>
+        {
+            // ECK<kind> reçu : le serveur confirme l'ouverture d'une fenêtre
+            // d'échange. ON ACCEPTE UNIQUEMENT kind=5 (coffre banque) — les
+            // autres kinds (11=inventory user, 1=marchand, etc.) ne doivent
+            // PAS faire croire au pilote banque que le coffre est ouvert.
+            // Forensic 03:56:03 : user a cliqué son inventaire (ECK11) qui
+            // a faussement validé le pilote banque.
+            if (msg.Kind == 5)
+            {
+                BotDofus.Divers.Banque.PiloteBanque.BanqueOuvertureObservee = true;
+                BotDofus.Utilitaires.Journaux.Journaliseur.Debogue(
+                    "[BANQUE] ECK5 (coffre) reçu → ouverture confirmée");
+            }
+            else
+            {
+                BotDofus.Utilitaires.Journaux.Journaliseur.Debogue(
+                    $"[BANQUE] ECK{msg.Kind} (PAS coffre banque) — ignoré");
+            }
         });
         Ecouter<MessageObjetQuantite>(OnObjetQuantite);
         Ecouter<MessageObjetPoids>(msg => _etat.Personnage.ActualiserPoids(msg.PoidsActuel, msg.PoidsMax));
@@ -142,7 +192,7 @@ public sealed class TrameJeu : TrameBase
                 Journaliseur.Avertir($"[COMBAT] erreur IA tour : {ex.Message}");
                 // Fail-safe : on passe le tour quoi qu'il arrive pour ne pas
                 // bloquer le combat (sinon GTS timeout 45 s et perte de tour).
-                try { await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false); }
+                try { await EnvoyerAsync("Gt").ConfigureAwait(false); }
                 catch { /* swallow */ }
             }
         });
@@ -156,8 +206,12 @@ public sealed class TrameJeu : TrameBase
         {
             foreach (var a in msg.Spawns)
             {
-                bool nouveau = !_acteursVus.ContainsKey(a.Id);
-                _acteursVus[a.Id] = (a.Nom, a.Niveau);
+                bool nouveau;
+                lock (_acteursVus)
+                {
+                    nouveau = !_acteursVus.ContainsKey(a.Id);
+                    _acteursVus[a.Id] = (a.Nom, a.Niveau);
+                }
                 if (nouveau)
                     Journaliseur.Info($"[ENT] acteur Abrak vu : « {a.Nom} » niv {a.Niveau} (#{a.Id})");
             }
@@ -281,7 +335,7 @@ public sealed class TrameJeu : TrameBase
                     catch (Exception ex)
                     {
                         Journaliseur.Avertir($"[COMBAT-HEROS] erreur IA tour : {ex.Message}");
-                        try { await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false); }
+                        try { await EnvoyerAsync("Gt").ConfigureAwait(false); }
                         catch { /* swallow */ }
                     }
                 }
@@ -294,7 +348,7 @@ public sealed class TrameJeu : TrameBase
             catch (Exception ex)
             {
                 Journaliseur.Avertir($"[COMBAT] erreur IA tour : {ex.Message}");
-                try { await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false); }
+                try { await EnvoyerAsync("Gt").ConfigureAwait(false); }
                 catch { /* swallow */ }
             }
         });
@@ -336,9 +390,9 @@ public sealed class TrameJeu : TrameBase
         {
             try
             {
-                await _session.EnvoyerAuServeurAsync($"Nh{id}").ConfigureAwait(false);
+                await EnvoyerAsync($"Nh{id}").ConfigureAwait(false);
                 await Task.Delay(80).ConfigureAwait(false);
-                await _session.EnvoyerAuServeurAsync($"Ns{id}").ConfigureAwait(false);
+                await EnvoyerAsync($"Ns{id}").ConfigureAwait(false);
                 await Task.Delay(120).ConfigureAwait(false);
                 Journaliseur.Info($"[MODE-HEROS] Demande sorts pour id={id} (Nh + Ns envoyés)");
             }
@@ -379,9 +433,17 @@ public sealed class TrameJeu : TrameBase
     {
         var groupe = _compte.GroupeHeros;
         if (groupe is null) return;
+        // SNAPSHOT défensif : crash 06:39 InvalidOperationException
+        // « concurrent update was performed » sur _acteursVus pendant qu'un
+        // autre thread (parsing MessageActeurAbrak) écrivait dedans.
+        System.Collections.Generic.Dictionary<int, (string Nom, int Niveau)> snapshot;
+        lock (_acteursVus)
+        {
+            snapshot = new System.Collections.Generic.Dictionary<int, (string Nom, int Niveau)>(_acteursVus);
+        }
         foreach (var m in groupe.Membres)
         {
-            if (!_acteursVus.TryGetValue(m.IdJeu, out var info)) continue;
+            if (!snapshot.TryGetValue(m.IdJeu, out var info)) continue;
             bool change = false;
             if (string.IsNullOrWhiteSpace(m.Nom) && !string.IsNullOrWhiteSpace(info.Nom))
             { m.Nom = info.Nom; change = true; }
@@ -773,6 +835,7 @@ public sealed class TrameJeu : TrameBase
                     Identifiant = id,
                     CellulePosition = cellule,
                     IdGabarit = idPnj,
+                    Alias = new System.Collections.Generic.List<int>(candidats),
                     Nom = !string.IsNullOrWhiteSpace(npc?.Nom) ? npc!.Nom : $"PNJ #{idPnj}"
                 };
             }
@@ -1124,9 +1187,20 @@ public sealed class TrameJeu : TrameBase
             Journaliseur.Debogue($"[INV] -1 objet (id {msg.IdentifiantObjet}, total = {inv.Count})");
             _etat.Personnage.NotifierInventaireChange();
         }
+        else
+        {
+            // L'item est déjà absent localement : cas nominal après une
+            // suppression locale optimiste du PiloteBanque (cf. ADR-BANQUE
+            // dyshay-style). No-op silencieux (Debogue, pas Avertir).
+            Journaliseur.Debogue(
+                $"[INV] OR pour UID {msg.IdentifiantObjet} mais déjà absent localement "
+                + "(suppression optimiste banque) — no-op.");
+        }
         // Compteur monotone consommé par PiloteBanque.AttendreObjectRemoveAsync
         // pour synchroniser les dépôts (chaque EMO+ déclenche un OR<id>|<uid>).
         System.Threading.Interlocked.Increment(ref BotDofus.Divers.Banque.PiloteBanque.CompteurObjectRemove);
+        // L'OR est arrivé : l'item n'est plus « en attente » côté pilote banque.
+        BotDofus.Divers.Banque.PiloteBanque.EnvoyesEnAttenteOR.TryRemove(msg.IdentifiantObjet, out _);
     }
 
     private void OnObjetQuantite(MessageObjetQuantite msg)
@@ -1137,19 +1211,28 @@ public sealed class TrameJeu : TrameBase
             int delta = msg.NouvelleQuantite - existant.Quantite;
             existant.Quantite = msg.NouvelleQuantite;
             Journaliseur.Debogue($"[INV] objet {msg.IdentifiantObjet} → qty {msg.NouvelleQuantite}");
-            // [ACTION] visible dans le Chat : « +1 Frêne (total 18) »
-            // Ne déclenche que si gain positif (loot, pas dépose / vente).
             if (delta > 0)
             {
                 var nom = Divers.Donnees.BaseDonnees.Instance.Item(existant.IdTemplate)?.Nom
                           ?? $"Item #{existant.IdTemplate}";
                 Journaliseur.Info($"[ACTION] +{delta} {nom} (total {msg.NouvelleQuantite})");
-                // Signale aux boucles de récolte : un loot vient d'arriver
-                // pour CE perso → la récolte courante a réussi (cf. cas
-                // map partagée avec un autre joueur).
                 _etat.Personnage.NbLootsRecus++;
             }
             _etat.Personnage.NotifierInventaireChange();
+        }
+        else
+        {
+            // UID inconnu localement : OQ envoyé pour un item dont on n'a
+            // jamais vu l'OAK. Possible désync post-dépôt-banque (l'UID a
+            // été supprimé en pass 1, puis serveur ré-utilise l'UID pour un
+            // nouveau loot). On loggue pour diagnostiquer, mais on NE PEUT
+            // PAS recréer l'objet (OQ ne contient ni template ni position).
+            // → l'item est invisible pour le bot jusqu'à un OAK ou un
+            // changement de map (qui resync l'inventaire via paquet OK).
+            Journaliseur.Avertir(
+                $"[INV] OQ inconnu : UID {msg.IdentifiantObjet} qte {msg.NouvelleQuantite} "
+                + "→ item invisible localement (template manquant). "
+                + "Désync probable post-dépôt banque ou OAK perdu.");
         }
     }
 
@@ -1297,8 +1380,48 @@ public sealed class TrameJeu : TrameBase
         if (ennemisVivants.Count == 0)
         {
             Journaliseur.Info("[ACTION] Aucun ennemi vivant → Gt");
-            await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
+            await EnvoyerAsync("Gt").ConfigureAwait(false);
             return;
+        }
+
+        // === COMBAT SCRIPTÉ LUA (Option A — mode impératif) ===========================
+        // Si le script Lua actuel définit une fonction combat(numTour), on la
+        // laisse piloter le tour entier (cast/move/pass via API fight.*) et on
+        // bypass l'IA RegleSort classique. Le script Lua peut appeler
+        // fight.cast(sortId, cible), fight.pass(), fight.placement(cell), etc.
+        var scriptLua = _compte.MoteurLuaScript;
+        if (scriptLua != null)
+        {
+            var fnCombat = scriptLua.Globals.Get("combat");
+            if (fnCombat.Type == MoonSharp.Interpreter.DataType.Function)
+            {
+                Journaliseur.Info($"[COMBAT-LUA] Fonction combat() détectée → exécution scriptée (tour {combat.NumeroTour}).");
+                try
+                {
+                    // Appel SYNCHRONE (MoonSharp ne gère pas naturellement les Task) :
+                    // la fonction combat() Lua appelle les APIs fight.cast/pass qui
+                    // utilisent GetAwaiter().GetResult() en interne. Le moteur reste
+                    // bloqué jusqu'à fin du tour, ce qui est OK : c'est le but.
+                    await Task.Run(() =>
+                    {
+                        scriptLua.Call(fnCombat, MoonSharp.Interpreter.DynValue.NewNumber(combat.NumeroTour));
+                    }).ConfigureAwait(false);
+
+                    // Si le script Lua n'a pas appelé pass() lui-même, on le fait
+                    // pour ne pas bloquer le combat (timeout serveur 45s par tour).
+                    if (combat.Etat != Divers.Combats.Enums.EtatCombat.Inactif
+                        && combat.IdentifiantCombattantActuel == perso.Identifiant)
+                    {
+                        Journaliseur.Info("[COMBAT-LUA] combat() terminé sans pass() → Gt auto.");
+                        await EnvoyerAsync("Gt").ConfigureAwait(false);
+                    }
+                    return;
+                }
+                catch (Exception exLua)
+                {
+                    Journaliseur.Avertir($"[COMBAT-LUA] Erreur dans combat() : {exLua.Message} — fallback IA classique.");
+                }
+            }
         }
 
         // === SOIN AUTO CONSOMMABLE (Phase 9 PLAN-REFONTE) ===
@@ -1314,7 +1437,7 @@ public sealed class TrameJeu : TrameBase
                 if (conso != null)
                 {
                     Journaliseur.Info($"[SOIN] PV {pvPct}% < seuil {cfgSoin.ConsommableUtiliserSiPvInfPct}% → utilise consommable #{conso.IdTemplate} (uid={conso.Identifiant}, qte={conso.Quantite})");
-                    await _session.EnvoyerAuServeurAsync($"OU{conso.Identifiant}").ConfigureAwait(false);
+                    await EnvoyerAsync($"OU{conso.Identifiant}").ConfigureAwait(false);
                     int delaiMin = cfgSoin.ConsommableDelaiMinMs > 0 ? cfgSoin.ConsommableDelaiMinMs : 150;
                     int delaiMax = cfgSoin.ConsommableDelaiMaxMs > delaiMin ? cfgSoin.ConsommableDelaiMaxMs : delaiMin + 250;
                     await Task.Delay(System.Random.Shared.Next(delaiMin, delaiMax)).ConfigureAwait(false);
@@ -1401,13 +1524,13 @@ public sealed class TrameJeu : TrameBase
                 // post-cast) avant le Gt. Sans ça, le serveur peut ignorer
                 // le Gt jusqu'à 13s — forensic 2026-05-22 18:39:51 Ukdeshan.
                 // Les GKK0 redondants sont safe (serveur ignore).
-                try { await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false); } catch { /* best-effort */ }
+                try { await EnvoyerAsync("GKK0").ConfigureAwait(false); } catch { /* best-effort */ }
                 await Task.Delay(Divers.Combats.IA.TimingsCombat.DelaiApresDeplacement(150, 300)).ConfigureAwait(false);
 
                 // Pass turn après tous les casts effectués ce tour.
                 await Task.Delay(Divers.Combats.IA.TimingsCombat.DelaiPasserTour(800, 1300)).ConfigureAwait(false);
                 Journaliseur.Info($"[ACTION] Passe le tour (Gt) — {castsEffectues} cast(s) ce tour");
-                await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
+                await EnvoyerAsync("Gt").ConfigureAwait(false);
                 return;
             }
             Journaliseur.Info($"[COMBAT] Aucune règle SynFus en portée ({cfg.Regles.Count} règle(s) configurée(s)) → fallback legacy");
@@ -1520,7 +1643,7 @@ public sealed class TrameJeu : TrameBase
                     int idMoi = _etat.Personnage.Identifiant;
                     int timeoutBase = Divers.Combats.IA.TimingsCombat.TimeoutMouvementMs();
                     int timeoutMs = System.Math.Max(timeoutBase, nbPasMove * 200 + timeoutBase);
-                    await _session.EnvoyerAuServeurAsync(paquetDep).ConfigureAwait(false);
+                    await EnvoyerAsync(paquetDep).ConfigureAwait(false);
 
                     var resultat = await Divers.Combats.IA.PipelineDeplacementCombat
                         .AttendreMouvementOuTimeoutAsync(_etat.Combat, idMoi, cellArrivee, timeoutMs, default)
@@ -1561,7 +1684,7 @@ public sealed class TrameJeu : TrameBase
                             else
                             {
                                 Journaliseur.Erreur($"[ACTION-MV] Mouvement REFUSÉ silencieux (timeout {timeoutMs}ms) : perso reste cell {cellAvantMv}, abandon tour");
-                                await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
+                                await EnvoyerAsync("Gt").ConfigureAwait(false);
                                 return;
                             }
                             break;
@@ -1597,9 +1720,9 @@ public sealed class TrameJeu : TrameBase
             // SÉCURITÉ : si on a bougé sans cast (ou même si on n'a rien fait),
             // un GKK0 final ferme proprement l'action côté serveur Hystoria.
             // Sans ça, le Gt peut être ignoré jusqu'à 13s (forensic Athabiel 14:38:28).
-            try { await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false); } catch { /* swallow */ }
+            try { await EnvoyerAsync("GKK0").ConfigureAwait(false); } catch { /* swallow */ }
             await Task.Delay(Divers.Combats.IA.TimingsCombat.DelaiApresDeplacement(150, 300)).ConfigureAwait(false);
-            await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
+            await EnvoyerAsync("Gt").ConfigureAwait(false);
             return;
         }
 
@@ -1621,7 +1744,7 @@ public sealed class TrameJeu : TrameBase
                 $"[ANTI-BAN] REFUS cast legacy « {sort.Nom} » : dist réelle {distFallback} "
                 + $"hors portée [{sortPorteeMin}-{sortPorteeMax}] (ma cell {maCellFallback}, "
                 + $"cible cell {ennemi.CellulePosition}) → Gt direct.");
-            await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
+            await EnvoyerAsync("Gt").ConfigureAwait(false);
             return;
         }
 
@@ -1629,11 +1752,11 @@ public sealed class TrameJeu : TrameBase
         int nivChoisi = perso.SortsAppris.TryGetValue(sort.Identifiant, out var nv) ? nv : 0;
         Journaliseur.Info($"[ACTION] Sort « {sort.Nom} » (#{sort.Identifiant} niv{nivChoisi}) "
             + $"sur cell {ennemi.CellulePosition} (cible « {ennemi.Nom} », {sortCoutPA} PA, portée {sortPorteeMin}-{sortPorteeMax}, dist réelle={distFallback})");
-        await _session.EnvoyerAuServeurAsync(paquetSort).ConfigureAwait(false);
+        await EnvoyerAsync(paquetSort).ConfigureAwait(false);
 
         // GKK0 : capture user 16:22:00.130 → 376 ms après GA300. Random 300-500.
         await Task.Delay(Divers.Combats.IA.TimingsCombat.DelaiLancerSort(300, 500)).ConfigureAwait(false);
-        await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
+        await EnvoyerAsync("GKK0").ConfigureAwait(false);
 
         // Gt : capture user montre que le serveur termine le tour ~1.5 s après
         // GKK0 quand le client a vidé ses PA. Pour rester sûr, on envoie Gt
@@ -1641,7 +1764,7 @@ public sealed class TrameJeu : TrameBase
         // tour (GTF reçu), Gt est inoffensif (le serveur l'ignore).
         await Task.Delay(Divers.Combats.IA.TimingsCombat.DelaiPasserTour(1000, 1500)).ConfigureAwait(false);
         Journaliseur.Info("[ACTION] Passe le tour (Gt)");
-        await _session.EnvoyerAuServeurAsync("Gt").ConfigureAwait(false);
+        await EnvoyerAsync("Gt").ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1866,7 +1989,7 @@ public sealed class TrameJeu : TrameBase
             Journaliseur.Info(
                 $"[TACTIC] PRE-MOVE Mode={mode} | cell {maCellId} → {cellTac.Identifiant} | {pmTac} pas | distMin {distActuelle}→{distFinTac}");
             var paquetDepTac = BotDofus.Divers.Cartes.Deplacement.Pathfinder.PaquetDeplacement(cheminTac);
-            await _session.EnvoyerAuServeurAsync(paquetDepTac).ConfigureAwait(false);
+            await EnvoyerAsync(paquetDepTac).ConfigureAwait(false);
 
             int timeoutBaseTac = Divers.Combats.IA.TimingsCombat.TimeoutMouvementMs();
             int timeoutTac = System.Math.Max(timeoutBaseTac, pmTac * 200 + timeoutBaseTac);
@@ -1956,7 +2079,7 @@ public sealed class TrameJeu : TrameBase
         Journaliseur.Info($"[PRE-MOVE] Mode={mode} | départ cell {maCellId} → arrivée cell {meilleureCible.Identifiant} "
             + $"| {meilleurNbPasTie} pas | distMin {distActuelle}→{meilleureDistAfter}, ΣdistEnnemis→{sommeDistApres} ({ennemisXY.Length} ennemis)");
         Journaliseur.Info($"[ACTION-MV] Envoi GA001 (pré-mouvement) → '{paquetDep}'");
-        await _session.EnvoyerAuServeurAsync(paquetDep).ConfigureAwait(false);
+        await EnvoyerAsync(paquetDep).ConfigureAwait(false);
 
         int timeoutBasePre = Divers.Combats.IA.TimingsCombat.TimeoutMouvementMs();
         int timeoutMs = System.Math.Max(timeoutBasePre, meilleurNbPasTie * 200 + timeoutBasePre);
@@ -2175,7 +2298,7 @@ public sealed class TrameJeu : TrameBase
             + $"{r.CoutPA} PA, portée {r.PorteeMin}-{r.PorteeMax}, dist réelle={distReelle})");
         // Trigger animation flash sur la cell cible dans MapViewer.
         _etat.Combat.DeclencherCast(r.Sort.Identifiant, r.Sort.Nom, r.Cible.CellulePosition);
-        await _session.EnvoyerAuServeurAsync(paquet).ConfigureAwait(false);
+        await EnvoyerAsync(paquet).ConfigureAwait(false);
 
         // Compteur NombreParTour + NombreParCible + DernierTour (cooldown).
         // Compteurs CLOISONNÉS par caster (idActif = master ici).
@@ -2198,7 +2321,7 @@ public sealed class TrameJeu : TrameBase
         // GKK0 ack + délai humanisé inter-cast (pas trop court pour éviter
         // signature anti-bot ; pas trop long pour laisser tourner la boucle).
         await Task.Delay(Divers.Combats.IA.TimingsCombat.DelaiLancerSort(300, 500)).ConfigureAwait(false);
-        await _session.EnvoyerAuServeurAsync("GKK0").ConfigureAwait(false);
+        await EnvoyerAsync("GKK0").ConfigureAwait(false);
         await Task.Delay(Divers.Combats.IA.TimingsCombat.DelaiEntreDeuxSorts(500, 900)).ConfigureAwait(false);
     }
 }

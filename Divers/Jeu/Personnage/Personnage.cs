@@ -160,6 +160,44 @@ public sealed class Personnage
         Mis_A_Jour?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>
+    /// Suppression locale OPTIMISTE d'un item — appelée par PiloteBanque juste
+    /// après envoi <c>EMO+&lt;uid&gt;|&lt;qte&gt;</c> pour éviter que la pass
+    /// suivante re-soumette le même UID (pattern dyshay
+    /// <c>StoreAllObjectsAction.cs:35</c>). Si l'OR confirme dans les secondes
+    /// qui suivent, <c>OnObjetRetrait</c> trouvera l'UID déjà absent et fera
+    /// un no-op silencieux. Si le serveur refuse (rare), l'item est perdu
+    /// côté local jusqu'au prochain OAK / changement de map.
+    /// Pas de NotifierInventaireChange ici : évite le storm UI pendant un burst
+    /// (50 events/s). Le pilote appellera un NotifierInventaireChange final
+    /// après le burst.
+    /// </summary>
+    /// <returns>true si l'item était présent et a été retiré.</returns>
+    public bool SupprimerObjetOptimiste(long identifiantObjet)
+    {
+        int n;
+        lock (Inventaire)
+        {
+            n = Inventaire.RemoveAll(x => x.Identifiant == identifiantObjet);
+        }
+        return n > 0;
+    }
+
+    /// <summary>
+    /// Fire les events Mis_A_Jour + InventaireChange SANS recalcul local
+    /// du poids — utilisé quand on veut conserver la valeur serveur (Ow)
+    /// qui est plus fiable que le calcul local quand certains items lootés
+    /// n'existent pas dans BaseDonnees.
+    /// Forensic 2026-05-24 03:16:42 : post-combat Ow disait 98.1%, recalc
+    /// local donnait 79.6% car ~4700 unités d'items inconnus en BDD →
+    /// banque jamais déclenchée car 79.6 &lt; seuil 90.
+    /// </summary>
+    public void NotifierInventaireSansRecalc()
+    {
+        InventaireChange?.Invoke(this, EventArgs.Empty);
+        Mis_A_Jour?.Invoke(this, EventArgs.Empty);
+    }
+
     public double PourcentageVie => VieMax > 0 ? Math.Clamp(100.0 * Vie / VieMax, 0, 100) : 0;
     public double PourcentageEnergie => EnergieMax > 0 ? Math.Clamp(100.0 * Energie / EnergieMax, 0, 100) : 0;
     public double PourcentagePoids => PoidsMax > 0 ? Math.Clamp(100.0 * PoidsActuel / PoidsMax, 0, 100) : 0;
