@@ -1189,22 +1189,47 @@ public sealed class TrameJeu : TrameBase
         }
         else
         {
-            // L'item est déjà absent localement : cas nominal après une
-            // suppression locale optimiste du PiloteBanque (cf. ADR-BANQUE
-            // dyshay-style). No-op silencieux (Debogue, pas Avertir).
+            // V2 : le pilote ne fait plus de suppression optimiste. Si OR arrive
+            // pour un UID déjà absent, c'est soit un doublon serveur soit un OAK
+            // jamais reçu. Rare → Debogue.
             Journaliseur.Debogue(
-                $"[INV] OR pour UID {msg.IdentifiantObjet} mais déjà absent localement "
-                + "(suppression optimiste banque) — no-op.");
+                $"[INV] OR pour UID {msg.IdentifiantObjet} mais déjà absent localement — no-op (V2).");
         }
-        // Compteur monotone consommé par PiloteBanque.AttendreObjectRemoveAsync
-        // pour synchroniser les dépôts (chaque EMO+ déclenche un OR<id>|<uid>).
+        // Compat V1 : compteur global + map d'attente (gardés un cycle).
         System.Threading.Interlocked.Increment(ref BotDofus.Divers.Banque.PiloteBanque.CompteurObjectRemove);
-        // L'OR est arrivé : l'item n'est plus « en attente » côté pilote banque.
         BotDofus.Divers.Banque.PiloteBanque.EnvoyesEnAttenteOR.TryRemove(msg.IdentifiantObjet, out _);
+        // V2 — réveille le TCS du pilote banque si l'UID était attendu (dépôt confirmé).
+        BotDofus.Divers.Banque.PiloteBanque.SignalerOR(msg.IdentifiantObjet);
     }
 
     private void OnObjetQuantite(MessageObjetQuantite msg)
     {
+        // V2 — Avant le traitement loot, vérifier si l'UID est attendu par le
+        // PiloteBanque. Hystoria répond OQ<uid>|<qteRestante> au lieu de OR sur
+        // dépôt partiel (cf. ADR docs/PLAN-FIX-BANQUE-V2.md, AGENT 1 V2). Dans
+        // ce cas, c'est PAS un loot — on signale au pilote et on synchronise
+        // la qte locale (équivalent OR si qte=0).
+        bool consommeBanque = BotDofus.Divers.Banque.PiloteBanque.SignalerOQ(
+            msg.IdentifiantObjet, msg.NouvelleQuantite);
+        if (consommeBanque)
+        {
+            var invBnq = _etat.Personnage.Inventaire;
+            lock (invBnq)
+            {
+                var ex = invBnq.FirstOrDefault(x => x.Identifiant == msg.IdentifiantObjet);
+                if (ex != null)
+                {
+                    ex.Quantite = msg.NouvelleQuantite;
+                    if (msg.NouvelleQuantite <= 0)
+                        invBnq.RemoveAll(x => x.Identifiant == msg.IdentifiantObjet);
+                }
+            }
+            Journaliseur.Debogue(
+                $"[BANQUE-OQ] OQ partiel pour UID {msg.IdentifiantObjet} qte={msg.NouvelleQuantite} "
+                + "→ consommé par PiloteBanque (pas un loot). NotifierInventaireChange différé au pilote.");
+            return;
+        }
+
         var existant = _etat.Personnage.Inventaire.FirstOrDefault(x => x.Identifiant == msg.IdentifiantObjet);
         if (existant != null)
         {
@@ -1222,17 +1247,14 @@ public sealed class TrameJeu : TrameBase
         }
         else
         {
-            // UID inconnu localement : OQ envoyé pour un item dont on n'a
-            // jamais vu l'OAK. Possible désync post-dépôt-banque (l'UID a
-            // été supprimé en pass 1, puis serveur ré-utilise l'UID pour un
-            // nouveau loot). On loggue pour diagnostiquer, mais on NE PEUT
-            // PAS recréer l'objet (OQ ne contient ni template ni position).
-            // → l'item est invisible pour le bot jusqu'à un OAK ou un
-            // changement de map (qui resync l'inventaire via paquet OK).
+            // UID inconnu localement : OQ pour un item dont on n'a jamais vu l'OAK.
+            // V2 : la suppression optimiste V1 (cause principale de ce cas) est
+            // retirée → ce log devient rare et signale un vrai OAK perdu /
+            // désync proxy.
             Journaliseur.Avertir(
                 $"[INV] OQ inconnu : UID {msg.IdentifiantObjet} qte {msg.NouvelleQuantite} "
                 + "→ item invisible localement (template manquant). "
-                + "Désync probable post-dépôt banque ou OAK perdu.");
+                + "OAK perdu ou désync proxy (V2 — suppression optimiste retirée, cas devrait être rare).");
         }
     }
 

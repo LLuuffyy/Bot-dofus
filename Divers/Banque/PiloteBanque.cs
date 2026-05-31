@@ -11,6 +11,23 @@ using BotDofus.Utilitaires.Journaux;
 
 namespace BotDofus.Divers.Banque;
 
+/// <summary>V2 — Type de résultat d'un EMO+ retourné par le serveur Hystoria.
+/// Cf. ADR <c>docs/PLAN-FIX-BANQUE-V2.md</c>.</summary>
+public enum TypeResultatDepot
+{
+    /// <summary>OR&lt;uid&gt; reçu : pile entièrement déposée.</summary>
+    Confirme,
+    /// <summary>OQ&lt;uid&gt;|qte&gt;0 : pile partiellement déposée, qteRestante reste serveur → retry.</summary>
+    PartielServeur,
+    /// <summary>OQ&lt;uid&gt;|qte=0 : pile vidée (équivalent OR — Hystoria utilise parfois OQ pour signaler dépôt complet).</summary>
+    PartielVide,
+    /// <summary>Ni OR ni OQ après timeout : EMO+ probablement ignoré par le serveur.</summary>
+    Timeout,
+}
+
+/// <summary>V2 — Résultat d'un EMO+ avec qte restante côté serveur.</summary>
+public readonly record struct ResultatDepot(TypeResultatDepot Type, int QteRestante);
+
 /// <summary>
 /// Pilote async du dépôt banque : zaap vers map banque → ouverture (<c>ApS</c>
 /// CLAIR) → dépôt items (<c>EMO+&lt;uidInv&gt;|&lt;qte&gt;</c> chiffré '-')
@@ -37,12 +54,42 @@ public sealed class PiloteBanque
     public static int CompteurObjectRemove;
 
     /// <summary>UIDs envoyés en <c>EMO+</c> dont on attend l'OR du serveur.
-    /// Clé = UID inventaire, valeur = timestamp UTC d'envoi. Lu par
-    /// <see cref="TrameJeu"/>.<c>OnObjetRetrait</c> qui retire l'UID dès que
-    /// l'OR arrive. Le pilote log <c>[BANQUE-LOST]</c> pour les UIDs restants
-    /// après timeout 10s (item considéré déposé serveur-side mais sans ACK).
-    /// Cf. ADR-BANQUE (suppression locale optimiste dyshay-style).</summary>
+    /// Clé = UID inventaire, valeur = timestamp UTC d'envoi.
+    /// V1 héritage : conservé pour compat. V2 utilise <see cref="AttenteResultat"/>.</summary>
     public static readonly System.Collections.Concurrent.ConcurrentDictionary<long, DateTime> EnvoyesEnAttenteOR = new();
+
+    /// <summary>V2 — Map d'attente OR/OQ par UID. Clé = UID inventaire envoyé en EMO+.
+    /// Valeur = TaskCompletionSource résolu par <see cref="SignalerOR"/> ou
+    /// <see cref="SignalerOQ"/> quand le serveur répond. Le pilote crée le TCS
+    /// AVANT d'envoyer l'EMO+ pour éviter la race « OR arrive avant que la map
+    /// soit alimentée ». Cf. ADR <c>docs/PLAN-FIX-BANQUE-V2.md</c>.</summary>
+    public static readonly System.Collections.Concurrent.ConcurrentDictionary<long, TaskCompletionSource<ResultatDepot>> AttenteResultat = new();
+
+    /// <summary>V2 — Signale qu'un OR&lt;uid&gt; vient d'être reçu (TrameJeu).
+    /// Retourne true si l'UID était attendu (dépôt confirmé côté pilote banque).</summary>
+    public static bool SignalerOR(long uid)
+    {
+        if (AttenteResultat.TryRemove(uid, out var tcs))
+        {
+            tcs.TrySetResult(new ResultatDepot(TypeResultatDepot.Confirme, 0));
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>V2 — Signale qu'un OQ&lt;uid&gt;|&lt;qte&gt; vient d'être reçu (TrameJeu).
+    /// Retourne true si l'UID était attendu (dépôt partiel ou vide signalé via OQ).
+    /// Si false : OQ de loot normal (chemin TrameJeu inchangé).</summary>
+    public static bool SignalerOQ(long uid, int qteRestante)
+    {
+        if (AttenteResultat.TryRemove(uid, out var tcs))
+        {
+            var type = qteRestante > 0 ? TypeResultatDepot.PartielServeur : TypeResultatDepot.PartielVide;
+            tcs.TrySetResult(new ResultatDepot(type, qteRestante));
+            return true;
+        }
+        return false;
+    }
 
     /// <summary>Flag set à true quand un paquet <c>EV</c> est observé (S→C ou C→S)
     /// — la banque est fermée. Le pilote en cours doit arrêter ses dépôts.
@@ -207,8 +254,13 @@ public sealed class PiloteBanque
 
         // Reset map d'attente OR : pourrait contenir des résidus d'un workflow
         // précédent qui aurait abort sur ECK5 timeout (UIDs jamais retirés
-        // de la map → log [BANQUE-LOST] erroné au cycle suivant).
+        // de la map → log erroné au cycle suivant).
         EnvoyesEnAttenteOR.Clear();
+        // V2 — drainer les TCS orphelins puis purger (sinon un OR tardif d'un
+        // workflow précédent signalerait faussement un Confirme sur le nouveau).
+        foreach (var kv in AttenteResultat)
+            kv.Value.TrySetResult(new ResultatDepot(TypeResultatDepot.Timeout, 0));
+        AttenteResultat.Clear();
 
         // === Étape 1 : ouvrir le coffre banque (ApS, CLAIR) ===
         // ⚠ PROTOCOLE Hystoria : pas de dialogue NPC, le coffre interactif s'ouvre directement.
@@ -263,169 +315,169 @@ public sealed class PiloteBanque
         // avec les vraies qtés. Cette pause supprime ce double effort.
         await Task.Delay(2500, ct).ConfigureAwait(false);
 
-        // === Étapes 2+3 : SINGLE-PASS de dépôt (alignement dyshay) ===
-        // ADR-BANQUE : avec la suppression locale optimiste après chaque
-        // EMO+, la pass 1 voit déjà l'inventaire après décrément local de
-        // chaque envoi. Les items dont l'OR n'arrive pas sont considérés
-        // déposés (pattern dyshay StoreAllObjectsAction.cs : pas de retry,
-        // resync via OAK du prochain combat). Évite la boucle stérile
-        // 9-passes-0-OR observée (AGENT 1 « Pattern récurrent »).
-        int totalDeposes = 0;
-        int totalConfirmes = 0;
+        // === Étapes 2+3 : MULTI-PASS SYNCHRONE PAR UID (V2 — ADR PLAN-FIX-BANQUE-V2) ===
+        // Cause racine V2 (AGENT 1 V2) : Hystoria répond OQ<uid>|<qteRestante>
+        // au lieu de OR<uid> sur dépôt PARTIEL (pile vidée à ~92-94%). Le V1
+        // burst fire-and-forget interprétait l'absence d'OR comme « perdu »
+        // alors qu'il s'agit d'un dépôt partiel → suppression optimiste locale
+        // = perte de vue des unités restantes côté serveur.
+        // V2 : TCS par UID résolu par OR (Confirme) ou OQ (PartielServeur/Vide),
+        // retry sur PartielServeur+Timeout uniquement (max 3 passes), 0
+        // suppression optimiste — l'inventaire local est mis à jour par les
+        // handlers TrameJeu sur ACK réel.
+        int totalDeposes = 0, totalConfirmes = 0, totalPartiels = 0, totalTimeouts = 0;
         int totalRejetesSec = 0;
-        const int MAX_PASSES = 1;
-        for (int pass = 1; pass <= MAX_PASSES; pass++)
+        const int MAX_PASSES = 3;
+        const int TIMEOUT_PAR_ITEM_MS = 500;
+        var rng = System.Random.Shared;
+
+        // Construction initiale de la queue à déposer. Snapshot sous lock
+        // (race UI thread + handlers TrameJeu).
+        List<ObjetInventaire> aDeposerInit;
+        lock (_perso.Inventaire)
+        {
+            aDeposerInit = _perso.Inventaire.ToList();
+        }
+        var queueDepot = CalculerItemsADeposer(aDeposerInit);
+        Journaliseur.Info($"[BANQUE-FILTRE] {queueDepot.Count}/{aDeposerInit.Count} item(s) éligibles au dépôt initial.");
+
+        for (int pass = 1; pass <= MAX_PASSES && queueDepot.Count > 0; pass++)
         {
             if (ct.IsCancellationRequested) break;
             if (BanqueFermeeObservee) break;
 
-            // Snapshot SOUS LOCK : évite InvalidOperationException si
-            // OnObjetAjout/OnObjetQuantite mutent la liste pendant ToList()
-            // (race UI thread, forensic AGENT 5 §1).
-            List<ObjetInventaire> snapshot;
-            lock (_perso.Inventaire)
-            {
-                snapshot = _perso.Inventaire.ToList();
-            }
-            Journaliseur.Info($"[BANQUE-FILTRE] Pass {pass} snapshot : {snapshot.Count} items dans l'inventaire local.");
-            var aDeposer = CalculerItemsADeposer(snapshot);
-            if (aDeposer.Count == 0)
-            {
-                Journaliseur.Info($"[BANQUE-FILTRE] Pass {pass}/{MAX_PASSES} : 0 item à déposer, arrêt boucle.");
-                break;
-            }
-            Journaliseur.Info(
-                $"[BANQUE-FILTRE] === Pass {pass}/{MAX_PASSES} : {aDeposer.Count}/{snapshot.Count} item(s) sélectionné(s) ===");
+            Journaliseur.Info($"[BANQUE-FILTRE] === Pass {pass}/{MAX_PASSES} : {queueDepot.Count} item(s) à déposer ===");
+            var queuePassSuivante = new List<ObjetInventaire>();
+            int deposesPass = 0, confirmesPass = 0, partielsPass = 0, timeoutsPass = 0;
 
-            int deposes = 0;
-            int confirmes = 0;
-            int rejetesSec = 0;
-            // Snapshot du compteur global d'OR au début de la pass pour
-            // calculer combien on en a reçu à la fin du burst.
-            int compteurOrAuDebutPass = System.Threading.Interlocked.CompareExchange(ref CompteurObjectRemove, 0, 0);
-            foreach (var item in aDeposer)
+            foreach (var item in queueDepot)
             {
                 if (ct.IsCancellationRequested) break;
-                // L'user (ou un autre process) a fermé la banque → on stoppe net,
-                // sans envoyer la fermeture EV nous-mêmes (déjà fait).
                 if (BanqueFermeeObservee)
                 {
                     Journaliseur.Avertir(
                         $"[BANQUE] EV observé pendant dépôt — arrêt immédiat (pass {pass}, "
-                        + $"{deposes} envoyés / {confirmes} confirmés OR, "
-                        + $"{aDeposer.Count - deposes} restants annulés).");
+                        + $"{deposesPass} envoyés / {confirmesPass} confirmés).");
                     BloquerEvClient = false;
                     return true;
                 }
-
-                // Sécurité ultime (relue à CHAQUE item car l'user peut éditer la config
-                // pendant le workflow → IdsAGarder peut grandir, catégorie peut être
-                // décochée). Cause normale du refus à mi-workflow ; pas un bug.
                 if (!EstAutoriseADeposer(item))
                 {
                     Journaliseur.Debogue(
                         $"[BANQUE] item refusé en cours de dépôt #{item.Identifiant} template={item.IdTemplate} "
                         + "(config a probablement été éditée en live ou item décoché)");
-                    rejetesSec++;
+                    totalRejetesSec++;
                     continue;
                 }
-
-                // Skip items qte=0 (transitoire entre OQ/OR snapshot).
                 if (item.Quantite <= 0)
                 {
                     Journaliseur.Debogue($"[BANQUE] skip item #{item.Identifiant} template={item.IdTemplate} (qte=0)");
                     continue;
                 }
 
-                // Pattern dyshay (réf. StoreAllObjectsAction.cs) : envoyer
-                // l'EMO+ et juste attendre 300ms avant le suivant. PAS d'attente
-                // OR par item (cause des timeouts en cascade + cadence lente).
-                // On comptabilise les OR globalement à la fin du burst.
+                // CRITIQUE — créer le TCS et l'insérer dans la map AVANT d'envoyer
+                // l'EMO+. Sinon l'OR/OQ peut arriver entre EnvoyerAuServeurAsync et
+                // AttenteResultat[uid]=tcs → SignalerOR/OQ retourne false → signal perdu.
+                var tcs = new TaskCompletionSource<ResultatDepot>(TaskCreationOptions.RunContinuationsAsynchronously);
+                AttenteResultat[item.Identifiant] = tcs;
+
                 var paquet = $"EMO+{item.Identifiant}|{item.Quantite}";
                 var infoItem = BaseDonnees.Instance.Item(item.IdTemplate);
                 var nomItem = infoItem?.Nom ?? "?";
-                var typeItem = infoItem?.IdType ?? -1;
-                Journaliseur.Info(
-                    $"[BANQUE-DEPOT] → {paquet} « {nomItem} » (template {item.IdTemplate}, type={typeItem}, qte {item.Quantite})");
+                Journaliseur.Info($"[BANQUE-DEPOT] → {paquet} « {nomItem} » (pass {pass}, qte {item.Quantite})");
                 await _session.EnvoyerAuServeurAsync(paquet).ConfigureAwait(false);
-                deposes++;
+                deposesPass++;
 
-                // SUPPRESSION LOCALE OPTIMISTE (pattern dyshay
-                // StoreAllObjectsAction.cs:35). Sans ça, si l'OR ne revient
-                // pas (timeout, désync serveur, mismatch qty), la pass
-                // suivante re-snapshot l'inventaire et re-soumet le MÊME UID
-                // → boucle stérile 9× observée (AGENT 1). Race-safe :
-                // OnObjetRetrait sous lock(inv) ; si l'OR arrive après
-                // notre suppression, RemoveAll retourne 0 → no-op silencieux.
-                bool supprimeLocal = _perso.SupprimerObjetOptimiste(item.Identifiant);
-                EnvoyesEnAttenteOR[item.Identifiant] = DateTime.UtcNow;
-                if (supprimeLocal)
-                    Journaliseur.Debogue($"[BANQUE-DEPOT] Suppression optimiste OK : UID {item.Identifiant} retiré localement.");
+                // Attente résultat (OR Confirme / OQ PartielServeur / OQ PartielVide / Timeout).
+                ResultatDepot res;
+                try
+                {
+                    res = await tcs.Task.WaitAsync(TimeSpan.FromMilliseconds(TIMEOUT_PAR_ITEM_MS), ct).ConfigureAwait(false);
+                }
+                catch (TimeoutException)
+                {
+                    res = new ResultatDepot(TypeResultatDepot.Timeout, item.Quantite);
+                    AttenteResultat.TryRemove(item.Identifiant, out _); // cleanup orphelin
+                }
 
-                // Délai fixe 300ms (= dyshay) entre chaque EMO+.
-                await Task.Delay(300, ct).ConfigureAwait(false);
-            }
+                switch (res.Type)
+                {
+                    case TypeResultatDepot.Confirme:
+                        Journaliseur.Info($"[BANQUE-CONFIRM] UID {item.Identifiant} OR reçu (qte {item.Quantite} déposée).");
+                        confirmesPass++;
+                        break;
 
-            // BURST TERMINÉ : attendre jusqu'à 8s que tous les OR arrivent du
-            // serveur (sous charge Hystoria, le burst d'OR peut prendre 2-5s).
-            int compteurOrAvantBurst = compteurOrAuDebutPass;
-            int compteurOrAttendu = compteurOrAvantBurst + deposes;
-            int attente = 0;
-            while (attente < 8000 && System.Threading.Interlocked.CompareExchange(ref CompteurObjectRemove, 0, 0) < compteurOrAttendu)
-            {
-                await Task.Delay(200, ct).ConfigureAwait(false);
-                attente += 200;
-                if (BanqueFermeeObservee) break;
-            }
-            int orRecus = System.Threading.Interlocked.CompareExchange(ref CompteurObjectRemove, 0, 0) - compteurOrAvantBurst;
-            confirmes = Math.Min(deposes, orRecus);
+                    case TypeResultatDepot.PartielVide:
+                        // OQ qte=0 — équivalent OR. OnObjetQuantite a déjà décrémenté/supprimé.
+                        Journaliseur.Info($"[BANQUE-CONFIRM] UID {item.Identifiant} OQ qte=0 (équivalent OR, qte {item.Quantite} déposée).");
+                        confirmesPass++;
+                        break;
 
-            // Détection des items en attente OR > 10s : potentiellement perdus
-            // côté serveur (refus silencieux ou OR dropé par le proxy).
-            // Loggués mais PAS réinjectés localement (acceptation du risque
-            // mineur — l'item est soit déposé serveur-side sans ACK, soit
-            // récupérable au prochain OAK / changement de map). Cf. ADR-BANQUE
-            // §Risques.
-            var seuilPerdu = DateTime.UtcNow.AddSeconds(-10);
-            var perdus = EnvoyesEnAttenteOR
-                .Where(kv => kv.Value < seuilPerdu)
-                .Select(kv => kv.Key)
-                .ToList();
-            foreach (var uidPerdu in perdus)
-            {
-                Journaliseur.Avertir(
-                    $"[BANQUE-LOST] UID {uidPerdu} envoyé sans OR retour depuis >10s — "
-                    + "item considéré déposé côté serveur, local OK (suppression optimiste).");
-                EnvoyesEnAttenteOR.TryRemove(uidPerdu, out _);
+                    case TypeResultatDepot.PartielServeur:
+                        // OQ qte>0 — dépôt partiel : ré-injecter avec la qte restante au pass suivant.
+                        int deposeEffectif = item.Quantite - res.QteRestante;
+                        Journaliseur.Avertir(
+                            $"[BANQUE-PARTIEL] UID {item.Identifiant} dépôt partiel : "
+                            + $"qte demandée {item.Quantite}, déposé {deposeEffectif}, restant {res.QteRestante} "
+                            + $"→ retry pass {pass + 1}");
+                        partielsPass++;
+                        if (pass < MAX_PASSES)
+                        {
+                            queuePassSuivante.Add(new ObjetInventaire
+                            {
+                                Identifiant = item.Identifiant,
+                                IdTemplate = item.IdTemplate,
+                                Quantite = res.QteRestante,
+                                Position = item.Position,
+                            });
+                            Journaliseur.Debogue($"[BANQUE-RETRY] UID {item.Identifiant} qte {res.QteRestante} pass {pass + 1}/{MAX_PASSES}");
+                        }
+                        else
+                        {
+                            Journaliseur.Avertir($"[BANQUE-FAIL] UID {item.Identifiant} dépôt partiel persistant après {MAX_PASSES} passes — abandon.");
+                        }
+                        break;
+
+                    case TypeResultatDepot.Timeout:
+                        Journaliseur.Avertir($"[BANQUE-TIMEOUT] UID {item.Identifiant} aucune réponse en {TIMEOUT_PAR_ITEM_MS}ms");
+                        timeoutsPass++;
+                        if (pass < MAX_PASSES)
+                        {
+                            queuePassSuivante.Add(item);
+                            Journaliseur.Debogue($"[BANQUE-RETRY] UID {item.Identifiant} timeout → retry pass {pass + 1}/{MAX_PASSES}");
+                        }
+                        else
+                        {
+                            Journaliseur.Avertir($"[BANQUE-FAIL] UID {item.Identifiant} timeout après {MAX_PASSES} passes — abandon.");
+                        }
+                        break;
+                }
+
+                // Inter-item : 150ms ± 30% jitter (AGENT 3 V2 anti-bot scoring < 50ms variance).
+                int delaiBase = 150;
+                int jitter = (int)(delaiBase * 0.30);
+                int delai = rng.Next(delaiBase - jitter, delaiBase + jitter + 1);
+                await Task.Delay(delai, ct).ConfigureAwait(false);
             }
 
             Journaliseur.Info(
-                $"[BANQUE-CONFIRM] Fin pass {pass}/{MAX_PASSES} — {confirmes}/{deposes} OR reçus en {attente}ms "
-                + $"({rejetesSec} rejets sécurité, {perdus.Count} perdus). Poids actuel {_perso.PourcentagePoids:F1}%");
+                $"[BANQUE-CONFIRM] Fin pass {pass}/{MAX_PASSES} — "
+                + $"{confirmesPass} confirmés, {partielsPass} partiels, {timeoutsPass} timeouts, "
+                + $"{queuePassSuivante.Count} à retenter. Poids actuel {_perso.PourcentagePoids:F1}%");
 
-            totalDeposes += deposes;
-            totalConfirmes += confirmes;
-            totalRejetesSec += rejetesSec;
+            totalDeposes += deposesPass;
+            totalConfirmes += confirmesPass;
+            totalPartiels += partielsPass;
+            totalTimeouts += timeoutsPass;
 
-            // Si tout a été confirmé OU rien n'a été déposé → inutile de reboucler.
-            if (deposes == 0 || confirmes == deposes)
-            {
-                Journaliseur.Info($"[BANQUE-CONFIRM] Pass {pass} complète — arrêt boucle.");
-                break;
-            }
+            if (queuePassSuivante.Count == 0) break;
 
-            // Pause 3s avant le pass suivant : laisse arriver les OR/OQ
-            // différés du serveur Hystoria (peut être 2-3s sous charge), qui
-            // décrémentent l'inventaire et permettent au pass suivant de
-            // skip les items déjà partiellement déposés.
-            // Note : avec MAX_PASSES=1, cette pause n'est jamais atteinte —
-            // gardée par sécurité au cas où MAX_PASSES serait remonté.
-            await Task.Delay(3000, ct).ConfigureAwait(false);
+            // Délai inter-pass : laisser le serveur respirer.
+            await Task.Delay(rng.Next(1500, 2500), ct).ConfigureAwait(false);
+            queueDepot = queuePassSuivante;
         }
 
-        // Refresh UI après burst : un seul NotifierInventaireChange pour
-        // matérialiser toutes les suppressions optimistes (évite le storm UI
-        // pendant le burst, cf. Personnage.SupprimerObjetOptimiste).
+        // Refresh UI final : matérialise les suppressions cumulatives (OR + PartielVide).
         _perso.NotifierInventaireChange();
 
         // === Étape 4 : fermer la banque (EV, canal chiffré auto) ===
@@ -434,20 +486,13 @@ public sealed class PiloteBanque
         await _session.EnvoyerAuServeurAsync("EV").ConfigureAwait(false);
         await Delai(ct).ConfigureAwait(false);
 
-        // Log final : on regarde le poids inventaire pour juger du succès,
-        // pas le ratio EMO+/OR (en pass unique sans ré-envois, les deux sont
-        // alignés sauf cas d'OR perdu — alors [BANQUE-LOST] aura tracé l'écart).
-        if (totalConfirmes == totalDeposes)
-        {
-            Journaliseur.Info($"[BANQUE-END] ✅ Dépôt terminé — {totalConfirmes}/{totalDeposes} OR confirmés, "
-                + $"{totalRejetesSec} refusés (sécurité), poids final {_perso.PourcentagePoids:F1}%");
-        }
-        else
-        {
-            Journaliseur.Info($"[BANQUE-END] ✅ Dépôt terminé — {totalConfirmes}/{totalDeposes} OR confirmés "
-                + $"({totalDeposes - totalConfirmes} envois sans ACK serveur, items déposés serveur-side "
-                + $"selon pattern dyshay). Poids final {_perso.PourcentagePoids:F1}%");
-        }
+        // Log final V2 : ratio confirmés / partiels / timeouts. Tout EMO+ a
+        // maintenant une réponse déterministe (cf. ADR V2).
+        Journaliseur.Info(
+            $"[BANQUE-VERIFY] === Fin workflow V2 — {totalDeposes} envoyés, "
+            + $"{totalConfirmes} confirmés (OR + PartielVide), {totalPartiels} partiels retry, "
+            + $"{totalTimeouts} timeouts, {totalRejetesSec} refusés sécurité. "
+            + $"Poids final {_perso.PourcentagePoids:F1}% ===");
         return totalConfirmes > 0;
     }
 
