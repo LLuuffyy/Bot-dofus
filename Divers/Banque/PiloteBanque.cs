@@ -112,6 +112,14 @@ public sealed class PiloteBanque
     /// de clôture (sinon notre propre EV serait droppé aussi).</summary>
     public static volatile bool BloquerEvClient;
 
+    /// <summary>V3 — Verrou global sur WorkflowCompletAsync.
+    /// Empêche 2 workflows concurrents de partager <see cref="AttenteResultat"/>
+    /// (qui est static) et de se draîner mutuellement les TCS via Clear().
+    /// Le 2e déclencheur reçoit false immédiatement (TryAcquire 0 ms).
+    /// Cf. ADR <c>docs/PLAN-FIX-BANQUE-V3.md</c> + forensic
+    /// <c>docs/FORENSIC-V2-LOG-21H.md</c>.</summary>
+    private static readonly SemaphoreSlim _verrouWorkflow = new(1, 1);
+
     public PiloteBanque(ApiBot api, SessionProxy session, Personnage perso, ConfigBanque cfg)
     {
         _api = api;
@@ -123,8 +131,31 @@ public sealed class PiloteBanque
     /// <summary>
     /// Workflow COMPLET : zaap vers banque → dépôt → zaap retour si configuré.
     /// Retourne true si le pourcentage poids est passé sous CiblePoidsPct.
+    /// V3 — sérialisé via <see cref="_verrouWorkflow"/> pour éviter qu'un
+    /// 2e trigger concurrent (OnInventaireChange après 1er OR) ne draine
+    /// la map TCS du 1er via AttenteResultat.Clear() — forensic AGENT V3-A.
     /// </summary>
     public async Task<bool> WorkflowCompletAsync(int? carteFarmAvant, CancellationToken ct = default)
+    {
+        // V3 — sérialisation : un seul workflow à la fois.
+        // Le 2e déclencheur (ex. OnInventaireChange après 1er OR avec poids
+        // recalculé buggé) reçoit false immédiatement (TryAcquire 0 ms).
+        if (!await _verrouWorkflow.WaitAsync(0, ct).ConfigureAwait(false))
+        {
+            Journaliseur.Avertir("[BANQUE-START] Workflow déjà en cours — skip (anti-double-trigger V3).");
+            return false;
+        }
+        try
+        {
+            return await WorkflowCompletInterneAsync(carteFarmAvant, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _verrouWorkflow.Release();
+        }
+    }
+
+    private async Task<bool> WorkflowCompletInterneAsync(int? carteFarmAvant, CancellationToken ct)
     {
         Journaliseur.Info($"[BANQUE-START] === Workflow complet démarré (poids {_perso.PourcentagePoids:F1}%) ===");
 
@@ -271,37 +302,50 @@ public sealed class PiloteBanque
         BloquerEvClient = true;
         BanqueOuvertureObservee = false;  // reset avant ApS, set par TrameJeu sur ECK
 
-        // FIX 04:08 : délai de 1.5s avant ApS pour laisser le serveur sortir
-        // de l'état combat (GC1 client + GCK + GDM map data prennent ~500ms-
-        // 1s). Sans ce délai, le serveur ignore l'ApS — forensic 04:03 :
-        // 4 tentatives consécutives RIEN n'a été déposé alors que ECK5 ne
-        // vient jamais. Note user : « banque mobile uniquement, jamais coffre
-        // physique » → on ne peut PAS contourner par zaap, l'ApS doit marcher.
-        await Task.Delay(1500, ct).ConfigureAwait(false);
-
-        Journaliseur.Info("[BANQUE] → ApS (ouverture coffre)");
-        await _session.EnvoyerAuServeurAsync("ApS").ConfigureAwait(false);
-
-        // === Attente ECK5 (confirmation serveur) — 2s max ===
-        // Si pas d'ECK reçu : ApS a été ignoré (perso pas près d'un coffre
-        // banque, ou map sans banque mobile, ou état combat résiduel).
-        // Inutile d'envoyer des EMO+ dans le vide → abort propre.
-        int attenduMs = 0;
-        while (attenduMs < 2000 && !BanqueOuvertureObservee)
+        // V3 — Skip ApS si la banque est DÉJÀ ouverte (cycle supplémentaire
+        // dans le même workflow, ou un workflow précédent qui n'aurait pas
+        // fini son EV proprement). Le serveur Hystoria ne renvoie PAS d'ECK5
+        // sur un ApS redondant → faux [BANQUE-TIMEOUT] et abort à tort.
+        // Forensic AGENT V3-A §Q10.4 (faux ECK5 timeouts dans log 21h).
+        bool dejaOuverte = BanqueOuvertureObservee && !BanqueFermeeObservee;
+        if (dejaOuverte)
         {
-            if (ct.IsCancellationRequested) break;
-            await Task.Delay(100, ct).ConfigureAwait(false);
-            attenduMs += 100;
+            Journaliseur.Info("[BANQUE-START] Banque déjà ouverte — skip ApS (réutilisation session V3).");
         }
-        if (!BanqueOuvertureObservee)
+        else
         {
-            Journaliseur.Avertir(
-                "[BANQUE-TIMEOUT] ❌ Pas de ECK5 reçu 2s après ApS — coffre PAS OUVERT côté serveur "
-                + "(perso pas près d'un coffre banque, ou map sans banque mobile, ou état "
-                + "combat résiduel). Abort workflow, RIEN n'a été déposé.");
-            return false;
+            // FIX 04:08 : délai de 1.5s avant ApS pour laisser le serveur sortir
+            // de l'état combat (GC1 client + GCK + GDM map data prennent ~500ms-
+            // 1s). Sans ce délai, le serveur ignore l'ApS — forensic 04:03 :
+            // 4 tentatives consécutives RIEN n'a été déposé alors que ECK5 ne
+            // vient jamais. Note user : « banque mobile uniquement, jamais coffre
+            // physique » → on ne peut PAS contourner par zaap, l'ApS doit marcher.
+            await Task.Delay(1500, ct).ConfigureAwait(false);
+
+            Journaliseur.Info("[BANQUE] → ApS (ouverture coffre)");
+            await _session.EnvoyerAuServeurAsync("ApS").ConfigureAwait(false);
+
+            // === Attente ECK5 (confirmation serveur) — 2s max ===
+            // Si pas d'ECK reçu : ApS a été ignoré (perso pas près d'un coffre
+            // banque, ou map sans banque mobile, ou état combat résiduel).
+            // Inutile d'envoyer des EMO+ dans le vide → abort propre.
+            int attenduMs = 0;
+            while (attenduMs < 2000 && !BanqueOuvertureObservee)
+            {
+                if (ct.IsCancellationRequested) break;
+                await Task.Delay(100, ct).ConfigureAwait(false);
+                attenduMs += 100;
+            }
+            if (!BanqueOuvertureObservee)
+            {
+                Journaliseur.Avertir(
+                    "[BANQUE-TIMEOUT] ❌ Pas de ECK5 reçu 2s après ApS — coffre PAS OUVERT côté serveur "
+                    + "(perso pas près d'un coffre banque, ou map sans banque mobile, ou état "
+                    + "combat résiduel). Abort workflow, RIEN n'a été déposé.");
+                return false;
+            }
+            Journaliseur.Info("[BANQUE-START] ✅ ECK5 reçu — coffre ouvert, démarrage des dépôts");
         }
-        Journaliseur.Info("[BANQUE-START] ✅ ECK5 reçu — coffre ouvert, démarrage des dépôts");
         // RESET EV flag : le serveur peut émettre EV (fermer ancienne session)
         // JUSTE AVANT ECK5 (ex: ApS d'un workflow précédent abort sans EV →
         // 2ème ApS → serveur ferme ancienne + ouvre nouvelle → EV puis ECK).
