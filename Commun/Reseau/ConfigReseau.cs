@@ -19,38 +19,37 @@ namespace BotDofus.Commun.Reseau;
 public sealed class ConfigReseau
 {
     // =====================================================================
-    // Cible courante : Rafale (playrafal.com) — Dofus Retro privé, TCP brut.
-    //   - Auth+Jeu : <IP-à-capturer>:26118 (zaapconnectport du client.)
-    //   - Le serveur de jeu et l'auth tournent souvent sur le même IP, port +1.
+    // Cible courante : Rafale (Rafal Retro v1.47.2) — Dofus Retro privé, TCP brut.
+    //   - Auth : 162.19.126.176:446  (capturé 2026-06-02 via sniffer)
+    //   - Jeu  : 162.19.126.176:6977 (capturé 2026-06-02 via sniffer)
+    //   - Hostname OVH : ns3027085.ip-162-19-126.eu (FR)
+    //
+    // Le port 26118 vu dans <c>config.xml</c> du retroclient est en fait le
+    // port utilisé par le launcher Zaap (cdn.playrafal.com), PAS par le
+    // client de jeu lui-même.
     //
     // Historique des cibles :
-    //   - Hystoria : 162.19.127.156:450 (ancien)
-    //   - Aqua     : 141.94.99.2:7781   (ancien)
-    //   - Abrak    : 51.89.153.20:1303  (Hystoria via launcher Abrak)
-    //   - Rafale   : ?.?.?.?:26118      (cible courante 2026-06)
-    //
-    // L'IP Rafale doit être capturée AU 1er LANCEMENT via le sniffer
-    // (cf. <see cref="BotDofus.Utilitaires.Reseau.SniffeurIpServeur"/>) car
-    // elle n'est pas exposée dans le config.xml du client (résolue par le SWF).
+    //   - Hystoria : 162.19.127.156:450  (ancien)
+    //   - Aqua     : 141.94.99.2:7781    (ancien)
+    //   - Abrak    : 51.89.153.20:1303   (Hystoria via launcher Abrak)
+    //   - Rafale   : 162.19.126.176:446/6977 (cible courante 2026-06+)
     // =====================================================================
 
     /// <summary>Nom symbolique du serveur courant (affiché UI / logs).</summary>
     public string NomServeur { get; set; } = "Rafale";
 
-    /// <summary>Hôte du serveur d'authentification distant (IP ou hostname).
-    /// Vide tant que pas capturé → <see cref="EstIpServeurInconnue"/>.</summary>
-    public string HoteDistant { get; set; } = string.Empty;
+    /// <summary>Hôte du serveur d'authentification distant (IP ou hostname).</summary>
+    public string HoteDistant { get; set; } = "162.19.126.176";
 
     /// <summary>Port du serveur d'authentification distant.</summary>
-    public int PortDistant { get; set; } = 26118;
+    public int PortDistant { get; set; } = 446;
 
-    /// <summary>Hôte du serveur de jeu distant. Souvent identique à
-    /// <see cref="HoteDistant"/>, valeur observée du AYK.</summary>
-    public string HoteJeuDistant { get; set; } = string.Empty;
+    /// <summary>Hôte du serveur de jeu distant. Identique à
+    /// <see cref="HoteDistant"/> sur Rafale (valeur observée du AYK).</summary>
+    public string HoteJeuDistant { get; set; } = "162.19.126.176";
 
-    /// <summary>Port du serveur de jeu distant. Sur Abrak (Hystoria) c'était
-    /// auth+1 ; Rafale par défaut : même port (à confirmer en Phase 2).</summary>
-    public int PortJeuDistant { get; set; } = 26118;
+    /// <summary>Port du serveur de jeu distant.</summary>
+    public int PortJeuDistant { get; set; } = 6977;
 
     /// <summary>Adresse d'écoute locale du proxy MITM.
     /// <c>127.0.0.1</c> volontaire : seul Dofus.exe local peut atteindre le
@@ -58,24 +57,22 @@ public sealed class ConfigReseau
     public string AdresseEcouteLocale { get; set; } = "127.0.0.1";
 
     /// <summary>Port local du listener routant vers le serveur d'auth.
-    /// Aligné sur le port distant pour que le client (qui lit <c>config.xml</c>
-    /// du client) puisse tomber sur notre proxy après patch.</summary>
-    public int PortEcouteLocal { get; set; } = 26118;
+    /// Aligné sur le port distant (le client tape direct sur l'IP/port serveur,
+    /// WinDivert intercepte et redirige sur 127.0.0.1:&lt;port&gt;).</summary>
+    public int PortEcouteLocal { get; set; } = 446;
 
-    /// <summary>Port local du listener routant vers le serveur de jeu.
-    /// Doit être différent de <see cref="PortEcouteLocal"/> SAUF si Rafale
-    /// utilise un port unique pour auth+jeu (à valider).</summary>
-    public int PortEcouteJeuLocal { get; set; } = 26119;
+    /// <summary>Port local du listener routant vers le serveur de jeu.</summary>
+    public int PortEcouteJeuLocal { get; set; } = 6977;
 
     /// <summary>Port source local fixe pour la connexion SORTANTE du proxy
-    /// vers le vrai serveur. 0 = port éphémère. Utilisé en mode WinDivert :
-    /// le redirecteur exclut ce port source du filtre pour ne PAS
-    /// réintercepter la connexion du proxy (sinon boucle infinie).</summary>
-    public int PortSourceMarqueur { get; set; } = 50118;
+    /// vers le vrai serveur. Utilisé en mode WinDivert : le redirecteur
+    /// exclut ce port source du filtre pour ne PAS réintercepter la
+    /// connexion du proxy (sinon boucle infinie).</summary>
+    public int PortSourceMarqueur { get; set; } = 50446;
 
     /// <summary>Port source marqueur DÉDIÉ au proxy JEU. Doit être différent
     /// de <see cref="PortSourceMarqueur"/>.</summary>
-    public int PortSourceMarqueurJeu { get; set; } = 50119;
+    public int PortSourceMarqueurJeu { get; set; } = 50697;
 
     /// <summary>Délai maximum d'attente d'octets avant considérer la
     /// connexion zombie (ms).</summary>
