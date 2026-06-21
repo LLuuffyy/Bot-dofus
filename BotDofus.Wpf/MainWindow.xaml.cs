@@ -175,6 +175,12 @@ public partial class MainWindow : Window
     /// TEST DÉCISIF (approche SynFus) : connecte un client socket AUTONOME
     /// — sans lancer le client officiel, donc sans Shield. S'il atteint le
     /// serveur de jeu et reçoit les clés AK, le farm autonome est viable.
+    ///
+    /// <para>
+    /// Mode 1-clic : si mdp + aks_identity sont déjà stockés (1 connexion
+    /// normale faite avant), connexion silencieuse sans dialog. Sinon dialog
+    /// avec ce qui manque indiqué clairement.
+    /// </para>
     /// </summary>
     private async void BtnClientAuto_Click(object sender, RoutedEventArgs e)
     {
@@ -185,30 +191,80 @@ public partial class MainWindow : Window
                 MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
-        // Le VRAI login Dofus est celui capté du client officiel (ex.
-        // "Zeliox83"), PAS l'alias du compte dans le bot (ex. "test").
+
+        // Login Dofus réel : LoginCapture en priorité (proxy l'a vu),
+        // sinon Compte.Identifiant (saisi à l'ajout du compte).
         var loginReel = !string.IsNullOrWhiteSpace(ctx.LoginCapture)
             ? ctx.LoginCapture!
             : ctx.Compte.Identifiant;
-        if (string.IsNullOrWhiteSpace(ctx.LoginCapture))
-        {
-            MessageBox.Show(
-                "Login Dofus réel inconnu. Fais d'abord 1 connexion via « Lancer jeu » "
-                + "(le proxy capture le vrai login + l'aks_identity), puis réessaie.",
-                "Client Auto", MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
-        }
 
-        // Le bot n'a jamais eu besoin du vrai mot de passe (le client officiel
-        // le chiffrait). Pour l'auth autonome il le faut → on le demande.
-        var mdp = SaisieDialog.Demander(this, "Client Auto",
-            $"Mot de passe Dofus réel pour « {loginReel} »\n"
-            + "(le bot ne le stocke pas en clair, requis pour l'auth socket) :",
-            ctx.Compte.MotDePasse ?? string.Empty);
-        if (string.IsNullOrWhiteSpace(mdp))
+        // aks_identity.txt : capturé lors d'une connexion via le proxy MITM.
+        // Indispensable au login autonome (le serveur gate la version dessus).
+        var aksFichier = System.IO.Path.Combine(
+            AppDomain.CurrentDomain.BaseDirectory, "aks_identity.txt");
+        bool aksDispo = System.IO.File.Exists(aksFichier);
+
+        // Mot de passe : stocké en clair dans comptes.json (saisi à l'ajout).
+        var mdpStocke = ctx.Compte.MotDePasse ?? string.Empty;
+        bool mdpDispo = !string.IsNullOrWhiteSpace(mdpStocke);
+
+        string mdp;
+        if (mdpDispo && aksDispo)
         {
-            Journaliseur.Avertir("[AUTO] Annulé : pas de mot de passe.");
-            return;
+            // 1-CLIC : tout est prêt, connexion silencieuse.
+            mdp = mdpStocke;
+            Journaliseur.Info($"[AUTO] 1-clic : mdp stocké + aks_identity dispo → login direct « {loginReel} ».");
+        }
+        else
+        {
+            // Dialog avec contexte clair de ce qui manque.
+            var manquant = new System.Text.StringBuilder();
+            if (!mdpDispo) manquant.AppendLine("• Mot de passe non stocké pour ce compte.");
+            if (!aksDispo) manquant.AppendLine("• aks_identity.txt absent → fais 1 connexion via « Lancer jeu » d'abord (le proxy MITM le capture).");
+
+            if (!aksDispo)
+            {
+                MessageBox.Show(
+                    "Setup Client Auto incomplet :\n\n" + manquant
+                    + "\naks_identity.txt est généré automatiquement lors de ta 1ère connexion via « Lancer jeu ».",
+                    "Client Auto", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            mdp = SaisieDialog.Demander(this, "Client Auto",
+                $"Mot de passe Dofus réel pour « {loginReel} » (stocké pour les prochains lancements) :",
+                mdpStocke);
+            if (string.IsNullOrWhiteSpace(mdp))
+            {
+                Journaliseur.Avertir("[AUTO] Annulé : pas de mot de passe.");
+                return;
+            }
+
+            // Persiste le mdp dans le compte courant pour les prochains 1-clics.
+            // Recrée le Compte avec le nouveau mdp (le champ est readonly).
+            try
+            {
+                var ancien = ctx.Compte;
+                if (!string.Equals(ancien.MotDePasse, mdp, StringComparison.Ordinal))
+                {
+                    // Stocke dans l'entrée comptes.json (le runtime Compte n'est pas
+                    // mutable pour MotDePasse, mais SauvegarderComptes() relit depuis
+                    // les Compte vivants. On va donc reconstruire l'EntreeCompte
+                    // côté disque uniquement.)
+                    var entrees = BotDofus.Utilitaires.Config.FichierComptes.Charger();
+                    var existante = entrees.Find(en => string.Equals(en.Identifiant, ancien.Identifiant, StringComparison.OrdinalIgnoreCase));
+                    if (existante != null)
+                    {
+                        existante.MotDePasse = mdp;
+                        BotDofus.Utilitaires.Config.FichierComptes.Sauvegarder(entrees);
+                        Journaliseur.Info("[AUTO] Mot de passe stocké pour les prochains 1-clics.");
+                    }
+                }
+            }
+            catch (Exception exSav)
+            {
+                Journaliseur.Avertir($"[AUTO] Stockage mdp échec (non-bloquant) : {exSav.Message}");
+            }
         }
 
         try
@@ -346,7 +402,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void BtnLancerJeu_Click(object sender, RoutedEventArgs e)
+    private async void BtnLancerJeu_Click(object sender, RoutedEventArgs e)
     {
         var contexte = _contexteSelectionne ?? Comptes.FirstOrDefault()?.Contexte;
         if (contexte == null)
@@ -377,25 +433,59 @@ public partial class MainWindow : Window
 
             FermerClientsDofusExistants(cheminClientOriginal);
 
-            // === REDIRECTION ABRAK = WinDivert (packet-level) ===
-            // Le config.xml patch est PROUVÉ inefficace pour Abrak (client se connecte
-            // direct à l'IP serveur, ignorée du config). Seule méthode fiable : WinDivert
-            // intercepte les paquets sortants vers 51.89.153.20:1303/1304 et les
+            // === REDIRECTION = WinDivert (packet-level) ===
+            // Le config.xml patch est PROUVÉ inefficace pour Abrak/Rafale (client se
+            // connecte direct à l'IP serveur, ignorée du config). Seule méthode fiable :
+            // WinDivert intercepte les paquets sortants vers <IP>:<ports> et les
             // redirige sur notre proxy local 127.0.0.1 (anti-boucle via port marqueur).
+            //
+            // Migration Rafale (2026-06) : IP/port lus depuis ConfigReseau au lieu
+            // d'être hardcodés ici. Si l'IP est inconnue, on lance d'abord le sniffer.
+            var cfgReseau = BotDofus.Commun.Reseau.ConfigReseau.ChargerOuDefaut();
+            if (cfgReseau.EstIpServeurInconnue)
+            {
+                MessageBox.Show(
+                    $"L'IP du serveur {cfgReseau.NomServeur} n'est pas encore connue.\n\n" +
+                    $"1. Clique OK pour démarrer le mode DISCOVERY (sniffer TCP).\n" +
+                    $"2. Lance manuellement le client {cfgReseau.NomServeur}.\n" +
+                    $"3. L'IP sera capturée + sauvegardée dans config-reseau.json.\n" +
+                    $"4. Relance ensuite « Lancer Jeu » normalement.",
+                    "Mode Discovery", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                var sniffer = new BotDofus.Utilitaires.Reseau.SniffeurIpServeur(cfgReseau.PortDistant);
+                var ipObservee = await sniffer.AttendreIpAsync().ConfigureAwait(true);
+                if (string.IsNullOrWhiteSpace(ipObservee))
+                {
+                    MessageBox.Show(
+                        $"Aucune IP capturée. Vérifie que le client {cfgReseau.NomServeur} " +
+                        $"a bien tenté de se connecter sur le port {cfgReseau.PortDistant}.",
+                        "Discovery", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                cfgReseau.HoteDistant = ipObservee;
+                cfgReseau.HoteJeuDistant = ipObservee;
+                cfgReseau.Sauvegarder();
+                Journaliseur.Info(
+                    $"[CONFIG] IP {cfgReseau.NomServeur} sauvegardée dans config-reseau.json : {ipObservee}");
+            }
             try
             {
                 _redirecteurWd ??= new BotDofus.Utilitaires.Reseau.RedirecteurWinDivert(
-                    ipServeur: "51.89.153.20", portAuth: 1303, portJeu: 1304,
-                    portMarqueur: 50303, portMarqueurJeu: 50304);
+                    ipServeur: cfgReseau.HoteDistant,
+                    portAuth: cfgReseau.PortDistant, portJeu: cfgReseau.PortJeuDistant,
+                    portMarqueur: cfgReseau.PortSourceMarqueur,
+                    portMarqueurJeu: cfgReseau.PortSourceMarqueurJeu);
                 if (!_redirecteurWd.Actif) _redirecteurWd.Demarrer();
-                Journaliseur.Info("[WD] Interception WinDivert active — lance le jeu, ça sera redirigé.");
+                Journaliseur.Info(
+                    $"[WD] Interception WinDivert active vers {cfgReseau.NomServeur} " +
+                    $"({cfgReseau.HoteDistant}:{cfgReseau.PortDistant}/{cfgReseau.PortJeuDistant}) — lance le jeu, ça sera redirigé.");
 
-                // Pré-démarre le proxy JEU (1304) tout de suite. Le client Abrak ferme
-                // la connexion auth après la sélection serveur puis ouvre une connexion
-                // NEUVE vers 51.89.153.20:1304 que WinDivert redirige sur 127.0.0.1:1304.
-                // Sans listener déjà en place là → « serveur introuvable ».
+                // Pré-démarre le proxy JEU tout de suite. Le client ferme la connexion
+                // auth après la sélection serveur puis ouvre une connexion NEUVE vers
+                // le port jeu que WinDivert redirige sur 127.0.0.1.
                 contexte.DemarrerProxyJeuEager();
-                Journaliseur.Info("[WD] Proxy jeu pré-démarré sur 1304 (anti « serveur introuvable » post-sélection).");
+                Journaliseur.Info(
+                    $"[WD] Proxy jeu pré-démarré sur {cfgReseau.PortEcouteJeuLocal} (anti « serveur introuvable » post-sélection).");
             }
             catch (Exception exWd)
             {
@@ -414,6 +504,75 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             MessageBox.Show($"Impossible de lancer le jeu : {ex.Message}", "Lancer jeu", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Lance le vrai client Dofus + auto-remplit login/mdp via SendInput
+    /// (Option 3). Réutilise BtnLancerJeu_Click pour le setup proxy + WinDivert
+    /// + lancement Dofus, puis enchaîne l'auto-login visuel en arrière-plan.
+    /// </summary>
+    private async void BtnLancerJeuAuto_Click(object sender, RoutedEventArgs e)
+    {
+        var ctx = _contexteSelectionne ?? Comptes.FirstOrDefault()?.Contexte;
+        if (ctx == null)
+        {
+            MessageBox.Show("Sélectionne un compte d'abord.", "Auto-login", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        // Vérifications avant de lancer (évite de démarrer Dofus pour rien).
+        var loginReel = !string.IsNullOrWhiteSpace(ctx.LoginCapture)
+            ? ctx.LoginCapture!
+            : ctx.Compte.Identifiant;
+        var mdp = ctx.Compte.MotDePasse ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(mdp))
+        {
+            mdp = SaisieDialog.Demander(this, "Auto-login",
+                $"Mot de passe Dofus réel pour « {loginReel} » (sera stocké pour les prochaines fois) :",
+                string.Empty);
+            if (string.IsNullOrWhiteSpace(mdp))
+            {
+                Journaliseur.Avertir("[AUTO-LOGIN] Annulé : pas de mot de passe.");
+                return;
+            }
+            // Persiste le mdp dans comptes.json.
+            try
+            {
+                var entrees = BotDofus.Utilitaires.Config.FichierComptes.Charger();
+                var existante = entrees.Find(en => string.Equals(en.Identifiant, ctx.Compte.Identifiant, StringComparison.OrdinalIgnoreCase));
+                if (existante != null)
+                {
+                    existante.MotDePasse = mdp;
+                    BotDofus.Utilitaires.Config.FichierComptes.Sauvegarder(entrees);
+                }
+            }
+            catch (Exception exSav)
+            {
+                Journaliseur.Avertir($"[AUTO-LOGIN] Stockage mdp échec (non-bloquant) : {exSav.Message}");
+            }
+        }
+
+        // Lance Dofus via le flow normal (proxy + WinDivert + launch).
+        BtnLancerJeu_Click(sender, e);
+
+        // Enchaîne l'auto-login en arrière-plan.
+        try
+        {
+            var auto = new BotDofus.Utilitaires.Automation.AutoLoginVisuel();
+            // L'attente de la fenêtre + délai swf est dans AutoLoginVisuel.
+            // Si l'user a configuré ServeurPrefere, Enter post-login validera
+            // le dernier serveur. Sinon il faudra cliquer manuellement.
+            await auto.ExecuterAsync(loginReel, mdp, validerServeur: true).ConfigureAwait(false);
+        }
+        catch (Exception exAuto)
+        {
+            Journaliseur.Avertir($"[AUTO-LOGIN] Flow auto-login échec : {exAuto.Message}");
+            MessageBox.Show(
+                $"Auto-login visuel a échoué :\n{exAuto.Message}\n\n"
+                + "Tu peux toujours te connecter manuellement dans la fenêtre Dofus déjà ouverte.",
+                "Auto-login", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
@@ -561,14 +720,16 @@ public partial class MainWindow : Window
         sb.AppendLine("LUFFY-BOT — RÉFÉRENCE RAPIDE");
         sb.AppendLine("════════════════════════════════════════════");
         sb.AppendLine();
-        sb.AppendLine("CIBLE : Abrak (abrak.fr) — Dofus Retro, TCP brut");
-        sb.AppendLine("  Auth : 51.89.153.20:1303");
-        sb.AppendLine("  Jeu  : 51.89.153.20:1304");
+        var cfg = BotDofus.Commun.Reseau.ConfigReseau.ChargerOuDefaut();
+        sb.AppendLine($"CIBLE : {cfg.NomServeur} — Dofus Retro, TCP brut");
+        var ipAff = string.IsNullOrWhiteSpace(cfg.HoteDistant) ? "<inconnu, mode discovery>" : cfg.HoteDistant;
+        sb.AppendLine($"  Auth : {ipAff}:{cfg.PortDistant}");
+        sb.AppendLine($"  Jeu  : {ipAff}:{cfg.PortJeuDistant}");
         sb.AppendLine();
         sb.AppendLine("FLUX :");
-        sb.AppendLine("  Lancer jeu → patch config.xml + netsh portproxy");
-        sb.AppendLine("  → Abrak.exe → proxy MITM 127.0.0.1:1303 → serveur");
-        sb.AppendLine("  → restore config.xml (furtif, hash inchangé)");
+        sb.AppendLine($"  Lancer jeu → WinDivert intercepte sortants {ipAff}:{cfg.PortDistant}/{cfg.PortJeuDistant}");
+        sb.AppendLine($"  → client {cfg.NomServeur} → proxy MITM 127.0.0.1 → serveur");
+        sb.AppendLine($"  → IP serveur capturée et persistée dans config-reseau.json");
         sb.AppendLine();
         sb.AppendLine("ONGLETS :");
         sb.AppendLine("  Chat       : console + stats session");
@@ -747,6 +908,91 @@ public partial class MainWindow : Window
         FichierComptes.Sauvegarder(comptes);
     }
 
+    /// <summary>
+    /// Ouvre le dialog d'édition pré-rempli pour le compte concerné. Modifie
+    /// le Compte runtime (Identifiant + MotDePasse) + sauvegarde comptes.json.
+    /// Indispensable pour corriger un compte ajouté avec un alias bidon (ex.
+    /// « test ») au lieu du vrai login Dofus — sinon le mode Client Auto rate
+    /// avec « AlEf » (identifiants refusés).
+    /// </summary>
+    private void BtnEditerCompte_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button btn || btn.Tag is not CompteVm vm) return;
+        var compte = vm.Contexte.Compte;
+
+        var dlg = new AjouterCompteDialog(
+            identifiant: compte.Identifiant,
+            login: compte.Identifiant,
+            motDePasse: compte.MotDePasse,
+            modePassif: vm.Contexte.ModePassif)
+        {
+            Owner = this
+        };
+
+        if (dlg.ShowDialog() != true) return;
+        var nouvLogin = string.IsNullOrWhiteSpace(dlg.Login) ? dlg.Identifiant : dlg.Login;
+        if (string.IsNullOrWhiteSpace(nouvLogin) || string.IsNullOrWhiteSpace(dlg.MotDePasse))
+        {
+            MessageBox.Show("Login et mot de passe requis.", "Éditer compte",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var ancienLogin = compte.Identifiant;
+        compte.Identifiant = nouvLogin;
+        compte.MotDePasse = dlg.MotDePasse;
+        vm.Contexte.ModePassif = dlg.ModePassif;
+        vm.Refresh();
+
+        SauvegarderComptes();
+
+        // CRUCIAL : renommer les fichiers de config qui dépendent du nom du
+        // compte (banque, peleas, caracs). Sinon la prochaine session du bot
+        // chargera des configs par défaut → banque inactive, etc.
+        // Forensic 19:17:20 : config banque par défaut chargée car
+        // « Zeliox83.json introuvable » → banque jamais déclenchée pendant 1h.
+        int renommes = RenommerConfigsCompte(ancienLogin, nouvLogin);
+
+        Journaliseur.Info($"[UI] Compte édité : « {ancienLogin} » → « {nouvLogin} » (mdp mis à jour, {renommes} fichier(s) config renommé(s)).");
+        MessageBox.Show(
+            $"Compte mis à jour :\n• Login : {nouvLogin}\n• Mot de passe : (modifié)\n• Configs renommées : {renommes} fichier(s)\n\nLe mode Client Auto devrait maintenant marcher.",
+            "Éditer compte", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    /// <summary>
+    /// Renomme les fichiers <c>{banque,peleas,caracs}/&lt;ancien&gt;.json</c>
+    /// vers <c>&lt;nouveau&gt;.json</c>. Si la cible existe déjà, on n'écrase
+    /// pas (laisse le user décider). Retourne le nombre de fichiers renommés.
+    /// </summary>
+    private static int RenommerConfigsCompte(string ancien, string nouveau)
+    {
+        if (string.Equals(ancien, nouveau, StringComparison.OrdinalIgnoreCase)) return 0;
+        int n = 0;
+        string[] dossiers = { "banque", "peleas", "caracs" };
+        foreach (var d in dossiers)
+        {
+            try
+            {
+                var src = Path.Combine(AppContext.BaseDirectory, d, $"{ancien}.json");
+                var dst = Path.Combine(AppContext.BaseDirectory, d, $"{nouveau}.json");
+                if (!File.Exists(src)) continue;
+                if (File.Exists(dst))
+                {
+                    Journaliseur.Avertir($"[UI] {d}/{nouveau}.json existe déjà — pas de renommage (config conservée telle quelle).");
+                    continue;
+                }
+                File.Move(src, dst);
+                Journaliseur.Info($"[UI] Renommé : {d}/{ancien}.json → {d}/{nouveau}.json");
+                n++;
+            }
+            catch (Exception ex)
+            {
+                Journaliseur.Avertir($"[UI] Renommage {d}/{ancien}.json échec : {ex.Message}");
+            }
+        }
+        return n;
+    }
+
     private static string TrouverAccountsBot()
     {
         var candidats = new[]
@@ -763,14 +1009,21 @@ public partial class MainWindow : Window
     {
         var candidats = new List<string>();
 
-        // PRIORITÉ ABSOLUE : Abrak (launcher Electron, Roaming) — cible courante.
-        // On ne consulte le chemin mémorisé qu'EN DERNIER pour éviter une régression
-        // silencieuse depuis une ancienne config Aqua/Hystoria (config-wpf.json).
+        // PRIORITÉ ABSOLUE : Rafale (cible courante 2026-06+).
+        // Le chemin par défaut est lu depuis ConfigReseau (config-reseau.json) pour
+        // que la migration d'un serveur à l'autre ne nécessite qu'un seul fichier
+        // à éditer. Si l'user a une install ailleurs il peut soit éditer le JSON
+        // soit pointer manuellement via le dialogue à la fin.
+        var cfgReseau = BotDofus.Commun.Reseau.ConfigReseau.ChargerOuDefaut();
+        if (!string.IsNullOrWhiteSpace(cfgReseau.CheminClientDofus))
+            candidats.Add(cfgReseau.CheminClientDofus);
+
+        // Fallback Abrak (launcher Electron, Roaming) — ancien chemin Hystoria via Abrak.
         var abrakDefaut = BotDofus.Utilitaires.Aqua.PatcheurConfigXml.CheminExecutableDefaut;
         candidats.Add(abrakDefaut);
 
         // Chemin mémorisé d'une session précédente — accepté SAUF s'il pointe vers
-        // un ancien serveur (Hystoria / SynFus / Aqua-Bubble) → auto-migration Abrak.
+        // un ancien serveur (Hystoria / SynFus / Aqua-Bubble) → auto-migration.
         if (!string.IsNullOrWhiteSpace(_configWpf.CheminClientDofus)
             && !_configWpf.CheminClientDofus.Contains("Hystoria", StringComparison.OrdinalIgnoreCase)
             && !_configWpf.CheminClientDofus.Contains("SynFus", StringComparison.OrdinalIgnoreCase)
@@ -870,6 +1123,7 @@ public sealed class CompteVm : System.ComponentModel.INotifyPropertyChanged
 
     public void Refresh()
     {
+        PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Identifiant)));
         PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(NomPerso)));
         PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(StatusTexte)));
         PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(StatusBrush)));

@@ -102,7 +102,7 @@ public sealed class ApiAnka
         public bool isTeamLeader() => true;
         public bool freeMode() => true;
         public int server() => 0;
-        public string serverName() => "Hystoria";
+        public string serverName() => BotDofus.Commun.Reseau.ConfigReseau.ChargerOuDefaut().NomServeur;
         public void giveUpFight() => Stub("character.giveUpFight");
         public void getBonusPack() => Stub("character.getBonusPack");
 
@@ -340,11 +340,189 @@ public sealed class ApiAnka
         private readonly ApiAnka _a;
         public ModuleFight(ApiAnka a) => _a = a;
         public bool isInFight() => _a._etat.Combat.Etat != EtatCombat.Inactif;
-        public int turn() => 0;
+        public int turn() => _a._etat.Combat.NumeroTour;
         public void endTurn()
             => _a._api.FinirTourAsync(_a.Ct).GetAwaiter().GetResult();
         public void launch() => _a._api.EngagerCombatAsync(_a.Ct).GetAwaiter().GetResult();
         public void giveUp() => Stub("fight.giveUp");
+
+        // ========================================================================
+        // === API COMBAT SCRIPTÉ (Option A — mode impératif) ====================
+        // ========================================================================
+        // Permet à l'utilisateur d'écrire une fonction combat() Lua qui appelle
+        // directement cast(sortId, cible), move(cell), pass(), etc. Le moteur
+        // IA classique (MoteurReglesCombat) est bypassé si combat() existe.
+
+        /// <summary>Ma cellule courante en combat (0 si pas en combat).</summary>
+        public int myCell() => _a._etat.Personnage.CellulePosition ?? 0;
+
+        /// <summary>PA restants ce tour (0 si pas en combat).</summary>
+        public int pa()
+        {
+            var moi = _a._etat.Combat.Allies.FirstOrDefault(c => c.Identifiant == _a._etat.Personnage.Identifiant);
+            return moi?.PA ?? 0;
+        }
+
+        /// <summary>PM restants ce tour.</summary>
+        public int pm()
+        {
+            var moi = _a._etat.Combat.Allies.FirstOrDefault(c => c.Identifiant == _a._etat.Personnage.Identifiant);
+            return moi?.PM ?? 0;
+        }
+
+        /// <summary>PV / PVMax du perso en combat.</summary>
+        public int pv()
+        {
+            var moi = _a._etat.Combat.Allies.FirstOrDefault(c => c.Identifiant == _a._etat.Personnage.Identifiant);
+            return moi?.PV ?? _a._etat.Personnage.Vie;
+        }
+
+        public int pvMax()
+        {
+            var moi = _a._etat.Combat.Allies.FirstOrDefault(c => c.Identifiant == _a._etat.Personnage.Identifiant);
+            return moi?.PVMax ?? _a._etat.Personnage.VieMax;
+        }
+
+        /// <summary>Cellule de l'ennemi vivant le plus proche, ou -1 si aucun.</summary>
+        public int enemyClosest()
+        {
+            int moi = _a._etat.Personnage.CellulePosition ?? 0;
+            var carte = _a._etat.CarteCourante;
+            if (carte == null) return -1;
+            var ennemi = _a._etat.Combat.Ennemis
+                .Where(e => !e.EstMort && e.PV > 0 && e.CellulePosition > 0)
+                .OrderBy(e => Math.Abs(e.CellulePosition - moi))
+                .FirstOrDefault();
+            return ennemi?.CellulePosition ?? -1;
+        }
+
+        /// <summary>Cellule de l'ennemi vivant avec le moins de PV.</summary>
+        public int enemyWeakest()
+        {
+            var ennemi = _a._etat.Combat.Ennemis
+                .Where(e => !e.EstMort && e.PV > 0 && e.CellulePosition > 0)
+                .OrderBy(e => e.PV)
+                .FirstOrDefault();
+            return ennemi?.CellulePosition ?? -1;
+        }
+
+        /// <summary>Cellule de l'ennemi vivant avec le plus de PV.</summary>
+        public int enemyStrongest()
+        {
+            var ennemi = _a._etat.Combat.Ennemis
+                .Where(e => !e.EstMort && e.PV > 0 && e.CellulePosition > 0)
+                .OrderByDescending(e => e.PV)
+                .FirstOrDefault();
+            return ennemi?.CellulePosition ?? -1;
+        }
+
+        /// <summary>Nombre d'ennemis vivants.</summary>
+        public int enemiesAlive()
+            => _a._etat.Combat.Ennemis.Count(e => !e.EstMort && e.PV > 0);
+
+        /// <summary>Une cellule adjacente vide à ma position (pour invocations). -1 si aucune.</summary>
+        public int freeCellNearMe()
+        {
+            var carte = _a._etat.CarteCourante;
+            if (carte == null) return -1;
+            int moiCell = _a._etat.Personnage.CellulePosition ?? 0;
+            var moi = carte.Obtenir(moiCell);
+            if (moi == null) return -1;
+            var occupees = new System.Collections.Generic.HashSet<int>();
+            foreach (var c in _a._etat.Combat.Allies) if (!c.EstMort) occupees.Add(c.CellulePosition);
+            foreach (var c in _a._etat.Combat.Ennemis) if (!c.EstMort) occupees.Add(c.CellulePosition);
+            // Voisinage iso 14×40 : ±1 sur l'axe linéaire + ±14 + ±15 (les 4 dirs diag).
+            int[] offsets = { -1, +1, -14, +14, -15, +15, -13, +13 };
+            foreach (var d in offsets)
+            {
+                int candId = moiCell + d;
+                if (candId < 0 || candId >= 560) continue;
+                var cand = carte.Obtenir(candId);
+                if (cand == null || !cand.EstMarchable) continue;
+                if (occupees.Contains(candId)) continue;
+                if (cand.IdInteractif >= 0) continue;
+                return candId;
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// Lance un sort sur une cellule cible.
+        /// Cible : int (cellule directe) ou string ("plus_proche", "plus_faible",
+        /// "plus_fort", "moi", "case_libre_proche").
+        /// Retourne true si le paquet GA300 a été envoyé (= pas de validation
+        /// de réussite côté serveur).
+        /// </summary>
+        public bool cast(int sortId, DynValue cible)
+        {
+            int cell = ResoudreCible(cible);
+            if (cell < 0)
+            {
+                Journaliseur.Avertir($"[COMBAT-LUA] cast({sortId}, {cible}) : cible introuvable.");
+                return false;
+            }
+            try
+            {
+                _a._api.EnvoyerPaquetBrutAsync($"GA300{sortId};{cell}", _a.Ct).GetAwaiter().GetResult();
+                System.Threading.Thread.Sleep(300);
+                _a._api.EnvoyerPaquetBrutAsync("GKK0", _a.Ct).GetAwaiter().GetResult();
+                System.Threading.Thread.Sleep(400);
+                Journaliseur.Info($"[COMBAT-LUA] cast({sortId}, cell={cell}) → GA300 envoyé.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Journaliseur.Avertir($"[COMBAT-LUA] cast({sortId}, {cell}) échec : {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>Passe le tour (Gt).</summary>
+        public void pass()
+        {
+            try
+            {
+                _a._api.FinirTourAsync(_a.Ct).GetAwaiter().GetResult();
+                Journaliseur.Info("[COMBAT-LUA] pass() → Gt envoyé.");
+            }
+            catch (Exception ex)
+            {
+                Journaliseur.Avertir($"[COMBAT-LUA] pass() échec : {ex.Message}");
+            }
+        }
+
+        /// <summary>Placement initial (Gp + GR1). À appeler en phase placement uniquement.</summary>
+        public void placement(int cell)
+        {
+            try
+            {
+                _a._api.SePlacerEnCombatAsync(cell, _a.Ct).GetAwaiter().GetResult();
+                Journaliseur.Info($"[COMBAT-LUA] placement(cell={cell}) → Gp+GR1 envoyés.");
+            }
+            catch (Exception ex)
+            {
+                Journaliseur.Avertir($"[COMBAT-LUA] placement({cell}) échec : {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Résolveur de cible : int direct OU string ("plus_proche", "plus_faible",
+        /// "plus_fort", "moi", "case_libre_proche"). Retourne -1 si non résolvable.
+        /// </summary>
+        private int ResoudreCible(DynValue v)
+        {
+            if (v.Type == DataType.Number) return (int)v.Number;
+            if (v.Type != DataType.String) return -1;
+            return v.String?.ToLowerInvariant() switch
+            {
+                "plus_proche" or "closest" => enemyClosest(),
+                "plus_faible" or "weakest" => enemyWeakest(),
+                "plus_fort" or "strongest" => enemyStrongest(),
+                "moi" or "me" or "self" => myCell(),
+                "case_libre_proche" or "free_cell_near" or "free" => freeCellNearMe(),
+                _ => -1
+            };
+        }
     }
 
     // =================================================================

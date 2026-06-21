@@ -24,12 +24,16 @@ public partial class FormulairePrincipal : Form
         menuFichierGestionComptes.Click += (_, _) => OuvrirGestionComptes();
         menuFichierQuitter.Click += (_, _) => Close();
         menuOutilsOptions.Click += (_, _) => new FormulaireOptions().ShowDialog(this);
-        menuAideAPropos.Click += (_, _) => MessageBox.Show(
-            this,
-            "Bot Dofus Retro 1.29\nPrivé — Hystoria\nÀ titre ludique",
-            "À propos",
-            MessageBoxButtons.OK,
-            MessageBoxIcon.Information);
+        menuAideAPropos.Click += (_, _) =>
+        {
+            var nomServeur = BotDofus.Commun.Reseau.ConfigReseau.ChargerOuDefaut().NomServeur;
+            MessageBox.Show(
+                this,
+                $"Bot Dofus Retro 1.29\nPrivé — {nomServeur}\nÀ titre ludique",
+                "À propos",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        };
 
         // La fermeture propre arrête tous les proxies et scripts.
         FormClosing += FormulairePrincipal_FermetureDemandee;
@@ -56,7 +60,7 @@ public partial class FormulairePrincipal : Form
         {
             var reponse = MessageBox.Show(
                 this,
-                "Un fichier accounts.bot a été trouvé (format hérité Hystoria).\n" +
+                "Un fichier accounts.bot a été trouvé (format binaire hérité).\n" +
                 "Importer ces comptes dans comptes.json ?",
                 "Import des comptes",
                 MessageBoxButtons.YesNo,

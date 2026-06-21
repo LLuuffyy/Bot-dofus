@@ -6,19 +6,19 @@ using BotDofus.Utilitaires.Journaux;
 namespace BotDofus.Utilitaires.Hystoria;
 
 /// <summary>
-/// Lance Dofus.exe (le client Flash standalone d'Hystoria) directement, en bypass
-/// du launcher Hystoria. Comme on a patché core.swf et le hosts file,
-/// le client se connectera automatiquement à notre proxy local.
+/// Lance Dofus.exe (le client Flash standalone Dofus Retro) directement, en
+/// bypass du launcher Electron. Le client se connecte automatiquement à notre
+/// proxy local via redirection WinDivert (ou patch hosts/config.xml).
 ///
-/// Le launcher Hystoria n'apporte rien d'utile dans le flow MITM (login/credentials/etc.)
-/// — Dofus.exe fonctionne tout seul si tu lui passes les bons fichiers à côté.
+/// Le chemin par défaut est lu depuis <c>ConfigReseau.CheminClientDofus</c>
+/// pour suivre la cible courante (Rafale = <c>C:\Games\Rafal\Dofus.exe</c>).
 /// </summary>
 public sealed class LanceurDofus
 {
-    /// <summary>Chemin par défaut de Dofus.exe Hystoria sur une install standard.</summary>
-    public static readonly string CheminDefaut = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        @"Hystoria\Dofus\resources\app\retroclient\Dofus.exe");
+    /// <summary>Chemin par défaut de Dofus.exe pour la cible courante,
+    /// lu depuis <see cref="BotDofus.Commun.Reseau.ConfigReseau.CheminClientDofus"/>.</summary>
+    public static string CheminDefaut
+        => BotDofus.Commun.Reseau.ConfigReseau.ChargerOuDefaut().CheminClientDofus;
 
     public string CheminExe { get; }
 
@@ -61,7 +61,7 @@ public sealed class LanceurDofus
     /// </summary>
     public static string? Localiser()
     {
-        string[] candidats =
+        var candidats = new[]
         {
             CheminDefaut,
         };

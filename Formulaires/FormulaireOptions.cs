@@ -26,7 +26,7 @@ public sealed class FormulaireOptions : Form
         MinimizeBox = false;
         Font = new Font("Segoe UI", 9f);
 
-        var lblHote = new Label { Text = "Hôte serveur Hystoria :", Left = 16, Top = 16, Width = 200 };
+        var lblHote = new Label { Text = "Hôte serveur :", Left = 16, Top = 16, Width = 200 };
         _hoteDistant = new TextBox { Left = 16, Top = 36, Width = 300 };
 
         var lblPortDistant = new Label { Text = "Port serveur :", Left = 16, Top = 70, Width = 140 };
