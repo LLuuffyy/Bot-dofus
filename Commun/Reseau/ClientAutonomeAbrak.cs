@@ -244,9 +244,11 @@ public sealed class ClientAutonomeAbrak : IDisposable
             }
             if (p.StartsWith("AH", StringComparison.Ordinal))
             {
-                // Vrai client : après AH → Ap1303, Ai<identity>, Ax.
-                Etat?.Invoke("[AUTO] Liste serveurs → Ap1303 + Ai (identity rejouée) + Ax.");
-                await EnvoyerClairAsync("Ap1303").ConfigureAwait(false);
+                // Vrai client : après AH → Ap<port>, Ai<identity>, Ax.
+                // Port lu depuis ConfigReseau (1303 sur Abrak, 26118 sur Rafale).
+                var portAuth = BotDofus.Commun.Reseau.ConfigReseau.ChargerOuDefaut().PortDistant;
+                Etat?.Invoke($"[AUTO] Liste serveurs → Ap{portAuth} + Ai (identity rejouée) + Ax.");
+                await EnvoyerClairAsync($"Ap{portAuth}").ConfigureAwait(false);
                 if (!string.IsNullOrEmpty(_aksIdentity))
                     await EnvoyerClairAsync("Ai" + _aksIdentity).ConfigureAwait(false);
                 else

@@ -540,6 +540,21 @@ public sealed class SessionProxy : IDisposable
                 if (direction == DirectionPaquet.VersServeur)
                 {
                     int idxClient = HexValCar(brut[1]);
+                    // FILTRE EV pendant workflow banque : le vrai client Dofus
+                    // envoie spontanément un EV 2-4s après l'ApS injecté par
+                    // le bot (le client n'a pas conscience que la banque est
+                    // ouverte serveur-side via ApS). Drop ces EV pour
+                    // empêcher la fermeture prématurée du coffre.
+                    // Match strict : "EV" seul (avec terminator optionnel)
+                    // — pas "EV..." pour éviter de droper un autre paquet.
+                    string nettoyeFiltre = clairAbrak.Trim('\r', '\n', '\0');
+                    if (BotDofus.Divers.Banque.PiloteBanque.BloquerEvClient
+                        && nettoyeFiltre == "EV")
+                    {
+                        Journaliseur.Avertir("[BANQUE-PROXY] EV client droppé (BloquerEvClient=true) "
+                            + "— le vrai Dofus voulait fermer la banque, bot ignore.");
+                        return null;  // PAS de relai, PAS d'avance idxProxy
+                    }
                     EnvoyerCsVersServeur(clairAbrak, idxClient, injecte: false);
                     return null; // déjà envoyé, re-chiffré, par l'émetteur unique
                 }
@@ -634,7 +649,7 @@ public sealed class SessionProxy : IDisposable
                 if (_etatChiffrement == EtatChiffrement.HandshakeEnCours)
                 {
                     _etatChiffrement = EtatChiffrement.Actif;
-                    Journaliseur.Info("[CIPHER] HG recu, chiffrement Hystoria actif.");
+                    Journaliseur.Info("[CIPHER] HG reçu, chiffrement CRYPTS actif (canal protégé).");
                 }
             }
         }
@@ -647,7 +662,8 @@ public sealed class SessionProxy : IDisposable
                 _cipherVersClient.Reset();
             }
 
-            Journaliseur.Info("[CIPHER] CRYPTOK recu, chiffrement Hystoria actif.");
+            Journaliseur.Info("[CIPHER] CRYPTOK reçu, chiffrement CRYPTS actif (PSK = "
+                + HystoriaCipher.PskHex.Substring(0, 8) + "…).");
         }
         else if (paquetClair.StartsWith("CRYPTFAIL", StringComparison.Ordinal))
         {
@@ -656,14 +672,19 @@ public sealed class SessionProxy : IDisposable
                 _etatChiffrement = EtatChiffrement.Inactif;
             }
 
-            Journaliseur.Avertir("[CIPHER] CRYPTFAIL recu, chiffrement Hystoria desactive.");
+            Journaliseur.Avertir("[CIPHER] CRYPTFAIL reçu — handshake CRYPTS rejeté par le serveur. "
+                + "Si on est sur un nouveau serveur (Rafale), la PSK a peut-être changé : vérifier HystoriaCipher.PskHex.");
         }
     }
 
     private static readonly string[] PrefixesDiagnostic =
     {
         "HC", "Af", "AH", "AT", "AYK", "AL", "Ad", "Ax", "As", "ASK", "AA", "AB", "AG",
-        "GS", "GE", "GDM", "GJ", "GP", "GT", "GC", "GM"
+        "GS", "GE", "GDM", "GJ", "GP", "GT", "GC", "GM",
+        // Im = info messages serveur (popups Dofus). Loggés sans dédup pour
+        // identifier le code Im qui déclenche la popup "max items inventaire"
+        // observée pendant les dépôts banque (forensic 2026-05-24 07:01+).
+        "Im"
     };
 
     // Diagnostic Abrak : on logge UNE SEULE FOIS chaque type de paquet vu
