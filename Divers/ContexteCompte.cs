@@ -126,6 +126,11 @@ public sealed class ContexteCompte : IDisposable
 
         // Hook event poids → check seuil + Discord notif si configuré.
         EtatJeu.Personnage.Mis_A_Jour += OnPersonnageMisAJour;
+        // Hook fin de combat : en forcefight, la fenêtre Combat.Etat=Inactif
+        // entre 2 combats est ~400ms — trop courte pour que Mis_A_Jour fire
+        // avec un poids cohérent. On force un check banque dès qu'on passe à
+        // Inactif (après un petit délai pour laisser l'inventaire se sync).
+        EtatJeu.Combat.EtatChange += OnCombatEtatChange;
         // Tag du timestamp à chaque changement de carte — sert au délai de grâce
         // banque (pas de trigger pendant que la map se synchronise).
         EtatJeu.CarteChangee += (_, _) => _dernierChangementCarteUtc = DateTime.UtcNow;
@@ -300,6 +305,10 @@ public sealed class ContexteCompte : IDisposable
             if (!File.Exists(chemin)) return;
 
             Lua.Charger(chemin);
+            // Expose la référence Script MoonSharp au Compte pour que
+            // TrameJeu puisse détecter une fonction combat() et bypasser
+            // l'IA RegleSort (mode combat scripté impératif).
+            Compte.MoteurLuaScript = Lua.ScriptCourant;
             Lua.Demarrer();
             Journaliseur.Info($"[AUTO-SCRIPT] {chemin} démarré pour {Compte.Identifiant}");
         }
@@ -319,16 +328,48 @@ public sealed class ContexteCompte : IDisposable
     /// de zaap, l'inventaire peut encore se synchroniser).</summary>
     private DateTime _dernierChangementCarteUtc = DateTime.MinValue;
 
+    /// <summary>
+    /// Fire après chaque transition d'état combat. Quand on passe à Inactif
+    /// (= fin combat), on lance IMMÉDIATEMENT un check du seuil banque,
+    /// SANS délai : en forcefight le bot envoie GC1 ~487 ms après la fin
+    /// du combat → un Task.Run avec delay 800ms checke trop tard
+    /// (combat=EnCours de nouveau, diagnostic log 22:20:27→28). Le check
+    /// sync ici met _banqueDeclenchee+BanqueEnCours=true AVANT que le moteur
+    /// ANKA puisse relancer un combat (qui passe par EngagerCombatAsync qui
+    /// teste BanqueEnCours et skip).
+    /// </summary>
+    private void OnCombatEtatChange(object? sender,
+        BotDofus.Divers.Combats.Enums.EtatCombat nouveau)
+    {
+        if (nouveau != BotDofus.Divers.Combats.Enums.EtatCombat.Inactif) return;
+        try
+        {
+            // FIX 2026-05-24 03:16 : on appelle NotifierInventaireSansRecalc
+            // (PAS NotifierInventaireChange) pour conserver la valeur Ow
+            // serveur. Forensic : RecalculerPoidsLocal sous-estimait de ~18%
+            // (98.1% → 79.6%) car certains items lootés ne sont pas dans la
+            // BDD → leur poids est compté 0 → trigger banque jamais atteint.
+            EtatJeu.Personnage.NotifierInventaireSansRecalc();
+        }
+        catch (Exception ex)
+        {
+            Journaliseur.Debogue($"[BANQUE] post-combat check erreur : {ex.Message}");
+        }
+    }
+
     private void OnPersonnageMisAJour(object? sender, EventArgs e)
     {
         var perso = EtatJeu.Personnage;
 
         // ----- Détection MORT (PV = 0 et > 0 précédemment) -----
-        // Cooldown 30s anti-spam : forensic 2026-05-22 19:37:30 où le perso
-        // a été notifié mort 10× en 30s à cause de Sacrifice Poupesque qui
-        // fait fluctuer les PV entre 0 et ≥1 plusieurs fois par tour.
+        // Cooldown 30s + filtre Sacrifice Poupesque : Sadida flick PV→0 puis
+        // remonte le tour suivant. Forensic 2026-05-28 : 30 fausses morts en
+        // 30 min de farm alors que le perso n'est JAMAIS mort en réalité.
+        // → on ignore complètement la détection PV=0 si on est en combat
+        // (les morts hors combat restent loggées : déco / suicide map).
         var maintenant = DateTime.UtcNow;
         if (perso.VieMax > 0 && perso.Vie == 0
+            && EtatJeu.Combat.Etat == BotDofus.Divers.Combats.Enums.EtatCombat.Inactif
             && (maintenant - _derniereMortNotifieeUtc).TotalSeconds > 30)
         {
             _derniereMortNotifieeUtc = maintenant;
@@ -352,6 +393,20 @@ public sealed class ContexteCompte : IDisposable
         int seuilEffectif = Compte.ConfigScriptCourante?.PodsMax > 0
             ? Compte.ConfigScriptCourante.PodsMax
             : ConfigBanque.SeuilPoidsPct;
+        // DIAGNOSTIC : log quand poids ≥ seuil mais qu'une autre condition
+        // bloque le déclenchement (utile pour comprendre pourquoi la banque
+        // reste muette alors que le perso est plein).
+        if (perso.PourcentagePoids >= seuilEffectif && seuilEffectif > 0
+            && !_banqueDeclenchee  // évite le spam quand le workflow est déjà en cours
+            && (!ConfigBanque.Active || ModePassif || grace
+                || EtatJeu.Combat.Etat != BotDofus.Divers.Combats.Enums.EtatCombat.Inactif))
+        {
+            Journaliseur.Debogue(
+                $"[BANQUE] Poids {perso.PourcentagePoids:F1}% ≥ {seuilEffectif}% mais bloqué : "
+                + $"Active={ConfigBanque.Active}, ModePassif={ModePassif}, "
+                + $"grace={grace}, combat={EtatJeu.Combat.Etat}");
+        }
+
         if (ConfigBanque.Active
             && !ModePassif                                              // mode passif → AUCUNE action auto, y compris banque
             && !_banqueDeclenchee
@@ -379,15 +434,16 @@ public sealed class ContexteCompte : IDisposable
                 {
                     try
                     {
-                        // Pause script Lua si actif (l'user relancera après dépôt).
-                        bool scriptEnExecution = Scripts.Etat == BotDofus.Divers.Scripts.EtatScript.EnExecution;
-                        if (scriptEnExecution) Scripts.MettreEnPause();
+                        // Note : le moteur Lua (ANKA) suspend automatiquement sa
+                        // boucle quand BanqueEnCours=true (check au top de
+                        // MoteurLuaInteractif.BoucleAsync). Pas besoin de
+                        // MettreEnPause() — la reprise sera auto dès le reset
+                        // du flag en finally (+3s grâce).
 
                         var pilote = new BotDofus.Divers.Banque.PiloteBanque(Api, session, perso, ConfigBanque);
                         await pilote.WorkflowCompletAsync(carteAvant);
 
-                        if (scriptEnExecution)
-                            Journaliseur.Info("[BANQUE] Workflow terminé — script Lua en PAUSE, à reprendre manuellement.");
+                        Journaliseur.Info("[BANQUE] Workflow terminé — script Lua reprend automatiquement après grâce 3s.");
                     }
                     catch (Exception bex)
                     {
@@ -514,15 +570,28 @@ public sealed class ContexteCompte : IDisposable
         var ticket = match.Groups["ticket"].Value;
 
         Journaliseur.Info($"[ORCH] AYK intercepte : serveur jeu reel = {hoteJeu}:{portJeu}, ticket={ticket}");
-        // hoteJeu peut être un hostname (Aqua : aqua.play-astra.net) ou une IP (Hystoria).
-        // La résolution DNS est faite par ProxyReseau quand il ouvre la socket sortante,
-        // donc on peut transmettre la chaîne telle quelle.
+        // hoteJeu peut être un hostname ou une IP. La résolution DNS est faite par
+        // ProxyReseau quand il ouvre la socket sortante, on peut transmettre la
+        // chaîne telle quelle.
         DemarrerProxyJeu(hoteJeu, portJeu);
 
-        var aykLocal = $"AYK127.0.0.1:{_configReseau.PortEcouteJeuLocal};{ticket}";
-        Journaliseur.Info($"[ORCH] AYK reecrit -> {aykLocal}");
-        Journaliseur.Info($"[CONTEXTE] AYK redirige : serveur jeu reel {hoteJeu}:{portJeu} -> proxy local 127.0.0.1:{_configReseau.PortEcouteJeuLocal}");
-        return aykLocal;
+        // ⚠ Sur Rafal Retro v1.47.2 (et probablement tous les clients récents qui
+        // ont durci l'anti-MITM), réécrire l'IP du AYK en 127.0.0.1 fait REJETER
+        // la connexion par le client (déconnexion immédiate à la sélection serveur,
+        // forensic 2026-06-21 09:51).
+        //
+        // Avec WinDivert actif (cas nominal Abrak/Rafale), on N'A PAS BESOIN de
+        // réécrire : le client tente la connexion sur l'IP serveur originale,
+        // WinDivert détourne le SYN sortant vers 127.0.0.1:<portJeu>, le proxy
+        // MITM y est déjà en écoute (pré-démarré par DemarrerProxyJeuEager). Ce
+        // pattern fonctionne parfaitement pour la phase AUTH (cf. paquets WD du
+        // même log) ; on le réutilise pour la phase JEU.
+        //
+        // On retourne null = pas de modification, le AYK original passe au client.
+        Journaliseur.Info(
+            $"[ORCH] AYK transmis brut au client (WinDivert détournera le SYN sortant " +
+            $"vers {hoteJeu}:{portJeu} sur 127.0.0.1:{_configReseau.PortEcouteJeuLocal}).");
+        return null;
     }
 
     /// <summary>
