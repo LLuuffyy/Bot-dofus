@@ -1,0 +1,94 @@
+<UserControl x:Class="BotDofus.Wpf.Vues.VueConfig"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  PanningMode="VerticalOnly"
+                  Padding="16">
+        <StackPanel>
+
+            <!-- ========== SÉCURITÉ ========== -->
+            <materialDesign:Card Padding="16" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="🛡 Sécurité (Anti-modo)" FontSize="18" FontWeight="Bold" Margin="0,0,0,8"/>
+                    <CheckBox x:Name="ChkSecuActive" Content="Activer la vérification .staff périodique"/>
+                    <DockPanel Margin="0,8">
+                        <TextBlock Text="Intervalle (min) entre :" Width="180"/>
+                        <TextBlock Text="Min :" Width="40" VerticalAlignment="Center"/>
+                        <TextBox x:Name="TxtSecuMin" Width="60" Text="20"/>
+                        <TextBlock Text=" Max :" Width="50" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                        <TextBox x:Name="TxtSecuMax" Width="60" Text="40"/>
+                    </DockPanel>
+                    <Separator Margin="0,8"/>
+                    <CheckBox x:Name="ChkArretComplet" Content="Option 1 : Arrêt complet si modo détecté"/>
+                    <CheckBox x:Name="ChkRalentir" Content="Option 2a : Ralentir le bot (×2.5 par défaut)"/>
+                    <CheckBox x:Name="ChkPausesCombats" Content="Option 2b : Pauses entre combats"/>
+                    <CheckBox x:Name="ChkAlerteUniquement" Content="Option 3 : Alerte sonore + console uniquement"/>
+                </StackPanel>
+            </materialDesign:Card>
+
+            <!-- ========== DÉLAIS ========== -->
+            <materialDesign:Card Padding="16" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="⏱ Délais (humanisation)" FontSize="18" FontWeight="Bold" Margin="0,0,0,8"/>
+                    <DockPanel Margin="0,4,0,12">
+                        <TextBlock Text="Profil de vitesse :" Width="180" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="CmbProfil" Width="200" SelectionChanged="CmbProfil_SelectionChanged">
+                            <ComboBoxItem Content="Instantané"/>
+                            <ComboBoxItem Content="Rapide"/>
+                            <ComboBoxItem Content="Humain normal" IsSelected="True"/>
+                            <ComboBoxItem Content="Humain lent"/>
+                        </ComboBox>
+                    </DockPanel>
+                    <TextBlock x:Name="TxtDelaisInfo" Text="Action combat 150-400 ms · Lancer sort 100-300 ms · ..."
+                               Opacity="0.7" FontSize="12" TextWrapping="Wrap"/>
+                </StackPanel>
+            </materialDesign:Card>
+
+            <!-- ========== PAUSES ========== -->
+            <materialDesign:Card Padding="16" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="☕ Pauses (anti-AFK détection)" FontSize="18" FontWeight="Bold" Margin="0,0,0,8"/>
+                    <CheckBox x:Name="ChkAfk" Content="Activer pauses AFK aléatoires"/>
+                    <DockPanel Margin="20,4,0,8">
+                        <TextBlock Text="Intervalle (min) :" Width="140" VerticalAlignment="Center"/>
+                        <TextBox x:Name="TxtAfkInterval" Width="60" Text="15"/>
+                        <TextBlock Text="  Durée (s) min/max :" Width="140" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                        <TextBox x:Name="TxtAfkMin" Width="60" Text="5"/>
+                        <TextBox x:Name="TxtAfkMax" Width="60" Margin="4,0,0,0" Text="30"/>
+                    </DockPanel>
+                    <Separator Margin="0,8"/>
+                    <CheckBox x:Name="ChkPauseLongue" Content="Pause longue (café/toilettes) tous X combats"/>
+                    <CheckBox x:Name="ChkFatigue" Content="Variation de rythme (fatigue progressive)"/>
+                    <CheckBox x:Name="ChkHoraires" Content="Activer horaires (ne joue pas en dehors)"/>
+                    <DockPanel Margin="20,4,0,0">
+                        <TextBlock Text="Heures :" Width="100" VerticalAlignment="Center"/>
+                        <TextBox x:Name="TxtHoraireDebut" Width="40" Text="8"/>
+                        <TextBlock Text=" → " VerticalAlignment="Center"/>
+                        <TextBox x:Name="TxtHoraireFin" Width="40" Text="23"/>
+                    </DockPanel>
+                </StackPanel>
+            </materialDesign:Card>
+
+            <materialDesign:Card Margin="0,0,0,10" Padding="14">
+                <StackPanel>
+                    <TextBlock Text="AFFICHAGE" Foreground="#9AB8E0" FontWeight="Bold" FontSize="11" Margin="0,0,0,8"/>
+                    <CheckBox x:Name="ChkModeDev"
+                              Content="Mode développeur (affiche les onglets Sniffer et Tools)"
+                              Click="ChkModeDev_Click"
+                              Foreground="#ECEFF5"
+                              ToolTip="Pratique pour le debug : sniffer paquets en temps réel + diagnostic interne."/>
+                </StackPanel>
+            </materialDesign:Card>
+
+            <Button Click="BtnSauver_Click" Style="{StaticResource MaterialDesignRaisedButton}" HorizontalAlignment="Right">
+                <StackPanel Orientation="Horizontal">
+                    <materialDesign:PackIcon Kind="ContentSave"/>
+                    <TextBlock Text=" Sauvegarder" Margin="4,0,0,0"/>
+                </StackPanel>
+            </Button>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

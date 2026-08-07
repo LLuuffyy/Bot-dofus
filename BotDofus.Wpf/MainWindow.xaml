@@ -1,0 +1,456 @@
+<Window x:Class="BotDofus.Wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vues="clr-namespace:BotDofus.Wpf.Vues"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="Luffy-bot"
+        Height="960"
+        Width="1720"
+        MinWidth="1360"
+        MinHeight="820"
+        WindowStartupLocation="CenterScreen">
+
+    <Grid Background="{StaticResource AppBackgroundBrush}">
+        <Border Margin="24"
+                Background="{StaticResource ShellBackgroundBrush}"
+                BorderBrush="{StaticResource BorderSoftBrush}"
+                BorderThickness="1"
+                CornerRadius="18">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="64" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0"
+                        Background="#242730"
+                        BorderBrush="{StaticResource BorderSoftBrush}"
+                        BorderThickness="0,0,0,1"
+                        CornerRadius="18,18,0,0">
+                    <Grid Margin="18,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Grid Width="18" Height="18" Margin="0,0,10,0">
+                                <Ellipse Fill="#B61F2D" />
+                                <Path Fill="#F88B34"
+                                      Margin="4"
+                                      Stretch="Fill"
+                                      Data="M 0 1 C 1 -0.2 2 0.2 1.8 1.3 C 1.7 2 1.1 2.6 0.8 3.2 C 0.4 2.6 -0.2 2.2 0 1 Z" />
+                            </Grid>
+                            <TextBlock Text="Luffy-bot"
+                                       FontSize="17"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="v0.1.0"
+                                       Margin="8,2,0,0"
+                                       FontSize="10"
+                                       Foreground="{StaticResource FaintTextBrush}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <!-- Barre nav centrale supprimée (boutons décoratifs Gestionnaire/Bot/Admin
+                             sans action utilisateur). Voir Col 2 pour les actions réelles. -->
+
+                        <StackPanel Grid.Column="2"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+                            <Button Click="BtnDeconnecterTout_Click"
+                                    Style="{StaticResource TopNavButtonStyle}"
+                                    ToolTip="Arrête tous les proxies et déconnecte tous les comptes">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="LogoutVariant" Width="15" Height="15" Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text=" Tout déconnecter" Foreground="{StaticResource MutedTextBrush}" />
+                                </StackPanel>
+                            </Button>
+                            <Button Click="BtnDocs_Click"
+                                    Style="{StaticResource TopNavButtonStyle}"
+                                    Margin="6,0,0,0"
+                                    ToolTip="Ouvre docs/ (protocole, API Lua, tutos)">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="BookOpenVariant" Width="15" Height="15" Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text=" Docs" Foreground="{StaticResource MutedTextBrush}" />
+                                </StackPanel>
+                            </Button>
+                            <Button Click="BtnParametres_Click"
+                                    Style="{StaticResource TopNavButtonStyle}"
+                                    Margin="6,0,0,0"
+                                    ToolTip="Ouvre l'onglet Config">
+                                <materialDesign:PackIcon Kind="CogOutline" Width="16" Height="16" Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="278" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0"
+                            Background="{StaticResource SidebarBrush}"
+                            BorderBrush="{StaticResource BorderSoftBrush}"
+                            BorderThickness="0,0,1,0">
+                        <DockPanel Margin="12">
+                            <StackPanel DockPanel.Dock="Top">
+                                <Grid Margin="2,6,2,14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="COMPTES"
+                                               Style="{StaticResource SectionTitleTextStyle}" />
+                                    <Border Grid.Column="1"
+                                            Background="#2F3340"
+                                            CornerRadius="8"
+                                            Padding="6,2">
+                                        <TextBlock Text="{Binding ElementName=LstComptes, Path=Items.Count}"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource MutedTextBrush}" />
+                                    </Border>
+                                </Grid>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                    <Button x:Name="BtnAjouterCompte"
+                                            Click="BtnAjouterCompte_Click"
+                                            Width="40"
+                                            Height="40"
+                                            ToolTip="Ajouter un compte manuellement (login + mot de passe)"
+                                            Style="{StaticResource MaterialDesignRaisedButton}"
+                                            Background="{StaticResource AccentBrush}">
+                                        <materialDesign:PackIcon Kind="Plus" />
+                                    </Button>
+                                    <Button x:Name="BtnAjouterCompteCourant"
+                                            Click="BtnAjouterCompteCourant_Click"
+                                            Margin="10,0,0,0"
+                                            ToolTip="Ajoute le compte actuellement connecté en jeu (login pré-rempli, tape juste le mdp)"
+                                            Style="{StaticResource TopNavButtonStyle}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="AccountPlus" Width="14" Height="14" Margin="0,0,6,0" />
+                                            <TextBlock Text="Ajouter compte courant" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                    <Button x:Name="BtnDemarrerTous"
+                                            Click="BtnDemarrerTous_Click"
+                                            ToolTip="Démarre le proxy MITM du compte sélectionné"
+                                            Style="{StaticResource TopNavButtonStyle}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="Play" Width="14" Height="14" Margin="0,0,6,0" />
+                                            <TextBlock Text="Démarrer compte" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button x:Name="BtnSupprimerTousComptes"
+                                            Click="BtnSupprimerTousComptes_Click"
+                                            Margin="8,0,0,0"
+                                            ToolTip="Supprime TOUS les comptes (remet à zéro la liste + comptes.json + accounts.bot)"
+                                            Background="#4A2C31"
+                                            Foreground="#F0808A"
+                                            BorderBrush="#6B3D45"
+                                            BorderThickness="1"
+                                            Style="{StaticResource TopNavButtonStyle}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="TrashCanOutline" Width="14" Height="14" Margin="0,0,6,0" />
+                                            <TextBlock Text="Tout supprimer" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <ListBox x:Name="LstComptes" SelectionChanged="LstComptes_SelectionChanged">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Padding="12">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid Width="40" Height="40" Margin="0,2,12,0">
+                                                    <Ellipse Fill="#4A2E22" />
+                                                    <Ellipse Width="28" Height="28" Fill="#D48A2A" />
+                                                    <Ellipse Width="10" Height="10"
+                                                             Fill="{Binding StatusBrush}"
+                                                             HorizontalAlignment="Right"
+                                                             VerticalAlignment="Bottom"
+                                                             Stroke="#23252B"
+                                                             StrokeThickness="2" />
+                                                </Grid>
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBlock Text="{Binding Identifiant}"
+                                                               FontWeight="SemiBold"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding NomPerso}"
+                                                               FontSize="11"
+                                                               Foreground="{StaticResource FaintTextBrush}"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding StatusTexte}"
+                                                               FontSize="11"
+                                                               Foreground="{Binding StatusBrush}" />
+                                                </StackPanel>
+                                                <Button Grid.Column="2"
+                                                        Click="BtnSupprimerCompte_Click"
+                                                        Tag="{Binding}"
+                                                        Background="Transparent"
+                                                        BorderBrush="Transparent"
+                                                        Foreground="#F0808A"
+                                                        Padding="6"
+                                                        VerticalAlignment="Center"
+                                                        Cursor="Hand"
+                                                        ToolTip="Supprimer ce compte">
+                                                    <materialDesign:PackIcon Kind="TrashCanOutline" Width="16" Height="16" />
+                                                </Button>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </DockPanel>
+                    </Border>
+
+                    <Grid Grid.Column="1" Margin="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Style="{StaticResource PanelBorderStyle}" Padding="18,14">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                    <Grid Width="52" Height="52" Margin="0,0,14,0">
+                                        <Ellipse Fill="#3B3128" />
+                                        <Ellipse Width="34" Height="34" Fill="#D59638" />
+                                    </Grid>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock x:Name="TxtNomPerso"
+                                                   Text="—"
+                                                   FontSize="18"
+                                                   FontWeight="Bold" />
+                                        <TextBlock x:Name="TxtClassePerso"
+                                                   Text="Aucun perso connecté"
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource FaintTextBrush}" />
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <Grid Grid.Column="1" Margin="28,0,24,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.2*" />
+                                        <ColumnDefinition Width="1.2*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                        <TextBlock Text="VIE" Style="{StaticResource SectionTitleTextStyle}" />
+                                        <ProgressBar x:Name="BarVie"
+                                                     Maximum="100"
+                                                     Foreground="{StaticResource DangerBrush}"
+                                                     Margin="0,7,0,3" />
+                                        <TextBlock x:Name="TxtVie" FontSize="11" Foreground="{StaticResource MutedTextBrush}" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" Margin="0,0,16,0">
+                                        <TextBlock Text="ÉNERGIE" Style="{StaticResource SectionTitleTextStyle}" />
+                                        <ProgressBar x:Name="BarEnergie"
+                                                     Maximum="100"
+                                                     Foreground="#5198FF"
+                                                     Margin="0,7,0,3" />
+                                        <TextBlock x:Name="TxtEnergie" FontSize="11" Foreground="{StaticResource MutedTextBrush}" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2" Margin="0,0,16,0">
+                                        <TextBlock Text="XP" Style="{StaticResource SectionTitleTextStyle}" />
+                                        <ProgressBar x:Name="BarXp"
+                                                     Maximum="100"
+                                                     Foreground="{StaticResource WarningBrush}"
+                                                     Margin="0,7,0,3" />
+                                        <TextBlock x:Name="TxtXp" FontSize="11" Foreground="{StaticResource MutedTextBrush}" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="3">
+                                        <TextBlock Text="POIDS" Style="{StaticResource SectionTitleTextStyle}" />
+                                        <ProgressBar x:Name="BarPoids"
+                                                     Maximum="100"
+                                                     Foreground="{StaticResource SuccessBrush}"
+                                                     Margin="0,7,0,3" />
+                                        <TextBlock x:Name="TxtPoids" FontSize="11" Foreground="{StaticResource MutedTextBrush}" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button x:Name="BtnChoixServeur"
+                                            Click="BtnChoixServeur_Click"
+                                            Style="{StaticResource TopNavButtonStyle}"
+                                            ToolTip="Modifie le serveur préféré du compte sélectionné (Aqua = id 2)"
+                                            Margin="0,0,10,0">
+                                        <TextBlock Text="Choix serveur" />
+                                    </Button>
+                                    <CheckBox x:Name="ChkModePassif"
+                                              Content="Mode passif"
+                                              IsChecked="False"
+                                              Checked="ChkModePassif_Toggle"
+                                              Unchecked="ChkModePassif_Toggle"
+                                              VerticalAlignment="Center"
+                                              ToolTip="Décoché (défaut) : MODE ACTIF — humaniseur anti-burst ON, injection/IA autorisées (l'auth reste gérée par le client Dofus). Coché : observation pure (relais seul)."
+                                              Margin="0,0,14,0" />
+                                    <Button x:Name="BtnLancerJeu"
+                                            Click="BtnLancerJeu_Click"
+                                            Background="#243D55"
+                                            Foreground="#72B7FF"
+                                            BorderBrush="#315E86"
+                                            BorderThickness="1"
+                                            Style="{StaticResource TopNavButtonStyle}"
+                                            ToolTip="Démarre le proxy, patche config.xml Aqua + netsh portproxy, lance Dofus.exe et restaure le config (furtif)"
+                                            Margin="0,0,10,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="RocketLaunchOutline" Width="14" Height="14" Margin="0,0,6,0" />
+                                            <TextBlock Text="Lancer jeu" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button x:Name="BtnClientAuto"
+                                            Click="BtnClientAuto_Click"
+                                            Background="#2D4A2D"
+                                            Foreground="#7BD389"
+                                            BorderBrush="#42693F"
+                                            BorderThickness="1"
+                                            Style="{StaticResource TopNavButtonStyle}"
+                                            ToolTip="Test décisif : connecte un client socket AUTONOME (façon SynFus, sans client officiel = sans Shield). Doit atteindre le serveur de jeu et recevoir les clés AK."
+                                            Margin="0,0,10,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="RobotOutline" Width="14" Height="14" Margin="0,0,6,0" />
+                                            <TextBlock Text="Client Auto" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button x:Name="BtnFarmAuto"
+                                            Click="BtnFarmAuto_Click"
+                                            Background="#3D2D4A"
+                                            Foreground="#C79BF0"
+                                            BorderBrush="#5E4269"
+                                            BorderThickness="1"
+                                            Style="{StaticResource TopNavButtonStyle}"
+                                            ToolTip="Active/désactive la boucle de farm autonome : cible le mob le plus proche, s'en approche (déplacement chiffré), engage (GA902), auto-combat, loot, recommence."
+                                            Margin="0,0,10,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="SwordCross" Width="14" Height="14" Margin="0,0,6,0" />
+                                            <TextBlock x:Name="TxtFarmAuto" Text="Farm Auto" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button x:Name="BtnRecolteAuto"
+                                            Click="BtnRecolteAuto_Click"
+                                            Background="#2D4A33"
+                                            Foreground="#8FE0A6"
+                                            BorderBrush="#42693F"
+                                            BorderThickness="1"
+                                            Style="{StaticResource TopNavButtonStyle}"
+                                            ToolTip="Active/désactive la récolte autonome : récolte toutes les ressources exploitables (selon ton métier), change de map, recommence."
+                                            Margin="0,0,10,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="Leaf" Width="14" Height="14" Margin="0,0,6,0" />
+                                            <TextBlock x:Name="TxtRecolteAuto" Text="Récolte Auto" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button x:Name="BtnDeconnecter"
+                                            Click="BtnDeconnecter_Click"
+                                            Background="#4A2C31"
+                                            Foreground="#F0808A"
+                                            BorderBrush="#6B3D45"
+                                            BorderThickness="1"
+                                            Style="{StaticResource TopNavButtonStyle}"
+                                            ToolTip="Arrête le proxy du compte sélectionné (la fenêtre Dofus reste ouverte)"
+                                            Margin="0,0,10,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="StopCircleOutline" Width="14" Height="14" Margin="0,0,6,0" />
+                                            <TextBlock Text="Déconnexion" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button x:Name="BtnConnecter"
+                                            Click="BtnConnecter_Click"
+                                            Background="#4A4B2D"
+                                            Foreground="#F1D74F"
+                                            BorderBrush="#696A42"
+                                            BorderThickness="1"
+                                            Style="{StaticResource TopNavButtonStyle}"
+                                            ToolTip="Démarre seulement le proxy MITM du compte sélectionné (sans lancer Dofus, utile si Dofus tourne déjà)">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="PlayCircleOutline" Width="14" Height="14" Margin="0,0,6,0" />
+                                            <TextBlock x:Name="TxtProxyButton" Text="Proxy" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Row 2 = '*' : hauteur CONTRAINTE → la console (TextBox
+                             dans VueDashboard) obtient un viewport fixe et scrolle
+                             enfin (molette/scrollbar natifs). En Row 1 (Auto) le
+                             TextBox grandissait à l'infini = aucun scroll possible. -->
+                        <Border Grid.Row="2"
+                                Margin="0,14,0,0"
+                                Background="Transparent"
+                                BorderBrush="{StaticResource BorderSoftBrush}"
+                                BorderThickness="0,0,0,1">
+                            <TabControl x:Name="TabsContent" TabStripPlacement="Top">
+                                <!-- Onglets principaux (ordre intuitif : chat → état perso → action combat → groupe → inventaire/banque → carte) -->
+                                <TabItem Header="Chat">
+                                    <vues:VueDashboard x:Name="VueDash" />
+                                </TabItem>
+                                <TabItem Header="Personnage">
+                                    <vues:VuePersonnage x:Name="VuePersoTab" />
+                                </TabItem>
+                                <TabItem Header="Combat">
+                                    <vues:VueCombat x:Name="VueCombatTab" />
+                                </TabItem>
+                                <TabItem Header="Groupe">
+                                    <vues:VueGroupeHeros x:Name="VueGroupeTab" />
+                                </TabItem>
+                                <TabItem Header="Inventaire">
+                                    <vues:VueInventaire x:Name="VueInvTab" />
+                                </TabItem>
+                                <TabItem Header="Banque">
+                                    <vues:VueBanque x:Name="VueBanqueTab" />
+                                </TabItem>
+                                <TabItem Header="Carte">
+                                    <vues:VueMapViewer x:Name="VueMap" />
+                                </TabItem>
+                                <TabItem Header="Monde">
+                                    <vues:VueWorldMap x:Name="VueWorldMapTab" />
+                                </TabItem>
+                                <TabItem Header="Scripts">
+                                    <vues:VueScripts x:Name="VueScriptsTab" />
+                                </TabItem>
+                                <!-- Onglets diag/dev — masqués par défaut. Active "Mode dev" dans Config pour les voir. -->
+                                <TabItem Header="Sniffer" x:Name="OngletSniffer" Visibility="Collapsed">
+                                    <vues:VueSniffer x:Name="VueSnif" />
+                                </TabItem>
+                                <TabItem Header="Tools" x:Name="OngletTools" Visibility="Collapsed">
+                                    <vues:VueTools x:Name="VueToolsTab" />
+                                </TabItem>
+                                <TabItem Header="Config">
+                                    <vues:VueConfig x:Name="VueConfigTab" />
+                                </TabItem>
+                            </TabControl>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

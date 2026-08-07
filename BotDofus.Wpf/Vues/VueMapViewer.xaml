@@ -1,0 +1,264 @@
+<UserControl x:Class="BotDofus.Wpf.Vues.VueMapViewer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="280"/>
+        </Grid.ColumnDefinitions>
+
+        <DockPanel Grid.Column="0" Margin="8">
+            <!-- Toolbar haut : toggles -->
+            <Border DockPanel.Dock="Top" Padding="8" Background="{DynamicResource MaterialDesignCardBackground}">
+                <DockPanel LastChildFill="False">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <CheckBox x:Name="ChkAfficherIds" Content="IDs cellules" Margin="0,0,16,0"
+                              Checked="ChkAfficherIds_Changed" Unchecked="ChkAfficherIds_Changed"/>
+                    <CheckBox x:Name="ChkAfficherEntites" Content="Afficher entités" IsChecked="True"
+                              Checked="ChkAfficherIds_Changed" Unchecked="ChkAfficherIds_Changed" Margin="0,0,16,0"/>
+                    <CheckBox x:Name="ChkAfficherTransitions" Content="Transitions" IsChecked="True"
+                              Checked="ChkAfficherIds_Changed" Unchecked="ChkAfficherIds_Changed" Margin="0,0,16,0"/>
+                    <CheckBox x:Name="ChkDeplacerAuClic" Content="Deplacer au clic" IsChecked="True"
+                              ToolTip="Quand actif, clic gauche sur une cellule envoie un deplacement direct"/>
+                    <Button x:Name="BtnRecTrajet" Content="🛣 Road Creator" Margin="16,0,0,0"
+                            Padding="8,2" Foreground="#FFE05050" FontWeight="Bold"
+                            Click="BtnRecTrajet_Click"
+                            ToolTip="Road Creator : configure chaque carte (combat/récolte/sortie) → génère un script de trajet rejouable"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                    <TextBlock Text="Sortie map :" VerticalAlignment="Center" Opacity="0.75" Margin="0,0,6,0"/>
+                    <Button x:Name="BtnMapGauche" Content="◀" Width="34" Margin="0,0,3,0" Padding="0,2"
+                            ToolTip="Aller à la sortie OUEST (change de map)" Click="BtnMapGauche_Click"/>
+                    <Button x:Name="BtnMapHaut" Content="▲" Width="34" Margin="0,0,3,0" Padding="0,2"
+                            ToolTip="Aller à la sortie NORD" Click="BtnMapHaut_Click"/>
+                    <Button x:Name="BtnMapBas" Content="▼" Width="34" Margin="0,0,3,0" Padding="0,2"
+                            ToolTip="Aller à la sortie SUD" Click="BtnMapBas_Click"/>
+                    <Button x:Name="BtnMapDroite" Content="▶" Width="34" Margin="0,0,16,0" Padding="0,2"
+                            ToolTip="Aller à la sortie EST" Click="BtnMapDroite_Click"/>
+                    <TextBlock Text=".travel" VerticalAlignment="Center" FontFamily="Consolas" Opacity="0.75" Margin="0,0,8,0"/>
+                    <TextBox x:Name="TxtTravelX" Width="54" Margin="0,0,4,0" materialDesign:HintAssist.Hint="x"/>
+                    <TextBox x:Name="TxtTravelY" Width="54" Margin="0,0,8,0" materialDesign:HintAssist.Hint="y"/>
+                    <Button x:Name="BtnTravelCoords" Click="BtnTravelCoords_Click" Style="{StaticResource TopNavButtonStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="MapMarkerPath" Width="14" Height="14" Margin="0,0,6,0"/>
+                            <TextBlock Text="Travel"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- Position en bas -->
+            <Border DockPanel.Dock="Bottom" Padding="8" Background="{DynamicResource MaterialDesignCardBackground}">
+                <TextBlock x:Name="TxtPositionFooter" Text="Position : —" FontFamily="Consolas" FontSize="13"/>
+            </Border>
+
+            <!-- Canvas iso interactif -->
+            <Border Background="#FFF4F5F7" ClipToBounds="True">
+                <Grid>
+                    <ScrollViewer x:Name="ScrollerMap"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Auto"
+                                  Background="#FFF4F5F7">
+                        <Canvas x:Name="CanvasMap" Background="Transparent"
+                                MouseWheel="CanvasMap_MouseWheel"
+                                MouseLeftButtonDown="CanvasMap_MouseLeftButtonDown"
+                                MouseRightButtonDown="CanvasMap_MouseRightButtonDown"
+                                MouseRightButtonUp="CanvasMap_MouseRightButtonUp"
+                                MouseMove="CanvasMap_MouseMove">
+                            <Canvas.LayoutTransform>
+                                <ScaleTransform x:Name="ZoomTransform" ScaleX="1" ScaleY="1"/>
+                            </Canvas.LayoutTransform>
+                        </Canvas>
+                    </ScrollViewer>
+
+                    <!-- Tooltip hover -->
+                    <Border x:Name="TooltipBorder" Background="#CC222222" Padding="8,4"
+                            CornerRadius="4" HorizontalAlignment="Left" VerticalAlignment="Top"
+                            Margin="8" Visibility="Collapsed" IsHitTestVisible="False">
+                        <TextBlock x:Name="TxtTooltip" Foreground="White" FontFamily="Consolas" FontSize="11"/>
+                    </Border>
+
+                    <!-- Légende -->
+                    <Border Background="#CC222222" Padding="10,8" CornerRadius="4"
+                            HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="12">
+                        <StackPanel>
+                            <TextBlock Text="Légende" FontWeight="Bold" Foreground="White" FontSize="11" Margin="0,0,0,6"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,2">
+                                <Ellipse Width="12" Height="12" Fill="DodgerBlue" Margin="0,0,6,0"/>
+                                <TextBlock Text="Vous" Foreground="White" FontSize="11"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,2">
+                                <Ellipse Width="12" Height="12" Fill="LimeGreen" Margin="0,0,6,0"/>
+                                <TextBlock Text="Joueur" Foreground="White" FontSize="11"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,2">
+                                <Ellipse Width="12" Height="12" Fill="#DC3C3C" Margin="0,0,6,0"/>
+                                <TextBlock Text="Monstre" Foreground="White" FontSize="11"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,2">
+                                <Ellipse Width="12" Height="12" Fill="#50B4DC" Margin="0,0,6,0"/>
+                                <TextBlock Text="PNJ" Foreground="White" FontSize="11"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,2">
+                                <Rectangle Width="12" Height="12" Fill="#FF9800" Margin="0,0,6,0"/>
+                                <TextBlock Text="Transition (chgt map)" Foreground="White" FontSize="11"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,2">
+                                <Rectangle Width="12" Height="12" Fill="#2ECC71" Margin="0,0,6,0"/>
+                                <TextBlock Text="Récoltable (ton métier)" Foreground="White" FontSize="11"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,2">
+                                <Rectangle Width="12" Height="12" Fill="#B07A28" Margin="0,0,6,0"/>
+                                <TextBlock Text="Métier/niveau insuffisant" Foreground="White" FontSize="11"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,2">
+                                <Rectangle Width="12" Height="12" Fill="#46604E" Margin="0,0,6,0"/>
+                                <TextBlock Text="Ressource épuisée" Foreground="White" FontSize="11"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Boutons zoom -->
+                    <StackPanel HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="12" Orientation="Horizontal">
+                        <Button Click="BtnZoomIn_Click" Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" Margin="0,0,4,0">
+                            <materialDesign:PackIcon Kind="Plus"/>
+                        </Button>
+                        <Button Click="BtnZoomOut_Click" Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" Margin="0,0,4,0">
+                            <materialDesign:PackIcon Kind="Minus"/>
+                        </Button>
+                        <Button Click="BtnRecentrer_Click" Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}">
+                            <materialDesign:PackIcon Kind="Target"/>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Menu contextuel clic droit sur entité -->
+                    <Border x:Name="MenuContextuel" Background="#FF1E1E1E" BorderBrush="#FF555555" BorderThickness="1"
+                            CornerRadius="4" Padding="8" Visibility="Collapsed"
+                            HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <ScrollViewer MaxHeight="360" VerticalScrollBarVisibility="Auto">
+                            <StackPanel x:Name="MenuContextuelContenu" MinWidth="240"/>
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- Panneau de dialogue PNJ -->
+                    <Border x:Name="PanneauDialogue" Background="#F01E1E1E" BorderBrush="#FF50B4DC"
+                            BorderThickness="2" CornerRadius="6" Padding="14" Visibility="Collapsed"
+                            HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,16,0,0"
+                            MaxWidth="540">
+                        <StackPanel>
+                            <DockPanel>
+                                <TextBlock x:Name="TxtDialoguePnj" Text="PNJ" FontWeight="Bold"
+                                           Foreground="#FF50B4DC" FontSize="13" VerticalAlignment="Center"/>
+                                <Button x:Name="BtnDialogueQuitter" Content="✕ Quitter"
+                                        DockPanel.Dock="Right" HorizontalAlignment="Right"
+                                        Padding="8,2" Click="BtnDialogueQuitter_Click"/>
+                            </DockPanel>
+                            <TextBlock x:Name="TxtDialogueTexte" Foreground="White" TextWrapping="Wrap"
+                                       Margin="0,8,0,8" FontSize="12"/>
+                            <StackPanel x:Name="DialogueReponses"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+        </DockPanel>
+
+        <!-- Info panel droite -->
+        <Border Grid.Column="1" Margin="0,8,8,8" Padding="12" Background="{DynamicResource MaterialDesignCardBackground}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          PanningMode="VerticalOnly">
+                <StackPanel>
+                    <TextBlock Text="POSITION" FontWeight="Bold" FontSize="11" Opacity="0.7"/>
+                    <TextBlock x:Name="TxtMapId" Text="Carte : —" Margin="0,4,0,2"/>
+                    <TextBlock x:Name="TxtCellId" Text="Cellule : —"/>
+                    <TextBlock x:Name="TxtCoords" Text="(x, y) : —"/>
+
+                    <Separator Margin="0,12"/>
+
+                    <!-- MONSTRES -->
+                    <DockPanel>
+                        <TextBlock Text="MONSTRES" FontWeight="Bold" FontSize="11" Foreground="#FF7043"/>
+                        <TextBlock x:Name="TxtNbMonstres" DockPanel.Dock="Right"
+                                   HorizontalAlignment="Right" Text="0" FontSize="11" Opacity="0.6"/>
+                    </DockPanel>
+                    <ItemsControl x:Name="ListeMonstres" Margin="0,4,0,0">
+                        <ItemsControl.ItemTemplate><DataTemplate>
+                            <TextBlock Text="{Binding}" Margin="0,1" FontSize="11"
+                                       TextWrapping="Wrap" Foreground="#FFC1AE"/>
+                        </DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Separator Margin="0,10"/>
+
+                    <!-- NPC -->
+                    <DockPanel>
+                        <TextBlock Text="NPC" FontWeight="Bold" FontSize="11" Foreground="#5C9DFF"/>
+                        <TextBlock x:Name="TxtNbPnj" DockPanel.Dock="Right"
+                                   HorizontalAlignment="Right" Text="0" FontSize="11" Opacity="0.6"/>
+                    </DockPanel>
+                    <ItemsControl x:Name="ListePnj" Margin="0,4,0,0">
+                        <ItemsControl.ItemTemplate><DataTemplate>
+                            <TextBlock Text="{Binding}" Margin="0,1" FontSize="11"
+                                       TextWrapping="Wrap" Foreground="#AFC9FF"/>
+                        </DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Separator Margin="0,10"/>
+
+                    <!-- JOUEURS -->
+                    <DockPanel>
+                        <TextBlock Text="JOUEURS" FontWeight="Bold" FontSize="11" Foreground="#7BD389"/>
+                        <TextBlock x:Name="TxtNbJoueurs" DockPanel.Dock="Right"
+                                   HorizontalAlignment="Right" Text="0" FontSize="11" Opacity="0.6"/>
+                    </DockPanel>
+                    <ItemsControl x:Name="ListeJoueurs" Margin="0,4,0,0">
+                        <ItemsControl.ItemTemplate><DataTemplate>
+                            <TextBlock Text="{Binding}" Margin="0,1" FontSize="11"
+                                       TextWrapping="Wrap" Foreground="#B6E8C2"/>
+                        </DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Separator Margin="0,10"/>
+
+                    <!-- RESSOURCES -->
+                    <DockPanel>
+                        <TextBlock Text="RESSOURCES" FontWeight="Bold" FontSize="11" Foreground="#FFCA61"/>
+                        <TextBlock x:Name="TxtNbRessources" DockPanel.Dock="Right"
+                                   HorizontalAlignment="Right" Text="0" FontSize="11" Opacity="0.6"/>
+                    </DockPanel>
+                    <ItemsControl x:Name="ListeRessources" Margin="0,4,0,0">
+                        <ItemsControl.ItemTemplate><DataTemplate>
+                            <TextBlock Text="{Binding}" Margin="0,1" FontSize="11"
+                                       TextWrapping="Wrap" Foreground="#FFE3A8"/>
+                        </DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Separator Margin="0,10"/>
+
+                    <!-- SORTIES / TRANSITIONS -->
+                    <DockPanel>
+                        <TextBlock Text="SORTIES" FontWeight="Bold" FontSize="11" Foreground="#4FC3F7"/>
+                        <TextBlock x:Name="TxtNbSorties" DockPanel.Dock="Right"
+                                   HorizontalAlignment="Right" Text="0" FontSize="11" Opacity="0.6"/>
+                    </DockPanel>
+                    <ItemsControl x:Name="ListeSorties" Margin="0,4,0,0">
+                        <ItemsControl.ItemTemplate><DataTemplate>
+                            <TextBlock Text="{Binding}" Margin="0,1" FontSize="11"
+                                       TextWrapping="Wrap" Foreground="#AFE4FB"/>
+                        </DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Separator Margin="0,12"/>
+
+                    <TextBlock Text="ACTIONS" FontWeight="Bold" FontSize="11" Opacity="0.7"/>
+                    <TextBlock Text="Clic gauche cellule : selection/deplacement" Margin="0,4,0,2" FontSize="11" Opacity="0.7"/>
+                    <TextBlock Text="Clic droit entite : menu" FontSize="11" Opacity="0.7"/>
+                    <TextBlock Text="Clic droit + drag : pan" FontSize="11" Opacity="0.7"/>
+                    <TextBlock Text="Molette : zoom" FontSize="11" Opacity="0.7"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

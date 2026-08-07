@@ -1,0 +1,7422 @@
+{
+  "0": {
+    "n": "Coup de poing",
+    "d": "Un coup de poing qui occasionne de légers dégâts à votre adversaire. Il vous faudrait une arme pour être réellement efficace."
+  },
+  "1": {
+    "n": "Armure Incandescente",
+    "d": "Cette armure prévient des dégâts de Feu."
+  },
+  "2": {
+    "n": "Aveuglement",
+    "d": "Occasionne des dommages Neutre et retire des PA à la cible."
+  },
+  "3": {
+    "n": "Attaque Naturelle",
+    "d": "L'Attaque Naturelle occasionne des dégâts de Feu."
+  },
+  "4": {
+    "n": "Renvoi de Sort",
+    "d": "Le Renvoi de Sorts permet de renvoyer un sort occasionnant une perte de PDV ou de PA."
+  },
+  "5": {
+    "n": "Trêve",
+    "d": "Ce sort permet de protéger tous les joueurs présents sur la carte."
+  },
+  "6": {
+    "n": "Armure Terrestre",
+    "d": "Cette armure prévient des dégâts neutres et de terre."
+  },
+  "7": {
+    "n": "Bouclier Féca",
+    "d": "Ce bouclier réduit (en pourcentage) les dégâts reçus."
+  },
+  "8": {
+    "n": "Retour du bâton",
+    "d": "Sort d'attaque au corps à corps infligeant des dégâts Neutres."
+  },
+  "9": {
+    "n": "Attaque Nuageuse",
+    "d": "L'Attaque Nuageuse occasionne de sérieux dégâts."
+  },
+  "10": {
+    "n": "Glyphe Enflammé",
+    "d": "Ce glyphe brûle les personnes se trouvant dans sa zone."
+  },
+  "11": {
+    "n": "Téléportation",
+    "d": "La Téléportation permet à un joueur de se déplacer rapidement."
+  },
+  "12": {
+    "n": "Glyphe d'Aveuglement",
+    "d": "Ce glyphe fait perdre des PA."
+  },
+  "13": {
+    "n": "Glyphe de Silence",
+    "d": "Ce glyphe empêche les joueurs se trouvant dans sa zone de lancer des sorts."
+  },
+  "14": {
+    "n": "Armure Venteuse",
+    "d": "Cette armure prévient des dégâts d'Air et octroie une résistance à la perte de PM."
+  },
+  "15": {
+    "n": "Glyphe d'immobilisation",
+    "d": "Ce glyphe immobilise tous les joueurs, alliés comme ennemis."
+  },
+  "16": {
+    "n": "Science du bâton",
+    "d": "Ce sort permet aux disciples de cette guilde d'augmenter leurs dégâts physiques."
+  },
+  "17": {
+    "n": "Glyphe Agressif",
+    "d": "Ce glyphe occasionne des dégâts à tous les joueurs."
+  },
+  "18": {
+    "n": "Armure Aqueuse",
+    "d": "Cette armure prévient des dégâts d'Eau et octroie une résistance à la perte de PA."
+  },
+  "19": {
+    "n": "Bulle",
+    "d": "Occasionne des dommages Eau."
+  },
+  "20": {
+    "n": "Immunité",
+    "d": "L'immunité permet de rendre le lanceur ou un allié invincible pendant quelques tours."
+  },
+  "21": {
+    "n": "Griffe Spectrale",
+    "d": "La Griffe Spectrale inflige des dégâts de Feu."
+  },
+  "22": {
+    "n": "Déplacement Félin",
+    "d": "Ce sort permet d'augmenter les PM des invocations et dans une moindre mesure, des alliés."
+  },
+  "23": {
+    "n": "Cri de l'Ours",
+    "d": "Le Cri de l'Ours augmente les dégâts des invocations et dans une moindre mesure, des alliés."
+  },
+  "24": {
+    "n": "Corbeau",
+    "d": "Le Corbeau inflige des dégâts de Feu à l'ennemi, et n'a pas besoin de ligne de vue pour être lancé."
+  },
+  "25": {
+    "n": "Soin Animal",
+    "d": "Le Soin Animal permet de rendre un peu de PDV perdus aux invocations ou alliés blessés."
+  },
+  "26": {
+    "n": "Bénédiction Animale",
+    "d": "La Bénédiction Animale permet d'invoquer plus d'une créature en même temps."
+  },
+  "27": {
+    "n": "Piqûre Motivante",
+    "d": "Ce sort permet d'augmenter les PA des invocations et dans une moindre mesure, des alliés."
+  },
+  "28": {
+    "n": "Crapaud",
+    "d": "Le Crapaud permet de réduire les dommages reçus par les invocations et dans une moindre mesure, par les alliés."
+  },
+  "29": {
+    "n": "Crocs du Mulou",
+    "d": "Les Crocs du Mulou augmentent les dégâts (en pourcentage) des invocations et dans une moindre mesure, des alliés."
+  },
+  "30": {
+    "n": "Fouet",
+    "d": "Ce sort permet de punir une invocation, qu'elle soit amie ou ennemie."
+  },
+  "31": {
+    "n": "Invocation de Dragonnet Rouge",
+    "d": "Ce sort permet d'invoquer un dragonnet rouge cracheur de flammes."
+  },
+  "32": {
+    "n": "Résistance Naturelle",
+    "d": "La Résistance Naturelle permet d'augmenter la vitalité des invocations et dans une moindre mesure, des alliés."
+  },
+  "33": {
+    "n": "Griffe Cinglante",
+    "d": "Ce sort permet d'infliger des dégâts d'Eau."
+  },
+  "34": {
+    "n": "Invocation de Tofu",
+    "d": "Ce sort permet d'invoquer un Tofu qui partira au combat pour vous."
+  },
+  "35": {
+    "n": "Invocation de Bouftou",
+    "d": "Permet d'invoquer un Bouftou agressif."
+  },
+  "36": {
+    "n": "Frappe du Craqueleur",
+    "d": "Ce sort inflige des dégâts de Feu et frappe un ennemi avec tant de puissance qu'il blesse également tous les joueurs autour."
+  },
+  "37": {
+    "n": "Invocation de Prespic",
+    "d": "Invoque un Prespic spécialisé dans la perte de PA."
+  },
+  "38": {
+    "n": "Invocation de Sanglier",
+    "d": "Invoque un Sanglier qui repousse les adversaires."
+  },
+  "39": {
+    "n": "Invocation de Bwork Mage",
+    "d": "Le Bwork Mage permet de lancer des sorts magiques à distance."
+  },
+  "40": {
+    "n": "Invocation de Craqueleur",
+    "d": "Invoque un Craqueleur puissant qui occasionne de nombreux dégâts et étourdit l'ennemi."
+  },
+  "41": {
+    "n": "Sac Animé",
+    "d": "Ce sort permet à son lanceur de donner vie à son Sac. Ce dernier protégera un de ses alliés jusqu'à sa destruction."
+  },
+  "42": {
+    "n": "Chance",
+    "d": "Ce sort permet au lanceur d'augmenter sa chance."
+  },
+  "43": {
+    "n": "Lancer de Pelle",
+    "d": "Le Lancer de Pelle inflige des dégâts de Terre."
+  },
+  "44": {
+    "n": "Roulage de Pelle",
+    "d": "Le Roulage de Pelle ne nécessite pas de ligne de vue et inflige des dégâts de Feu."
+  },
+  "45": {
+    "n": "Clé Réductrice",
+    "d": "La Clé Réductrice permet de réduire la portée des attaques d'un ennemi."
+  },
+  "46": {
+    "n": "Désinvocation",
+    "d": "La Désinvocation permet d'infliger d'énormes dégâts aux invocations."
+  },
+  "47": {
+    "n": "Boîte de Pandore",
+    "d": "La Boîte de Pandore peut rendre des PDV ou augmenter les coups critiques."
+  },
+  "48": {
+    "n": "Remblai",
+    "d": "Le remblai permet d'ensevelir les joueurs sous une pelletée de terre..."
+  },
+  "49": {
+    "n": "Pelle Fantomatique",
+    "d": "La Pelle Fantomatique inflige des dégâts de Feu et peut retirer les effets qui enchantent la cible."
+  },
+  "50": {
+    "n": "Maladresse",
+    "d": "La Maladresse enlève des PM à un ennemi."
+  },
+  "51": {
+    "n": "Lancer de Pièces",
+    "d": "Ce sort permet de lancer de très loin des pièces d'or factices sur un ennemi, et lui inflige des dégâts d'Eau."
+  },
+  "52": {
+    "n": "Cupidité",
+    "d": "La Cupidité rend fou et augmente les dégâts de tous les joueurs, amis comme ennemis."
+  },
+  "53": {
+    "n": "Force de l'Age",
+    "d": "Ce sort permet d'occasionner des dommages et de voler un PM à un ennemi."
+  },
+  "54": {
+    "n": "Maladresse de Masse",
+    "d": "La Maladresse de Masse fait perdre des PA à tous les ennemis."
+  },
+  "55": {
+    "n": "Accélération",
+    "d": "L'Accélération permet d'augmenter les PM du lanceur ou d'un allié."
+  },
+  "56": {
+    "n": "Pelle du Jugement",
+    "d": "Occasionne des dommages Eau et retire des PM en coup critique."
+  },
+  "57": {
+    "n": "Pelle Animée",
+    "d": "Invoque une pelle qui repousse les ennemis et réduit leurs résistances aux pertes de PM."
+  },
+  "58": {
+    "n": "Pelle Massacrante",
+    "d": "La Pelle Massacrante inflige de terribles dégâts d'Eau à un ennemi."
+  },
+  "59": {
+    "n": "Corruption",
+    "d": "La Corruption fait perdre un tour à un ennemi mais lui rend énormement de PDV"
+  },
+  "60": {
+    "n": "Coffre Animé",
+    "d": "Ce sort fait apparaître un coffre qui permet de récupérer davantage d'objets sur une créature. Plus le Coffre évolue, plus il a de chance d'en récupérer."
+  },
+  "61": {
+    "n": "Sournoiserie",
+    "d": "La Sournoiserie est l'une des rares attaques à distance de cette classe, elle inflige des dégâts de Terre."
+  },
+  "62": {
+    "n": "Concentration de Chakra",
+    "d": "La Concentration de Chakra permet au lanceur d'augmenter considérablement sa force."
+  },
+  "63": {
+    "n": "Coup Sournois",
+    "d": "Inflige des dégâts de Terre à l'adversaire et le fait reculer de plusieurs cases."
+  },
+  "64": {
+    "n": "Repérage",
+    "d": "Détecte les pièges, les invisibles et augmente la portée."
+  },
+  "65": {
+    "n": "Piège Sournois",
+    "d": "Le Piège Sournois inflige des dégâts de Terre à celui qui le déclenche."
+  },
+  "66": {
+    "n": "Poison insidieux",
+    "d": "Empoisonne la cible pendant plusieurs tours en lui causant des dégâts de type Air."
+  },
+  "67": {
+    "n": "Peur",
+    "d": "Pousse un allié ou un ennemi sur la case ciblée."
+  },
+  "68": {
+    "n": "Fourvoiement",
+    "d": "Occasionne des dommages Air, et vole de l'agilité et de la force à la cible."
+  },
+  "69": {
+    "n": "Piège d'Immobilisation",
+    "d": "Le Piège d'Immobilisation paralyse tous les joueurs dans sa zone d'effet."
+  },
+  "70": {
+    "n": "Arnaque",
+    "d": "L'Arnaque permet de voler des Kamas à un ennemi."
+  },
+  "71": {
+    "n": "Piège Empoisonné",
+    "d": "Le Piège Empoisonné empoisonne le joueur qui le déclenche."
+  },
+  "72": {
+    "n": "Invisibilité",
+    "d": "Rend le personnage invisible."
+  },
+  "73": {
+    "n": "Piège répulsif",
+    "d": "Repousse les alliés et les ennemis."
+  },
+  "74": {
+    "n": "Double",
+    "d": "Invoque un double qui possède les mêmes caractéristique que l'invocateur, mais qui n'attaque pas."
+  },
+  "75": {
+    "n": "Pulsion de Chakra",
+    "d": "La Pulsion de Chakra permet d'augmenter les coups critiques du lanceur."
+  },
+  "76": {
+    "n": "Attaque Mortelle",
+    "d": "L'Attaque Mortelle inflige énormément de dégâts de Terre à un ennemi et peut le tuer sur un coup critique."
+  },
+  "77": {
+    "n": "Piège de Silence",
+    "d": "Le Piège de Silence fait perdre des PA au joueur qui le déclenche."
+  },
+  "78": {
+    "n": "Invisibilité d'Autrui",
+    "d": "L'Invisibilité d'Autrui permet de rendre invisible un joueur."
+  },
+  "79": {
+    "n": "Piège de Masse",
+    "d": "Le Piège de Masse inflige de sérieux dégâts de terre à celui qui le déclenche et aux joueurs alentours."
+  },
+  "80": {
+    "n": "Piège Mortel",
+    "d": "Le Piège Mortel est capable de tuer un adversaire lorsqu'il marche dessus."
+  },
+  "81": {
+    "n": "Ralentissement",
+    "d": "Le Ralentissement retire des PA à un ennemi. Un même joueur ne peut être ciblé qu'une fois par tour."
+  },
+  "82": {
+    "n": "Contre",
+    "d": "Le Contre permet de renvoyer des dégâts."
+  },
+  "83": {
+    "n": "Aiguille",
+    "d": "Ce sort projette une grande aiguille sur l'adversaire pour lui infliger des dégâts de Feu."
+  },
+  "84": {
+    "n": "Gelure",
+    "d": "La Gelure inflige des dégâts d'Air et fait perdre des PA."
+  },
+  "85": {
+    "n": "Flou",
+    "d": "Le Flou baisse les PA de tous les joueurs pour une courte durée."
+  },
+  "86": {
+    "n": "Aiguille Chercheuse",
+    "d": "Ce sort permet de lancer une aiguille qui va exploser sur l'ennemi le plus proche."
+  },
+  "87": {
+    "n": "Démotivation",
+    "d": "La démotivation permet de baisser les résistances aux pertes de PA d'un ennemi."
+  },
+  "88": {
+    "n": "Téléportation",
+    "d": "La Téléportation permet à un joueur de se déplacer rapidement."
+  },
+  "89": {
+    "n": "Dévouement",
+    "d": "Ce sort permet d'augmenter les PA des alliés du lanceur."
+  },
+  "90": {
+    "n": "Fuite",
+    "d": "La Fuite permet de s'éloigner très vite des zones dangereuses."
+  },
+  "91": {
+    "n": "Frappe de Xélor",
+    "d": "La Frappe de Xélor inflige des dégâts de type Terre."
+  },
+  "92": {
+    "n": "Rayon Obscur",
+    "d": "Le Rayon Obscur occasionne des dégâts de Feu importants."
+  },
+  "93": {
+    "n": "Flétrissement",
+    "d": "Ce sort permet d'infliger des dégâts d'Air à un ennemi."
+  },
+  "94": {
+    "n": "Protection Aveuglante",
+    "d": "La protection aveuglante permet au lanceur d'esquiver la perte de PA (en pourcentage)."
+  },
+  "95": {
+    "n": "Horloge",
+    "d": "Ce sort inflige des dégâts de type Eau et vole des PA à la cible."
+  },
+  "96": {
+    "n": "Poussière Temporelle",
+    "d": "La Poussière Temporelle inflige des dégâts de Feu et fait perdre des PA à plusieurs joueurs."
+  },
+  "97": {
+    "n": "Cadran de Xélor",
+    "d": "Ce sort permet de placer un écran de protection devant le lanceur."
+  },
+  "98": {
+    "n": "Vol du Temps",
+    "d": "Ce sort vole des PA à un ennemi pour les donner au lanceur."
+  },
+  "99": {
+    "n": "Momification",
+    "d": "Ce sort permet  à son lanceur de se transformer en momie pour bénéficier de certaines résistances."
+  },
+  "100": {
+    "n": "Sablier de Xélor",
+    "d": "Le Sablier de Xélor inflige des dégâts de Feu et fait perdre des PA à un ennemi."
+  },
+  "101": {
+    "n": "Roulette",
+    "d": "La Roulette lance des effets aléatoires sur vos adversaires, vos alliés et parfois tous les personnages présents dans votre combat."
+  },
+  "102": {
+    "n": "Pile ou Face",
+    "d": "Pile ou Face inflige des dégâts de Terre à un ennemi, mais sur un mauvais coup du destin, peut le soigner..."
+  },
+  "103": {
+    "n": "Chance d'Ecaflip",
+    "d": "Lors d'une attaque reçue, la Chance d'Ecaflip redonne des PDV ou multiplie les dégâts reçus."
+  },
+  "104": {
+    "n": "Trèfle",
+    "d": "Le Trèfle augmente les coups critiques."
+  },
+  "105": {
+    "n": "Bond du Félin",
+    "d": "Le Bond du Félin permet de se déplacer plus vite et plus loin."
+  },
+  "106": {
+    "n": "Roue de la Fortune",
+    "d": "La Roue de la Fortune multiplie par 2 les dégâts, mais fait perdre des PDV au lanceur."
+  },
+  "107": {
+    "n": "Topkaj",
+    "d": "Topkaj inflige d'importants dégâts de Feu."
+  },
+  "108": {
+    "n": "Esprit Félin",
+    "d": "L'Esprit Félin est une attaque rapprochée infligeant des dégâts de Terre mais pouvant se retourner contre son lanceur."
+  },
+  "109": {
+    "n": "Bluff",
+    "d": "Le Bluff inflige aléatoirement des dégâts d'Air ou d'Eau."
+  },
+  "110": {
+    "n": "Griffe Joueuse",
+    "d": "Ce coup de Griffe inflige des dégâts de Terre horizontaux ou verticaux et touche tous les joueurs dans sa zone d'effet."
+  },
+  "111": {
+    "n": "Contrecoup",
+    "d": "Le Contrecoup augmente énormément la vitalité du lanceur sur une courte durée, mais au prix d'un peu de PDV."
+  },
+  "112": {
+    "n": "Griffe de Ceangal",
+    "d": "La Griffe de Ceangal inflige des dégâts de terre et peut faire perdre un PA pour plusieurs tours sur un coup critique."
+  },
+  "113": {
+    "n": "Perception",
+    "d": "La Perception permet de révéler au lanceur et à ses alliés, la position des pièges et personnages cachés."
+  },
+  "114": {
+    "n": "Rekop",
+    "d": "Ce sort inflige des dégâts monstrueux de Feu, Terre, Eau et Air, mais a une chance sur deux de faire perdre un point d'action au lanceur."
+  },
+  "115": {
+    "n": "Odorat",
+    "d": "Décuple l'odorat de tous les participants du combat présents autour du lanceur, ce qui occasionne une déconcentration ou une motivation..."
+  },
+  "116": {
+    "n": "Langue Râpeuse",
+    "d": "La Langue Râpeuse inflige des dégâts de Feu et diminue la portée de l'ennemi en cas de coup critique."
+  },
+  "117": {
+    "n": "Griffe Invocatrice",
+    "d": "Ce sort permet d'invoquer un félin."
+  },
+  "118": {
+    "n": "Réflexes",
+    "d": "Le sort Réflexes permet d'augmenter énormément ses points d'agilité."
+  },
+  "119": {
+    "n": "Tout ou rien",
+    "d": "Le Tout ou Rien inflige des dégâts à tous les joueurs ou leur rend des PDV s'ils sont chanceux."
+  },
+  "120": {
+    "n": "Destin d'Ecaflip",
+    "d": "Le Destin d'Ecaflip inflige des dégâts de Terre et enlève un PM pendant plusieurs tours à un ennemi sur un coup critique."
+  },
+  "121": {
+    "n": "Mot Curatif",
+    "d": "Le Mot Curatif permet de récupérer des PDV."
+  },
+  "122": {
+    "n": "Mot Blessant",
+    "d": "Occasionne des dommages de type Air."
+  },
+  "123": {
+    "n": "Mot Drainant",
+    "d": "Le Mot Drainant fait perdre des PA aux ennemis, mais blesse le lanceur du sort."
+  },
+  "124": {
+    "n": "Mot Soignant",
+    "d": "Le Mot Soignant permet de soigner un allié."
+  },
+  "125": {
+    "n": "Mot Interdit",
+    "d": "Le Mot Interdit est une attaque très puissante... pour une Eniripsa."
+  },
+  "126": {
+    "n": "Mot Stimulant",
+    "d": "Le Mot Stimulant peut augmenter les PA de plusieurs joueurs, mais blesse le lanceur."
+  },
+  "127": {
+    "n": "Mot de Prévention",
+    "d": "Le Mot de Prévention prévient des dégâts magiques et de CAC."
+  },
+  "128": {
+    "n": "Mot de Frayeur",
+    "d": "Le Mot de Frayeur repousse les ennemis."
+  },
+  "129": {
+    "n": "Mot d'Amitié",
+    "d": "Le Mot d'Amitié permet d'invoquer un Lapin Guérisseur."
+  },
+  "130": {
+    "n": "Mot Revitalisant",
+    "d": "Le Mot Revitalisant permet de soigner plusieurs personnages."
+  },
+  "131": {
+    "n": "Mot de Régénération",
+    "d": "Ce Mot permet au lanceur du sort d'avoir la faculté de se régénérer."
+  },
+  "132": {
+    "n": "Mot d'Epine",
+    "d": "Le Mot d'Epine permet à son lanceur de renvoyer des dégâts magiques ou physiques."
+  },
+  "133": {
+    "n": "Mot de Jouvence",
+    "d": "Ce sort permet de faire disparaître les envoûtements lancés sur un allié."
+  },
+  "134": {
+    "n": "Mot Vampirique",
+    "d": "Le Mot Vampirique blesse un ennemi et lui vole un peu de vie."
+  },
+  "135": {
+    "n": "Mot de Sacrifice",
+    "d": "Ce Mot permet de sacrifier une partie de ses PDV pour les transférer à quelqu'un."
+  },
+  "136": {
+    "n": "Mot d'Immobilisation",
+    "d": "Le Mot d'Immobilisation permet d'empêcher un joueur de se déplacer."
+  },
+  "137": {
+    "n": "Mot d'Envol",
+    "d": "Le Mot d'Envol permet de s'élever dans les airs un bref instant afin d'augmenter sa portée."
+  },
+  "138": {
+    "n": "Mot de Silence",
+    "d": "Le Mot de Silence réduit considérablement les PA de tous ceux qui se trouvent dans sa zone d'effet.."
+  },
+  "139": {
+    "n": "Mot d'Altruisme",
+    "d": "Soigne tous les alliés et le lanceur du sort mais interdit l'utilisation des sorts de soin de la classe Eniripsa."
+  },
+  "140": {
+    "n": "Mot de Reconstitution",
+    "d": "Le Mot de Reconstitution permet de restaurer de façon conséquente la vie d'un joueur."
+  },
+  "141": {
+    "n": "Pression",
+    "d": "La Pression inflige des dégâts de Terre avec une portée de 2 cases."
+  },
+  "142": {
+    "n": "Bond",
+    "d": "Ce sort permet de sauter."
+  },
+  "143": {
+    "n": "Intimidation",
+    "d": "Ce sort inflige des dégâts neutres et fait reculer l'ennemi."
+  },
+  "144": {
+    "n": "Compulsion",
+    "d": "La Compulsion permet d'augmenter les dégâts d'un allié."
+  },
+  "145": {
+    "n": "Epée Divine",
+    "d": "Ce sort inflige des dégâts d'Air et augmente les dégâts du lanceur."
+  },
+  "146": {
+    "n": "Epée du destin",
+    "d": "Epée du Destin attaque en croix et peut toucher plusieurs ennemis en infligeant des dégâts de Feu."
+  },
+  "147": {
+    "n": "Guide de Bravoure",
+    "d": "Le Guide de Bravoure permet d'augmenter les points de dégâts physiques du lanceur et de ses alliés."
+  },
+  "148": {
+    "n": "Amplification",
+    "d": "L'Amplification permet à son lanceur d'augmenter les dégâts qu'il inflige à ses ennemis pendant son tour."
+  },
+  "149": {
+    "n": "Mutilation",
+    "d": "Augmente les dégâts, mais fait perdre de la vie en contre-partie."
+  },
+  "150": {
+    "n": "Couper",
+    "d": "Le sort Couper permet de frapper un ennemi et de le ralentir en infligeant des dégâts de type Feu."
+  },
+  "151": {
+    "n": "Souffle",
+    "d": "Ce sort permet de repousser les alliés ou les ennemis situés autour de votre cible."
+  },
+  "152": {
+    "n": "Epée du Jugement",
+    "d": "L'Epée du Jugement inflige des dégâts de type Air."
+  },
+  "153": {
+    "n": "Puissance",
+    "d": "La Puissance permet d'augmenter (en pourcentage) les dégâts infligés par le lanceur ou un allié."
+  },
+  "154": {
+    "n": "Epée Destructrice",
+    "d": "L'Épée Destructrice inflige des dégâts de Feu à un ennemi."
+  },
+  "155": {
+    "n": "Vitalité",
+    "d": "Cet envoûtement permet d'augmenter la vitalité de son lanceur."
+  },
+  "156": {
+    "n": "Tempête de Puissance",
+    "d": "La Tempête de Puissance inflige des dégâts de Feu."
+  },
+  "157": {
+    "n": "Epée Céleste",
+    "d": "L'Épée Céleste inflige des dégâts d'Air en lançant des éclairs sur tous les joueurs se trouvant dans sa zone d'effet."
+  },
+  "158": {
+    "n": "Concentration",
+    "d": "Concentration permet de faire des dégâts de Terre pour peu de PA."
+  },
+  "159": {
+    "n": "Colère de Iop",
+    "d": "Inflige des dommages d'élément terre et augmente les dommages du sort au quatrième tour après avoir été lancé."
+  },
+  "160": {
+    "n": "Epée de Iop",
+    "d": "L'Épée de Iop permet d'infliger énormément de dégâts de Terre à plusieurs ennemis."
+  },
+  "161": {
+    "n": "Flèche Magique",
+    "d": "Occasionne des dommages Feu et vole la portée de la cible."
+  },
+  "162": {
+    "n": "Tir Critique",
+    "d": "Augmente la probabilité de faire un coup critique."
+  },
+  "163": {
+    "n": "Flèche Glacée",
+    "d": "Occasionne des dommages Feu et retire des PA."
+  },
+  "164": {
+    "n": "Flèche Empoisonnée",
+    "d": "Occasionne des dommages Neutre sur plusieurs tours."
+  },
+  "165": {
+    "n": "Flèche Enflammée",
+    "d": "Occasionne des dommages Feu et pousse les cibles présentes dans la zone d'effet du sort."
+  },
+  "166": {
+    "n": "Tir Puissant",
+    "d": "Augmente les dommages des sorts et des armes."
+  },
+  "167": {
+    "n": "Flèche d'Expiation",
+    "d": "Occasionne des dommages Eau, augmente les dommages du sort tous les 3 tours et empêche la cible d'utiliser des sorts de déplacement."
+  },
+  "168": {
+    "n": "Oeil de Taupe",
+    "d": "Réduit la portée des personnages ciblés et vole de la vie dans l'élément Eau."
+  },
+  "169": {
+    "n": "Flèche de Recul",
+    "d": "Occasionne des dommages Air et pousse la cible."
+  },
+  "170": {
+    "n": "Flèche d'Immobilisation",
+    "d": "Occasionne des dommages Eau et vole des PM à la cible."
+  },
+  "171": {
+    "n": "Flèche Punitive",
+    "d": "Occasionne des dommages Terre et augmente les dommages du sort tous les 2 tours."
+  },
+  "172": {
+    "n": "Tir Eloigné",
+    "d": "Augmente la portée des cibles présentes dans la zone d'effet."
+  },
+  "173": {
+    "n": "Flèche Harcelante",
+    "d": "Occasionne des dommages Air sans ligne de vue."
+  },
+  "174": {
+    "n": "Flèche Cinglante",
+    "d": "Occasionne des dommages Terre et retire des PM sans possibilité d'esquive."
+  },
+  "175": {
+    "n": "Flèche Destructrice",
+    "d": "Occasionne des dommages Terre et réduit les dommages occasionnés par la cible."
+  },
+  "176": {
+    "n": "Flèche Persécutrice",
+    "d": "Occasionne des dommages Air et Feu."
+  },
+  "177": {
+    "n": "Flèche Ralentissante",
+    "d": "Occasionne des dommages Eau et retire des PA dans toute la zone d'effet."
+  },
+  "178": {
+    "n": "Flèche Absorbante",
+    "d": "Vole de la vie dans l'élément Air."
+  },
+  "179": {
+    "n": "Flèche Explosive",
+    "d": "Occasionne des dommages Feu en zone."
+  },
+  "180": {
+    "n": "Maîtrise de l'Arc",
+    "d": "Augmente les dommages."
+  },
+  "181": {
+    "n": "Tremblement",
+    "d": "Le Tremblement inflige des dégâts à tous les joueurs de la zone."
+  },
+  "182": {
+    "n": "La Folle",
+    "d": "La Folle est une poupée créée avec des ossements de Chafer. Elle se fera un plaisir d'énerver les ennemis du lanceur."
+  },
+  "183": {
+    "n": "Ronce",
+    "d": "La Ronce inflige des dégâts physiques à un ennemi."
+  },
+  "184": {
+    "n": "Feu de Brousse",
+    "d": "Ce sort permet d'infliger des dégâts de type Feu et Eau."
+  },
+  "185": {
+    "n": "Herbe Folle",
+    "d": "L'Herbe Folle inflige des dégâts et fait perdre des points de mouvement."
+  },
+  "186": {
+    "n": "Arbre",
+    "d": "Ce sort permet de faire grandir un arbre à vos pieds. L'arbre bloque le passage et gêne la ligne de vue."
+  },
+  "187": {
+    "n": "La Surpuissante",
+    "d": "La Poupée Surpuissante peut invoquer de petites poupées fourbes qui réduisent le nombre de points de mouvement des ennemis et leurs résistances aux pertes de points de mouvement."
+  },
+  "188": {
+    "n": "Ronce Insolente",
+    "d": "La Ronce Insolente s'enfonce dans le sol pour ressortir et retirer tous les envoûtements d'un joueur."
+  },
+  "189": {
+    "n": "La Sacrifiée",
+    "d": "Cette poupée se jette sur l'ennemi en explosant."
+  },
+  "190": {
+    "n": "La Gonflable",
+    "d": "La Poupée Gonflable augmente les points de mouvement et peut guérir un allié ou le  lanceur."
+  },
+  "191": {
+    "n": "Ronces Multiples",
+    "d": "La Ronce Multiple peut toucher plusieurs joueurs."
+  },
+  "192": {
+    "n": "Ronce Apaisante",
+    "d": "La Ronce Apaisante permet de ralentir un ennemi mais lui rend des PDV."
+  },
+  "193": {
+    "n": "La Bloqueuse",
+    "d": "La Bloqueuse, comme son nom l'indique, gêne les adversaires en se plaçant sur leur trajectoire."
+  },
+  "194": {
+    "n": "Ronces Agressives",
+    "d": "Les Ronces Agressives infligent d'énormes dégâts, mais ne peuvent pas être utilisées à chaque tour."
+  },
+  "195": {
+    "n": "Larme",
+    "d": "Ce sort permet d'infliger des dégâts de type Eau."
+  },
+  "196": {
+    "n": "Vent Empoisonné",
+    "d": "Le Vent Empoisonné empoisonne tous les joueurs présents dans la zone, amis comme ennemis, et leur retire de l'intelligence pendant plusieurs tours."
+  },
+  "197": {
+    "n": "Puissance Sylvestre",
+    "d": "Ce sort permet au lanceur de se transformer en arbre afin d'être protégé quelques tours."
+  },
+  "198": {
+    "n": "Sacrifice Poupesque",
+    "d": "Ce sort permet de regagner de la vie en punissant une invocation."
+  },
+  "199": {
+    "n": "Connaissance des Poupées",
+    "d": "La Connaissance des Poupées permet d'invoquer plusieurs poupées."
+  },
+  "200": {
+    "n": "Poison Paralysant",
+    "d": "Le Poison Paralysant inflige des dégâts de Feu lorsque des PA sont utilisés."
+  },
+  "201": {
+    "n": "Béco du Tofu",
+    "d": "Invocation Tofu, Tofu, Tofu démoniaque"
+  },
+  "202": {
+    "n": "Morsure du Bouftou",
+    "d": "Bouftou"
+  },
+  "203": {
+    "n": "Moquerie",
+    "d": "Prespic"
+  },
+  "204": {
+    "n": "Embrochement",
+    "d": "Sanglier"
+  },
+  "205": {
+    "n": "Eclair en Série",
+    "d": "Bwork mage"
+  },
+  "206": {
+    "n": "Ecrasement",
+    "d": "Ce sort inflige des dégâts type Terre et peut retirer des PA à la cible."
+  },
+  "207": {
+    "n": "Petit coup du Chafer",
+    "d": "INVOCATION"
+  },
+  "208": {
+    "n": "Tornade",
+    "d": "(air)"
+  },
+  "209": {
+    "n": "Chatataque",
+    "d": "Invocation chaton"
+  },
+  "210": {
+    "n": "Lapino Heal",
+    "d": "Invocation Lapinou"
+  },
+  "211": {
+    "n": "Chosse",
+    "d": ""
+  },
+  "212": {
+    "n": "Larvement",
+    "d": "Larve Bleue, verte et orange"
+  },
+  "213": {
+    "n": "Frappe",
+    "d": ""
+  },
+  "214": {
+    "n": "Invocation d'Arakne",
+    "d": "Ce sort permet d'invoquer une Arakne."
+  },
+  "215": {
+    "n": "Retour de flamme",
+    "d": "Larve orange"
+  },
+  "216": {
+    "n": "Carapace",
+    "d": ""
+  },
+  "217": {
+    "n": "Gel Protecteur",
+    "d": ""
+  },
+  "218": {
+    "n": "Invocation de Gelée Bleue",
+    "d": "Gelée royale bleue"
+  },
+  "219": {
+    "n": "Empoisonnement",
+    "d": "Champ Champ"
+  },
+  "220": {
+    "n": "Effleurement",
+    "d": ""
+  },
+  "221": {
+    "n": "Pince",
+    "d": "(terre)"
+  },
+  "222": {
+    "n": "Eventration",
+    "d": "Mulou"
+  },
+  "223": {
+    "n": "Météorite",
+    "d": "Kwak de flamme"
+  },
+  "224": {
+    "n": "Invocation de Tofu Maléfique",
+    "d": "Bwork Mage"
+  },
+  "225": {
+    "n": "Invocation de Gelée Menthe",
+    "d": "Gelée royale Menthe"
+  },
+  "226": {
+    "n": "Invocation de Gelée Fraise",
+    "d": "Gelée royale Fraise"
+  },
+  "227": {
+    "n": "Protection Magique",
+    "d": "Protège de la perte de PV et de PM"
+  },
+  "228": {
+    "n": "Etourderie Mortelle",
+    "d": ""
+  },
+  "229": {
+    "n": "Croutage",
+    "d": ""
+  },
+  "230": {
+    "n": "Feu Ardent",
+    "d": "(feu)"
+  },
+  "231": {
+    "n": "Morsure Sylvestre",
+    "d": "Attaque de l'Abraknyde Ancestral"
+  },
+  "232": {
+    "n": "Agacement",
+    "d": ""
+  },
+  "233": {
+    "n": "Sacrifice",
+    "d": ""
+  },
+  "234": {
+    "n": "Coup de Pioche",
+    "d": ""
+  },
+  "235": {
+    "n": "Jet de pierre",
+    "d": "ralenti l'adversaire"
+  },
+  "236": {
+    "n": "Vol de Vie",
+    "d": "(Eau)"
+  },
+  "237": {
+    "n": "Teubatak",
+    "d": ""
+  },
+  "238": {
+    "n": "Persécution",
+    "d": ""
+  },
+  "239": {
+    "n": "Lancer de Hachette",
+    "d": ""
+  },
+  "240": {
+    "n": "Branche Paralysante",
+    "d": "Attaque de l'Abraknyde Ancestral"
+  },
+  "241": {
+    "n": "Reconstitution",
+    "d": "Ce sort permet de restaurer les points de vie du lanceur."
+  },
+  "242": {
+    "n": "Rage",
+    "d": "Sanglier, Bwork"
+  },
+  "243": {
+    "n": "Disruption",
+    "d": "Rib"
+  },
+  "244": {
+    "n": "Immobilisation",
+    "d": ""
+  },
+  "245": {
+    "n": "Lancer de tofu",
+    "d": ""
+  },
+  "246": {
+    "n": "Graines Magiques",
+    "d": ""
+  },
+  "247": {
+    "n": "Morsure",
+    "d": "Occasionne des dommages Terre."
+  },
+  "248": {
+    "n": "Force des Ames Putrides",
+    "d": ""
+  },
+  "249": {
+    "n": "Bavouille",
+    "d": ""
+  },
+  "250": {
+    "n": "Crachouille",
+    "d": ""
+  },
+  "251": {
+    "n": "Abolissement",
+    "d": ""
+  },
+  "252": {
+    "n": "Guérison Bouftou",
+    "d": ""
+  },
+  "253": {
+    "n": "Fureur du Bouftou",
+    "d": ""
+  },
+  "254": {
+    "n": "Cri du Mulou",
+    "d": ""
+  },
+  "255": {
+    "n": "Hypnose",
+    "d": ""
+  },
+  "256": {
+    "n": "Lancer de Pain",
+    "d": ""
+  },
+  "257": {
+    "n": "Confusion Visuelle",
+    "d": ""
+  },
+  "258": {
+    "n": "Frappe Gerbante",
+    "d": ""
+  },
+  "259": {
+    "n": "Mordillement",
+    "d": ""
+  },
+  "260": {
+    "n": "Invocation d'Araknelle",
+    "d": "Invoque une araknelle (quete : Aria Knofob)"
+  },
+  "261": {
+    "n": "Motivation Naturelle",
+    "d": ""
+  },
+  "262": {
+    "n": "Appel Dragernel",
+    "d": "( 1-feu / 2-eau / 3-terre / 4-air / 5-neutre)"
+  },
+  "263": {
+    "n": "Souffle Du Dragoeuf",
+    "d": "( 1-feu / 2-eau / 3-terre / 4-air / 5-neutre)"
+  },
+  "264": {
+    "n": "Coquillement",
+    "d": ""
+  },
+  "265": {
+    "n": "Coque Choc",
+    "d": ""
+  },
+  "266": {
+    "n": "Invocation de Fourbe",
+    "d": "Ce sort permet d'invoquer de petites poupées fourbes."
+  },
+  "267": {
+    "n": "Fraise Os",
+    "d": ""
+  },
+  "268": {
+    "n": "Coup du Chafer",
+    "d": ""
+  },
+  "269": {
+    "n": "Guérison Dragodinde",
+    "d": ""
+  },
+  "270": {
+    "n": "Coup de Tête",
+    "d": ""
+  },
+  "271": {
+    "n": "Vol de Pièces",
+    "d": "Coffre"
+  },
+  "272": {
+    "n": "Javeline",
+    "d": "Gobelin"
+  },
+  "273": {
+    "n": "Dindofeu",
+    "d": ""
+  },
+  "274": {
+    "n": "Grokokoko",
+    "d": ""
+  },
+  "275": {
+    "n": "Tikokoko",
+    "d": ""
+  },
+  "276": {
+    "n": "Enfeuillage",
+    "d": ""
+  },
+  "277": {
+    "n": "Kokopok",
+    "d": ""
+  },
+  "278": {
+    "n": "Fleche Kanniboul",
+    "d": ""
+  },
+  "279": {
+    "n": "Fleche Kanniboul explosive",
+    "d": ""
+  },
+  "280": {
+    "n": "Fronde Kanniboul",
+    "d": ""
+  },
+  "281": {
+    "n": "Javelot",
+    "d": ""
+  },
+  "282": {
+    "n": "Flechette Empoisonnée",
+    "d": ""
+  },
+  "283": {
+    "n": "Flechette OPE",
+    "d": ""
+  },
+  "284": {
+    "n": "Accélération Poupesque",
+    "d": ""
+  },
+  "285": {
+    "n": "Kikol",
+    "d": ""
+  },
+  "286": {
+    "n": "Encollement",
+    "d": ""
+  },
+  "287": {
+    "n": "Engluement",
+    "d": ""
+  },
+  "288": {
+    "n": "Aspiration",
+    "d": ""
+  },
+  "289": {
+    "n": "Gobage",
+    "d": ""
+  },
+  "290": {
+    "n": "Judkoko",
+    "d": ""
+  },
+  "291": {
+    "n": "Javelot",
+    "d": ""
+  },
+  "292": {
+    "n": "Frappe vitalisante",
+    "d": ""
+  },
+  "293": {
+    "n": "Marteau de Moon",
+    "d": ""
+  },
+  "294": {
+    "n": "Affaiblissement rouge",
+    "d": ""
+  },
+  "295": {
+    "n": "Affaiblissement bleu",
+    "d": ""
+  },
+  "296": {
+    "n": "Affaiblissement vert",
+    "d": ""
+  },
+  "297": {
+    "n": "Affaiblissement jaune",
+    "d": ""
+  },
+  "298": {
+    "n": "Totem rouge",
+    "d": ""
+  },
+  "299": {
+    "n": "Totem bleu",
+    "d": ""
+  },
+  "300": {
+    "n": "Totem vert",
+    "d": ""
+  },
+  "301": {
+    "n": "Totem jaune",
+    "d": ""
+  },
+  "302": {
+    "n": "Invocation du Darkli Moon",
+    "d": ""
+  },
+  "303": {
+    "n": "Bombombe",
+    "d": ""
+  },
+  "304": {
+    "n": "Boulet Furtif",
+    "d": ""
+  },
+  "305": {
+    "n": "Fureur",
+    "d": ""
+  },
+  "306": {
+    "n": "Invocation de Milimulou",
+    "d": ""
+  },
+  "307": {
+    "n": "Vindication Troollesque",
+    "d": ""
+  },
+  "308": {
+    "n": "Absorption Troollesque",
+    "d": ""
+  },
+  "309": {
+    "n": "Camouflage",
+    "d": ""
+  },
+  "310": {
+    "n": "Baraka",
+    "d": ""
+  },
+  "311": {
+    "n": "Scarinvoc",
+    "d": "( 1-feu / 2-eau / 3-terre / 4-air / 5-neutre)"
+  },
+  "312": {
+    "n": "Flêche Trouveuse",
+    "d": ""
+  },
+  "313": {
+    "n": "Fronde",
+    "d": ""
+  },
+  "314": {
+    "n": "Appel de Papa",
+    "d": ""
+  },
+  "315": {
+    "n": "Aiguillon",
+    "d": ""
+  },
+  "316": {
+    "n": "Invocation d'Arakne",
+    "d": ""
+  },
+  "317": {
+    "n": "Bwakikui",
+    "d": "Sort en ligne ( 1-feu / 2-eau / 3-terre / 4-air / 5-neutre)"
+  },
+  "318": {
+    "n": "Appel de la Fôret",
+    "d": ""
+  },
+  "319": {
+    "n": "Oniside",
+    "d": "Oni"
+  },
+  "320": {
+    "n": "Incurable",
+    "d": "Oni"
+  },
+  "321": {
+    "n": "Gelpikes",
+    "d": ""
+  },
+  "322": {
+    "n": "Menthe Os",
+    "d": "Gelée Menthe, Gelée royale Menthe"
+  },
+  "323": {
+    "n": "Gerbe",
+    "d": "le chouque"
+  },
+  "324": {
+    "n": "Petit Wabehameha",
+    "d": "Black Tiwabbit"
+  },
+  "325": {
+    "n": "Piqûre",
+    "d": "Moskito"
+  },
+  "326": {
+    "n": "Wabehameha",
+    "d": "Black Wabbit"
+  },
+  "327": {
+    "n": "Vent de panique",
+    "d": "Tiwabbit Kiafin"
+  },
+  "328": {
+    "n": "Invocation de Tiwabbit",
+    "d": "Wo Wabbit"
+  },
+  "329": {
+    "n": "Invocation de Black Tiwabbit",
+    "d": "Wo Wabbit"
+  },
+  "330": {
+    "n": "Ventroboom",
+    "d": "Wo Wabbit"
+  },
+  "331": {
+    "n": "Invocation du Tiwabbit Kiafin",
+    "d": "Wo wabbit"
+  },
+  "332": {
+    "n": "Cawotte Explosive",
+    "d": "Grand Pa Wabbit"
+  },
+  "333": {
+    "n": "Cawotte Vitaminée",
+    "d": "Grand Pa Wabbit"
+  },
+  "334": {
+    "n": "Cawotte Paralysante",
+    "d": "Grand Pa Wabbit"
+  },
+  "335": {
+    "n": "Wassue rotative",
+    "d": "Wobot"
+  },
+  "336": {
+    "n": "Wavelot",
+    "d": "Wobot"
+  },
+  "337": {
+    "n": "WaWabehameha",
+    "d": "Wa Wabbit"
+  },
+  "338": {
+    "n": "Abrutissement",
+    "d": "Wa Wabbit"
+  },
+  "339": {
+    "n": "Malédiction",
+    "d": "Wabbit Squelette"
+  },
+  "340": {
+    "n": "Entêtement",
+    "d": "Wabbit Squelette"
+  },
+  "341": {
+    "n": "Rafale de terre",
+    "d": "Wabbit GM"
+  },
+  "342": {
+    "n": "Invocation du Nodkoko",
+    "d": ""
+  },
+  "343": {
+    "n": "Scaraforce",
+    "d": "Ecrasement des sacrafeuilles (terre)"
+  },
+  "344": {
+    "n": "Elemental Spear",
+    "d": "Rapprochement des flameches ( 1-feu / 2-eau / 3-terre / 4-air / 5-neutre)"
+  },
+  "345": {
+    "n": "Elemental Dispersion",
+    "d": "Boost allié des scarafeuilles \\n( 1-feu / 2-eau / 3-terre / 4-air / 5-neutre)"
+  },
+  "346": {
+    "n": "Kwakoukas",
+    "d": "Sort en ligne ( 1-feu / 2-eau / 3-terre / 4-air / 5-neutre)"
+  },
+  "347": {
+    "n": "Wakpot",
+    "d": "Sort défensif ( 1-feu / 2-eau / 3-terre / 4-air / 5-neutre)"
+  },
+  "348": {
+    "n": "Bomball",
+    "d": "Explosion des flameches ( 1-feu / 2-eau / 3-terre / 4-air / 5-neutre)"
+  },
+  "349": {
+    "n": "Spirit Element",
+    "d": "Cac des scaraforces ( 1-feu / 2-eau / 3-terre / 4-air / 5-neutre)"
+  },
+  "350": {
+    "n": "Flamiche",
+    "d": "La Flamiche inflige de faibles dégâts de Feu mais bénéficie d'une grande portée pour un faible coût."
+  },
+  "351": {
+    "n": "Sort enflammé",
+    "d": "Sort de Feu pour glyphe enflammé !"
+  },
+  "362": {
+    "n": "Guérison",
+    "d": "Permet de soigner un allié."
+  },
+  "363": {
+    "n": "Conversion",
+    "d": "Permet de convertir des PA en PM."
+  },
+  "364": {
+    "n": "Boomerang perfide",
+    "d": "Lance un Boomerang magique qui cause des dégâts dans un élément de façon aléatoire."
+  },
+  "365": {
+    "n": "Courroux De Jiva",
+    "d": ""
+  },
+  "366": {
+    "n": "Marteau de Moon",
+    "d": "Ce marteau élémentaire, ayant appartenu à Moon, inflige de serieux dégâts et provoque une perte de portée temporaire."
+  },
+  "367": {
+    "n": "Cawotte",
+    "d": "Ce sowt pewmet de plantew une cawotte wégénéwatwice dans le sol."
+  },
+  "368": {
+    "n": "Libération",
+    "d": "Ce sort permet au lanceur de repousser les joueurs qui l'encerclent."
+  },
+  "369": {
+    "n": "Foudroiement",
+    "d": "Le Foudroiement inflige des dégâts de feu en zone, touchant amis comme ennemis."
+  },
+  "370": {
+    "n": "Invocation d'Arakne",
+    "d": "Ce sort permet d'invoquer une Arakne."
+  },
+  "373": {
+    "n": "Invocation de Chaferfu",
+    "d": "Ce sort permet d'invoquer le Chaferfu, mais attention, il ne vous obéira pas pour autant."
+  },
+  "390": {
+    "n": "Maîtrise des Bâtons",
+    "d": "Ce sort augmente les dégâts que vous infligez en frappant avec un bâton."
+  },
+  "391": {
+    "n": "Maîtrise des Epées",
+    "d": "Ce sort augmente les dégâts que vous infligez en frappant avec une épée."
+  },
+  "392": {
+    "n": "Maîtrise des Arcs",
+    "d": "Ce sort augmente les dégâts que vous infligez en frappant avec un arc."
+  },
+  "393": {
+    "n": "Maîtrise des Marteaux",
+    "d": "Ce sort augmente les dégâts que vous infligez en frappant avec un marteau."
+  },
+  "394": {
+    "n": "Maîtrise des Baguettes",
+    "d": "Ce sort augmente les dégâts que vous infligez en frappant avec une baguette."
+  },
+  "395": {
+    "n": "Maîtrise des Dagues",
+    "d": "Ce sort augmente les dégâts que vous infligez en frappant avec des dagues."
+  },
+  "396": {
+    "n": "Maîtrise des Pelles",
+    "d": "Ce sort augmente les dégâts que vous infligez en frappant avec une pelle."
+  },
+  "397": {
+    "n": "Maîtrise des Haches",
+    "d": "Ce sort augmente les dégâts que vous infligez en frappant avec une hache."
+  },
+  "410": {
+    "n": "Brokle",
+    "d": "Tous les jets de dés effectués sur la cible du sort sont maximisés."
+  },
+  "411": {
+    "n": "Tuerie",
+    "d": "Ce sort permet de tuer tout le monde... sauf vous. (debug)"
+  },
+  "412": {
+    "n": "Félintion",
+    "d": "Vole des points de vie et repousse les ennemis. Soigne et repousse les alliés."
+  },
+  "413": {
+    "n": "Capture d'âmes",
+    "d": "Active la capture des âmes des créatures vaincues à la fin du combat et augmente la probabilité de les capturer."
+  },
+  "414": {
+    "n": "Apprivoisement de monture",
+    "d": "Permet d'apprivoiser une monture pendant quelques instants, afin de pouvoir la capturer, et d'augmenter l'expérience gagnée en combat par votre monture."
+  },
+  "415": {
+    "n": "Doom",
+    "d": "Provoque un arrêt cardiaque immédiat. Si la cible n'a pas de coeur, provoque un arrêt cérebral. Si la cible est un Iop, défie toute logique et le tue quand même."
+  },
+  "416": {
+    "n": "Poisse",
+    "d": "Tous les jets de dés effectués par la cible sont minimisés."
+  },
+  "418": {
+    "n": "Flèche de dispersion",
+    "d": "Repousse les alliés ou les ennemis sur plusieurs cases, même s'ils sont bloqués par des alliés ou des ennemis."
+  },
+  "420": {
+    "n": "Laisse Spirituelle",
+    "d": "Ramène à la vie le dernier personnage allié mort. Si l'invocateur meurt, le personnage ressuscité meurt également."
+  },
+  "421": {
+    "n": "Douleur partagée",
+    "d": "Augmente les dommages que peuvent occasionner les alliés à chaque fois qu'ils reçoivent des dommages."
+  },
+  "422": {
+    "n": "Mise en garde",
+    "d": "Augmente l'armure d'un allié mais l'empêche d'utiliser une arme."
+  },
+  "423": {
+    "n": "Ivresse",
+    "d": "Invoque un tonneau qui attire les ennemis et s'il est porté, soigne autour du porteur."
+  },
+  "424": {
+    "n": "Raulebaque",
+    "d": "Replace tous les alliés et les adversaires à leurs positions de début de combat."
+  },
+  "425": {
+    "n": "Retraite anticipée",
+    "d": "Interdit l'utilisation de tous les sorts de déplacement et empêche d'utiliser les points de mouvement."
+  },
+  "426": {
+    "n": "Arbre de vie",
+    "d": "Invoque un arbre qui permet aux alliés et aux ennemis de gagner des points de vie lorsqu'ils attaquent l'arbre."
+  },
+  "427": {
+    "n": "Mot Lotof",
+    "d": "Au début de son tour, la cible du sort occasionne des dégâts autour d'elle en fonction du nombre de points de vie qu'il lui reste."
+  },
+  "431": {
+    "n": "Châtiment Forcé",
+    "d": "Augmente la force du Sacrieur lorsqu'il perd des points de vie."
+  },
+  "432": {
+    "n": "Pied du Sacrieur",
+    "d": "Ce sort d'attaque au corps à corps inflige des dégâts de type Terre."
+  },
+  "433": {
+    "n": "Châtiment Osé",
+    "d": "Augmente la chance du Sacrieur lorsqu'il perd des points de vie."
+  },
+  "434": {
+    "n": "Attirance",
+    "d": "Attire une cible vers le Sacrieur."
+  },
+  "435": {
+    "n": "Transfert de Vie",
+    "d": "Ce sort permet au lanceur de transférer une partie de ses points de vie à ses alliés."
+  },
+  "436": {
+    "n": "Assaut",
+    "d": "Assaut permet de frapper un ennemi à distance et de lui infliger des dégâts de type Air."
+  },
+  "437": {
+    "n": "Châtiment Agile",
+    "d": "Augmente l'agilité du Sacrieur lorsqu'il perd des points de vie."
+  },
+  "438": {
+    "n": "Transposition",
+    "d": "Permet d'échanger sa position avec celle d'un allié."
+  },
+  "439": {
+    "n": "Dissolution",
+    "d": "Vole des points de vie dans l'élément Eau autour du Sacrieur."
+  },
+  "440": {
+    "n": "Sacrifice",
+    "d": "Ce sort permet de choisir un allié et de prendre les coups à sa place."
+  },
+  "441": {
+    "n": "Châtiment Vitalesque",
+    "d": "Augmente la vitalité du Sacrieur lorsqu'il perd des points de vie."
+  },
+  "442": {
+    "n": "Absorption",
+    "d": "Ce sort permet à son lanceur de voler la vie d'un ennemi en infligeant des dégâts de Feu."
+  },
+  "443": {
+    "n": "Châtiment Spirituel",
+    "d": "Augmente l'intelligence du Sacrieur lorsqu'il perd des points de vie."
+  },
+  "444": {
+    "n": "Dérobade",
+    "d": "Permet d'esquiver une attaque lancée au corps à corps."
+  },
+  "445": {
+    "n": "Coopération",
+    "d": "Ce sort permet au lanceur d'échanger sa position avec celle d'un ennemi."
+  },
+  "446": {
+    "n": "Punition",
+    "d": "Occasionne des dommages neutres. Plus la vie du Sacrieur est proche de la moitié du total de ses points de vie, plus les dommages occasionnés sont importants."
+  },
+  "447": {
+    "n": "Furie",
+    "d": "Ce sort permet au lanceur d'augmenter ses dommages."
+  },
+  "448": {
+    "n": "Epée volante",
+    "d": "Le sacrieur invoque une épée magique qui foncera droit vers l'ennemi afin de l'embrocher"
+  },
+  "449": {
+    "n": "Détour",
+    "d": "Permet d'échanger sa position avec un allié ou un ennemi."
+  },
+  "450": {
+    "n": "Folie sanguinaire",
+    "d": "Le sacrieur absorbe le sang d'un de ses alliés afin de retrouver des forces. Mais il peut aller jusqu'à le tuer"
+  },
+  "451": {
+    "n": "Armure Aqueuse",
+    "d": "Cette armure prévient des dégâts d'Eau."
+  },
+  "452": {
+    "n": "Armure Incandescente",
+    "d": "Cette armure prévient des dégâts de Feu."
+  },
+  "453": {
+    "n": "Armure Terrestre",
+    "d": "Cette armure prévient des dégâts neutres et de terre."
+  },
+  "454": {
+    "n": "Armure Venteuse",
+    "d": "Cette armure prévient des dégâts d'Air."
+  },
+  "455": {
+    "n": "Flamme",
+    "d": "Ce sort inflige des dégâts de type Feu."
+  },
+  "456": {
+    "n": "Cyclone",
+    "d": "Ce sort inflige des dégâts de type Air."
+  },
+  "457": {
+    "n": "Vague",
+    "d": "Ce sort inflige des dégâts de type Eau."
+  },
+  "458": {
+    "n": "Rocher",
+    "d": "Ce sort inflige des dégâts de types Terre."
+  },
+  "459": {
+    "n": "Mot soignant",
+    "d": "Le Mot Soignant permet de soigner un allié."
+  },
+  "460": {
+    "n": "Désenvoutement",
+    "d": "Ce sort permet d'enlever les envoûtements d'un ennemi."
+  },
+  "461": {
+    "n": "Compulsion de masse",
+    "d": "Ce sort augmente les dégâts du percepteur et de ses alliés."
+  },
+  "462": {
+    "n": "Déstabilisation",
+    "d": "Ce sort augmente la probabilité que les ennemis fassent des echecs critiques."
+  },
+  "463": {
+    "n": "Invocation de Tronknyde",
+    "d": ""
+  },
+  "464": {
+    "n": "Crocobur",
+    "d": "Ce sort permet de lancer une attaque à l'aide de la terrifiante Crocobur."
+  },
+  "465": {
+    "n": "Invocation de Crocodaille",
+    "d": "Ce sort permet d'invoquer un reptile, fidèle fils et serviteur de Crocoburio."
+  },
+  "466": {
+    "n": "Invocation d'Arakne Majeure",
+    "d": ""
+  },
+  "467": {
+    "n": "Invocation de Branches",
+    "d": ""
+  },
+  "468": {
+    "n": "Flêche d'huile",
+    "d": ""
+  },
+  "469": {
+    "n": "Flêche de feu",
+    "d": ""
+  },
+  "470": {
+    "n": "Frappe Sismique",
+    "d": ""
+  },
+  "471": {
+    "n": "Biblopition",
+    "d": "Invocation de biblop"
+  },
+  "472": {
+    "n": "Cache Biblop",
+    "d": ""
+  },
+  "473": {
+    "n": "Bibloperie",
+    "d": ""
+  },
+  "474": {
+    "n": "Biblopiment",
+    "d": ""
+  },
+  "475": {
+    "n": "Blopition",
+    "d": "Invocation de blop"
+  },
+  "476": {
+    "n": "Blyphe",
+    "d": "Glyphe de blop"
+  },
+  "477": {
+    "n": "Dragofeu",
+    "d": ""
+  },
+  "478": {
+    "n": "Cri-cri d'Amour",
+    "d": ""
+  },
+  "479": {
+    "n": "Cri Terrifiant",
+    "d": ""
+  },
+  "480": {
+    "n": "Graine Vitalisante",
+    "d": ""
+  },
+  "481": {
+    "n": "Libération",
+    "d": "Ce sort permet au lanceur de repousser les joueurs qui l'encerclent."
+  },
+  "482": {
+    "n": "Abraknassion",
+    "d": "Ce sort inflige des dégâts de Terre avec une portée de 2 cases."
+  },
+  "483": {
+    "n": "Embranchement du Chêne Mou",
+    "d": ""
+  },
+  "484": {
+    "n": "Tornade de Branches",
+    "d": ""
+  },
+  "485": {
+    "n": "Abrabranche",
+    "d": ""
+  },
+  "486": {
+    "n": "Découpage",
+    "d": "invoc sacri"
+  },
+  "487": {
+    "n": "Guigne",
+    "d": ""
+  },
+  "488": {
+    "n": "Réparation",
+    "d": ""
+  },
+  "489": {
+    "n": "Ratiboisement",
+    "d": ""
+  },
+  "490": {
+    "n": "Reconstitution Crocoburiale",
+    "d": "Ce sort permet au Crocoburio de restaurer ses points de vie."
+  },
+  "491": {
+    "n": "Robo-Initialisation",
+    "d": ""
+  },
+  "492": {
+    "n": "Robo-Bump",
+    "d": ""
+  },
+  "493": {
+    "n": "Mega-Supra-Giga-houla-hoop",
+    "d": ""
+  },
+  "494": {
+    "n": "Robo-houla-hoop",
+    "d": ""
+  },
+  "495": {
+    "n": "Prospection",
+    "d": ""
+  },
+  "496": {
+    "n": "Elagage de tête",
+    "d": ""
+  },
+  "497": {
+    "n": "Calin",
+    "d": ""
+  },
+  "498": {
+    "n": "Malaxage",
+    "d": ""
+  },
+  "499": {
+    "n": "Appel de la Mama",
+    "d": ""
+  },
+  "500": {
+    "n": "Elagage de cou",
+    "d": ""
+  },
+  "501": {
+    "n": "Invocation de Kolérat",
+    "d": ""
+  },
+  "502": {
+    "n": "Emmental",
+    "d": ""
+  },
+  "503": {
+    "n": "Roblochon ancestral",
+    "d": ""
+  },
+  "504": {
+    "n": "Instinct primaire",
+    "d": ""
+  },
+  "505": {
+    "n": "Rage Primaire",
+    "d": ""
+  },
+  "506": {
+    "n": "ShinLarvement",
+    "d": ""
+  },
+  "507": {
+    "n": "ShinLarvoc I",
+    "d": ""
+  },
+  "508": {
+    "n": "ShinLarvoc II",
+    "d": ""
+  },
+  "509": {
+    "n": "ShinLarvoc III",
+    "d": ""
+  },
+  "510": {
+    "n": "ShinLarberation",
+    "d": ""
+  },
+  "511": {
+    "n": "Peau de Granite",
+    "d": "sort du Méga Craqueleur"
+  },
+  "512": {
+    "n": "Pierre étourdissante",
+    "d": "Sort du  Méga Craqueleur"
+  },
+  "513": {
+    "n": "Peau de Silex",
+    "d": "Sort du Méga Craqueleur"
+  },
+  "514": {
+    "n": "Pierre de stimulation",
+    "d": "Sort du Méga Craqueleur"
+  },
+  "515": {
+    "n": "Coopération Crocoburiale",
+    "d": "Ce sort permet au Crocoburion d'échanger sa position avec l'une de ses créatures."
+  },
+  "516": {
+    "n": "Furie Crocoburiale",
+    "d": "Ce sort permet au Crocoburio de reprendre des points de vie en s'attaquant à ses alliés."
+  },
+  "517": {
+    "n": "Petit coup de pioche",
+    "d": "Sort de Radlu Minite le Mineur Sombre qui est totalement bourré."
+  },
+  "518": {
+    "n": "Ecurouille",
+    "d": "Sort de l'ecureuil mesquin"
+  },
+  "519": {
+    "n": "Attaque Naturelle",
+    "d": "Attaque d'un monstre Féca pour une quête de noob"
+  },
+  "520": {
+    "n": "Ruse pourpre",
+    "d": "sort de roublard bas level"
+  },
+  "521": {
+    "n": "Ruse du Kitsoune",
+    "d": "Le Kitsoune est rusé, et vous le fait savoir... Soyez attentif ! (bonus aléatoire sur tous les alliés pour deux tours)"
+  },
+  "522": {
+    "n": "Martèlement",
+    "d": ""
+  },
+  "523": {
+    "n": "Solicitude élémentale",
+    "d": "( 1-feu / 2-eau / 3-terre / 4-air / 5-neutre)"
+  },
+  "524": {
+    "n": "Communion Elémentale",
+    "d": ""
+  },
+  "525": {
+    "n": "Illusion spectrale Nae",
+    "d": ""
+  },
+  "526": {
+    "n": "Pulsation",
+    "d": ""
+  },
+  "527": {
+    "n": "Equarrissage",
+    "d": ""
+  },
+  "528": {
+    "n": "Succion",
+    "d": ""
+  },
+  "529": {
+    "n": "Kitsnition",
+    "d": "kitsoune"
+  },
+  "530": {
+    "n": "Wanshak",
+    "d": ""
+  },
+  "531": {
+    "n": "Wuxia Panda",
+    "d": "sort des firefoux mage"
+  },
+  "532": {
+    "n": "Bokken",
+    "d": "Bambouto"
+  },
+  "533": {
+    "n": "Shinai",
+    "d": ""
+  },
+  "534": {
+    "n": "Suçotement",
+    "d": ""
+  },
+  "535": {
+    "n": "Bulvocation",
+    "d": ""
+  },
+  "536": {
+    "n": "Banzai",
+    "d": ""
+  },
+  "537": {
+    "n": "Migi",
+    "d": ""
+  },
+  "538": {
+    "n": "Hidari",
+    "d": ""
+  },
+  "539": {
+    "n": "Salve Regina",
+    "d": ""
+  },
+  "540": {
+    "n": "Sommation",
+    "d": ""
+  },
+  "541": {
+    "n": "Guêpier",
+    "d": ""
+  },
+  "542": {
+    "n": "Métamourphose",
+    "d": ""
+  },
+  "543": {
+    "n": "Bultombe",
+    "d": ""
+  },
+  "544": {
+    "n": "Méditation",
+    "d": ""
+  },
+  "545": {
+    "n": "Bulbation",
+    "d": ""
+  },
+  "546": {
+    "n": "Illusion spectrale Nakwa",
+    "d": ""
+  },
+  "547": {
+    "n": "Illusion spectrale Nere",
+    "d": ""
+  },
+  "548": {
+    "n": "Illusion spectrale Nufeu",
+    "d": ""
+  },
+  "549": {
+    "n": "Cornes d'Ofulgur",
+    "d": ""
+  },
+  "550": {
+    "n": "Renforceumeuleux",
+    "d": ""
+  },
+  "551": {
+    "n": "Motivation",
+    "d": "Leopardo"
+  },
+  "552": {
+    "n": "DiCarnio",
+    "d": "Leopardo"
+  },
+  "553": {
+    "n": "LeoFrappe",
+    "d": "Leopardo transformé"
+  },
+  "554": {
+    "n": "Haleine de Fauve",
+    "d": "Leopardo transformé"
+  },
+  "555": {
+    "n": "Kamae",
+    "d": ""
+  },
+  "556": {
+    "n": "Buverie",
+    "d": ""
+  },
+  "557": {
+    "n": "Tanushi",
+    "d": ""
+  },
+  "558": {
+    "n": "Phéromone",
+    "d": ""
+  },
+  "559": {
+    "n": "Tanukick",
+    "d": ""
+  },
+  "560": {
+    "n": "Bise enflammée",
+    "d": ""
+  },
+  "561": {
+    "n": "Bise baveuse",
+    "d": ""
+  },
+  "562": {
+    "n": "Bise terreuse",
+    "d": ""
+  },
+  "563": {
+    "n": "Bise aérienne",
+    "d": ""
+  },
+  "564": {
+    "n": "Pousse-pousse",
+    "d": ""
+  },
+  "565": {
+    "n": "Bise neutre",
+    "d": ""
+  },
+  "566": {
+    "n": "Abordage",
+    "d": ""
+  },
+  "567": {
+    "n": "Invocation de Bwak",
+    "d": ""
+  },
+  "568": {
+    "n": "Invocation Bambouto",
+    "d": ""
+  },
+  "569": {
+    "n": "Invocation de Pandamani",
+    "d": ""
+  },
+  "570": {
+    "n": "Ouverture hasardeuse",
+    "d": ""
+  },
+  "571": {
+    "n": "Invocation de Bouate de Pandore",
+    "d": ""
+  },
+  "572": {
+    "n": "Mot Rovach",
+    "d": ""
+  },
+  "573": {
+    "n": "Lourdeur",
+    "d": "Lance un état qui empêche les joueurs d'utiliser des sorts de téléportation"
+  },
+  "574": {
+    "n": "Ouverture hasardeuse fantôme",
+    "d": ""
+  },
+  "575": {
+    "n": "Phéromone Fantôme",
+    "d": ""
+  },
+  "576": {
+    "n": "Invocation de Bouate de Fantôme Pandore",
+    "d": ""
+  },
+  "577": {
+    "n": "Bambou Musical",
+    "d": ""
+  },
+  "578": {
+    "n": "Dicarnioto",
+    "d": ""
+  },
+  "579": {
+    "n": "Métamourphose Fantôme",
+    "d": ""
+  },
+  "580": {
+    "n": "Camouflage du Péki Péki",
+    "d": ""
+  },
+  "582": {
+    "n": "Lapino Boost",
+    "d": ""
+  },
+  "583": {
+    "n": "Invocation de Champa",
+    "d": ""
+  },
+  "584": {
+    "n": "Motivation Sylvestre",
+    "d": "Ce sort permet de placer les Abraknydes dans un état qui leur permet d'utiliser d'autres sorts."
+  },
+  "585": {
+    "n": "Sève Paralysante",
+    "d": "Sort des Abraknydes lorsqu'ils sont dans l'état Motivation Sylvestre."
+  },
+  "586": {
+    "n": "Racine Paralysante",
+    "d": "Sort des Abraknydes Sombres lorsqu'ils sont dans l'état Motivation Sylvestre"
+  },
+  "587": {
+    "n": "Soin Poupesque",
+    "d": "Sort de soin de la Gonflable"
+  },
+  "588": {
+    "n": "Bambou Malchanceux",
+    "d": ""
+  },
+  "589": {
+    "n": "Faiblesse",
+    "d": ""
+  },
+  "590": {
+    "n": "Pendule",
+    "d": ""
+  },
+  "591": {
+    "n": "Suçotement",
+    "d": ""
+  },
+  "592": {
+    "n": "Bave Sanguinolente",
+    "d": ""
+  },
+  "593": {
+    "n": "Menotage",
+    "d": ""
+  },
+  "594": {
+    "n": "Charge Sanguinaire",
+    "d": ""
+  },
+  "595": {
+    "n": "Invocation de Cochon de Farle",
+    "d": ""
+  },
+  "596": {
+    "n": "Vampirisation Cochonne",
+    "d": ""
+  },
+  "597": {
+    "n": "Tire-Bouffon",
+    "d": ""
+  },
+  "598": {
+    "n": "Perfusion",
+    "d": ""
+  },
+  "599": {
+    "n": "Lancer de Bambou Malchanceux",
+    "d": "Sort de l'invocation des Pandawas"
+  },
+  "600": {
+    "n": "Festin",
+    "d": ""
+  },
+  "601": {
+    "n": "Invocation Montagnarde",
+    "d": "Summoning spell of Crackrock"
+  },
+  "602": {
+    "n": "Peau de Topaze",
+    "d": "Protective spell for the Crackrock's ally"
+  },
+  "603": {
+    "n": "Coeur de Craqueleur",
+    "d": "Boosts the AP of the Crackrock"
+  },
+  "604": {
+    "n": "Invocation de Bouftou des cavernes",
+    "d": ""
+  },
+  "605": {
+    "n": "Calumet de la paix",
+    "d": ""
+  },
+  "606": {
+    "n": "Appel du Koulosse",
+    "d": ""
+  },
+  "607": {
+    "n": "Souffle du Koulosse",
+    "d": ""
+  },
+  "608": {
+    "n": "Bise du Boufcoul",
+    "d": ""
+  },
+  "609": {
+    "n": "Transposition Amicale",
+    "d": ""
+  },
+  "610": {
+    "n": "Transposition Destructrice",
+    "d": ""
+  },
+  "611": {
+    "n": "Sacrifice Sadidesque",
+    "d": ""
+  },
+  "612": {
+    "n": "Transposition Poupesque",
+    "d": ""
+  },
+  "613": {
+    "n": "Calin",
+    "d": ""
+  },
+  "614": {
+    "n": "Défonce",
+    "d": ""
+  },
+  "615": {
+    "n": "Souillure",
+    "d": ""
+  },
+  "616": {
+    "n": "Souffle Hivernal",
+    "d": ""
+  },
+  "617": {
+    "n": "Offrande",
+    "d": ""
+  },
+  "618": {
+    "n": "Lancer de cadeau",
+    "d": ""
+  },
+  "619": {
+    "n": "Souffle gargouillesque",
+    "d": ""
+  },
+  "620": {
+    "n": "Gargouilli",
+    "d": ""
+  },
+  "621": {
+    "n": "Serpentin",
+    "d": ""
+  },
+  "622": {
+    "n": "Kikulé dalerbe",
+    "d": ""
+  },
+  "623": {
+    "n": "Rayon Fulgurant",
+    "d": ""
+  },
+  "624": {
+    "n": "Cri Déstabilisateur",
+    "d": ""
+  },
+  "625": {
+    "n": "Déchiquetage",
+    "d": ""
+  },
+  "626": {
+    "n": "Picore",
+    "d": ""
+  },
+  "627": {
+    "n": "Sanction Ténébreuse",
+    "d": ""
+  },
+  "628": {
+    "n": "Lien Volatile",
+    "d": ""
+  },
+  "629": {
+    "n": "Invocation de Corbac",
+    "d": ""
+  },
+  "630": {
+    "n": "Carapace d'Ailes",
+    "d": ""
+  },
+  "631": {
+    "n": "Koudanlulk",
+    "d": ""
+  },
+  "632": {
+    "n": "Charge",
+    "d": ""
+  },
+  "633": {
+    "n": "Chance du Kanigrou",
+    "d": ""
+  },
+  "634": {
+    "n": "Saut Majestueux",
+    "d": ""
+  },
+  "635": {
+    "n": "Altération",
+    "d": ""
+  },
+  "636": {
+    "n": "Poison du Scorbute",
+    "d": ""
+  },
+  "637": {
+    "n": "Coup de Queue",
+    "d": ""
+  },
+  "638": {
+    "n": "Déchirement Intestinal",
+    "d": ""
+  },
+  "639": {
+    "n": "Ablation Testiculaire",
+    "d": ""
+  },
+  "640": {
+    "n": "Chaîne Chienne",
+    "d": ""
+  },
+  "641": {
+    "n": "Aboiement",
+    "d": ""
+  },
+  "642": {
+    "n": "Ecrasement Royal",
+    "d": ""
+  },
+  "643": {
+    "n": "Sporification",
+    "d": ""
+  },
+  "644": {
+    "n": "Invocation de Champchamp",
+    "d": ""
+  },
+  "645": {
+    "n": "Champsoin",
+    "d": ""
+  },
+  "646": {
+    "n": "Empalement",
+    "d": ""
+  },
+  "647": {
+    "n": "Euphorie malsaine",
+    "d": ""
+  },
+  "648": {
+    "n": "Virevolte",
+    "d": ""
+  },
+  "649": {
+    "n": "Laminage",
+    "d": ""
+  },
+  "650": {
+    "n": "Dissimulation",
+    "d": ""
+  },
+  "651": {
+    "n": "Frénésie",
+    "d": ""
+  },
+  "652": {
+    "n": "Coque Soin",
+    "d": ""
+  },
+  "653": {
+    "n": "Larvure",
+    "d": "soigne"
+  },
+  "654": {
+    "n": "Eblouissement",
+    "d": ""
+  },
+  "655": {
+    "n": "Larvage",
+    "d": ""
+  },
+  "656": {
+    "n": "Flêche Tueuse",
+    "d": ""
+  },
+  "657": {
+    "n": "Flèche longue portée",
+    "d": ""
+  },
+  "658": {
+    "n": "Encrage",
+    "d": ""
+  },
+  "659": {
+    "n": "Kracheau",
+    "d": ""
+  },
+  "660": {
+    "n": "Secousse",
+    "d": ""
+  },
+  "661": {
+    "n": "Sort d'entrainement",
+    "d": ""
+  },
+  "662": {
+    "n": "Citron Os",
+    "d": ""
+  },
+  "663": {
+    "n": "Invocation de Gelée Citron",
+    "d": ""
+  },
+  "664": {
+    "n": "Bleu Os",
+    "d": ""
+  },
+  "665": {
+    "n": "Scarification",
+    "d": "frappe de l'épée dansante"
+  },
+  "686": {
+    "n": "Picole",
+    "d": "Permet de rentrer en état d'ébriété et d'augmenter ses résistances aux dommages."
+  },
+  "687": {
+    "n": "Poing Enflammé",
+    "d": "Le Poing Enflammé inflige des dégâts de Feu. L'état d'ébriété est nécessaire pour lancer ce sort."
+  },
+  "688": {
+    "n": "Vulnérabilité Incandescente",
+    "d": "Ce sort permet de baisser les resistances "
+  },
+  "689": {
+    "n": "Epouvante",
+    "d": "Repousse et réduit les coups critiques de la cible."
+  },
+  "690": {
+    "n": "Souffle Alcoolisé",
+    "d": "Ce sort permet d'infliger des dégâts de type Air. L'état d'ébriété est nécessaire pour lancer ce sort."
+  },
+  "691": {
+    "n": "Vulnérabilité Aqueuse",
+    "d": "Ce sort permet de baisser les résistances "
+  },
+  "692": {
+    "n": "Gueule de Bois",
+    "d": "La Gueule de Bois permet de mettre un coup de tête à un ennemi, lui infligeant des dégâts de type Terre. L'état d'ébriété est nécessaire pour lancer ce sort."
+  },
+  "693": {
+    "n": "Karcham",
+    "d": "Ce sort permet de porter un allié ou un ennemi."
+  },
+  "694": {
+    "n": "Vulnérabilité Venteuse",
+    "d": "Ce sort permet de baisser les resistances "
+  },
+  "695": {
+    "n": "Stabilisation",
+    "d": "Ce sort permet de ne plus être repoussé, et de ne plus être taclé, mais empêche de tacler ses adversaires."
+  },
+  "696": {
+    "n": "Chamrak",
+    "d": "Permet de lancer un personnage porté."
+  },
+  "697": {
+    "n": "Vulnérabilité Terrestre",
+    "d": "Ce sort permet de baisser les resistances "
+  },
+  "698": {
+    "n": "Souillure",
+    "d": "Ce sort lance un effet aléatoire afin de déconcentrer l'ennemi. L'état d'ébriété est nécessaire pour lancer ce sort."
+  },
+  "699": {
+    "n": "Lait de Bambou",
+    "d": "Ce sort permet de désenvoûter le lanceur et de lui rendre son état "
+  },
+  "700": {
+    "n": "Vague à Lame",
+    "d": "Ce sort permet d'infliger des dégâts d'Eau."
+  },
+  "701": {
+    "n": "Colère de Zatoïshwan",
+    "d": "Ce sort permet d'entrer dans la terrible colère de Zatoïshwan."
+  },
+  "702": {
+    "n": "Flasque Explosive",
+    "d": "Ce sort permet de lancer une bouteille d'alcool qui explose en touchant le sol, infligeant des dégâts de Feu à tous les joueurs se trouvant dans la zone d'effet."
+  },
+  "703": {
+    "n": "Pandatak",
+    "d": "Ce sort permet de solliciter des Pandawas (infligeant des dégâts de type Terre) de la famille du lanceur afin qu'ils l'aident contre ses ennemis."
+  },
+  "704": {
+    "n": "Pandanlku",
+    "d": "Ce sort permet au lanceur d'augmenter ses PM ou ceux d'un allié. Ce sort nécessite l'état d'ébriété pour être lancé."
+  },
+  "705": {
+    "n": "Lien Spiritueux",
+    "d": "Ce sort permet d'invoquer un vieux maître Pandawa. L'état d'ébriété est nécessaire pour lancer ce sort."
+  },
+  "706": {
+    "n": "Bouh M'Rang Emeraude",
+    "d": ""
+  },
+  "707": {
+    "n": "Bouh M'Rang Saphir",
+    "d": ""
+  },
+  "708": {
+    "n": "Bouh M'Rang Rubis",
+    "d": ""
+  },
+  "709": {
+    "n": "Bouh M'Rang Diamant",
+    "d": ""
+  },
+  "710": {
+    "n": "Coupe-faim",
+    "d": ""
+  },
+  "711": {
+    "n": "Digestion Explosive",
+    "d": ""
+  },
+  "712": {
+    "n": "Saphir Apaisant",
+    "d": ""
+  },
+  "713": {
+    "n": "Invocation de Totem Motivant",
+    "d": ""
+  },
+  "714": {
+    "n": "Encouragement",
+    "d": ""
+  },
+  "715": {
+    "n": "Tentative d'Explosion",
+    "d": ""
+  },
+  "716": {
+    "n": "Invocation de Totem Explosif",
+    "d": ""
+  },
+  "717": {
+    "n": "Bottage de Fesses",
+    "d": ""
+  },
+  "718": {
+    "n": "Reconstitution Magique",
+    "d": ""
+  },
+  "719": {
+    "n": "Invocation de Totem Soignant",
+    "d": ""
+  },
+  "720": {
+    "n": "Invocation de Poupée Mortelle",
+    "d": ""
+  },
+  "721": {
+    "n": "Totemisation",
+    "d": ""
+  },
+  "722": {
+    "n": "Chevauchée Malicieuse",
+    "d": ""
+  },
+  "723": {
+    "n": "Esprit d'équipe",
+    "d": ""
+  },
+  "724": {
+    "n": "Coup de Sceptre",
+    "d": ""
+  },
+  "725": {
+    "n": "Vengeance",
+    "d": ""
+  },
+  "726": {
+    "n": "Désinvocation de Masse",
+    "d": ""
+  },
+  "727": {
+    "n": "Harcèlement",
+    "d": ""
+  },
+  "728": {
+    "n": "Dévotion",
+    "d": ""
+  },
+  "729": {
+    "n": "Kalik",
+    "d": ""
+  },
+  "730": {
+    "n": "Embourbement",
+    "d": ""
+  },
+  "731": {
+    "n": "Sang Chaud",
+    "d": ""
+  },
+  "732": {
+    "n": "Invocation de Blop Griotte",
+    "d": ""
+  },
+  "733": {
+    "n": "Invocation de Blop Coco",
+    "d": ""
+  },
+  "734": {
+    "n": "Invocation de Blop Indigo",
+    "d": ""
+  },
+  "735": {
+    "n": "Invocation de Blop Reinette",
+    "d": ""
+  },
+  "736": {
+    "n": "Défaillance Griotte",
+    "d": ""
+  },
+  "737": {
+    "n": "Défaillance Coco",
+    "d": ""
+  },
+  "738": {
+    "n": "Défaillance Indigo",
+    "d": ""
+  },
+  "739": {
+    "n": "Défaillance Reinette",
+    "d": ""
+  },
+  "740": {
+    "n": "Accouchement",
+    "d": ""
+  },
+  "741": {
+    "n": "Chiquenaude",
+    "d": ""
+  },
+  "742": {
+    "n": "Boutade",
+    "d": ""
+  },
+  "743": {
+    "n": "Assommoir",
+    "d": ""
+  },
+  "744": {
+    "n": "Baiser de Kaliptus",
+    "d": ""
+  },
+  "745": {
+    "n": "Implosion",
+    "d": ""
+  },
+  "746": {
+    "n": "Invocation de Workette",
+    "d": ""
+  },
+  "747": {
+    "n": "Cécité",
+    "d": ""
+  },
+  "748": {
+    "n": "Longue Vue",
+    "d": ""
+  },
+  "749": {
+    "n": "Pichenette",
+    "d": ""
+  },
+  "750": {
+    "n": "Décharge",
+    "d": ""
+  },
+  "751": {
+    "n": "Décharge Magistrale",
+    "d": ""
+  },
+  "752": {
+    "n": "Sarbakane",
+    "d": ""
+  },
+  "753": {
+    "n": "Soufflette de Kaliptus",
+    "d": ""
+  },
+  "754": {
+    "n": "Enterrement",
+    "d": ""
+  },
+  "755": {
+    "n": "Motte de terre",
+    "d": ""
+  },
+  "756": {
+    "n": "Choc Frontal",
+    "d": ""
+  },
+  "757": {
+    "n": "Correction",
+    "d": ""
+  },
+  "758": {
+    "n": "Prévention",
+    "d": ""
+  },
+  "759": {
+    "n": "Malédiction de la Momie",
+    "d": ""
+  },
+  "760": {
+    "n": "Clepsydre",
+    "d": ""
+  },
+  "761": {
+    "n": "Bandelette Ancestrale",
+    "d": ""
+  },
+  "762": {
+    "n": "Frappe du Maître",
+    "d": ""
+  },
+  "763": {
+    "n": "Réconciliation",
+    "d": ""
+  },
+  "764": {
+    "n": "Echauffement",
+    "d": ""
+  },
+  "765": {
+    "n": "Morsure d'Air",
+    "d": ""
+  },
+  "766": {
+    "n": "Morsure de Feu",
+    "d": ""
+  },
+  "767": {
+    "n": "Morsure d'Eau",
+    "d": ""
+  },
+  "768": {
+    "n": "Morsure de Terre",
+    "d": ""
+  },
+  "769": {
+    "n": "Morsure Neutre",
+    "d": ""
+  },
+  "770": {
+    "n": "Tripotée",
+    "d": ""
+  },
+  "771": {
+    "n": "Abattage",
+    "d": ""
+  },
+  "772": {
+    "n": "Ebranchage",
+    "d": ""
+  },
+  "773": {
+    "n": "Déracinage",
+    "d": ""
+  },
+  "774": {
+    "n": "Moulinet",
+    "d": ""
+  },
+  "775": {
+    "n": "Amorce",
+    "d": ""
+  },
+  "776": {
+    "n": "Coup de Poisson",
+    "d": ""
+  },
+  "777": {
+    "n": "Eau-de-Vie",
+    "d": ""
+  },
+  "778": {
+    "n": "Tourbe Empoisonnée",
+    "d": ""
+  },
+  "779": {
+    "n": "Malédiction Koalak",
+    "d": ""
+  },
+  "780": {
+    "n": "Fauche",
+    "d": ""
+  },
+  "781": {
+    "n": "Renfort du Cimetière Primitif",
+    "d": ""
+  },
+  "782": {
+    "n": "Punition Sanguine",
+    "d": ""
+  },
+  "783": {
+    "n": "Disparition",
+    "d": ""
+  },
+  "784": {
+    "n": "Caresse",
+    "d": ""
+  },
+  "785": {
+    "n": "Désorientation",
+    "d": ""
+  },
+  "786": {
+    "n": "Disparition groupée",
+    "d": ""
+  },
+  "787": {
+    "n": "Soin Feuillu",
+    "d": ""
+  },
+  "788": {
+    "n": "Picoti",
+    "d": ""
+  },
+  "789": {
+    "n": "Brouillard Empoisonné",
+    "d": ""
+  },
+  "790": {
+    "n": "Naissance",
+    "d": ""
+  },
+  "791": {
+    "n": "Appel des Champs",
+    "d": ""
+  },
+  "792": {
+    "n": "Goinfrage",
+    "d": ""
+  },
+  "793": {
+    "n": "Gotame",
+    "d": ""
+  },
+  "794": {
+    "n": "Détonation",
+    "d": ""
+  },
+  "795": {
+    "n": "Picota",
+    "d": ""
+  },
+  "796": {
+    "n": "Graine Empoisonnée",
+    "d": ""
+  },
+  "797": {
+    "n": "Provocation",
+    "d": ""
+  },
+  "798": {
+    "n": "Coup de Bec Magistral",
+    "d": ""
+  },
+  "799": {
+    "n": "Plumeau",
+    "d": ""
+  },
+  "800": {
+    "n": "Invocation de Bomberfu",
+    "d": ""
+  },
+  "801": {
+    "n": "Bénédiction du Tofulailler",
+    "d": ""
+  },
+  "802": {
+    "n": "Envol",
+    "d": ""
+  },
+  "803": {
+    "n": "Plumeau",
+    "d": ""
+  },
+  "804": {
+    "n": "Plumette",
+    "d": ""
+  },
+  "805": {
+    "n": "Bousculade",
+    "d": ""
+  },
+  "806": {
+    "n": "Daudoh",
+    "d": ""
+  },
+  "807": {
+    "n": "Buvette",
+    "d": ""
+  },
+  "808": {
+    "n": "Parchotage",
+    "d": ""
+  },
+  "809": {
+    "n": "Croassement",
+    "d": ""
+  },
+  "810": {
+    "n": "Ramage",
+    "d": ""
+  },
+  "811": {
+    "n": "Déplumage",
+    "d": ""
+  },
+  "812": {
+    "n": "Destinos",
+    "d": ""
+  },
+  "813": {
+    "n": "Mythos",
+    "d": ""
+  },
+  "814": {
+    "n": "Kitos",
+    "d": ""
+  },
+  "815": {
+    "n": "Décassé",
+    "d": ""
+  },
+  "816": {
+    "n": "Papouille",
+    "d": ""
+  },
+  "817": {
+    "n": "Boulette",
+    "d": ""
+  },
+  "818": {
+    "n": "Sonnette",
+    "d": ""
+  },
+  "819": {
+    "n": "Venin Déstabilisateur",
+    "d": ""
+  },
+  "820": {
+    "n": "Cuticule",
+    "d": ""
+  },
+  "821": {
+    "n": "Cornos",
+    "d": ""
+  },
+  "822": {
+    "n": "Kanope",
+    "d": ""
+  },
+  "823": {
+    "n": "Malédiction du Mominotor",
+    "d": ""
+  },
+  "824": {
+    "n": "Embaumement",
+    "d": ""
+  },
+  "825": {
+    "n": "Lancer de Dégelée",
+    "d": ""
+  },
+  "826": {
+    "n": "Souffle Etourdissant",
+    "d": ""
+  },
+  "827": {
+    "n": "Coup de Boulet",
+    "d": ""
+  },
+  "828": {
+    "n": "Minorage",
+    "d": ""
+  },
+  "829": {
+    "n": "Recueillement",
+    "d": ""
+  },
+  "831": {
+    "n": "sept",
+    "d": ""
+  },
+  "832": {
+    "n": "Engelure",
+    "d": ""
+  },
+  "833": {
+    "n": "Verglasserie",
+    "d": ""
+  },
+  "834": {
+    "n": "Patinage",
+    "d": ""
+  },
+  "835": {
+    "n": "Poussée d'Egul",
+    "d": ""
+  },
+  "836": {
+    "n": "Ebouledeneigement",
+    "d": ""
+  },
+  "837": {
+    "n": "Blizzard",
+    "d": ""
+  },
+  "838": {
+    "n": "Plat de résistance",
+    "d": ""
+  },
+  "839": {
+    "n": "Assaisonnement",
+    "d": ""
+  },
+  "840": {
+    "n": "Chance du Billou",
+    "d": ""
+  },
+  "841": {
+    "n": "Gueuleton",
+    "d": ""
+  },
+  "842": {
+    "n": "Crème de marron",
+    "d": ""
+  },
+  "843": {
+    "n": ".",
+    "d": "."
+  },
+  "844": {
+    "n": ".",
+    "d": "."
+  },
+  "845": {
+    "n": ".",
+    "d": "."
+  },
+  "846": {
+    "n": ".",
+    "d": "."
+  },
+  "847": {
+    "n": "Bankizou du Tofu",
+    "d": ""
+  },
+  "848": {
+    "n": "Plaque de glace",
+    "d": ""
+  },
+  "849": {
+    "n": "Cache-neige",
+    "d": ""
+  },
+  "850": {
+    "n": "Tofupal",
+    "d": ""
+  },
+  "851": {
+    "n": "Boolkiroul",
+    "d": ""
+  },
+  "852": {
+    "n": "Namas'Pamouss",
+    "d": ""
+  },
+  "853": {
+    "n": "Esprit de Nowel",
+    "d": ""
+  },
+  "854": {
+    "n": "Glassalo",
+    "d": ""
+  },
+  "855": {
+    "n": "Fureur du Boufmouth",
+    "d": ""
+  },
+  "856": {
+    "n": "Défonce du Boufmouth",
+    "d": ""
+  },
+  "857": {
+    "n": "Appel du Glagla",
+    "d": ""
+  },
+  "858": {
+    "n": "Tire-fesse",
+    "d": ""
+  },
+  "859": {
+    "n": "Esprit de Nowel (effet)",
+    "d": ""
+  },
+  "860": {
+    "n": "Enguirlandage",
+    "d": ""
+  },
+  "861": {
+    "n": "Chute de neige",
+    "d": ""
+  },
+  "862": {
+    "n": "Fonte des glaces",
+    "d": ""
+  },
+  "863": {
+    "n": "Appel du Bomberfu",
+    "d": ""
+  },
+  "864": {
+    "n": "Bénédiction du Chapon",
+    "d": ""
+  },
+  "865": {
+    "n": "Chute majestueuse",
+    "d": ""
+  },
+  "866": {
+    "n": "Calin du Kipik",
+    "d": ""
+  },
+  "867": {
+    "n": "Exaltation glutinesque",
+    "d": ""
+  },
+  "868": {
+    "n": "Gnon",
+    "d": ""
+  },
+  "869": {
+    "n": "Empaquetage",
+    "d": ""
+  },
+  "870": {
+    "n": "Inspiration glutine",
+    "d": ""
+  },
+  "871": {
+    "n": "Don glutin",
+    "d": ""
+  },
+  "872": {
+    "n": "Alcane plécieuse de motivation",
+    "d": ""
+  },
+  "873": {
+    "n": "Alcane du Pandule déléglé",
+    "d": ""
+  },
+  "874": {
+    "n": "Alcane du vulgaile lancer de pielle",
+    "d": ""
+  },
+  "875": {
+    "n": "Alcane du fidèle Galdien du floid",
+    "d": ""
+  },
+  "876": {
+    "n": "Alcane de la foulbe plaque de glace",
+    "d": ""
+  },
+  "877": {
+    "n": "Alcane du fulieux Dlagon celeste",
+    "d": ""
+  },
+  "878": {
+    "n": "Débarbouillage",
+    "d": ""
+  },
+  "879": {
+    "n": "Pic de glace",
+    "d": ""
+  },
+  "880": {
+    "n": "Coup de chaud",
+    "d": ""
+  },
+  "881": {
+    "n": "Dichotomie",
+    "d": ""
+  },
+  "882": {
+    "n": "Aspir'nenfan",
+    "d": ""
+  },
+  "883": {
+    "n": "Embûche de Nowel",
+    "d": ""
+  },
+  "884": {
+    "n": "Attrap'nenfan",
+    "d": ""
+  },
+  "885": {
+    "n": "Trak'nenfan",
+    "d": ""
+  },
+  "886": {
+    "n": "Goûter",
+    "d": ""
+  },
+  "887": {
+    "n": "En-cas",
+    "d": ""
+  },
+  "888": {
+    "n": "Krakken",
+    "d": ""
+  },
+  "889": {
+    "n": "Parade nuptiale",
+    "d": ""
+  },
+  "890": {
+    "n": "Emballage",
+    "d": ""
+  },
+  "891": {
+    "n": "Danse des sept rubans",
+    "d": ""
+  },
+  "892": {
+    "n": "Kompapa",
+    "d": ""
+  },
+  "893": {
+    "n": "Jalousie maladive",
+    "d": ""
+  },
+  "894": {
+    "n": "Sad Sneggah",
+    "d": ""
+  },
+  "895": {
+    "n": "Cocon gelé",
+    "d": ""
+  },
+  "896": {
+    "n": "Marteau d'Okim",
+    "d": ""
+  },
+  "897": {
+    "n": "Marteau d'Orelos",
+    "d": ""
+  },
+  "898": {
+    "n": "Dégel du Kitsou Nakwatus",
+    "d": ""
+  },
+  "899": {
+    "n": "Dégel du Black Tiwabbitus",
+    "d": ""
+  },
+  "900": {
+    "n": "Dégel du Kwakus",
+    "d": ""
+  },
+  "901": {
+    "n": "Marteau de Mungam",
+    "d": ""
+  },
+  "902": {
+    "n": "Uppercut glutin",
+    "d": ""
+  },
+  "903": {
+    "n": "P'tit creux",
+    "d": ""
+  },
+  "904": {
+    "n": "Digestion mouvementée",
+    "d": ""
+  },
+  "905": {
+    "n": "Alcane du soulnois Blizzald ténébleux",
+    "d": ""
+  },
+  "906": {
+    "n": "Cotillons",
+    "d": ""
+  },
+  "907": {
+    "n": "Immobilisation (glyphe féca)",
+    "d": ""
+  },
+  "908": {
+    "n": "Silence (piège sram et glyphe féca)",
+    "d": ""
+  },
+  "909": {
+    "n": "Immobilisation (piège sram)",
+    "d": ""
+  },
+  "910": {
+    "n": "Lag (ralentissement pour glyphe feca)",
+    "d": ""
+  },
+  "911": {
+    "n": "Kokapik",
+    "d": ""
+  },
+  "912": {
+    "n": "Fwetage",
+    "d": ""
+  },
+  "913": {
+    "n": "Parade des vieux jouets",
+    "d": ""
+  },
+  "914": {
+    "n": "Invocation de jouet cassé",
+    "d": ""
+  },
+  "915": {
+    "n": "Attraction",
+    "d": "Copie d'attirance pour les monstres"
+  },
+  "916": {
+    "n": "attirance",
+    "d": "Copie d'attirance pour les Dopeuls"
+  },
+  "919": {
+    "n": "Bouture revitalisante",
+    "d": ""
+  },
+  "920": {
+    "n": "Singerie",
+    "d": ""
+  },
+  "932": {
+    "n": "Explosion de Bombombe",
+    "d": ""
+  },
+  "933": {
+    "n": "Décapsulation",
+    "d": ""
+  },
+  "934": {
+    "n": "Crochet",
+    "d": ""
+  },
+  "935": {
+    "n": "Glouto Rhum",
+    "d": ""
+  },
+  "936": {
+    "n": "Rapine",
+    "d": ""
+  },
+  "937": {
+    "n": "Entrave de Fallanster",
+    "d": ""
+  },
+  "938": {
+    "n": "Rhum Fourbe",
+    "d": ""
+  },
+  "939": {
+    "n": "Invocation de Tonneau",
+    "d": ""
+  },
+  "940": {
+    "n": "Un gros boulet sur un autre boulet",
+    "d": ""
+  },
+  "941": {
+    "n": "Bombarde",
+    "d": ""
+  },
+  "942": {
+    "n": "Passton Tournoube",
+    "d": ""
+  },
+  "943": {
+    "n": "Trinquons ensemble moussaillon !",
+    "d": ""
+  },
+  "944": {
+    "n": "Vrüt vrüt",
+    "d": ""
+  },
+  "945": {
+    "n": "Polissage",
+    "d": ""
+  },
+  "946": {
+    "n": "Attaque tueuse",
+    "d": ""
+  },
+  "947": {
+    "n": "Traînée de bave",
+    "d": ""
+  },
+  "948": {
+    "n": "Glissade",
+    "d": ""
+  },
+  "949": {
+    "n": "Bave",
+    "d": ""
+  },
+  "950": {
+    "n": "Prestidigitation",
+    "d": ""
+  },
+  "951": {
+    "n": "Rocaille",
+    "d": ""
+  },
+  "952": {
+    "n": "Rugissement",
+    "d": ""
+  },
+  "953": {
+    "n": "Petit soin",
+    "d": ""
+  },
+  "954": {
+    "n": "Migration",
+    "d": ""
+  },
+  "955": {
+    "n": "Fronde",
+    "d": ""
+  },
+  "956": {
+    "n": "Soubresaut",
+    "d": ""
+  },
+  "957": {
+    "n": "Dragorage",
+    "d": ""
+  },
+  "958": {
+    "n": "Ebranlement",
+    "d": ""
+  },
+  "959": {
+    "n": "Drague",
+    "d": ""
+  },
+  "960": {
+    "n": "Coup de Foudre",
+    "d": ""
+  },
+  "961": {
+    "n": "Charme",
+    "d": ""
+  },
+  "962": {
+    "n": "Séduction",
+    "d": ""
+  },
+  "963": {
+    "n": "Météorite Etourdissante",
+    "d": ""
+  },
+  "964": {
+    "n": "Météorite Aveuglante",
+    "d": ""
+  },
+  "965": {
+    "n": "Souffle du Dragoss",
+    "d": ""
+  },
+  "966": {
+    "n": "Cornoss",
+    "d": ""
+  },
+  "967": {
+    "n": "Frétilloss",
+    "d": ""
+  },
+  "968": {
+    "n": "Protectoss",
+    "d": ""
+  },
+  "969": {
+    "n": "Souffloss",
+    "d": ""
+  },
+  "970": {
+    "n": "Libéross",
+    "d": ""
+  },
+  "971": {
+    "n": "Souffle de Crocabulia",
+    "d": ""
+  },
+  "972": {
+    "n": "Cri de Crocabulia",
+    "d": ""
+  },
+  "973": {
+    "n": "Appel de Crocabulia",
+    "d": ""
+  },
+  "974": {
+    "n": "Souillure Sauvage",
+    "d": ""
+  },
+  "975": {
+    "n": "Lancer d'Arakne Morte",
+    "d": ""
+  },
+  "976": {
+    "n": "Complicité",
+    "d": ""
+  },
+  "977": {
+    "n": "Attirance Sylvestre",
+    "d": ""
+  },
+  "978": {
+    "n": "Obscurité",
+    "d": ""
+  },
+  "979": {
+    "n": "Reflux",
+    "d": ""
+  },
+  "980": {
+    "n": "Vague Sournoise",
+    "d": ""
+  },
+  "981": {
+    "n": "Soin Ténébreux",
+    "d": ""
+  },
+  "982": {
+    "n": "Soin Hasardeux",
+    "d": ""
+  },
+  "983": {
+    "n": "Météorion",
+    "d": ""
+  },
+  "984": {
+    "n": "Garou",
+    "d": ""
+  },
+  "985": {
+    "n": "Bave du Péki",
+    "d": ""
+  },
+  "986": {
+    "n": "Esprit du Péki Garou",
+    "d": ""
+  },
+  "987": {
+    "n": "Harponnage",
+    "d": ""
+  },
+  "988": {
+    "n": "Dispersion sablée",
+    "d": ""
+  },
+  "989": {
+    "n": "Brise",
+    "d": ""
+  },
+  "990": {
+    "n": "Dégraissage",
+    "d": ""
+  },
+  "991": {
+    "n": "Rinçage",
+    "d": ""
+  },
+  "992": {
+    "n": "Régénération Spontanée",
+    "d": ""
+  },
+  "993": {
+    "n": "Appel du large",
+    "d": ""
+  },
+  "994": {
+    "n": "Salage",
+    "d": ""
+  },
+  "995": {
+    "n": "Pikouze",
+    "d": ""
+  },
+  "996": {
+    "n": "Purification",
+    "d": ""
+  },
+  "997": {
+    "n": "Bouture Ensorcelée",
+    "d": ""
+  },
+  "998": {
+    "n": "Ratatinage",
+    "d": ""
+  },
+  "999": {
+    "n": "Radical",
+    "d": ""
+  },
+  "1000": {
+    "n": "Rature",
+    "d": ""
+  },
+  "1001": {
+    "n": "Rabotage",
+    "d": ""
+  },
+  "1002": {
+    "n": "Raffut",
+    "d": ""
+  },
+  "1003": {
+    "n": "Ravin",
+    "d": ""
+  },
+  "1004": {
+    "n": "Rapace",
+    "d": ""
+  },
+  "1005": {
+    "n": "Doctorat",
+    "d": ""
+  },
+  "1006": {
+    "n": "Kackitu",
+    "d": ""
+  },
+  "1007": {
+    "n": "Kackisoigne",
+    "d": ""
+  },
+  "1008": {
+    "n": "Rafale",
+    "d": ""
+  },
+  "1009": {
+    "n": "Peste Noire",
+    "d": ""
+  },
+  "1010": {
+    "n": "Rascasse",
+    "d": ""
+  },
+  "1011": {
+    "n": "Peste Blanche",
+    "d": ""
+  },
+  "1012": {
+    "n": "Raclée",
+    "d": ""
+  },
+  "1013": {
+    "n": "Ravage",
+    "d": ""
+  },
+  "1014": {
+    "n": "Ramonage",
+    "d": ""
+  },
+  "1015": {
+    "n": "Rapidité",
+    "d": ""
+  },
+  "1016": {
+    "n": "Raccourci",
+    "d": ""
+  },
+  "1017": {
+    "n": "Rasoir",
+    "d": ""
+  },
+  "1018": {
+    "n": "Mutagen",
+    "d": ""
+  },
+  "1019": {
+    "n": "Kawabunga",
+    "d": ""
+  },
+  "1021": {
+    "n": "Enracinement",
+    "d": ""
+  },
+  "1022": {
+    "n": "Glanage",
+    "d": ""
+  },
+  "1023": {
+    "n": "Frappe de Corail",
+    "d": ""
+  },
+  "1024": {
+    "n": "Lancer de Corail",
+    "d": ""
+  },
+  "1025": {
+    "n": "Coraillement",
+    "d": ""
+  },
+  "1026": {
+    "n": "Coraillement Magistral",
+    "d": ""
+  },
+  "1027": {
+    "n": "Lancer de Corail Magistral",
+    "d": ""
+  },
+  "1028": {
+    "n": "Frappe de Corail Magistrale",
+    "d": ""
+  },
+  "1029": {
+    "n": "Pierre qui roule n'amasse pas mousse",
+    "d": ""
+  },
+  "1030": {
+    "n": "Pince de corail",
+    "d": ""
+  },
+  "1031": {
+    "n": "Protection de corail",
+    "d": ""
+  },
+  "1032": {
+    "n": "Fleur des îles",
+    "d": ""
+  },
+  "1033": {
+    "n": "Déchirure",
+    "d": ""
+  },
+  "1034": {
+    "n": "Clapet",
+    "d": ""
+  },
+  "1035": {
+    "n": "Cuicui d'Amour",
+    "d": ""
+  },
+  "1036": {
+    "n": "Brisskote",
+    "d": "Passe le tour suivant si la cible reçoit des dommages."
+  },
+  "1037": {
+    "n": "Briss Deuniss",
+    "d": "Augmente les PA du monstre lorsqu'il reçoit des dégâts."
+  },
+  "1038": {
+    "n": "Rasage",
+    "d": "Augmente le nombre de PA à chaque tentative de retrait de PA."
+  },
+  "1039": {
+    "n": "Hololole",
+    "d": "Diminue les résistances élémentaires en fonction de l'élément des dégâts et augmente les autres résistances."
+  },
+  "1040": {
+    "n": "Attraction boueuse",
+    "d": ""
+  },
+  "1041": {
+    "n": "Modération",
+    "d": ""
+  },
+  "1042": {
+    "n": "Nervure",
+    "d": ""
+  },
+  "1043": {
+    "n": "Ecorce putride",
+    "d": "Fait perdre un pourcentage de la vie de la cible à l'attaquant à chaque fois que la cible reçoit des dommages."
+  },
+  "1044": {
+    "n": "Plantage",
+    "d": ""
+  },
+  "1045": {
+    "n": "Repousse",
+    "d": ""
+  },
+  "1046": {
+    "n": "Sève nourrisante",
+    "d": ""
+  },
+  "1047": {
+    "n": "Galle",
+    "d": ""
+  },
+  "1048": {
+    "n": "Morsure critique",
+    "d": ""
+  },
+  "1049": {
+    "n": "Ecorce Détonante",
+    "d": ""
+  },
+  "1050": {
+    "n": "Ecorce Malsaine",
+    "d": ""
+  },
+  "1051": {
+    "n": "Herbe Hacha",
+    "d": ""
+  },
+  "1052": {
+    "n": "Mauvaise Herbe",
+    "d": ""
+  },
+  "1053": {
+    "n": "Recrutement",
+    "d": ""
+  },
+  "1054": {
+    "n": "Bisouille",
+    "d": ""
+  },
+  "1055": {
+    "n": "Pistil ensorcelé",
+    "d": "Réduit les résistances élémentaires de la cible en fonction de l'élément des dommages reçus."
+  },
+  "1056": {
+    "n": "Etamines libertines",
+    "d": ""
+  },
+  "1057": {
+    "n": "Flagellation florale",
+    "d": ""
+  },
+  "1058": {
+    "n": "Hiffe",
+    "d": ""
+  },
+  "1059": {
+    "n": "Helse",
+    "d": ""
+  },
+  "1060": {
+    "n": "Forque",
+    "d": ""
+  },
+  "1061": {
+    "n": "Kokille",
+    "d": ""
+  },
+  "1062": {
+    "n": "Fureur de vivre",
+    "d": "Augmente les dommages de la cible lorsqu'elle reçoit des dommages."
+  },
+  "1063": {
+    "n": "Haleine de vers",
+    "d": ""
+  },
+  "1064": {
+    "n": "Meupette Choh",
+    "d": "Diminue la probabilité d'esquiver la perte de PA, et diminue la probabilité d'esquiver la perte de PM lorsque la cible reçoit des dommages."
+  },
+  "1065": {
+    "n": "test-mille",
+    "d": ""
+  },
+  "1066": {
+    "n": "Tornade pernicieuse",
+    "d": ""
+  },
+  "1067": {
+    "n": "Meurtrissure",
+    "d": ""
+  },
+  "1068": {
+    "n": "Radicule",
+    "d": ""
+  },
+  "1069": {
+    "n": "Radicelle",
+    "d": ""
+  },
+  "1070": {
+    "n": "Pédoncule perfide",
+    "d": ""
+  },
+  "1071": {
+    "n": "Boum Boh",
+    "d": "Change l'état du monstre en fonction de l'élément des dégâts qu'il reçoit."
+  },
+  "1072": {
+    "n": "Glyphe Pair",
+    "d": ""
+  },
+  "1073": {
+    "n": "Glyphe Impair",
+    "d": ""
+  },
+  "1074": {
+    "n": "Invocation du Disciple",
+    "d": ""
+  },
+  "1075": {
+    "n": "Etat pair",
+    "d": ""
+  },
+  "1076": {
+    "n": "Etat impair",
+    "d": ""
+  },
+  "1077": {
+    "n": "Sort de la glyphe paire",
+    "d": ""
+  },
+  "1078": {
+    "n": "Sort de la glyphe impaire",
+    "d": ""
+  },
+  "1079": {
+    "n": "Boue sirupeuse",
+    "d": ""
+  },
+  "1080": {
+    "n": "Bourbier",
+    "d": ""
+  },
+  "1081": {
+    "n": "Tourbe réparatrice",
+    "d": ""
+  },
+  "1082": {
+    "n": "Tourbe Malveillante",
+    "d": ""
+  },
+  "1083": {
+    "n": "Retour du Roi",
+    "d": ""
+  },
+  "1084": {
+    "n": "Dépouillage",
+    "d": ""
+  },
+  "1085": {
+    "n": "Déchaussage",
+    "d": ""
+  },
+  "1086": {
+    "n": "Supplice",
+    "d": ""
+  },
+  "1087": {
+    "n": "Zothomaï",
+    "d": ""
+  },
+  "1088": {
+    "n": "Tyrannie",
+    "d": ""
+  },
+  "1089": {
+    "n": "Gaminerie",
+    "d": ""
+  },
+  "1090": {
+    "n": "Héchaud Fourrée",
+    "d": ""
+  },
+  "1091": {
+    "n": "Mêlée",
+    "d": ""
+  },
+  "1092": {
+    "n": "Bataille pour la terre des Zoths",
+    "d": ""
+  },
+  "1093": {
+    "n": "Incitation",
+    "d": ""
+  },
+  "1094": {
+    "n": "Kulbutage",
+    "d": ""
+  },
+  "1095": {
+    "n": "Emprise",
+    "d": ""
+  },
+  "1096": {
+    "n": "Kraken Primaire",
+    "d": ""
+  },
+  "1097": {
+    "n": "Kraken Secondaire",
+    "d": ""
+  },
+  "1098": {
+    "n": "Kraken Tertiaire",
+    "d": ""
+  },
+  "1099": {
+    "n": "Kraken Quaternaire",
+    "d": ""
+  },
+  "1100": {
+    "n": "Empoisonnement Tentaculaire",
+    "d": ""
+  },
+  "1101": {
+    "n": "Malédiction Tentaculaire",
+    "d": ""
+  },
+  "1102": {
+    "n": "Paralysie Tentaculaire",
+    "d": ""
+  },
+  "1103": {
+    "n": "Kraken",
+    "d": "Modifie l'humeur du Kralamoure Géant en fonction de l'élément des dégâts qu'il reçoit."
+  },
+  "1104": {
+    "n": "Kracheau ralentissant",
+    "d": ""
+  },
+  "1105": {
+    "n": "Kracheau immobilisant",
+    "d": ""
+  },
+  "1106": {
+    "n": "Vulnérabilité de la Tourbière",
+    "d": ""
+  },
+  "1107": {
+    "n": "Invocation de Tentacule Primaire",
+    "d": ""
+  },
+  "1108": {
+    "n": "Invocation de Tentacule Secondaire",
+    "d": ""
+  },
+  "1109": {
+    "n": "Invocation de Tentacule Tertiaire",
+    "d": ""
+  },
+  "1110": {
+    "n": "Invocation de Tentacule Quaternaire",
+    "d": ""
+  },
+  "1111": {
+    "n": "Colère de Zatoïshwan",
+    "d": ""
+  },
+  "1112": {
+    "n": "Protection de granit",
+    "d": ""
+  },
+  "1113": {
+    "n": "Envol du Tofu",
+    "d": ""
+  },
+  "1114": {
+    "n": "Frénésie du Bouftou",
+    "d": ""
+  },
+  "1115": {
+    "n": "Furie du Kimbo",
+    "d": ""
+  },
+  "1116": {
+    "n": "Coup de Bambou",
+    "d": "Interdit l'utilisation des attaques au corps à corps."
+  },
+  "1117": {
+    "n": "Doom",
+    "d": ""
+  },
+  "1118": {
+    "n": "Téléportation du Kimbo",
+    "d": ""
+  },
+  "1121": {
+    "n": "Souape",
+    "d": ""
+  },
+  "1122": {
+    "n": "Je vous en prie",
+    "d": ""
+  },
+  "1123": {
+    "n": "Téléportation du Champa",
+    "d": ""
+  },
+  "1124": {
+    "n": "Attraction champêtre",
+    "d": ""
+  },
+  "1125": {
+    "n": "Champ Homi",
+    "d": ""
+  },
+  "1126": {
+    "n": "Champ Hagne",
+    "d": ""
+  },
+  "1127": {
+    "n": "Ecraseur croisé",
+    "d": "Attaque infligeant des dégâts Terre et repoussant tous les ennemis au contact."
+  },
+  "1128": {
+    "n": "Exécution",
+    "d": "Attaque ciblée infligeant des dégâts Neutre et désenvoûtant."
+  },
+  "1129": {
+    "n": "Siphon d'âme",
+    "d": "Attaque ciblée volant de la vie Air et des PA, et rapprochant la cible."
+  },
+  "1130": {
+    "n": "Pulsion meurtrière",
+    "d": "Augmente les dommages et les PA, renvoie les dommages."
+  },
+  "1131": {
+    "n": "Enchaînement noir",
+    "d": "Attaque affectant les ennemis dans une large zone autour d'Oto, inflige des dégâts feu, réduit l'agilité et la portée."
+  },
+  "1132": {
+    "n": "Crevasse",
+    "d": ""
+  },
+  "1133": {
+    "n": "Prévention de Turorte",
+    "d": ""
+  },
+  "1134": {
+    "n": "Sabrage",
+    "d": ""
+  },
+  "1135": {
+    "n": "Protection démoniaque",
+    "d": "Augmente la réduction des dommages d'un allié."
+  },
+  "1136": {
+    "n": "Volve paralysante",
+    "d": ""
+  },
+  "1137": {
+    "n": "Soufflette sporadique",
+    "d": ""
+  },
+  "1138": {
+    "n": "Thalle neutralisant",
+    "d": ""
+  },
+  "1139": {
+    "n": "Graphiose",
+    "d": "Fait perdre un pourcentage de la vie de la cible lorsqu'elle reçoit des dommages."
+  },
+  "1140": {
+    "n": "Fong Ku",
+    "d": ""
+  },
+  "1141": {
+    "n": "Mycose toujours",
+    "d": ""
+  },
+  "1142": {
+    "n": "Mildiou",
+    "d": ""
+  },
+  "1143": {
+    "n": "Amanite roglicérine",
+    "d": ""
+  },
+  "1144": {
+    "n": "Cèpe Harti",
+    "d": "Augmente les dommages occasionnés par la cible à chaque fois qu'elle reçoit des dommages."
+  },
+  "1145": {
+    "n": "Sanction fongique",
+    "d": ""
+  },
+  "1148": {
+    "n": "Soin fongique",
+    "d": ""
+  },
+  "1149": {
+    "n": "Protection fongique",
+    "d": "Augmente les dommages renvoyés par la cible lorsqu'elle reçoit des dommages."
+  },
+  "1150": {
+    "n": "Spore de combat",
+    "d": ""
+  },
+  "1151": {
+    "n": "Mikota",
+    "d": ""
+  },
+  "1152": {
+    "n": "Levure",
+    "d": ""
+  },
+  "1153": {
+    "n": "Fesse de loup",
+    "d": ""
+  },
+  "1157": {
+    "n": "Invasion fongique",
+    "d": ""
+  },
+  "1158": {
+    "n": "Explosion Fongique",
+    "d": ""
+  },
+  "1159": {
+    "n": "Champ Némar",
+    "d": ""
+  },
+  "1160": {
+    "n": "Accélération fongique",
+    "d": "Augmente les points de mouvement de la cible lorsqu'elle reçoit des dommages."
+  },
+  "1161": {
+    "n": "Hallucination",
+    "d": "Soigne la cible lorsqu'elle reçoit des dommages."
+  },
+  "1162": {
+    "n": "Bizarrerie",
+    "d": "Augmente la puissance de la cible lorsqu'elle reçoit des dommages."
+  },
+  "1163": {
+    "n": "Acharnement",
+    "d": ""
+  },
+  "1164": {
+    "n": "Gloutage",
+    "d": ""
+  },
+  "1165": {
+    "n": "Bloblo",
+    "d": ""
+  },
+  "1166": {
+    "n": "Blopiction",
+    "d": ""
+  },
+  "1167": {
+    "n": "Blopzone",
+    "d": ""
+  },
+  "1168": {
+    "n": "Blopsoin",
+    "d": ""
+  },
+  "1169": {
+    "n": "Blopunition Royale",
+    "d": ""
+  },
+  "1170": {
+    "n": "Blovocation",
+    "d": ""
+  },
+  "1171": {
+    "n": "Blotection",
+    "d": ""
+  },
+  "1172": {
+    "n": "Blopoutrage Royal",
+    "d": ""
+  },
+  "1173": {
+    "n": "Blopagation",
+    "d": ""
+  },
+  "1174": {
+    "n": "Blopacification",
+    "d": ""
+  },
+  "1176": {
+    "n": "Leutir de Qu'Tan",
+    "d": "Augmente considérablement les PM mais en retire à chaque tour."
+  },
+  "1178": {
+    "n": "Malédiction de Qu'Tan",
+    "d": "Réduit les coups critiques. Si la cible est soignée, elle subit une diminution de sa portée."
+  },
+  "1179": {
+    "n": "Lacération de Qu'Tan",
+    "d": ""
+  },
+  "1180": {
+    "n": "Lacération cruelle",
+    "d": ""
+  },
+  "1181": {
+    "n": "Trait Magique",
+    "d": "Niveau 1 utilisé uniquement par Gardien de la Prison Kebra."
+  },
+  "1182": {
+    "n": "Etreinte vampirique",
+    "d": ""
+  },
+  "1183": {
+    "n": "Toucher de Mort",
+    "d": ""
+  },
+  "1184": {
+    "n": "Effleurement étourdissant",
+    "d": ""
+  },
+  "1185": {
+    "n": "Illumination sombre",
+    "d": "L'intelligence augmente à chaque tour."
+  },
+  "1186": {
+    "n": "Météorite Sombre",
+    "d": ""
+  },
+  "1187": {
+    "n": "Flamme du Météore",
+    "d": "Effet glyphe du Météore Sombre"
+  },
+  "1188": {
+    "n": "Mot Abyssal",
+    "d": ""
+  },
+  "1191": {
+    "n": "Invocation de Diablotin",
+    "d": ""
+  },
+  "1192": {
+    "n": "Pacte sanglant de Djaul",
+    "d": ""
+  },
+  "1193": {
+    "n": "Blague vaseuse",
+    "d": ""
+  },
+  "1196": {
+    "n": "Captation Explosive",
+    "d": ""
+  },
+  "1198": {
+    "n": "Brûlure Céleste",
+    "d": ""
+  },
+  "1200": {
+    "n": "Glace Disruptrice",
+    "d": ""
+  },
+  "1201": {
+    "n": "Bénédiction",
+    "d": ""
+  },
+  "1203": {
+    "n": "Inspiration Céleste",
+    "d": ""
+  },
+  "1204": {
+    "n": "Purification Céleste",
+    "d": ""
+  },
+  "1205": {
+    "n": "Pénitence",
+    "d": ""
+  },
+  "1206": {
+    "n": "Vol dans les plumes",
+    "d": ""
+  },
+  "1207": {
+    "n": "Lame Purificatrice",
+    "d": ""
+  },
+  "1208": {
+    "n": "Bastonnade",
+    "d": ""
+  },
+  "1209": {
+    "n": "Matraquage",
+    "d": ""
+  },
+  "1210": {
+    "n": "Hod",
+    "d": ""
+  },
+  "1211": {
+    "n": "Malkouth",
+    "d": ""
+  },
+  "1212": {
+    "n": "Yesod",
+    "d": ""
+  },
+  "1213": {
+    "n": "Flèche d'entrave",
+    "d": ""
+  },
+  "1214": {
+    "n": "Trait Répulsif",
+    "d": ""
+  },
+  "1215": {
+    "n": "Espionnage",
+    "d": ""
+  },
+  "1216": {
+    "n": "Chaîne d'éclairs",
+    "d": ""
+  },
+  "1217": {
+    "n": "Phosphore",
+    "d": "Le Phosphore inflige d'importants dégâts Feu mais soigne la cible au fil du temps."
+  },
+  "1218": {
+    "n": "Scaphandre Ignifugé",
+    "d": ""
+  },
+  "1219": {
+    "n": "Coup du Chafer Maudit",
+    "d": ""
+  },
+  "1220": {
+    "n": "Tir du Chafer Maudit",
+    "d": ""
+  },
+  "1221": {
+    "n": "Aura Noire",
+    "d": ""
+  },
+  "1222": {
+    "n": "Flèche Souillée",
+    "d": ""
+  },
+  "1223": {
+    "n": "Embourbement",
+    "d": "Retire tous les PM pour un tour."
+  },
+  "1224": {
+    "n": "Coup de Lamicel",
+    "d": ""
+  },
+  "1225": {
+    "n": "Annulation des soins",
+    "d": ""
+  },
+  "1226": {
+    "n": "Morsure du démon",
+    "d": ""
+  },
+  "1227": {
+    "n": "Ronces des Abysses",
+    "d": ""
+  },
+  "1228": {
+    "n": "Poison des Abysses",
+    "d": "Inflige une perte de PA et des dégâts de Terre sur la durée."
+  },
+  "1229": {
+    "n": "Malédiction de Faiblesse",
+    "d": ""
+  },
+  "1230": {
+    "n": "Malédiction d'Imprudence",
+    "d": "Augmente les dégâts infligés de 200% mais double aussi tous les dégâts subis."
+  },
+  "1231": {
+    "n": "Malédiction de Douleur",
+    "d": ""
+  },
+  "1232": {
+    "n": "Miroir démoniaque",
+    "d": "Renvoie tous les dégâts et donne un bonus aux dégâts du lanceur lorsqu'il est touché."
+  },
+  "1233": {
+    "n": "Vengeance Céleste",
+    "d": ""
+  },
+  "1234": {
+    "n": "Méthode Coué",
+    "d": ""
+  },
+  "1235": {
+    "n": "Griffe Invocatrice de Grimpill",
+    "d": ""
+  },
+  "1236": {
+    "n": "Commandement",
+    "d": ""
+  },
+  "1237": {
+    "n": "Embuscade",
+    "d": ""
+  },
+  "1238": {
+    "n": "Armure Minérale",
+    "d": ""
+  },
+  "1239": {
+    "n": "Aplatissement",
+    "d": ""
+  },
+  "1240": {
+    "n": "Eboulement",
+    "d": ""
+  },
+  "1241": {
+    "n": "Couik",
+    "d": ""
+  },
+  "1242": {
+    "n": "Lance Dragon",
+    "d": ""
+  },
+  "1243": {
+    "n": "Bâtonnage",
+    "d": ""
+  },
+  "1244": {
+    "n": "Portail des Abysses",
+    "d": ""
+  },
+  "1245": {
+    "n": "Charge Brutale",
+    "d": ""
+  },
+  "1263": {
+    "n": "Sirop Spore",
+    "d": ""
+  },
+  "1264": {
+    "n": "Spore Hanchambre",
+    "d": "Augmente la probabilité de réaliser des coups critiques de la cible, lorsqu'elle reçoit des dommages."
+  },
+  "1265": {
+    "n": "Les Coprins d'abord",
+    "d": ""
+  },
+  "1266": {
+    "n": "Lenteur",
+    "d": ""
+  },
+  "1267": {
+    "n": "Frénésie du démon",
+    "d": "Augmente les PA, les PM et les dégâts infligés lorsque le lanceur subit des dégâts."
+  },
+  "1268": {
+    "n": "Mot Ténébreux",
+    "d": "Diminue la réduction des dégâts magiques, et diminue progressivement la résistance au feu."
+  },
+  "1270": {
+    "n": "Guebourah",
+    "d": ""
+  },
+  "1271": {
+    "n": "Binah",
+    "d": ""
+  },
+  "1272": {
+    "n": "Netzach",
+    "d": ""
+  },
+  "1273": {
+    "n": "Hessed",
+    "d": ""
+  },
+  "1274": {
+    "n": "Tiphereth",
+    "d": ""
+  },
+  "1275": {
+    "n": "Hokhmah",
+    "d": ""
+  },
+  "1276": {
+    "n": "Osgeren",
+    "d": "Soigne le lanceur au début de son prochain tour."
+  },
+  "1277": {
+    "n": "Attraction squelettique",
+    "d": ""
+  },
+  "1278": {
+    "n": "Autorité de Lamicel",
+    "d": ""
+  },
+  "1279": {
+    "n": "Tourbe écrasante",
+    "d": "Empêche l'utilisation des sorts de téléportation"
+  },
+  "1280": {
+    "n": "Transpékisation",
+    "d": ""
+  },
+  "1283": {
+    "n": "Dévastation cruelle",
+    "d": "Inflige des dégâts en zone dans tous les éléments."
+  },
+  "1284": {
+    "n": "Tir cruel",
+    "d": "Inflige des dégâts dans tous les éléments, et invoque un Chaferfu."
+  },
+  "1285": {
+    "n": "Souffle de Saverne",
+    "d": "Ce sort permet de repousser les alliés ou les ennemis situés autour de votre cible, et de retirer un PM aux ennemis."
+  },
+  "1286": {
+    "n": "Infamie",
+    "d": "Occasionne un vol de vie dans tous les éléments et repousse l'ennemi."
+  },
+  "1287": {
+    "n": "Le Vil Age",
+    "d": "Occasionne des dommages aléatoirement dans un élément et diminue les dommages occasionnés par la cible."
+  },
+  "1288": {
+    "n": "Dévastation nuageuse",
+    "d": "Occasionne des dommages de type Air en zone."
+  },
+  "1289": {
+    "n": "Tir nuageux",
+    "d": "Inflige des dommages de type Air à distance et repousse la cible."
+  },
+  "1290": {
+    "n": "Vélocité",
+    "d": "Augmente les PM de la cible."
+  },
+  "1291": {
+    "n": "Sixième sens",
+    "d": "Révèle les personnages invisibles ainsi que les pièges et repousse les personnages présents autour du lanceur."
+  },
+  "1292": {
+    "n": "Dévastation incandescente",
+    "d": "Inflige des dégâts de type Feu en zone."
+  },
+  "1293": {
+    "n": "Tir incandescent",
+    "d": "Inflige des dommages de type Feu à longue distance."
+  },
+  "1294": {
+    "n": "Fusion",
+    "d": "Inflige des dommages de type Feu en zone autour du lanceur."
+  },
+  "1295": {
+    "n": "Signe",
+    "d": "Inflige des dommages de type Feu à la cible pendant plusieurs tours."
+  },
+  "1296": {
+    "n": "Dévastation aqueuse",
+    "d": "Inflige des dommages de type Eau en zone."
+  },
+  "1297": {
+    "n": "Tir aqueux",
+    "d": "Inflige des dommages de type Eau à longue portée."
+  },
+  "1298": {
+    "n": "Restauration",
+    "d": "Restaure une partie des points de vie de la cible."
+  },
+  "1299": {
+    "n": "La jeune fille de l'eau",
+    "d": "Invoque une créature qui ne se déplace pas mais soigne les alliés à distance."
+  },
+  "1300": {
+    "n": "Dévastation terrestre",
+    "d": "Inflige des dommages de type Terre en zone."
+  },
+  "1301": {
+    "n": "Tir terrestre",
+    "d": "Inflige des dommages de type Terre à longue portée et fait perdre 1 PM sur coup critique."
+  },
+  "1302": {
+    "n": "Crapautage",
+    "d": "Transforme en crapaud pendant un tour le personnage ciblé."
+  },
+  "1303": {
+    "n": "Incassable",
+    "d": "Réduit les dommages reçus."
+  },
+  "1334": {
+    "n": "Eau soignante",
+    "d": ""
+  },
+  "1367": {
+    "n": "Lacération de Djaul",
+    "d": ""
+  },
+  "1368": {
+    "n": "Malédiction glaciaire de Djaul",
+    "d": ""
+  },
+  "1369": {
+    "n": "Perfidie de Djaul",
+    "d": ""
+  },
+  "1370": {
+    "n": "Protection hivernale de Djaul",
+    "d": ""
+  },
+  "1371": {
+    "n": "Tempête de glace de Djaul",
+    "d": ""
+  },
+  "1372": {
+    "n": "Morsure glaciale de Djaul",
+    "d": ""
+  },
+  "1373": {
+    "n": "Pulvérisation de Silouate",
+    "d": ""
+  },
+  "1374": {
+    "n": "Charge Cornue de Silouate",
+    "d": ""
+  },
+  "1375": {
+    "n": "Invocation bovine de Silouate",
+    "d": ""
+  },
+  "1376": {
+    "n": "Body Building de Silouate",
+    "d": ""
+  },
+  "1377": {
+    "n": "Tremblement de Silouate",
+    "d": ""
+  },
+  "1378": {
+    "n": "Libération de Silouate",
+    "d": ""
+  },
+  "1379": {
+    "n": "Sac Animé de Sumens",
+    "d": ""
+  },
+  "1380": {
+    "n": "Pelle Spectrale de Sumens",
+    "d": ""
+  },
+  "1381": {
+    "n": "Pelle Massacrante de Sumens",
+    "d": ""
+  },
+  "1382": {
+    "n": "Clé Réductrice de Sumens",
+    "d": ""
+  },
+  "1383": {
+    "n": "Trésor de Sumens",
+    "d": ""
+  },
+  "1384": {
+    "n": "Athanor de Sumens",
+    "d": ""
+  },
+  "1385": {
+    "n": "Richesses de Sumens",
+    "d": ""
+  },
+  "1386": {
+    "n": "Ennemi juré",
+    "d": ""
+  },
+  "1387": {
+    "n": "Prison de glace",
+    "d": ""
+  },
+  "1388": {
+    "n": "Fruit de la Passion",
+    "d": ""
+  },
+  "1389": {
+    "n": "Blague hilarante",
+    "d": ""
+  },
+  "1390": {
+    "n": "Puissance Sylvestre de Pouchecot",
+    "d": ""
+  },
+  "1391": {
+    "n": "Ronce Cinglante de Pouchecot",
+    "d": ""
+  },
+  "1392": {
+    "n": "Larmes de Pouchecot",
+    "d": ""
+  },
+  "1393": {
+    "n": "La Fruitée de Pouchecot",
+    "d": ""
+  },
+  "1394": {
+    "n": "Pelure de Pouchecot",
+    "d": ""
+  },
+  "1395": {
+    "n": "Changeforme d'Hécate",
+    "d": "Permet à Hécate de se changer en scorbute pour augmenter ses capacités offensives."
+  },
+  "1396": {
+    "n": "Coup de pince d'Hécate",
+    "d": ""
+  },
+  "1397": {
+    "n": "Coup de queue d'Hécate",
+    "d": ""
+  },
+  "1398": {
+    "n": "Hécate Hombe",
+    "d": "(note aux traducteurs : Anciennement "
+  },
+  "1399": {
+    "n": "Métamorphose d'Hécate",
+    "d": "Permet à Hécate de se changer en écureuil pour augmenter ses capacités de soutien."
+  },
+  "1400": {
+    "n": "Protection d'Hécate",
+    "d": ""
+  },
+  "1401": {
+    "n": "Bénédiction d'Hécate",
+    "d": ""
+  },
+  "1402": {
+    "n": "Graines d'Hécate",
+    "d": ""
+  },
+  "1403": {
+    "n": "Citwouille-gawou d'Hécate",
+    "d": "Permet à Hécate de se changer en citwouille pour augmenter ses capacités affaiblissantes."
+  },
+  "1404": {
+    "n": "Malédiction d'Hécate",
+    "d": ""
+  },
+  "1405": {
+    "n": "Mauvais oeil d'Hécate",
+    "d": ""
+  },
+  "1406": {
+    "n": "Brûlure d'Hécate",
+    "d": ""
+  },
+  "1407": {
+    "n": "Anamorphose d'Hécate",
+    "d": "Permet à Hécate de reprendre sa forme originelle mais la désenvoûte en même temps."
+  },
+  "1408": {
+    "n": "Mot de guérison d'Hécate",
+    "d": "Soigne un allié mais fait perdre des PA à Hécate."
+  },
+  "1409": {
+    "n": "Ailes perforantes d'Hécate",
+    "d": ""
+  },
+  "1478": {
+    "n": "Pirouette et Cacahuète",
+    "d": ""
+  },
+  "1479": {
+    "n": "Ici ou Là",
+    "d": ""
+  },
+  "1480": {
+    "n": "Télékinésie",
+    "d": ""
+  },
+  "1481": {
+    "n": "Invocation d'outre-tombe",
+    "d": ""
+  },
+  "1482": {
+    "n": "Miroir Magique",
+    "d": ""
+  },
+  "1483": {
+    "n": "Bouge de là",
+    "d": ""
+  },
+  "1484": {
+    "n": "Décapitation",
+    "d": ""
+  },
+  "1485": {
+    "n": "Flip Flop",
+    "d": ""
+  },
+  "1486": {
+    "n": "Piègection",
+    "d": ""
+  },
+  "1487": {
+    "n": "Eboulis",
+    "d": ""
+  },
+  "1488": {
+    "n": "Alarme",
+    "d": ""
+  },
+  "1489": {
+    "n": "Disfonction",
+    "d": ""
+  },
+  "1490": {
+    "n": "Robo-Fléau",
+    "d": ""
+  },
+  "1491": {
+    "n": "Eclair Obscur",
+    "d": ""
+  },
+  "1493": {
+    "n": "Explosion de masse",
+    "d": "Utilisé pour le sort de sram piège de masse."
+  },
+  "1494": {
+    "n": "Explosion de masse critique",
+    "d": "Utilisé pour le sort de sram piège de masse en critique."
+  },
+  "1495": {
+    "n": "Empoisonnement Sram",
+    "d": "Utilisé pour le piège empoisonné du sram"
+  },
+  "1496": {
+    "n": "Empoisonnement Sram critique.",
+    "d": "Utilisé pour le piège empoisonné du sram en critique."
+  },
+  "1497": {
+    "n": "Silence du sram",
+    "d": "Utilisé pour le piège de silence Sram."
+  },
+  "1498": {
+    "n": "Désinvocation Sram",
+    "d": "Utilisé pour le piège de désinvocation Sram."
+  },
+  "1499": {
+    "n": "Piège mortel Sram",
+    "d": "Utilisé pour le piège mortel du Sram."
+  },
+  "1500": {
+    "n": "Piège mortel critique",
+    "d": "Utilisé pour le critique du piège mortel Sram."
+  },
+  "1501": {
+    "n": "Désinvocation critique Sram.",
+    "d": "Utilisé pour le critique du piège de désinvocation Sram."
+  },
+  "1502": {
+    "n": "Silence critique du Sram.",
+    "d": "Utilisé pour le critique du piège de silence Sram."
+  },
+  "1503": {
+    "n": "Glyphe agressif",
+    "d": "Utilisé pour le sort de Glyphe agressif du Feca."
+  },
+  "1504": {
+    "n": "Glyphe agressif critique",
+    "d": "Utilisé pour le critique du glyphe agressif Feca."
+  },
+  "1505": {
+    "n": "Glyphe ralentissant",
+    "d": "Utilisé pour le glyphe de ralentissement Feca."
+  },
+  "1506": {
+    "n": "Glyphe ralentissant critique",
+    "d": "Utilisé pour le critique du glyphe d'Aveuglement Feca."
+  },
+  "1507": {
+    "n": "Glyphe de feu critique",
+    "d": "Utilisé par le critique du glyphe enflammé."
+  },
+  "1508": {
+    "n": "Glyphe immobilisation critique",
+    "d": "Utilisé pour le glyphe d'immobilisation Feca."
+  },
+  "1509": {
+    "n": "Glyphe silence critique",
+    "d": "Utilisé pour le critique de glyphe de silence."
+  },
+  "1510": {
+    "n": "Agacement",
+    "d": "Utilisé par la folle Sadida."
+  },
+  "1511": {
+    "n": "Maladresse",
+    "d": "Utilisé par la fourbe"
+  },
+  "1516": {
+    "n": "Morsure",
+    "d": ""
+  },
+  "1517": {
+    "n": "Appel",
+    "d": "Attire la cible."
+  },
+  "1518": {
+    "n": "Laine épaisse",
+    "d": "Diminue les dommages reçus."
+  },
+  "1519": {
+    "n": "Blocage",
+    "d": "Réduit les dommages reçus."
+  },
+  "1520": {
+    "n": "Feu vital",
+    "d": "Soigne les cibles dans la zone d'effet."
+  },
+  "1521": {
+    "n": "Etincelle de vie",
+    "d": "Soigne la cible."
+  },
+  "1522": {
+    "n": "Purification",
+    "d": "Retire les envoûtements."
+  },
+  "1523": {
+    "n": "Brasier",
+    "d": "Occasionne des dommages Feu."
+  },
+  "1524": {
+    "n": "Souffle enflammé",
+    "d": "Occasionne des dommages Feu."
+  },
+  "1525": {
+    "n": "Concussion",
+    "d": "Occasionne des dommages Feu et pousse la cible."
+  },
+  "1526": {
+    "n": "Mauvais oeil",
+    "d": "Réduit la portée de la cible."
+  },
+  "1527": {
+    "n": "Boue",
+    "d": "Retire des PM à la cible."
+  },
+  "1528": {
+    "n": "Griffes",
+    "d": "Occasionne des dommages Air."
+  },
+  "1529": {
+    "n": "Crachat",
+    "d": "Occasionne des dommages Eau."
+  },
+  "1530": {
+    "n": "Course",
+    "d": "Augmente les PM."
+  },
+  "1531": {
+    "n": "Equilibre",
+    "d": "Augmente l'agilité."
+  },
+  "1532": {
+    "n": "Frappe d'Oshima",
+    "d": ""
+  },
+  "1533": {
+    "n": "Baffe d'Oshima",
+    "d": ""
+  },
+  "1534": {
+    "n": "Eclair d'Oshima",
+    "d": ""
+  },
+  "1535": {
+    "n": "Bourrasque d'Oshima",
+    "d": ""
+  },
+  "1536": {
+    "n": "Souffle d'Oshima",
+    "d": ""
+  },
+  "1537": {
+    "n": "Panique d'Oshima",
+    "d": ""
+  },
+  "1538": {
+    "n": "Déstabilisation d'Oshima",
+    "d": ""
+  },
+  "1539": {
+    "n": "Protection d'Oshima",
+    "d": ""
+  },
+  "1540": {
+    "n": "Goulification",
+    "d": "Applique l'état goulifié. La cible sera transformée en Goule pour plusieurs combats si elle est tuée en étant sous l'état goulifié et si le combat est équilibré (gains de points d'honneur)."
+  },
+  "1541": {
+    "n": "Lame incendiaire",
+    "d": "Cause des dommages de feu."
+  },
+  "1542": {
+    "n": "Lame gelée",
+    "d": "Cause des dommages d'eau."
+  },
+  "1543": {
+    "n": "Lame rocailleuse",
+    "d": "Cause des dommages de terre."
+  },
+  "1544": {
+    "n": "Lame volante",
+    "d": "Cause des dommages d'air"
+  },
+  "1545": {
+    "n": "Entaille brûlante",
+    "d": "Cause des dommages de feu répétés."
+  },
+  "1546": {
+    "n": "Entaille gelée",
+    "d": "Cause des dommages d'eau répétés."
+  },
+  "1547": {
+    "n": "Entaille terrestre",
+    "d": "Cause des dommages de terre répétés."
+  },
+  "1548": {
+    "n": "Entaille de vent",
+    "d": "Cause des dommages d'air répétés."
+  },
+  "1549": {
+    "n": "Feinte de feu",
+    "d": "Cause des dommages de feu continus."
+  },
+  "1550": {
+    "n": "Feinte de gel",
+    "d": "Cause des dommages d'eau continus."
+  },
+  "1551": {
+    "n": "Feinte de terre",
+    "d": "Cause des dommages de terre continus."
+  },
+  "1552": {
+    "n": "Feinte de vent",
+    "d": "Cause des dommages d'air continus."
+  },
+  "1553": {
+    "n": "Pieds légers",
+    "d": "Augmente les PM pour un court instant."
+  },
+  "1554": {
+    "n": "Acuité",
+    "d": "Améliore les dommages et les coups critiques du lanceur."
+  },
+  "1555": {
+    "n": "Déplacement éclair",
+    "d": "Téléporte sur une courte distance."
+  },
+  "1556": {
+    "n": "Fourberie",
+    "d": "Rend quelques points de vie par coup reçu."
+  },
+  "1557": {
+    "n": "Désarmement",
+    "d": "Réduit les dommages de la cible."
+  },
+  "1558": {
+    "n": "Lacets noués",
+    "d": "Réduit les PM de la cible"
+  },
+  "1559": {
+    "n": "Lame cruelle",
+    "d": "Augmente les dommages et les coups critiques."
+  },
+  "1560": {
+    "n": "Appel rat-dical",
+    "d": "Invoque un Rat d'égoutant."
+  },
+  "1561": {
+    "n": "Tir enflammé",
+    "d": "Cause des dommages de type feu."
+  },
+  "1562": {
+    "n": "Tir de glace",
+    "d": "Cause des dommages de type eau."
+  },
+  "1563": {
+    "n": "Tir sismique",
+    "d": "Cause des dommages de type terre."
+  },
+  "1564": {
+    "n": "Tir venteux",
+    "d": "Cause des dommages de type air."
+  },
+  "1565": {
+    "n": "Trait brûlant",
+    "d": "Cause des dommages de feu à distance."
+  },
+  "1566": {
+    "n": "Trait glacial",
+    "d": "Cause des dommages d'eau à distance."
+  },
+  "1567": {
+    "n": "Trait sismique",
+    "d": "Cause des dommages de terre à distance."
+  },
+  "1568": {
+    "n": "Trait venteux",
+    "d": "Cause des dommages d'air à distance."
+  },
+  "1569": {
+    "n": "Tir mortel incendiaire",
+    "d": "Cause des dommages de type feu à moyenne portée."
+  },
+  "1570": {
+    "n": "Tir mortel polaire",
+    "d": "Cause des dommages de type eau à moyenne portée."
+  },
+  "1571": {
+    "n": "Tir mortel terrestre",
+    "d": "Cause des dommages de type terre à moyenne portée."
+  },
+  "1572": {
+    "n": "Tir mortel céleste",
+    "d": "Cause des dommages de type air à moyenne portée."
+  },
+  "1573": {
+    "n": "Ruade",
+    "d": "Repousse un adversaire."
+  },
+  "1574": {
+    "n": "Corde raide",
+    "d": "Améliore la portée des autres sorts."
+  },
+  "1575": {
+    "n": "Flash",
+    "d": "Réduit la portée des attaques adverses."
+  },
+  "1576": {
+    "n": "Furtivité",
+    "d": "Prémunit en partie des dommages adverses."
+  },
+  "1577": {
+    "n": "Flèche collante",
+    "d": "Réduit les PM de la cible."
+  },
+  "1578": {
+    "n": "Sentinelle",
+    "d": "Révèle les objets dissimulés."
+  },
+  "1579": {
+    "n": "Archerie",
+    "d": "Améliore l'efficacité de l'arc du bandit archer."
+  },
+  "1580": {
+    "n": "Sac d'os",
+    "d": "Invoque un chafer."
+  },
+  "1581": {
+    "n": "Frappe enflammée",
+    "d": "Cause des dommages de type feu au corps-à-corps."
+  },
+  "1582": {
+    "n": "Frappe liquide",
+    "d": "Cause des dommages de type eau au corps-à-corps."
+  },
+  "1583": {
+    "n": "Frappe minérale",
+    "d": "Cause des dommages de type terre au corps-à-corps."
+  },
+  "1584": {
+    "n": "Frappe aérienne",
+    "d": "Cause des dommages de type air au corps-à-corps."
+  },
+  "1585": {
+    "n": "Coup de feu",
+    "d": "Occasionne des dommages feu au contact."
+  },
+  "1586": {
+    "n": "Coup de glace",
+    "d": "Occasionne des dommages eau au contact."
+  },
+  "1587": {
+    "n": "Coup terrestre",
+    "d": "Occasionne des dommages terre au contact."
+  },
+  "1588": {
+    "n": "Coup venteux",
+    "d": "Occasionne des dommages air au contact."
+  },
+  "1589": {
+    "n": "Écrasement brûlant",
+    "d": "Une puissante attaque de feu."
+  },
+  "1590": {
+    "n": "Écrasement glaçant",
+    "d": "Une puissante attaque d'eau."
+  },
+  "1591": {
+    "n": "Écrasement sismique",
+    "d": "Une puissante attaque de terre."
+  },
+  "1592": {
+    "n": "Écrasement aérien",
+    "d": "Une puissante attaque d'air."
+  },
+  "1593": {
+    "n": "Brigandine",
+    "d": "Protège le lanceur et en partie les alliés proches."
+  },
+  "1594": {
+    "n": "Inexpérience",
+    "d": "Réduit l'agilité et augmente les échecs critiques de la cible."
+  },
+  "1595": {
+    "n": "Fureur du baroudeur",
+    "d": "Une forte augmentation des dommages au détriment des PA."
+  },
+  "1596": {
+    "n": "Coup de bouclier",
+    "d": "Repousse les adversaires et protège le lanceur."
+  },
+  "1597": {
+    "n": "Second souffle",
+    "d": "Augmente la vitalité du lanceur."
+  },
+  "1598": {
+    "n": "Ruée",
+    "d": "Augmente les PM."
+  },
+  "1599": {
+    "n": "Science martiale",
+    "d": "Améliore la maîtrise du bâton du bandit baroudeur."
+  },
+  "1600": {
+    "n": "A la Rat-masse",
+    "d": "Invoque un rat d'égoutant chaman."
+  },
+  "1601": {
+    "n": "Météore magmatique",
+    "d": "Cause des dommages de type feu en zone."
+  },
+  "1602": {
+    "n": "Météore glacé",
+    "d": "Cause des dommages de type eau en zone."
+  },
+  "1603": {
+    "n": "Météore solide",
+    "d": "Cause des dommages de type terre en zone."
+  },
+  "1604": {
+    "n": "Météore gazeux",
+    "d": "Cause des dommages de type air en zone."
+  },
+  "1605": {
+    "n": "Éclair de feu",
+    "d": "Cause des dommages de type feu à moyenne portée."
+  },
+  "1606": {
+    "n": "Éclair d'eau",
+    "d": "Cause des dommages de type eau à moyenne portée."
+  },
+  "1607": {
+    "n": "Éclair minéral",
+    "d": "Cause des dommages de type terre à moyenne portée."
+  },
+  "1608": {
+    "n": "Éclair de vent",
+    "d": "Cause des dommages de type air à moyenne portée."
+  },
+  "1609": {
+    "n": "Vitalité brûlante",
+    "d": "Vol de la vie (feu)."
+  },
+  "1610": {
+    "n": "Vitalité glacée",
+    "d": "Vol de la vie (eau)."
+  },
+  "1611": {
+    "n": "Vitalité de la pierre",
+    "d": "Vol de la vie (terre)."
+  },
+  "1612": {
+    "n": "Vitalité du vent",
+    "d": "Vol de la vie à la cible (air)."
+  },
+  "1613": {
+    "n": "Abattement",
+    "d": "Réduit les dommages."
+  },
+  "1614": {
+    "n": "Démystification",
+    "d": "Dissipe les envoûtements."
+  },
+  "1615": {
+    "n": "Adrénaline",
+    "d": "Augmente le nombre de PA."
+  },
+  "1616": {
+    "n": "Etourdissement",
+    "d": "Retire des PA."
+  },
+  "1617": {
+    "n": "Cicatrisation",
+    "d": "Rend quelques points de vie."
+  },
+  "1618": {
+    "n": "Pas les dents",
+    "d": "Renvoie les sorts."
+  },
+  "1619": {
+    "n": "Baguette du sorcier",
+    "d": "Améliore l'efficacité de la baguette du bandit ensorceleur."
+  },
+  "1620": {
+    "n": "Garde nécrotique",
+    "d": "Invoque un chafer lancier."
+  },
+  "1621": {
+    "n": "Rat-diologue",
+    "d": ""
+  },
+  "1622": {
+    "n": "Semelle molle",
+    "d": ""
+  },
+  "1623": {
+    "n": "Rat-némique",
+    "d": ""
+  },
+  "1624": {
+    "n": "Force d'outre-tombe",
+    "d": ""
+  },
+  "1625": {
+    "n": "Mordorsène",
+    "d": ""
+  },
+  "1626": {
+    "n": "Hédite",
+    "d": ""
+  },
+  "1627": {
+    "n": "Achesse",
+    "d": ""
+  },
+  "1628": {
+    "n": "Chafouette",
+    "d": ""
+  },
+  "1636": {
+    "n": "Direct du gauche",
+    "d": ""
+  },
+  "1674": {
+    "n": "Beuverie",
+    "d": ""
+  },
+  "1675": {
+    "n": "Tournée générale",
+    "d": ""
+  },
+  "1676": {
+    "n": "Picole du Dopeul",
+    "d": "[@ref : utilisé uniquement par le dopeul pandawa des lvl 200]"
+  },
+  "1677": {
+    "n": "Pandanlku du Dopeul",
+    "d": "[@ref : utilisé uniquement par le dopeul pandawa des lvl 200]"
+  },
+  "1678": {
+    "n": "Souillure du Dopeul",
+    "d": "[@ref : utilisé uniquement par le dopeul pandawa des lvl 200]"
+  },
+  "1679": {
+    "n": "Combustion spontanée.",
+    "d": "[@ref : Utilisé par le sort spécial de l'eni]"
+  },
+  "1687": {
+    "n": "Soin Sylvestre",
+    "d": ""
+  },
+  "1688": {
+    "n": "Répulsion",
+    "d": "(sort du piège répulsif, ne pas traduire)"
+  },
+  "1690": {
+    "n": "Boufinvoc",
+    "d": ""
+  },
+  "1691": {
+    "n": "Fanatisme",
+    "d": ""
+  },
+  "1692": {
+    "n": "Tir au flanc",
+    "d": ""
+  },
+  "1693": {
+    "n": "Flèche Hasardeuse",
+    "d": ""
+  },
+  "1694": {
+    "n": "Derniers Secours",
+    "d": "Soigne le lanceur au début de son prochain tour."
+  },
+  "1695": {
+    "n": "Aura Blanche",
+    "d": ""
+  },
+  "1704": {
+    "n": "Prespic",
+    "d": ""
+  },
+  "1705": {
+    "n": "La Solitaire",
+    "d": ""
+  },
+  "1706": {
+    "n": "Sanglier",
+    "d": ""
+  },
+  "1707": {
+    "n": "Sanction Bwork",
+    "d": ""
+  },
+  "1708": {
+    "n": "Correction Bwork",
+    "d": ""
+  },
+  "1709": {
+    "n": "Contusion",
+    "d": ""
+  },
+  "1711": {
+    "n": "Beuarh",
+    "d": "Ce sort inflige des dégâts de type Terre."
+  },
+  "1712": {
+    "n": "Vienla",
+    "d": "Ce sort permet de rapprocher une cible de soi."
+  },
+  "1713": {
+    "n": "Tuménerv",
+    "d": "Ce sort augmente les dommages du lanceur et des alliés proches."
+  },
+  "1714": {
+    "n": "Vomisédrol",
+    "d": "Ce sort peut faire perdre des PM aux ennemis proches."
+  },
+  "1715": {
+    "n": "Dantafass",
+    "d": "Ce sort inflige des dégâts de type Terre et réduit la résistance Terre."
+  },
+  "1716": {
+    "n": "Suce Moelle",
+    "d": "Ce sort vole de la vie en infligeant des dégâts de type Terre."
+  },
+  "1717": {
+    "n": "Visage Funeste",
+    "d": "Ce sort permet de repousser la cible."
+  },
+  "1718": {
+    "n": "Lame Os Terre",
+    "d": "Ce sort inflige de faibles dégâts Terre sur plusieurs tours."
+  },
+  "1719": {
+    "n": "Mord-bide",
+    "d": "Ce sort inflige des dégâts de type Terre sur plusieurs tours."
+  },
+  "1720": {
+    "n": "Amig-os",
+    "d": "Ce sort permet d'invoquer un Chafer Os."
+  },
+  "1721": {
+    "n": "Sapik'hein",
+    "d": "Ce sort inflige des dégâts de type Air."
+  },
+  "1722": {
+    "n": "Oulahsakrain",
+    "d": "Ce sort permet de repousser les créatures autour de soi et d'augmenter ses PM."
+  },
+  "1723": {
+    "n": "Spajuste",
+    "d": "Ce sort permet de voler de l'Agilité."
+  },
+  "1724": {
+    "n": "Sépamoi",
+    "d": "Ce sort permet d'esquiver une attaque lancée au corps à corps."
+  },
+  "1725": {
+    "n": "Sébonsa",
+    "d": "Ce sort permet de soigner la cible."
+  },
+  "1726": {
+    "n": "Révulsion",
+    "d": "Ce sort réduit la portée de la cible."
+  },
+  "1727": {
+    "n": "Topi Namboure",
+    "d": "Ce sort augmente les PA des personnes touchées, alliés comme ennemis."
+  },
+  "1728": {
+    "n": "Calinounours",
+    "d": "Ce sort rend un peu de PDV à la cible."
+  },
+  "1729": {
+    "n": "Toucher Rektol",
+    "d": "Ce sort inflige des dégâts de type Feu et réduit les dommages causés par la cible."
+  },
+  "1730": {
+    "n": "Botte de Verso Litaire",
+    "d": "Ce sort inflige des dégâts de type Feu sur plusieurs tours."
+  },
+  "1731": {
+    "n": "Sur le fil",
+    "d": "Ce sort inflige des dégâts de type Eau."
+  },
+  "1732": {
+    "n": "Eau Tarie",
+    "d": "Ce sort inflige des dégâts de type Eau sur plusieurs tours."
+  },
+  "1733": {
+    "n": "Eau Culte",
+    "d": "Ce sort permet de se rendre invisible et d'augmenter ses PM."
+  },
+  "1734": {
+    "n": "L'eau de là",
+    "d": "Ce sort permet de se téléporter."
+  },
+  "1735": {
+    "n": "Eau Solé Mio",
+    "d": "Ce sort inflige des dégâts de type Eau."
+  },
+  "1736": {
+    "n": "Tunnel",
+    "d": "Ce sort permet de se téléporter en ligne droite à travers les obstacles."
+  },
+  "1737": {
+    "n": "Eboulis",
+    "d": "Ce sort fait perdre des PM à la cible."
+  },
+  "1738": {
+    "n": "Filon",
+    "d": "Ce sort soigne sur plusieurs tours."
+  },
+  "1739": {
+    "n": "Coup de Grizou",
+    "d": "Ce sort inflige des dégâts de type Eau en zone, sans blesser le lanceur."
+  },
+  "1740": {
+    "n": "Lampe de Front",
+    "d": "Ce sort dévoile les objets et personnages invisibles."
+  },
+  "1741": {
+    "n": "Kleptomanie psychopathe",
+    "d": "Force les joueurs à voler des kamas à leurs alliés en masse ou à leur causer des dommages."
+  },
+  "1742": {
+    "n": "Vol de kamas ou de vie.",
+    "d": "[NO_TRAD]Complément du sort Kleptomanie psychopathe."
+  },
+  "1743": {
+    "n": "La pelle du large",
+    "d": "[NO trad]sort de Jorbak."
+  },
+  "1744": {
+    "n": "La pierre philosophale",
+    "d": "[NO TRAD]Sort bourrin pour Jorbak"
+  },
+  "1751": {
+    "n": "Frident",
+    "d": ""
+  },
+  "1752": {
+    "n": "Malédiction Putride",
+    "d": ""
+  },
+  "1753": {
+    "n": "Béco du Tofu Très Maléfique",
+    "d": ""
+  },
+  "1754": {
+    "n": "Bénédiction Putride",
+    "d": ""
+  },
+  "1755": {
+    "n": "Mauvaise Pioche",
+    "d": "[NO_TRAD]Sort de Krtek"
+  },
+  "1756": {
+    "n": "Bonne Pioche",
+    "d": "[NO_TRAD]Sort de Krtek"
+  },
+  "1757": {
+    "n": "Accord Mineur",
+    "d": "[NO_TRAD]Sort de Krtek"
+  },
+  "1758": {
+    "n": "Mauvais Accord",
+    "d": "[NO_TRAD] Complément du sort Accord Mineur de Krtek."
+  },
+  "1759": {
+    "n": "Barre à Mine",
+    "d": "[NO_TRAD]Sort de Krtek"
+  },
+  "1760": {
+    "n": "Tic Tac",
+    "d": "[NO_TRAD]Sort de Boumbombe Etat 1"
+  },
+  "1761": {
+    "n": "Badaboum",
+    "d": "[NO_TRAD] Sort de Boumbombe"
+  },
+  "1762": {
+    "n": "Tic Tac",
+    "d": "[NO_TRAD]Sort de Boumbombe Etat 2"
+  },
+  "1763": {
+    "n": "Tic Tac",
+    "d": "[NO_TRAD]Sort de Boumbombe Etat 3"
+  },
+  "1764": {
+    "n": "Tour de passe-passe",
+    "d": ""
+  },
+  "1765": {
+    "n": "Pain perdu",
+    "d": "Inflige des dégâts Eau et diminue la résistance à la perte de PM."
+  },
+  "1766": {
+    "n": "Pain des Pices",
+    "d": "Inflige des dégâts Eau à plusieurs ennemis."
+  },
+  "1767": {
+    "n": "Distribution de Pains",
+    "d": "Repousse les personnes autour du lanceur en leur infligeant des dégâts Eau."
+  },
+  "1768": {
+    "n": "Copain",
+    "d": "Invoque un Kignon qui fait perdre des PM aux adversaires et leur inflige des dégâts Feu."
+  },
+  "1769": {
+    "n": "Galopain",
+    "d": "Applique des effets bénéfiques sur une invocation alliée."
+  },
+  "1770": {
+    "n": "Sous les Aisselles",
+    "d": ""
+  },
+  "1771": {
+    "n": "Grille Pain",
+    "d": "Cause des dégâts de type Feu pendant plusieurs tours."
+  },
+  "1772": {
+    "n": "Amputation",
+    "d": "Inflige des dégâts Feu et fait perdre des PA."
+  },
+  "1773": {
+    "n": "Shrapnel",
+    "d": "Inflige des dégâts Feu et pose un piège causant des dégâts Feu."
+  },
+  "1774": {
+    "n": "Shrapnel Incendiaire",
+    "d": ""
+  },
+  "1775": {
+    "n": "Cautérisation",
+    "d": "Rend quelques points de vie à la cible."
+  },
+  "1776": {
+    "n": "Rage Inconsidérée",
+    "d": "Augmente les dommages et les PA du lanceur, au détriment de ses résistances."
+  },
+  "1777": {
+    "n": "Pyromane",
+    "d": "Invoque un Feu Follet qui diminue la résistance Feu de la cible."
+  },
+  "1778": {
+    "n": "Vulnérabilité Incendiaire",
+    "d": ""
+  },
+  "1779": {
+    "n": "Brise Crâne",
+    "d": "Inflige des dégâts Terre  et réduit la portée de la cible."
+  },
+  "1780": {
+    "n": "Forteresse",
+    "d": "Réduit considérablement les dégâts reçus et permet de prendre les coups à la place des alliés proches, mais empêche d'agir et de se déplacer au tour suivant."
+  },
+  "1781": {
+    "n": "Armure Lourde",
+    "d": "Réduit les dommages reçus, mais réduit également les dommages infligés."
+  },
+  "1782": {
+    "n": "Venez à Moi",
+    "d": "Attire tous les ennemis en ligne avec le lanceur, et leur vol de l'agilité s'ils sont au contact du lanceur."
+  },
+  "1783": {
+    "n": "Attila",
+    "d": "Invoque Attila, un désherbant mécanique qui inflige des dégâts Neutre en zone."
+  },
+  "1784": {
+    "n": "Fléau des Dieux",
+    "d": ""
+  },
+  "1785": {
+    "n": "Elémentalance",
+    "d": ""
+  },
+  "1786": {
+    "n": "Boulette Elémentale",
+    "d": ""
+  },
+  "1787": {
+    "n": "Rocher Eclatant",
+    "d": ""
+  },
+  "1788": {
+    "n": "Masse Hurlante",
+    "d": ""
+  },
+  "1789": {
+    "n": "Esprit Elémental",
+    "d": ""
+  },
+  "1790": {
+    "n": "Bénédiction Eolienne",
+    "d": ""
+  },
+  "1791": {
+    "n": "Fureur Eolienne",
+    "d": ""
+  },
+  "1792": {
+    "n": "Bénédiction Hydrolienne",
+    "d": ""
+  },
+  "1793": {
+    "n": "Fureur Hydrolienne",
+    "d": ""
+  },
+  "1794": {
+    "n": "Bénédiction Pyrolienne",
+    "d": ""
+  },
+  "1795": {
+    "n": "Fureur Pyrolienne",
+    "d": ""
+  },
+  "1796": {
+    "n": "Bénédiction Géolienne",
+    "d": ""
+  },
+  "1797": {
+    "n": "Fureur Géolienne",
+    "d": ""
+  },
+  "1798": {
+    "n": "Eolance",
+    "d": "Inflige des dégâts Air à une cible."
+  },
+  "1799": {
+    "n": "Aqualance",
+    "d": "Inflige des dégâts Eau à une cible."
+  },
+  "1800": {
+    "n": "Fée d'Artifice Bleue",
+    "d": ""
+  },
+  "1801": {
+    "n": "Fée d'Artifice Bleue Crépitante",
+    "d": ""
+  },
+  "1802": {
+    "n": "Fée d'Artifice Bleue Fontaine",
+    "d": ""
+  },
+  "1803": {
+    "n": "Fée d'Artifice Bleue Tournoyante",
+    "d": ""
+  },
+  "1804": {
+    "n": "Fée d'Artifice Bleue Virevoltante",
+    "d": ""
+  },
+  "1805": {
+    "n": "Fée d'Artifice Jaune",
+    "d": ""
+  },
+  "1806": {
+    "n": "Fée d'Artifice Jaune Crépitante",
+    "d": ""
+  },
+  "1807": {
+    "n": "Fée d'Artifice Jaune Fontaine",
+    "d": ""
+  },
+  "1808": {
+    "n": "Fée d'Artifice Jaune Tournoyante",
+    "d": ""
+  },
+  "1809": {
+    "n": "Fée d'Artifice Jaune Virevoltante",
+    "d": ""
+  },
+  "1810": {
+    "n": "Fée d'Artifice Rouge",
+    "d": ""
+  },
+  "1811": {
+    "n": "Fée d'Artifice Rouge Crépitante",
+    "d": ""
+  },
+  "1812": {
+    "n": "Fée d'Artifice Rouge Fontaine",
+    "d": ""
+  },
+  "1813": {
+    "n": "Fée d'Artifice Rouge Tournoyante",
+    "d": ""
+  },
+  "1814": {
+    "n": "Fée d'Artifice Rouge Virevoltante",
+    "d": ""
+  },
+  "1815": {
+    "n": "Fée d'Artifice Verte",
+    "d": ""
+  },
+  "1816": {
+    "n": "Fée d'Artifice Verte Crépitante",
+    "d": ""
+  },
+  "1817": {
+    "n": "Fée d'Artifice Verte Fontaine",
+    "d": ""
+  },
+  "1818": {
+    "n": "Fée d'Artifice Verte Tournoyante",
+    "d": ""
+  },
+  "1819": {
+    "n": "Fée d'Artifice Verte Virevoltante",
+    "d": ""
+  },
+  "1820": {
+    "n": "Fée d'Artifice Multicolore",
+    "d": ""
+  },
+  "1821": {
+    "n": "Fée d'Artifice Multicolore Crépitante",
+    "d": ""
+  },
+  "1822": {
+    "n": "Fée d'Artifice Multicolore Fontaine",
+    "d": ""
+  },
+  "1823": {
+    "n": "Fée d'Artifice Multicolore Tournoyante",
+    "d": ""
+  },
+  "1824": {
+    "n": "Fée d'Artifice Multicolore Virevoltante",
+    "d": ""
+  },
+  "1825": {
+    "n": "Fée d'artifice invocatrice de tofu",
+    "d": ""
+  },
+  "1826": {
+    "n": "Fée d'artifice invocatrice de cœurs",
+    "d": ""
+  },
+  "1827": {
+    "n": "Fée d'Artifice Hille",
+    "d": ""
+  },
+  "1828": {
+    "n": "Ballon Bleu Magique",
+    "d": ""
+  },
+  "1829": {
+    "n": "Ballon Jaune Magique",
+    "d": ""
+  },
+  "1830": {
+    "n": "Ballon Rouge Magique",
+    "d": ""
+  },
+  "1831": {
+    "n": "Ballon Vert Magique",
+    "d": ""
+  },
+  "1832": {
+    "n": "Ballon Cœur",
+    "d": ""
+  },
+  "1833": {
+    "n": "Nuage de fumée",
+    "d": ""
+  },
+  "1834": {
+    "n": "Grande Fée d'Artifice Bleue",
+    "d": ""
+  },
+  "1835": {
+    "n": "Grande Fée d'Artifice Bleue Crépitante",
+    "d": ""
+  },
+  "1836": {
+    "n": "Grande Fée d'Artifice Bleue Fontaine",
+    "d": ""
+  },
+  "1837": {
+    "n": "Grande Fée d'Artifice Bleue Tournoyante",
+    "d": ""
+  },
+  "1838": {
+    "n": "Grande Fée d'Artifice Bleue Virevoltante",
+    "d": ""
+  },
+  "1839": {
+    "n": "Grande Fée d'Artifice Invocatrice de Tofu",
+    "d": ""
+  },
+  "1840": {
+    "n": "Grande Fée d'Artifice Jaune",
+    "d": ""
+  },
+  "1841": {
+    "n": "Grande Fée d'Artifice Jaune Crépitante",
+    "d": ""
+  },
+  "1842": {
+    "n": "Grande Fée d'Artifice Jaune Fontaine",
+    "d": ""
+  },
+  "1843": {
+    "n": "Grande Fée d'Artifice Jaune Tournoyante",
+    "d": ""
+  },
+  "1844": {
+    "n": "Grande Fée d'Artifice Jaune Virevoltante",
+    "d": ""
+  },
+  "1845": {
+    "n": "Grande Fée d'Artifice Multicolore",
+    "d": ""
+  },
+  "1846": {
+    "n": "Grande Fée d'Artifice Multicolore Crépitante",
+    "d": ""
+  },
+  "1847": {
+    "n": "Grande Fée d'Artifice Multicolore Fontaine",
+    "d": ""
+  },
+  "1848": {
+    "n": "Grande Fée d'Artifice Multicolore Tournoyante",
+    "d": ""
+  },
+  "1849": {
+    "n": "Grande Fée d'Artifice Multicolore Virevoltante",
+    "d": ""
+  },
+  "1850": {
+    "n": "Grande Fée d'Artifice Rouge",
+    "d": ""
+  },
+  "1851": {
+    "n": "Grande Fée d'Artifice Rouge Crépitante",
+    "d": ""
+  },
+  "1852": {
+    "n": "Grande Fée d'Artifice Rouge Fontaine",
+    "d": ""
+  },
+  "1853": {
+    "n": "Grande Fée d'Artifice Rouge Tournoyante",
+    "d": ""
+  },
+  "1854": {
+    "n": "Grande Fée d'Artifice Rouge Virevoltante",
+    "d": ""
+  },
+  "1855": {
+    "n": "Grande Fée d'Artifice Verte",
+    "d": ""
+  },
+  "1856": {
+    "n": "Grande Fée d'Artifice Verte Crépitante",
+    "d": ""
+  },
+  "1857": {
+    "n": "Grande Fée d'Artifice Verte Fontaine",
+    "d": ""
+  },
+  "1858": {
+    "n": "Grande Fée d'Artifice Verte Tournoyante",
+    "d": ""
+  },
+  "1859": {
+    "n": "Grande Fée d'Artifice Verte Virevoltante",
+    "d": ""
+  },
+  "1900": {
+    "n": "Pyrolance",
+    "d": "Inflige des dégâts Feu à une cible."
+  },
+  "1901": {
+    "n": "Invocation de Dopeul Féca",
+    "d": "Ce sort permet d'invoquer un Dopeul Féca qui aidera son maître pendant les combats."
+  },
+  "1902": {
+    "n": "Invocation de Dopeul Osamodas",
+    "d": "Ce sort permet d'invoquer un Dopeul Osamodas qui viendra aider son maître pendant les combats."
+  },
+  "1903": {
+    "n": "Invocation de Dopeul Enutrof",
+    "d": "Ce sort permet d'invoquer un Dopeul Enutrof qui viendra aider son maître pendant les combats."
+  },
+  "1904": {
+    "n": "Invocation de Dopeul Sram",
+    "d": "Ce sort permet d'invoquer un Dopeul Sram qui viendra aider son maître pendant les combats."
+  },
+  "1905": {
+    "n": "Invocation de Dopeul Xélor",
+    "d": "Ce sort permet d'invoquer un Dopeul Xélor qui viendra aider son maître pendant les combats."
+  },
+  "1906": {
+    "n": "Invocation de Dopeul Ecaflip",
+    "d": "Ce sort permet d'invoquer un Dopeul Ecaflip qui viendra aider son maître pendant les combats."
+  },
+  "1907": {
+    "n": "Invocation de Dopeul Eniripsa",
+    "d": "Ce sort permet d'invoquer un Dopeul Eniripsa qui viendra aider son maître pendant les combats."
+  },
+  "1908": {
+    "n": "Invocation de Dopeul Iop",
+    "d": "Ce sort permet d'invoquer un Dopeul Iop qui viendra aider son maître pendant les combats."
+  },
+  "1909": {
+    "n": "Invocation de Dopeul Crâ",
+    "d": "Ce sort permet d'invoquer un Dopeul Crâ qui viendra aider son maître pendant les combats."
+  },
+  "1910": {
+    "n": "Invocation de Dopeul Sadida",
+    "d": "Ce sort permet d'invoquer un Dopeul Sadida qui viendra aider son maître pendant les combats."
+  },
+  "1911": {
+    "n": "Invocation de Dopeul Sacrieur",
+    "d": "Ce sort permet d'invoquer un Dopeul Sacrieur qui viendra aider son maître pendant les combats."
+  },
+  "1912": {
+    "n": "Invocation de Dopeul Pandawa",
+    "d": "Ce sort permet d'invoquer un Dopeul Pandawa qui viendra aider son maître pendant les combats."
+  },
+  "1913": {
+    "n": "Géolance",
+    "d": "Inflige des dégâts Terre à une cible."
+  },
+  "1914": {
+    "n": "Boulette Venteuse",
+    "d": "Empoisonne la cible pendant plusieurs tours en lui causant des dégâts Air."
+  },
+  "1915": {
+    "n": "Boulette Poisseuse",
+    "d": "Empoisonne la cible pendant plusieurs tours en lui causant des dégâts Eau."
+  },
+  "1916": {
+    "n": "Boulette Incendiaire",
+    "d": "Empoisonne la cible pendant plusieurs tours en lui causant des dégâts Feu."
+  },
+  "1917": {
+    "n": "Boulette Rocheuse",
+    "d": "Empoisonne la cible pendant plusieurs tours en lui causant des dégâts Terre."
+  },
+  "1918": {
+    "n": "Rocher Transperçant",
+    "d": "Inflige des dégâts Air en croix."
+  },
+  "1919": {
+    "n": "Rocher Percutant",
+    "d": "Inflige des dégâts Eau en croix."
+  },
+  "1920": {
+    "n": "Rocher Flamboyant",
+    "d": "Inflige des dégâts Feu en croix."
+  },
+  "1921": {
+    "n": "Rocher Ecrasant",
+    "d": "Inflige des dégâts Terre en croix."
+  },
+  "1922": {
+    "n": "Esprit Effrayant",
+    "d": "Repousse la cible."
+  },
+  "1923": {
+    "n": "Esprit Bagarreur",
+    "d": "Fait entrer un esprit allié dans l'état Bagarreur. Cet état n'a aucun effet sur les autres types d'invocations."
+  },
+  "1924": {
+    "n": "Esprit Altruiste",
+    "d": "Fait entrer un esprit allié dans l'état Dévoué. Cet état n'a aucun effet sur les autres types d'invocations."
+  },
+  "1925": {
+    "n": "Grâce des Esprits",
+    "d": "Augmente le nombre maximum d'Esprits pouvant être invoqués."
+  },
+  "1926": {
+    "n": "Invocation d'Air",
+    "d": "Invoque un Esprit d'Air qui augmente les PA des invocations alliées et fait perdre des PM aux ennemis."
+  },
+  "1927": {
+    "n": "Invocation d'Eau",
+    "d": "Invoque un Esprit d'Eau qui protège les alliés et réduit les caractéristiques des ennemis."
+  },
+  "1928": {
+    "n": "Invocation de Feu",
+    "d": "Invoque un Esprit de Feu qui soigne les alliés et inflige des dégâts Feu aux ennemis."
+  },
+  "1929": {
+    "n": "Invocation de Terre",
+    "d": "Invoque un Esprit de Terre qui augmente les dégâts des alliés et inflige des dégâts Terre aux ennemis."
+  },
+  "1930": {
+    "n": "Protection d'Air",
+    "d": "Prévient des dégâts Air."
+  },
+  "1931": {
+    "n": "Protection d'Eau",
+    "d": "Prévient des dégâts Eau."
+  },
+  "1932": {
+    "n": "Protection de Feu",
+    "d": "Prévient des dégâts Feu."
+  },
+  "1933": {
+    "n": "Protection de Terre",
+    "d": "Prévient des dégâts Terre."
+  },
+  "1934": {
+    "n": "Bénédiction Eodubato",
+    "d": ""
+  },
+  "1935": {
+    "n": "Fureur Eodubato",
+    "d": ""
+  },
+  "1936": {
+    "n": "Bénédiction Aquaboulvar",
+    "d": ""
+  },
+  "1937": {
+    "n": "Fureur Aquaboulvar",
+    "d": ""
+  },
+  "1938": {
+    "n": "Bénédiction Pyrolyse",
+    "d": ""
+  },
+  "1939": {
+    "n": "Fureur Pyrolyse",
+    "d": ""
+  },
+  "1940": {
+    "n": "Bénédiction Géotrouvtou",
+    "d": ""
+  },
+  "1941": {
+    "n": "Fureur Géotrouvtou",
+    "d": ""
+  },
+  "1942": {
+    "n": "Invocation Elementale",
+    "d": ""
+  },
+  "1943": {
+    "n": "Aplatissage",
+    "d": ""
+  },
+  "1944": {
+    "n": "Boule de Neige",
+    "d": ""
+  },
+  "1945": {
+    "n": "Chaleur Polaire",
+    "d": ""
+  },
+  "1999": {
+    "n": "Béco du Tofu",
+    "d": "Sort de l'invocation de Tofu osa (ne pas traduire)."
+  },
+  "2000": {
+    "n": "Morsure du Bouftou",
+    "d": "Bouftou"
+  },
+  "2001": {
+    "n": "Moquerie",
+    "d": "Prespic"
+  },
+  "2002": {
+    "n": "Embrochement",
+    "d": "Sanglier"
+  },
+  "2003": {
+    "n": "Eclair en Série",
+    "d": "Bwork mage"
+  },
+  "2004": {
+    "n": "Tornade",
+    "d": "(air)"
+  },
+  "2005": {
+    "n": "Ecrasement",
+    "d": "Invocation craqueleur, craqueleurs"
+  },
+  "2006": {
+    "n": "Sacrifice",
+    "d": ""
+  },
+  "2007": {
+    "n": "Explosion sournoise",
+    "d": "Explosion du piège sournois"
+  },
+  "2008": {
+    "n": "Poing Enflammé",
+    "d": "Le Poing Enflammé inflige des dégâts de Feu. L'état d'ébriété est nécessaire pour lancer ce sort."
+  },
+  "2009": {
+    "n": "Souffle Alcoolisé",
+    "d": "Ce sort permet d'infliger des dégâts de type Air. L'état d'ébriété est nécessaire pour lancer ce sort."
+  },
+  "2010": {
+    "n": "Gueule de Bois",
+    "d": "La Gueule de Bois permet de mettre un coup de tête à un ennemi, lui infligeant des dégâts de type Terre. L'état d'ébriété est nécessaire pour lancer ce sort."
+  },
+  "2011": {
+    "n": "Souillure",
+    "d": "Ce sort lance un effet aléatoire afin de déconcentrer l'ennemi. L'état d'ébriété est nécessaire pour lancer ce sort."
+  },
+  "2012": {
+    "n": "Pandanlku",
+    "d": "Ce sort permet au lanceur d'augmenter ses PM ou ceux d'un allié. Ce sort nécessite l'état d'ébriété pour être lancé."
+  },
+  "2013": {
+    "n": "Lien Spiritueux",
+    "d": "Ce sort permet d'invoquer un vieux maître Pandawa. L'état d'ébriété est nécessaire pour lancer ce sort."
+  },
+  "2014": {
+    "n": "Destin d'Ecaflip",
+    "d": "[@ref : utilisé par le dopeul de temple Eca; sort de ref : 120]"
+  },
+  "2015": {
+    "n": "Griffe de Ceangal",
+    "d": "[@ref : utilisé par le dopeul de temple Eca; sort de ref : 112]"
+  },
+  "2016": {
+    "n": "Langue Râpeuse",
+    "d": "[@Ref : Utilisé par le dopeul de temple Eca; sort de ref : 116]"
+  },
+  "2017": {
+    "n": "Roue de la Fortune",
+    "d": "[@ref : utilisé par le dopeul de temple Eca; sort de ref : 106]"
+  },
+  "2018": {
+    "n": "Contrecoup",
+    "d": "[@ref : utilisé par le dopeul de temple Eca, sort de ref : id 111]"
+  },
+  "2019": {
+    "n": "Peur",
+    "d": "Pousse un allié ou un ennemi sur la case ciblée."
+  },
+  "2020": {
+    "n": "Remblai Infâme",
+    "d": ""
+  },
+  "2021": {
+    "n": "Mot d'Envol Aérien",
+    "d": ""
+  },
+  "2022": {
+    "n": "Punition Mesquine",
+    "d": ""
+  },
+  "2023": {
+    "n": "Assaut Frontal",
+    "d": ""
+  },
+  "2024": {
+    "n": "Gueule de Bois de Bambou",
+    "d": ""
+  },
+  "2025": {
+    "n": "Flasque Explosive Incendiaire",
+    "d": ""
+  },
+  "2026": {
+    "n": "Gueule de Bois Dormant",
+    "d": ""
+  },
+  "2027": {
+    "n": "Souillure Infâme",
+    "d": ""
+  },
+  "2028": {
+    "n": "Souffle",
+    "d": "[No trad]test"
+  },
+  "2029": {
+    "n": "Attaque Naturelle du Dopeul",
+    "d": "L'Attaque Naturelle occasionne des dégâts de Feu."
+  },
+  "2030": {
+    "n": "Renvoi de Sort du Dopeul",
+    "d": "Le Renvoi de Sorts permet de renvoyer un sort occasionnant une perte de PDV ou de PA."
+  },
+  "2031": {
+    "n": "Bouclier Féca du Dopeul",
+    "d": "Ce bouclier réduit (en pourcentage) les dégâts reçus."
+  },
+  "2032": {
+    "n": "Attaque Nuageuse du Dopeul",
+    "d": "L'Attaque Nuageuse occasionne de sérieux dégâts."
+  },
+  "2033": {
+    "n": "Glyphe Enflammé du Dopeul",
+    "d": "Ce glyphe brûle les personnes se trouvant dans sa zone."
+  },
+  "2034": {
+    "n": "Glyphe d'Aveuglement du Dopeul",
+    "d": "Ce glyphe fait perdre des PA."
+  },
+  "2035": {
+    "n": "Glyphe de Silence du Dopeul",
+    "d": "Ce glyphe empêche les joueurs se trouvant dans sa zone de lancer des sorts."
+  },
+  "2036": {
+    "n": "Glyphe d'immobilisation du Dopeul",
+    "d": "Ce glyphe immobilise tous les joueurs, alliés comme ennemis."
+  },
+  "2037": {
+    "n": "Glyphe Agressif du Dopeul",
+    "d": "Ce glyphe occasionne des dégâts à tous les joueurs."
+  },
+  "2038": {
+    "n": "Bulle du Dopeul",
+    "d": "Ce sort permet d'infliger des dégâts de type Eau."
+  },
+  "2039": {
+    "n": "Immunité du Dopeul",
+    "d": "L'immunité permet de rendre le lanceur ou un allié invincible pendant quelques tours."
+  },
+  "2040": {
+    "n": "Griffe Spectrale du Dopeul",
+    "d": "La Griffe Spectrale inflige des dégâts de Feu."
+  },
+  "2041": {
+    "n": "Déplacement Félin du Dopeul",
+    "d": "Ce sort permet d'augmenter les PM des invocations et dans une moindre mesure, des alliés."
+  },
+  "2042": {
+    "n": "Piqûre Motivante du Dopeul",
+    "d": "Ce sort permet d'augmenter les PA des invocations et dans une moindre mesure, des alliés."
+  },
+  "2043": {
+    "n": "Crapaud du Dopeul",
+    "d": "Le Crapaud permet de réduire les dommages reçus par les invocations et dans une moindre mesure, par les alliés."
+  },
+  "2044": {
+    "n": "Invocation de Dragonnet Rouge du Dopeul",
+    "d": "Ce sort permet d'invoquer un dragonnet rouge cracheur de flammes."
+  },
+  "2045": {
+    "n": "Griffe Cinglante du Dopeul",
+    "d": "Ce sort permet d'infliger des dégâts d'Eau."
+  },
+  "2046": {
+    "n": "Invocation de Tofu du Dopeul",
+    "d": "Ce sort permet d'invoquer un Tofu qui partira au combat pour vous."
+  },
+  "2047": {
+    "n": "Invocation de Bouftou du Dopeul",
+    "d": "Permet d'invoquer un Bouftou agressif."
+  },
+  "2048": {
+    "n": "Frappe du Craqueleur du Dopeul",
+    "d": "Ce sort inflige des dégâts de Feu et frappe un ennemi avec tant de puissance qu'il blesse également tous les joueurs autour."
+  },
+  "2049": {
+    "n": "Invocation de Prespic du Dopeul",
+    "d": "Invoque un Prespic spécialisé dans la perte de PA."
+  },
+  "2050": {
+    "n": "Invocation de Sanglier du Dopeul",
+    "d": "Invoque un Sanglier très puissant au CAC qui repousse ses ennemis."
+  },
+  "2051": {
+    "n": "Invocation de Bwork Mage du Dopeul",
+    "d": "Le Bwork Mage permet de lancer des sorts magiques à distance."
+  },
+  "2052": {
+    "n": "Invocation de Craqueleur du Dopeul",
+    "d": "Invoque un Craqueleur puissant qui occasionne de nombreux dégâts et étourdit l'ennemi."
+  },
+  "2053": {
+    "n": "Sac Animé du Dopeul",
+    "d": "Ce sort permet à son lanceur de donner vie à son Sac. Ce dernier protégera un de ses alliés jusqu'à sa destruction."
+  },
+  "2054": {
+    "n": "Chance du Dopeul",
+    "d": "Ce sort permet au lanceur d'augmenter sa chance."
+  },
+  "2055": {
+    "n": "Lancer de Pelle du Dopeul",
+    "d": "Le Lancer de Pelle inflige des dégâts de Terre."
+  },
+  "2056": {
+    "n": "Pelle Fantomatique du Dopeul",
+    "d": "La Pelle Fantomatique inflige des dégâts de Feu et peut retirer les effets qui enchantent la cible."
+  },
+  "2057": {
+    "n": "Maladresse du Dopeul",
+    "d": "La Maladresse enlève des PM à un ennemi."
+  },
+  "2058": {
+    "n": "Lancer de Pièces du Dopeul",
+    "d": "Ce sort permet de lancer de très loin des pièces d'or factices sur un ennemi, et lui inflige des dégâts d'Eau."
+  },
+  "2059": {
+    "n": "Maladresse de Masse du Dopeul",
+    "d": "La Maladresse de Masse fait perdre des PA à tous les ennemis."
+  },
+  "2060": {
+    "n": "Accélération du Dopeul",
+    "d": "L'Accélération permet d'augmenter les PM du lanceur ou d'un allié."
+  },
+  "2061": {
+    "n": "Pelle du Jugement du Dopeul",
+    "d": "la Pelle du Jugement occasionne de faibles dégâts d'Eau et retire des PM sur un coup critique."
+  },
+  "2062": {
+    "n": "Pelle Animée du Dopeul",
+    "d": "Invoque une pelle qui repousse les ennemis et réduit leurs résistances aux pertes de PM."
+  },
+  "2063": {
+    "n": "Pelle Massacrante du Dopeul",
+    "d": "La Pelle Massacrante inflige de terribles dégâts d'Eau à un ennemi."
+  },
+  "2064": {
+    "n": "Sournoiserie du Dopeul",
+    "d": "La Sournoiserie est l'une des rares attaques à distance de cette classe, elle inflige des dégâts de Terre."
+  },
+  "2065": {
+    "n": "Coup Sournois du Dopeul",
+    "d": "Inflige des dégâts de Terre à l'adversaire et le fait reculer de plusieurs cases."
+  },
+  "2066": {
+    "n": "Poison insidieux du Dopeul",
+    "d": "Empoisonne la cible pendant plusieurs tours en lui causant des dégâts de type Air."
+  },
+  "2067": {
+    "n": "Fourvoiement du Dopeul",
+    "d": "Le Fourvoiement permet d'augmenter la force et l'agilité du Lanceur, tout en infligeant des dégâts Air à un ennemi."
+  },
+  "2068": {
+    "n": "Piège Empoisonné du Dopeul",
+    "d": "Le Piège Empoisonné empoisonne le joueur qui le déclenche."
+  },
+  "2069": {
+    "n": "Invisibilité du Dopeul",
+    "d": "L'Invisibilité permet de se rendre invisible."
+  },
+  "2070": {
+    "n": "Attaque Mortelle du Dopeul",
+    "d": "L'Attaque Mortelle inflige énormément de dégâts de Terre à un ennemi et peut le tuer sur un coup critique."
+  },
+  "2071": {
+    "n": "Piège de Silence du Dopeul",
+    "d": "Le Piège de Silence fait perdre des PA au joueur qui le déclenche."
+  },
+  "2072": {
+    "n": "Piège de Masse du Dopeul",
+    "d": "Le Piège de Masse inflige de sérieux dégâts de terre à celui qui le déclenche et aux joueurs alentours."
+  },
+  "2073": {
+    "n": "Ralentissement du Dopeul",
+    "d": "Le Ralentissement retire des PA à un ennemi. Un même joueur ne peut être ciblé qu'une fois par tour."
+  },
+  "2074": {
+    "n": "Contre du Dopeul",
+    "d": "Le Contre permet de renvoyer des dégâts."
+  },
+  "2075": {
+    "n": "Aiguille du Dopeul",
+    "d": "Ce sort projette une grande aiguille sur l'adversaire pour lui infliger des dégâts de Feu."
+  },
+  "2076": {
+    "n": "Dévouement du Dopeul",
+    "d": "Ce sort permet d'augmenter les PA des alliés du lanceur."
+  },
+  "2077": {
+    "n": "Frappe de Xélor du Dopeul",
+    "d": "La Frappe de Xélor inflige des dégâts de type Terre."
+  },
+  "2078": {
+    "n": "Rayon Obscur du Dopeul",
+    "d": "Le Rayon Obscur occasionne des dégâts de Feu importants."
+  },
+  "2079": {
+    "n": "Horloge du Dopeul",
+    "d": "Ce sort inflige des dégâts de type Eau et vole des PA à la cible."
+  },
+  "2080": {
+    "n": "Cadran de Xélor du Dopeul",
+    "d": "Ce sort permet de placer un écran de protection devant le lanceur."
+  },
+  "2081": {
+    "n": "Vol du Temps du Dopeul",
+    "d": "Ce sort vole des PA à un ennemi pour les donner au lanceur."
+  },
+  "2082": {
+    "n": "Sablier de Xélor du Dopeul",
+    "d": "Le Sablier de Xélor inflige des dégâts de Feu et fait perdre des PA à un ennemi."
+  },
+  "2083": {
+    "n": "Roulette du Dopeul",
+    "d": "La Roulette lance des effets aléatoires sur vos adversaires, vos alliés et parfois tous les personnages présents dans votre combat."
+  },
+  "2084": {
+    "n": "Trèfle du Dopeul",
+    "d": "Le Trèfle augmente les coups critiques."
+  },
+  "2085": {
+    "n": "Topkaj du Dopeul",
+    "d": "Topkaj inflige d'importants dégâts de Feu."
+  },
+  "2086": {
+    "n": "Bluff du Dopeul",
+    "d": "Le Bluff inflige aléatoirement des dégâts d'Air ou d'Eau."
+  },
+  "2087": {
+    "n": "Rekop du Dopeul",
+    "d": "Ce sort inflige des dégâts monstrueux de Feu, Terre, Eau et Air, mais a une chance sur deux de faire perdre un point d'action."
+  },
+  "2088": {
+    "n": "Odorat du Dopeul",
+    "d": "Décuple l'odorat de tous les participants du combat présents autour du lanceur, ce qui occasionne une déconcentration ou une motivation..."
+  },
+  "2089": {
+    "n": "Mot Curatif du Dopeul",
+    "d": "Le Mot Curatif permet de récupérer des PDV."
+  },
+  "2090": {
+    "n": "Mot Drainant du Dopeul",
+    "d": "Le Mot Drainant fait perdre des PA aux ennemis, mais blesse le lanceur du sort."
+  },
+  "2091": {
+    "n": "Mot Interdit du Dopeul",
+    "d": "Le Mot Interdit est une attaque très puissante... pour une Eniripsa."
+  },
+  "2092": {
+    "n": "Mot Stimulant du Dopeul",
+    "d": "Le Mot Stimulant peut augmenter les PA de plusieurs joueurs, mais blesse le lanceur."
+  },
+  "2093": {
+    "n": "Mot de Prévention du Dopeul",
+    "d": "Le Mot de Prévention prévient des dégâts magiques et de CAC."
+  },
+  "2094": {
+    "n": "Mot d'Amitié du Dopeul",
+    "d": "Le Mot d'Amitié permet d'invoquer un Lapin Guérisseur."
+  },
+  "2095": {
+    "n": "Mot de Régénération du Dopeul",
+    "d": "Ce Mot permet au lanceur du sort d'avoir la faculté de se régénérer."
+  },
+  "2096": {
+    "n": "Mot d'Epine du Dopeul",
+    "d": "Le Mot d'Epine permet à son lanceur de renvoyer des dégâts magiques ou physiques."
+  },
+  "2097": {
+    "n": "Mot Vampirique du Dopeul",
+    "d": "Le Mot Vampirique blesse un ennemi et lui vole un peu de vie."
+  },
+  "2098": {
+    "n": "Mot d'Immobilisation du Dopeul",
+    "d": "Le Mot d'Immobilisation permet d'empêcher un joueur de se déplacer."
+  },
+  "2099": {
+    "n": "Mot d'Envol du Dopeul",
+    "d": "Le Mot d'Envol permet de s'élever dans les airs un bref instant afin d'augmenter sa portée."
+  },
+  "2100": {
+    "n": "Mot de Silence du Dopeul",
+    "d": "Le Mot de Silence réduit considérablement les PA de tous ceux qui se trouvent dans sa zone d'effet.."
+  },
+  "2101": {
+    "n": "Mot de Reconstitution du Dopeul",
+    "d": "Le Mot de Reconstitution permet de restaurer de façon conséquente la vie d'un joueur."
+  },
+  "2102": {
+    "n": "Pression du Dopeul",
+    "d": "La Pression inflige des dégâts de Terre avec une portée de 2 cases."
+  },
+  "2103": {
+    "n": "Bond du Dopeul",
+    "d": "Ce sort permet de sauter."
+  },
+  "2104": {
+    "n": "Compulsion du Dopeul",
+    "d": "La Compulsion permet d'augmenter les dégâts d'un allié."
+  },
+  "2105": {
+    "n": "Epée du destin du Dopeul",
+    "d": "Epée du Destin attaque en croix et peut toucher plusieurs ennemis en infligeant des dégâts de Feu."
+  },
+  "2106": {
+    "n": "Couper du Dopeul",
+    "d": "Le sort Couper permet de frapper un ennemi et de le ralentir en infligeant des dégâts de type Feu."
+  },
+  "2107": {
+    "n": "Puissance du Dopeul",
+    "d": "La Puissance permet d'augmenter (en pourcentage) les dégâts infligés par le lanceur ou un allié."
+  },
+  "2108": {
+    "n": "Vitalité du Dopeul",
+    "d": "Cet envoûtement permet d'augmenter la vitalité de son lanceur."
+  },
+  "2109": {
+    "n": "Tempête de Puissance du Dopeul",
+    "d": "La Tempête de Puissance inflige des dégâts de Feu."
+  },
+  "2110": {
+    "n": "Colère de Iop du Dopeul",
+    "d": "Inflige des dommages d'élément terre et augmente les dommages du sort au quatrième tour après avoir été lancé."
+  },
+  "2111": {
+    "n": "Epée de Iop du Dopeul",
+    "d": "L'Épée de Iop permet d'infliger énormément de dégâts de Terre à plusieurs ennemis."
+  },
+  "2112": {
+    "n": "Flèche Magique du Dopeul",
+    "d": "Ce sort inflige des dégâts de Feu à distance."
+  },
+  "2113": {
+    "n": "Tir Critique du Dopeul",
+    "d": "Tir Critique permet de bénéficier d'un bonus au coup critique."
+  },
+  "2114": {
+    "n": "Flèche Glacée du Dopeul",
+    "d": "La Flèche Glacée blesse un ennemi et lui faire perdre des PA."
+  },
+  "2115": {
+    "n": "Tir Puissant du Dopeul",
+    "d": "Le Tir Puissant multiplie par 2 les dégâts des autres sorts."
+  },
+  "2116": {
+    "n": "Oeil de Taupe du Dopeul",
+    "d": "Réduit la portée des personnages ciblés."
+  },
+  "2117": {
+    "n": "Flèche de Recul du Dopeul",
+    "d": "La Flèche de Recul inflige des dégâts de type Air en faisant reculer l'ennemi lors de l'impact."
+  },
+  "2118": {
+    "n": "Flèche d'Immobilisation du Dopeul",
+    "d": "La Flèche d'Immobilisation est capable, en plus des dégâts qu'elle inflige, d'immobiliser un ennemi."
+  },
+  "2119": {
+    "n": "Flèche Punitive du Dopeul",
+    "d": "La Flèche Punitive est extrêmement dure à lancer, mais peut mettre un joueur KO sur un coup critique"
+  },
+  "2120": {
+    "n": "Tir Eloigné du Dopeul",
+    "d": "Le Tir Eloigné permet d'augmenter la portée des sorts du lanceur."
+  },
+  "2121": {
+    "n": "Flèche Destructrice du Dopeul",
+    "d": "La Flèche Destructrice inflige des dégâts de Terre à un ennemi."
+  },
+  "2122": {
+    "n": "Oeil de Lynx du Dopeul",
+    "d": "L'Oeil de Lynx permet d'augmenter la portée de tous les joueurs présents dans la zone d'effet du sort."
+  },
+  "2123": {
+    "n": "Flèche Absorbante du Dopeul",
+    "d": "La Flèche Absorbante permet de voler de la vie à un ennemi."
+  },
+  "2124": {
+    "n": "Flèche Explosive du Dopeul",
+    "d": "La Flèche Explosive occasionne des dégâts à un ennemi et aux personnes qui l'entourent."
+  },
+  "2125": {
+    "n": "Maîtrise de l'Arc du Dopeul",
+    "d": "La Maîtrise de l'Arc augmente les dégâts physiques."
+  },
+  "2126": {
+    "n": "Tremblement du Dopeul",
+    "d": "Le Tremblement inflige des dégâts à tous les joueurs de la zone."
+  },
+  "2127": {
+    "n": "La Folle du Dopeul",
+    "d": "La Folle est une poupée créée avec des ossements de Chafer. Elle se fera un plaisir d'énerver les ennemis du lanceur."
+  },
+  "2128": {
+    "n": "Ronce du Dopeul",
+    "d": "La Ronce inflige des dégâts physiques à un ennemi."
+  },
+  "2129": {
+    "n": "Herbe Folle du Dopeul",
+    "d": "L'Herbe Folle inflige des dégâts et fait perdre des points de mouvement."
+  },
+  "2130": {
+    "n": "La Surpuissante du Dopeul",
+    "d": "La Poupée Surpuissante peut invoquer de petites poupées fourbes qui réduisent le nombre de points de mouvement des ennemis et leurs résistances aux pertes de points de mouvement."
+  },
+  "2131": {
+    "n": "Ronce Insolente du Dopeul",
+    "d": "La Ronce Insolente s'enfonce dans le sol pour ressortir et retirer tous les envoûtements d'un joueur."
+  },
+  "2132": {
+    "n": "La Sacrifiée du Dopeul",
+    "d": "Cette poupée se jette sur l'ennemi en explosant."
+  },
+  "2133": {
+    "n": "La Gonflable du Dopeul",
+    "d": "La Poupée Gonflable augmente les points de mouvement et peut guérir un allié ou le  lanceur."
+  },
+  "2134": {
+    "n": "Ronces Multiples du Dopeul",
+    "d": "La Ronce Multiple peut toucher plusieurs joueurs."
+  },
+  "2135": {
+    "n": "Ronce Apaisante du Dopeul",
+    "d": "La Ronce Apaisante permet de ralentir un ennemi mais lui rend des PDV."
+  },
+  "2136": {
+    "n": "La Bloqueuse du Dopeul",
+    "d": "La Bloqueuse, comme son nom l'indique, gêne les adversaires en se plaçant sur leur trajectoire."
+  },
+  "2137": {
+    "n": "Ronces Agressives  du Dopeul",
+    "d": "Les Ronces Agressives infligent d'énormes dégâts, mais ne peuvent pas être utilisées à chaque tour."
+  },
+  "2138": {
+    "n": "Larme du Dopeul",
+    "d": "Ce sort permet d'infliger des dégâts de type Eau."
+  },
+  "2139": {
+    "n": "Vent Empoisonné du Dopeul",
+    "d": "Le Vent Empoisonné empoisonne tous les joueurs présents dans la zone, amis comme ennemis, et leur retire de l'intelligence pendant plusieurs tours."
+  },
+  "2140": {
+    "n": "Puissance Sylvestre du Dopeul",
+    "d": "Ce sort permet au lanceur de se transformer en arbre afin d'être protégé quelques tours."
+  },
+  "2141": {
+    "n": "Sacrifice Poupesque du Dopeul",
+    "d": "Ce sort permet de regagner de la vie en punissant une invocation."
+  },
+  "2142": {
+    "n": "Connaissance des Poupées du Dopeul",
+    "d": "La Connaissance des Poupées permet d'invoquer plusieurs poupées."
+  },
+  "2143": {
+    "n": "Poison Paralysant du Dopeul",
+    "d": "Le Poison Paralysant inflige des dégâts de Feu lorsque des PA sont utilisés."
+  },
+  "2144": {
+    "n": "Châtiment Forcé du Dopeul",
+    "d": "Augmente la force du Sacrieur lorsqu'il perd des points de vie."
+  },
+  "2145": {
+    "n": "Pied du Sacrieur du Dopeul",
+    "d": "Ce sort d'attaque au corps à corps inflige des dégâts de type Terre."
+  },
+  "2146": {
+    "n": "Châtiment Osé du Dopeul",
+    "d": "Augmente la chance du Sacrieur lorsqu'il perd des points de vie."
+  },
+  "2147": {
+    "n": "Attirance du Dopeul",
+    "d": "Attire une cible vers le Sacrieur."
+  },
+  "2148": {
+    "n": "Assaut du Dopeul",
+    "d": "Assaut permet de frapper un ennemi à distance et de lui infliger des dégâts de type Air."
+  },
+  "2149": {
+    "n": "Châtiment Agile du Dopeul",
+    "d": "Augmente l'agilité du Sacrieur lorsqu'il perd des points de vie."
+  },
+  "2150": {
+    "n": "Dissolution du Dopeul",
+    "d": "Vole des points de vie dans l'élément Eau autour du Sacrieur."
+  },
+  "2151": {
+    "n": "Absorption du Dopeul",
+    "d": "Ce sort permet à son lanceur de voler la vie d'un ennemi en infligeant des dégâts de Feu."
+  },
+  "2152": {
+    "n": "Châtiment Spirituel du Dopeul",
+    "d": "Augmente l'intelligence du Sacrieur lorsqu'il perd des points de vie."
+  },
+  "2153": {
+    "n": "Punition du Dopeul",
+    "d": "Occasionne des dommages neutres. Plus la vie du Sacrieur est proche de la moitié du total de ses points de vie, plus les dommages occasionnés sont importants."
+  },
+  "2154": {
+    "n": "Furie du Dopeul",
+    "d": "Ce sort permet au lanceur d'augmenter ses dommages."
+  },
+  "2155": {
+    "n": "Vulnérabilité Incandescente du Dopeul",
+    "d": "Ce sort permet de baisser les resistances "
+  },
+  "2156": {
+    "n": "Epouvante du Dopeul",
+    "d": "Repousse et réduit les coups critiques de la cible."
+  },
+  "2157": {
+    "n": "Vulnérabilité Aqueuse du Dopeul",
+    "d": "Ce sort permet de baisser les résistances "
+  },
+  "2158": {
+    "n": "Vulnérabilité Terrestre du Dopeul",
+    "d": "Ce sort permet de baisser les resistances "
+  },
+  "2159": {
+    "n": "Vague à Lame du Dopeul",
+    "d": "Ce sort permet d'infliger des dégâts d'Eau."
+  },
+  "2160": {
+    "n": "Flasque Explosive du Dopeul",
+    "d": "Ce sort permet de lancer une bouteille d'alcool qui explose en touchant le sol, infligeant des dégâts de Feu à tous les joueurs se trouvant dans la zone d'effet."
+  },
+  "2161": {
+    "n": "Pandatak du Dopeul",
+    "d": "Ce sort permet de solliciter des Pandawas (infligeant des dégâts de type Terre) de la famille du lanceur afin qu'ils l'aident contre ses ennemis."
+  },
+  "2162": {
+    "n": "Poing Enflammé du Dopeul",
+    "d": "Le Poing Enflammé inflige des dégâts de Feu. L'état d'ébriété est nécessaire pour lancer ce sort."
+  },
+  "2163": {
+    "n": "Souffle Alcoolisé du Dopeul",
+    "d": "Ce sort permet d'infliger des dégâts de type Air. L'état d'ébriété est nécessaire pour lancer ce sort."
+  },
+  "2164": {
+    "n": "Gueule de Bois du Dopeul",
+    "d": "La Gueule de Bois permet de mettre un coup de tête à un ennemi, lui infligeant des dégâts de type Terre. L'état d'ébriété est nécessaire pour lancer ce sort."
+  },
+  "2165": {
+    "n": "Souillure du Dopeul",
+    "d": "Ce sort lance un effet aléatoire afin de déconcentrer l'ennemi. L'état d'ébriété est nécessaire pour lancer ce sort."
+  },
+  "2166": {
+    "n": "Pandanlku du Dopeul",
+    "d": "Ce sort permet au lanceur d'augmenter ses PM ou ceux d'un allié. Ce sort nécessite l'état d'ébriété pour être lancé."
+  },
+  "2167": {
+    "n": "Lien Spiritueux du Dopeul",
+    "d": "Ce sort permet d'invoquer un vieux maître Pandawa. L'état d'ébriété est nécessaire pour lancer ce sort."
+  },
+  "2168": {
+    "n": "Destin d'Ecaflip du Dopeul",
+    "d": "[@ref : utilisé par le dopeul de temple Eca; sort de ref : 120]"
+  },
+  "2169": {
+    "n": "Griffe de Ceangal du Dopeul",
+    "d": "[@ref : utilisé par le dopeul de temple Eca; sort de ref : 112]"
+  },
+  "2170": {
+    "n": "Peur du Dopeul",
+    "d": "Pousse un allié ou un ennemi sur la case ciblée."
+  },
+  "2171": {
+    "n": "Flagelle",
+    "d": ""
+  },
+  "2172": {
+    "n": "Pain bourpif",
+    "d": ""
+  },
+  "2173": {
+    "n": "Motivation Naturelle",
+    "d": ""
+  },
+  "2174": {
+    "n": "Coque Choc",
+    "d": ""
+  },
+  "2175": {
+    "n": "Godziballe",
+    "d": ""
+  },
+  "2176": {
+    "n": "Météorion",
+    "d": ""
+  },
+  "2177": {
+    "n": "Godzibaffe",
+    "d": ""
+  },
+  "2178": {
+    "n": "Godzibond",
+    "d": ""
+  },
+  "2179": {
+    "n": "Grasmerage",
+    "d": ""
+  },
+  "2180": {
+    "n": "Grasmerafle",
+    "d": ""
+  },
+  "2181": {
+    "n": "Isolement",
+    "d": ""
+  },
+  "2182": {
+    "n": "Grasmeracaille",
+    "d": ""
+  },
+  "2183": {
+    "n": "Souffle irritant",
+    "d": ""
+  },
+  "2185": {
+    "n": "Brochette Cinglante",
+    "d": "Ce sort permet d'infliger des dégâts de Terre en ligne et applique un poison sur plusieurs tours."
+  },
+  "2186": {
+    "n": "Magnum Eaupus",
+    "d": "Ce sort permet d'infliger des dégâts d'Eau autour du lanceur et vole de la Chance sur plusieurs tours."
+  },
+  "2187": {
+    "n": "Brise Temporelle",
+    "d": "Ce sort permet d'infliger des dégâts de type Air. Il peut également être utilisé pour se repositionner."
+  },
+  "2188": {
+    "n": "Explosion Soufreuse",
+    "d": "Ce sort puissant inflige des dégâts de Feu et augmente les dommages du sort au troisième tour après avoir été lancé."
+  },
+  "2189": {
+    "n": "Tu ne le sais pas encore…",
+    "d": "Le lanceur de ce sort devient temporairement surpuissant au détriment de toute défense."
+  },
+  "2190": {
+    "n": "Soin Mineur",
+    "d": "Le Soin Mineur permet de soigner plusieurs personnages et augmente les soins du lanceur et des ennemis touchés."
+  },
+  "2191": {
+    "n": "Soin Majeur",
+    "d": "Le Soin Majeur permet de soigner efficacement un personnage, il augmente également les dégâts infligés."
+  },
+  "2192": {
+    "n": "Motivation",
+    "d": "La Motivation augmente les PM, puis les PA pendant les deux prochains tours au détriment d'un malus permanent de vie insoignable."
+  },
+  "2193": {
+    "n": "Bénédiction Périlleuse",
+    "d": "La Bénédiction Périlleuse procure des bonus en croix aux autres personnages mais le lanceur gagne un malus de soin."
+  },
+  "2194": {
+    "n": "Mélodie Survitaminée",
+    "d": "Ce sort ressucite le dernier joueur tombé au combat ou peut être utilisé pour augmenter substantiellement les dégâts d'une cible."
+  },
+  "2195": {
+    "n": "Attirance Croisée",
+    "d": "Ce sort attire dans toutes les directions par rapport au lanceur."
+  },
+  "2196": {
+    "n": "Saut",
+    "d": "Permet d'échanger sa position avec celle de sa cible."
+  },
+  "2197": {
+    "n": "Intimidation Puissante",
+    "d": "L'intimidation puissante rend les ennemis incapables de lancer des sorts pour leur prochain tour."
+  },
+  "2198": {
+    "n": "Duvet Protecteur",
+    "d": "Ce sort augmente temporairement les résistances de la cible."
+  },
+  "2199": {
+    "n": "Secteur Redoutable",
+    "d": "Tous les jets de dés effectués sont optimisés. Le lanceur devient invulnérable. Empêche tout déplacement. Un glyphe est posé sous le lanceur qui augmente les dégâts des cibles qui débutent dans sa zone."
+  },
+  "2200": {
+    "n": "Sort qui boost",
+    "d": "A utiliser sur la glyphe du tank"
+  },
+  "2201": {
+    "n": "Mutilation",
+    "d": "Augmente les dégâts, mais fait perdre de la vie en contre-partie."
+  },
+  "2563": {
+    "n": "Épée de Goultard",
+    "d": "Goultard brandit sa légendaire arme éponyme et assène un violent coup qui occasionne de très sérieux dégâts."
+  },
+  "2564": {
+    "n": "Tranche",
+    "d": "Vole l'énergie vitale de la cible."
+  },
+  "2565": {
+    "n": "Bond Écrasant",
+    "d": "Le lanceur s'élance haut dans le ciel pour venir s'écraser au sol, occasionnant des dégâts autour de la destination."
+  },
+  "2566": {
+    "n": "Focus",
+    "d": "Le lanceur concentre son énergie sur un point et attire les cibles autour de celui-ci."
+  },
+  "2567": {
+    "n": "Rage de vaincre",
+    "d": "Adopte une forme de haine pendant un court laps de temps pour devenir l'égal d'un Dieu."
+  },
+  "2568": {
+    "n": "Invocation de première instance",
+    "d": ""
+  },
+  "2569": {
+    "n": "Invocation de seconde instance",
+    "d": ""
+  },
+  "2570": {
+    "n": "Invocation d'ultime instance",
+    "d": ""
+  },
+  "2571": {
+    "n": "Emprise",
+    "d": ""
+  },
+  "2572": {
+    "n": "Invasion",
+    "d": ""
+  },
+  "2698": {
+    "n": "Souffle Alcoolisé",
+    "d": "Occasionne des dommages Air et repousse les cibles. \\n \\nNécessite l'état Saoul."
+  },
+  "2703": {
+    "n": "Souillure",
+    "d": "Enlève tous les envoûtements de la cible et lui retire de la Puissance. \\n \\nNécessite l'état Saoul."
+  },
+  "3019": {
+    "n": "Mot soignant Spectral",
+    "d": "Soigne et boost les alliés (100puissance, 2 pm)"
+  },
+  "3020": {
+    "n": "Exaltation de Feudala",
+    "d": "Passif Zilla freux, boost tous les alliés de 200%"
+  },
+  "3021": {
+    "n": "Migi",
+    "d": "Attaque air qui vole de l'agilité"
+  },
+  "3022": {
+    "n": "Hidari",
+    "d": "Dégat air en vol de vie"
+  },
+  "3023": {
+    "n": "Bambou Musical",
+    "d": "Attaque eau qui vole des PA"
+  },
+  "3024": {
+    "n": "Exaltation d'Aerdala",
+    "d": "Passif Fantôme Maître Pandore, Boost 1 invo et 100 HP"
+  },
+  "3025": {
+    "n": "Invocation de Bouate de Fantôme Maître Pandore",
+    "d": "Invocation du Fantôme Maître Pandore, n'invoque que des fantomes pandas"
+  },
+  "3026": {
+    "n": "Ouverture hasardeuse fantôme",
+    "d": ""
+  },
+  "3027": {
+    "n": "Buverie",
+    "d": ""
+  },
+  "3028": {
+    "n": "Ruse du Kitsoune",
+    "d": "Boost fantôme kitsou nakwa (dommage x2)"
+  },
+  "3029": {
+    "n": "Kitsnition",
+    "d": "Attaque air du fantôme kitsou"
+  },
+  "3030": {
+    "n": "Kisstou",
+    "d": "Soigne les alliés ciblés"
+  },
+  "3031": {
+    "n": "Ruse du Kitsoune",
+    "d": "Boost fantôme kitsou nufeu (soin)"
+  },
+  "3032": {
+    "n": "Ruse du Kitsoune",
+    "d": "Boost fantôme kitsou nae (PA)"
+  },
+  "3033": {
+    "n": "Ruse du Kitsoune",
+    "d": "Boost fantôme kitsou nere(PM)"
+  },
+  "3034": {
+    "n": "Exaltation de Terrdala",
+    "d": "Passif Maître Tanukouï San"
+  },
+  "3035": {
+    "n": "Pousse-Pousse",
+    "d": "Attaque neutre, pousse et Malus res %"
+  },
+  "3036": {
+    "n": "Phéromone Fantôme",
+    "d": "Invocation Fantôme Maître Tanuki Chan"
+  },
+  "3037": {
+    "n": "Piqûre",
+    "d": "Attaque terre du fantôme Araknawa, Applique un poison en crit"
+  },
+  "3038": {
+    "n": "Empoisonnement",
+    "d": "Poison Fantôme Araknawa"
+  },
+  "3039": {
+    "n": "Confusion Visuelle",
+    "d": "Poison + Malus PO Fantôme Araknawa"
+  },
+  "3040": {
+    "n": "Bokken",
+    "d": "Version améliorée du sort Bokken, tape plus fort et attire de 1 case"
+  },
+  "3041": {
+    "n": "Tanto là",
+    "d": "Bond du Fantôme Bambouto"
+  },
+  "3042": {
+    "n": "Agacement",
+    "d": "Ral pa + Debuff du Fantôme Bulbambou"
+  },
+  "3043": {
+    "n": "Ratanhia",
+    "d": "Pose un arbre qui pose un glyphe, Soigne les alliés et tape les ennemis"
+  },
+  "3044": {
+    "n": "Dégâts Ratanhia",
+    "d": "Utilisé pour le sort Ratanhia"
+  },
+  "3045": {
+    "n": "Ronces Spectrales",
+    "d": "Version modifiée de la ronce"
+  },
+  "3046": {
+    "n": "Ronces Multiples",
+    "d": "Version modifiée de Ronces multiples, ne frappe pas ses alliés."
+  },
+  "3047": {
+    "n": "Herbe Folle",
+    "d": "Version modifiée d'Herbe Folle, ne frappe pas ses alliés"
+  },
+  "3048": {
+    "n": "Shinai",
+    "d": "Version améliorée de Shinai, frappe plus fort et attire"
+  },
+  "3049": {
+    "n": "Invocation Fantôme Bambouto",
+    "d": "Invocation du Fantôme Bambouto sacré"
+  },
+  "3050": {
+    "n": "Bultombe",
+    "d": "Version modifiée de Bultombe, frappe plus fort"
+  },
+  "3051": {
+    "n": "Bulvocation Fantôme",
+    "d": "Invocation du Bulbig Fantôme"
+  },
+  "3052": {
+    "n": "Laido",
+    "d": "Sort eau au cac qui met un malus PA"
+  },
+  "3053": {
+    "n": "Exaltation d'Akwadala",
+    "d": "Passif Fantôme Bulbig"
+  },
+  "3054": {
+    "n": "Vengeance des Esprits",
+    "d": "Invocation d'un des mini boss du dj grobe"
+  },
+  "3055": {
+    "n": "Fantôme d'assistance",
+    "d": "Invocation du fantôme péki du Péki Garou"
+  },
+  "3056": {
+    "n": "Appel de la Gamelle",
+    "d": "Invocation d'une gamelle du Péki Garou"
+  },
+  "3057": {
+    "n": "Crochet drainant",
+    "d": "Version modifiée de Crochet drainant TR3, Attaque au cac qui frappe très fort en volant des PA"
+  },
+  "3058": {
+    "n": "Scrountch",
+    "d": "Version modifiée de Scrounch TR3, Attaque au cac qui frappe fort"
+  },
+  "3059": {
+    "n": "Alatak",
+    "d": "Transpo la cible entre lui et son invocateur, boost la sagesse"
+  },
+  "3060": {
+    "n": "Régalade",
+    "d": "Sort de la gamelle qui Boost de 1 PA l'invocateur"
+  },
+  "3061": {
+    "n": "Au pied !",
+    "d": "Attire la cible"
+  },
+  "3062": {
+    "n": "Gloutonnerie",
+    "d": "OS la cible au cac"
+  },
+  "3063": {
+    "n": "Passif du Péki Garou",
+    "d": "Utilisé pour passif péki garou"
+  },
+  "3064": {
+    "n": "Acuité canine",
+    "d": "Passif Péki Garou"
+  },
+  "3065": {
+    "n": "La meute",
+    "d": "Boost les invocations de +1 (infini)"
+  },
+  "3066": {
+    "n": "A table",
+    "d": "Passif état gamelle (évite le OS du joueur t1)"
+  },
+  "100998": {
+    "n": "Ratatinage",
+    "d": ""
+  },
+  "101001": {
+    "n": "Rabotage",
+    "d": ""
+  },
+  "101002": {
+    "n": "Raffut",
+    "d": ""
+  },
+  "101003": {
+    "n": "Ravin",
+    "d": ""
+  },
+  "101004": {
+    "n": "Rapace",
+    "d": ""
+  },
+  "101009": {
+    "n": "Peste Noire",
+    "d": ""
+  }
+}

@@ -1,0 +1,224 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using BotDofus.Commun.Reseau;
+using BotDofus.Commun.Messages.VersClient.Authentification;
+
+namespace BotDofus.Commun.Messages;
+
+/// <summary>
+/// Banc de validation des parsers contre les VRAIS paquets capturés sur Aqua 1.39
+/// (extraits du log Synfus fourni). Permet de prouver que le décodage protocolaire
+/// fonctionne sans avoir besoin d'une session de jeu live.
+///
+/// Lancé via <c>Luffy-bot.exe --testparsers</c> (voir App.OnStartup).
+/// </summary>
+public static class ValidateurParsers
+{
+    private sealed record Cas(string Nom, string PaquetBrut, Func<MessageDofus, (bool ok, string detail)> Verif);
+
+    public static string ExecuterTout()
+    {
+        FabriqueMessages.EnregistrerMessagesStandards();
+
+        var cas = new List<Cas>
+        {
+            new("HC challenge",
+                "HCQBKDRVVSGTJMCRHDOUUVYNRWXGLSEHJI",
+                m => m is MessageHelloConnexion hc
+                    ? (hc.Cle == "QBKDRVVSGTJMCRHDOUUVYNRWXGLSEHJI",
+                       $"Cle='{hc.Cle}' (len={hc.Cle.Length})")
+                    : (false, $"type={m.GetType().Name}")),
+
+            new("Af file d'attente",
+                "Af2|0|2|0||-1",
+                m => (m is MessageQueuePosition, $"type={m.GetType().Name} charge='{m.Charge}'")),
+
+            new("Ad pseudo",
+                "AdRatcoon",
+                m => m is MessagePseudo p
+                    ? (p.Pseudo == "Ratcoon", $"Pseudo='{p.Pseudo}'")
+                    : (false, $"type={m.GetType().Name}")),
+
+            new("AH liste serveurs Aqua",
+                "AH2;1;10;1|4;0;10;0|100;0;10;0|102;0;10;0|101;0;10;0",
+                m =>
+                {
+                    if (m is not MessageServeursDisponibles s) return (false, $"type={m.GetType().Name}");
+                    var sb = new StringBuilder();
+                    foreach (var srv in s.Serveurs) sb.Append($"[{srv.Identifiant}:{(srv.EnLigne ? "ON" : "off")}]");
+                    var serveur2EnLigne = false;
+                    foreach (var srv in s.Serveurs)
+                        if (srv.Identifiant == 2 && srv.EnLigne) serveur2EnLigne = true;
+                    return (s.Serveurs.Count == 5 && serveur2EnLigne,
+                            $"{s.Serveurs.Count} serveurs {sb} (Aqua id=2 attendu ON)");
+                }),
+
+            new("AYK redirect jeu (hostname Aqua)",
+                "AYKaqua.play-astra.net:5562;MODYPMVDRBZVEOAB|506291",
+                m =>
+                {
+                    if (m is not MessageHoteChiffre y) return (false, $"type={m.GetType().Name}");
+                    var ok = y.Hote == "aqua.play-astra.net"
+                          && y.Port == 5562
+                          && y.Ticket == "MODYPMVDRBZVEOAB|506291";
+                    return (ok, $"Hote='{y.Hote}' Port={y.Port} Ticket='{y.Ticket}'");
+                }),
+
+            new("ALK liste personnages",
+                "ALK593033945|9|457817;Peyal;108;101;-1;-1;-1;195b,1f49,69f,1e22,null,1,;0;2;0;;200|457819;Ralou;114;101;-1;-1;-1;30e,98f,1b0f,null,null,1,;0;2;0;;200",
+                m => (m is MessageListePersonnages,
+                      $"type={m.GetType().Name} charge.len={m.Charge.Length}")),
+
+            new("ATK ticket OK",
+                "ATK0",
+                m => (m is MessageTicket, $"type={m.GetType().Name}")),
+        };
+
+        var sortie = new StringBuilder();
+        sortie.AppendLine("=== Validation parsers contre paquets Aqua 1.39 réels ===");
+        int ok = 0;
+        foreach (var c in cas)
+        {
+            MessageDofus msg;
+            try
+            {
+                msg = FabriqueMessages.FabriquerDepuis(new PaquetBrut(DirectionPaquet.VersClient, c.PaquetBrut));
+            }
+            catch (Exception ex)
+            {
+                sortie.AppendLine($"  [CRASH] {c.Nom} : {ex.GetType().Name} {ex.Message}");
+                continue;
+            }
+
+            var (reussi, detail) = c.Verif(msg);
+            sortie.AppendLine($"  [{(reussi ? "OK  " : "FAIL")}] {c.Nom} → {detail}");
+            if (reussi) ok++;
+        }
+        sortie.AppendLine($"=== {ok}/{cas.Count} parsers validés ===");
+
+        sortie.AppendLine();
+        sortie.AppendLine(ValiderInterception());
+        return sortie.ToString();
+    }
+
+    /// <summary>
+    /// Valide le moteur intercept-and-modify (Phase 2) sans session live :
+    /// on simule des paquets et on vérifie remplacement / suppression / passthrough.
+    /// </summary>
+    private static string ValiderInterception()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("=== Validation moteur d'interception (Phase 2) ===");
+        var g = new BotDofus.Divers.Interception.GestionnaireInterception();
+        int ok = 0, total = 0;
+
+        void Check(string nom, bool cond, string detail)
+        {
+            total++;
+            if (cond) ok++;
+            sb.AppendLine($"  [{(cond ? "OK  " : "FAIL")}] {nom} → {detail}");
+        }
+
+        // Règle 1 : remplacer la destination d'un déplacement GA (one-shot).
+        g.Ajouter(new BotDofus.Divers.Interception.RegleInterception
+        {
+            Nom = "redir-deplacement",
+            Prefixe = "GA",
+            Direction = DirectionPaquet.VersServeur,
+            MaxApplications = 1,
+            Transformateur = (c, _) =>
+                BotDofus.Divers.Interception.ResultatInterception.Remplacer(c + "MOD"),
+        });
+
+        var r1 = g.Appliquer("GA0011;abc", DirectionPaquet.VersServeur);
+        Check("remplacement GA", r1 == "GA0011;abcMOD", $"résultat='{r1}'");
+
+        var r1b = g.Appliquer("GA0011;abc", DirectionPaquet.VersServeur);
+        Check("one-shot (2e fois inchangé)", r1b == null, $"résultat='{r1b ?? "null"}'");
+
+        // Règle 2 : supprimer les pings clients "ping".
+        g.Ajouter(new BotDofus.Divers.Interception.RegleInterception
+        {
+            Nom = "drop-ping",
+            Prefixe = "ping",
+            Transformateur = (_, _) => BotDofus.Divers.Interception.ResultatInterception.Supprimer,
+        });
+        var r2 = g.Appliquer("pingXYZ", DirectionPaquet.VersServeur);
+        Check("suppression ping", r2 == string.Empty, $"résultat='{(r2 == string.Empty ? "<vide>" : r2 ?? "null")}'");
+
+        // Passthrough : un paquet non concerné n'est pas touché.
+        var r3 = g.Appliquer("As500", DirectionPaquet.VersClient);
+        Check("passthrough As", r3 == null, $"résultat='{r3 ?? "null"}'");
+
+        // Kill-switch : Active=false → plus aucune règle.
+        g.Active = false;
+        var r4 = g.Appliquer("pingXYZ", DirectionPaquet.VersServeur);
+        Check("kill-switch global", r4 == null, $"résultat='{r4 ?? "null"}'");
+
+        // Règle find/replace (modif furtive démontrable type "réécrire un chat").
+        g.Active = true;
+        g.Vider();
+        g.Ajouter(new BotDofus.Divers.Interception.RegleInterception
+        {
+            Nom = "replace-chat",
+            Prefixe = "BM",
+            Transformateur = (c, _) =>
+            {
+                if (!c.Contains("bonjour", StringComparison.Ordinal))
+                    return BotDofus.Divers.Interception.ResultatInterception.Laisser;
+                return BotDofus.Divers.Interception.ResultatInterception.Remplacer(
+                    c.Replace("bonjour", "salut"));
+            }
+        });
+        var r5 = g.Appliquer("BM*bonjour tout le monde", DirectionPaquet.VersServeur);
+        Check("find/replace chat", r5 == "BM*salut tout le monde", $"résultat='{r5 ?? "null"}'");
+        var r6 = g.Appliquer("BM*rien à voir", DirectionPaquet.VersServeur);
+        Check("find/replace passthrough", r6 == null, $"résultat='{r6 ?? "null"}'");
+
+        sb.AppendLine($"=== {ok}/{total} tests interception OK ===");
+
+        sb.AppendLine();
+        sb.AppendLine(ValiderHumaniseur());
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Valide la garde anti-burst (Phase 3) : inactif = 0 délai ; actif = espacement
+    /// minimum respecté entre deux actions consécutives.
+    /// </summary>
+    private static string ValiderHumaniseur()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("=== Validation humaniseur anti-burst (Phase 3) ===");
+        int ok = 0, total = 0;
+        void Check(string n, bool c, string d) { total++; if (c) ok++; sb.AppendLine($"  [{(c ? "OK  " : "FAIL")}] {n} → {d}"); }
+
+        var h = new BotDofus.Divers.Securite.HumaniseurActions
+        {
+            Actif = false,
+            PlancherMs = 100,
+            Cadence = new BotDofus.Divers.Securite.Plage(100, 100),
+        };
+
+        // Inactif : deux appels consécutifs ne doivent imposer aucun délai.
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        h.RespecterCadenceAsync().GetAwaiter().GetResult();
+        h.RespecterCadenceAsync().GetAwaiter().GetResult();
+        sw.Stop();
+        Check("inactif = 0 délai", sw.ElapsedMilliseconds < 50, $"{sw.ElapsedMilliseconds}ms (attendu <50)");
+
+        // Actif : le 2e appel doit attendre ~100ms (plancher/cadence).
+        h.Actif = true;
+        h.Reinitialiser();
+        sw.Restart();
+        h.RespecterCadenceAsync().GetAwaiter().GetResult(); // 1er : pas d'attente (derniereAction=MinValue → écoulé énorme)
+        h.RespecterCadenceAsync().GetAwaiter().GetResult(); // 2e : doit attendre la cadence
+        sw.Stop();
+        Check("actif = espacement imposé", sw.ElapsedMilliseconds >= 90, $"{sw.ElapsedMilliseconds}ms (attendu >=90)");
+        Check("compteur délais", h.DelaisImposes >= 1, $"DelaisImposes={h.DelaisImposes}");
+
+        sb.AppendLine($"=== {ok}/{total} tests humaniseur OK ===");
+        return sb.ToString();
+    }
+}

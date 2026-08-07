@@ -1,0 +1,73 @@
+<UserControl x:Class="BotDofus.Wpf.Vues.VueScripts"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+    <DockPanel Margin="16">
+        <Border DockPanel.Dock="Top" Padding="0,0,0,12">
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="BtnCharger" Click="BtnCharger_Click" Style="{StaticResource MaterialDesignRaisedButton}">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="FolderOpen"/>
+                        <TextBlock Text=" Charger script .lua" Margin="4,0,0,0"/>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="BtnDemarrer" Click="BtnDemarrer_Click" Style="{StaticResource MaterialDesignRaisedButton}" Margin="8,0,0,0" IsEnabled="False">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Play"/>
+                        <TextBlock Text=" Démarrer" Margin="4,0,0,0"/>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="BtnArreter" Click="BtnArreter_Click" Style="{StaticResource MaterialDesignOutlinedButton}" Margin="8,0,0,0" IsEnabled="False">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Stop"/>
+                        <TextBlock Text=" Arrêter" Margin="4,0,0,0"/>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="BtnEnregistrer" Click="BtnEnregistrer_Click" Style="{StaticResource MaterialDesignOutlinedButton}" Margin="8,0,0,0" IsEnabled="False">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="ContentSave"/>
+                        <TextBlock Text=" Enregistrer" Margin="4,0,0,0"/>
+                    </StackPanel>
+                </Button>
+                <CheckBox x:Name="ChkEditable"
+                          Content="Editer"
+                          IsChecked="False"
+                          Margin="16,0,0,0"
+                          VerticalAlignment="Center"
+                          Checked="ChkEditable_Toggled"
+                          Unchecked="ChkEditable_Toggled"
+                          ToolTip="Active l'édition du contenu chargé"/>
+                <TextBlock x:Name="TxtFichier" Margin="16,0,0,0" VerticalAlignment="Center" Opacity="0.7" Text="Aucun script chargé"/>
+            </StackPanel>
+        </Border>
+
+        <materialDesign:Card DockPanel.Dock="Left" Width="280" Margin="0,0,12,0" Padding="0">
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Background="#22000000" Padding="10,8">
+                    <DockPanel>
+                        <Button x:Name="BtnRafraichir" DockPanel.Dock="Right"
+                                Click="BtnRafraichir_Click"
+                                Style="{StaticResource MaterialDesignFlatButton}"
+                                Padding="6,0" MinWidth="0" ToolTip="Rafraîchir la liste">
+                            <materialDesign:PackIcon Kind="Refresh"/>
+                        </Button>
+                        <TextBlock Text="Mes trajets / scripts" FontWeight="Bold"
+                                   VerticalAlignment="Center"/>
+                    </DockPanel>
+                </Border>
+                <ListBox x:Name="ListeScripts" BorderThickness="0"
+                         SelectionChanged="ListeScripts_SelectionChanged"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+            </DockPanel>
+        </materialDesign:Card>
+
+        <materialDesign:Card Padding="0">
+            <TextBox x:Name="TxtScriptContenu" AcceptsReturn="True" AcceptsTab="True"
+                     FontFamily="Consolas" FontSize="13"
+                     VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                     BorderThickness="0" Padding="12"
+                     IsReadOnly="True"
+                     Text="-- Sélectionne un trajet à gauche pour le charger, puis « Démarrer »&#10;-- (ou « Charger script .lua » pour un fichier ailleurs)"/>
+        </materialDesign:Card>
+    </DockPanel>
+</UserControl>

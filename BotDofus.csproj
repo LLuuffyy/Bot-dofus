@@ -1,0 +1,77 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <!-- Autorise la construction sur Linux/macOS (cross-targeting). -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>BotDofus</RootNamespace>
+    <AssemblyName>BotDofus</AssemblyName>
+    <Version>0.1.0</Version>
+    <Company>Luffy-bot</Company>
+    <Product>Luffy-bot</Product>
+    <ApplicationIcon />
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <NeutralLanguage>fr-FR</NeutralLanguage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="BotDofus.Wpf\**\*.cs" />
+    <EmbeddedResource Remove="BotDofus.Wpf\**\*" />
+    <None Remove="BotDofus.Wpf\**\*" />
+    <!-- Exclure le projet de tests (.csproj séparé) du compile main. -->
+    <Compile Remove="BotDofus.Tests\**\*.cs" />
+    <EmbeddedResource Remove="BotDofus.Tests\**\*" />
+    <None Remove="BotDofus.Tests\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Les ressources de jeu (maps, items, monsters, sorts) sont copiées à la sortie -->
+    <None Update="Resources\data\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\data\**\*.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\worldmap\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="trajectories\**\*.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="scripts\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="config\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="peleas\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="banque\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="interactions\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="accounts.bot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Moteur Lua pur C# (pas de dépendance native, contrairement à NLua) -->
+    <PackageReference Include="MoonSharp" Version="2.0.0" />
+    <PackageReference Include="Native.WinDivert" Version="2.2.2" />
+    <!-- Lecture/écriture de App.config depuis .NET 8 (absent par défaut hors .NET Framework) -->
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+    <PackageReference Include="WindivertDotnet" Version="1.1.2" />
+    <!-- System.Text.Json inclus dans .NET 8 -->
+  </ItemGroup>
+
+</Project>

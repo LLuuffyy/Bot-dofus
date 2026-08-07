@@ -1,0 +1,1194 @@
+<UserControl x:Class="BotDofus.Wpf.Vues.VueCombat"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:conv="clr-namespace:BotDofus.Wpf.Convertisseurs">
+    <UserControl.Resources>
+        <conv:NullableIntToBoolConv x:Key="NullableIntToBoolConv"/>
+
+        <Style x:Key="SectionBorderStyle" TargetType="Border" BasedOn="{StaticResource PanelBorderStyle}">
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="0,0,0,14"/>
+        </Style>
+
+        <!-- GroupBox style pour les 5 catégories de conditions (Distance / Cible / Joueur / Situation / Avancé) -->
+        <Style x:Key="ConditionGroupBoxStyle" TargetType="GroupBox">
+            <Setter Property="Foreground" Value="#ECEFF5"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSoftBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrushSoft}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="#ECEFF5"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+
+        <Style x:Key="SectionLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource MutedTextStyle}">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+
+        <!-- ===== Styles inputs LOCAUX (fix labels/inputs blancs sur fond sombre) =====
+             On force fond + texte + bordure cohérents avec le thème global
+             (App.xaml). NE PAS modifier App.xaml (demande user) — on consomme. -->
+        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrushSoft}"/>
+            <Setter Property="Foreground" Value="#F2F4F8"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSoftBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource AccentBrush}"/>
+        </Style>
+
+        <!-- Template ComboBox NUCLÉAIRE — outrepasse complètement MaterialDesign
+             pour garantir que le texte de l'item sélectionné est toujours lisible.
+             Template WPF complet avec ToggleButton (zone clickable) + ContentPresenter
+             (rendu SelectionBox) + Popup (dropdown). Foreground=#F2F4F8 forcé partout. -->
+        <ControlTemplate x:Key="ComboBoxNucleaireTemplate" TargetType="ComboBox">
+            <Grid>
+                <ToggleButton x:Name="ToggleBtn" Grid.Column="2"
+                              Focusable="False"
+                              ClickMode="Press"
+                              IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                    <ToggleButton.Template>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Border x:Name="Bd" CornerRadius="3"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="18"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Path Grid.Column="1" Data="M 0 0 L 4 4 L 8 0 Z"
+                                          Fill="#F2F4F8"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="BorderBrush" Value="#6C76FF"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </ToggleButton.Template>
+                </ToggleButton>
+                <!-- LA zone qui rend l'item sélectionné — Foreground EXPLICITE. -->
+                <ContentPresenter x:Name="ContentSite"
+                                  Margin="{TemplateBinding Padding}"
+                                  IsHitTestVisible="False"
+                                  HorizontalAlignment="Left"
+                                  VerticalAlignment="Center"
+                                  Content="{TemplateBinding SelectionBoxItem}"
+                                  ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                  ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                  TextElement.Foreground="#F2F4F8"
+                                  TextBlock.Foreground="#F2F4F8"/>
+                <Popup x:Name="Popup"
+                       Placement="Bottom"
+                       IsOpen="{TemplateBinding IsDropDownOpen}"
+                       AllowsTransparency="True"
+                       Focusable="False"
+                       PopupAnimation="Slide">
+                    <Border x:Name="DropDownBorder"
+                            MinWidth="{TemplateBinding ActualWidth}"
+                            MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                            Background="#262930"
+                            BorderBrush="#393D47"
+                            BorderThickness="1"
+                            CornerRadius="3">
+                        <ScrollViewer>
+                            <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"
+                                            TextElement.Foreground="#F2F4F8"/>
+                        </ScrollViewer>
+                    </Border>
+                </Popup>
+            </Grid>
+        </ControlTemplate>
+
+        <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrushSoft}"/>
+            <Setter Property="Foreground" Value="#F2F4F8"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSoftBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="MinHeight" Value="30"/>
+            <Setter Property="TextElement.Foreground" Value="#F2F4F8"/>
+            <Setter Property="TextBlock.Foreground" Value="#F2F4F8"/>
+            <Setter Property="Template" Value="{StaticResource ComboBoxNucleaireTemplate}"/>
+            <Style.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="#F2F4F8"/>
+                </Style>
+            </Style.Resources>
+        </Style>
+
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrushSoft}"/>
+            <Setter Property="Foreground" Value="#F2F4F8"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Style.Triggers>
+                <Trigger Property="IsHighlighted" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource SurfaceBrushAlt}"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- H.2 — RadioButton avec indicateur visible (point bleu quand sélectionné).
+             Material Design surcharge le template par défaut → l'utilisateur ne
+             voyait pas quel mode était sélectionné. ControlTemplate explicite : un
+             cercle bordure + un disque intérieur qui apparaît seulement IsChecked. -->
+        <Style TargetType="RadioButton">
+            <Setter Property="Foreground" Value="#ECEFF5"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="6,2,0,2"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border Background="{TemplateBinding Background}" Padding="2">
+                            <StackPanel Orientation="Horizontal">
+                                <Grid Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center">
+                                    <Ellipse Stroke="{DynamicResource BorderSoftBrush}" StrokeThickness="2"
+                                             Fill="{DynamicResource SurfaceBrushSoft}"/>
+                                    <Ellipse x:Name="Coche" Width="9" Height="9"
+                                             Fill="{DynamicResource AccentBrush}"
+                                             Visibility="Collapsed"/>
+                                </Grid>
+                                <ContentPresenter VerticalAlignment="Center"
+                                                  TextElement.Foreground="{TemplateBinding Foreground}"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Coche" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="GhostIconButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6"/>
+            <Setter Property="Margin" Value="2,0,0,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Root"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{DynamicResource SurfaceBrushAlt}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  PanningMode="VerticalOnly"
+                  Padding="12">
+        <StackPanel>
+            <!-- ===== SÉLECTEUR PERSO CIBLE ===== -->
+            <Border Style="{StaticResource SectionBorderStyle}" Padding="16,12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                        <Border Background="#2D3548" CornerRadius="3" Padding="6,2" Margin="0,0,8,0">
+                            <TextBlock Text="CONFIGURER POUR" FontSize="10" FontWeight="Bold" Foreground="#9AB8E0"/>
+                        </Border>
+                    </StackPanel>
+                    <ComboBox Grid.Row="1"
+                              x:Name="CmbPersoCible"
+                              MinWidth="280"
+                              HorizontalAlignment="Stretch"
+                              SelectionChanged="CmbPersoCible_SelectionChanged"
+                              ToolTip="Bascule entre le master (Sadida) et les héros liés. Les modifications s'appliquent au perso sélectionné.">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="2,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <!-- Avatar rond avec initiale + couleur classe -->
+                                    <Grid Grid.Column="0" Width="32" Height="32" Margin="0,0,12,0">
+                                        <Ellipse Fill="{Binding CouleurClasse}"/>
+                                        <TextBlock Text="{Binding Initiale}"
+                                                   FontSize="14"
+                                                   FontWeight="Bold"
+                                                   Foreground="#101418"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Grid>
+                                    <!-- Nom + sous-titre -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Nom}"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#ECEFF5"/>
+                                        <TextBlock Text="{Binding SousTitre}"
+                                                   FontSize="10"
+                                                   Foreground="#8AA0BC"/>
+                                    </StackPanel>
+                                    <!-- Badge rôle -->
+                                    <Border Grid.Column="2"
+                                            Background="{Binding CouleurBadge}"
+                                            CornerRadius="3"
+                                            Padding="6,2"
+                                            VerticalAlignment="Center"
+                                            Margin="8,0,0,0">
+                                        <TextBlock Text="{Binding Badge}"
+                                                   FontSize="9"
+                                                   FontWeight="Bold"
+                                                   Foreground="#101418"/>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBlock Grid.Row="1"
+                               x:Name="TxtPersoCibleResume"
+                               Foreground="#8AA0BC"
+                               FontSize="10"
+                               FontStyle="Italic"
+                               VerticalAlignment="Top"
+                               HorizontalAlignment="Right"
+                               Margin="0,40,4,0"
+                               Text="—"/>
+                </Grid>
+            </Border>
+
+            <!-- ===== ÉTAT COMBAT LIVE ===== -->
+            <Border Style="{StaticResource SectionBorderStyle}">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,12">
+                        <TextBlock Text="ÉTAT COMBAT EN COURS"
+                                   Style="{StaticResource SectionTitleTextStyle}"
+                                   VerticalAlignment="Center"/>
+                        <Border DockPanel.Dock="Right"
+                                x:Name="BadgeEtat"
+                                Background="#3D3D3D"
+                                CornerRadius="10"
+                                Padding="10,3"
+                                HorizontalAlignment="Right">
+                            <TextBlock x:Name="TxtEtat" Text="Hors combat" FontSize="11" FontWeight="SemiBold"/>
+                        </Border>
+                    </DockPanel>
+
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="TOUR" Style="{StaticResource MutedTextStyle}" FontSize="10"/>
+                            <TextBlock x:Name="TxtTour" Text="—" FontSize="22" FontWeight="Bold"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="ALLIÉS" Style="{StaticResource MutedTextStyle}" FontSize="10"/>
+                            <TextBlock x:Name="TxtNbAllies" Text="0" FontSize="22" FontWeight="Bold" Foreground="#65C56F"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="ENNEMIS" Style="{StaticResource MutedTextStyle}" FontSize="10"/>
+                            <TextBlock x:Name="TxtNbEnnemis" Text="0" FontSize="22" FontWeight="Bold" Foreground="#C95761"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Text="COMBATTANTS" Style="{StaticResource MutedTextStyle}" FontSize="10" Margin="0,8,0,6"/>
+                    <ItemsControl x:Name="ListeCombattants">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{Binding CouleurFond}"
+                                        BorderBrush="{Binding CouleurBordure}"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        Padding="10,6"
+                                        Margin="0,0,0,5">
+                                    <StackPanel>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Ellipse Grid.Column="0" Width="10" Height="10" Fill="{Binding CouleurEquipe}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Nom}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding CelluleTexte}" Foreground="#9AA0AC" FontFamily="Consolas" FontSize="11" Margin="6,0" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="3" Text="{Binding PvTexte}" Foreground="#E53935" FontFamily="Consolas" Margin="8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="4" Text="{Binding PaTexte}" Foreground="#1E88E5" FontFamily="Consolas" Margin="8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="5" Text="{Binding PmTexte}" Foreground="#43A047" FontFamily="Consolas" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                        </Grid>
+                                        <!-- Barre PV proportionnelle (ProgressBar styled) -->
+                                        <ProgressBar Minimum="0" Maximum="100"
+                                                     Value="{Binding PourcentagePv, Mode=OneWay}"
+                                                     Height="6" Margin="0,4,0,0"
+                                                     Background="#1F2127"
+                                                     Foreground="{Binding CouleurEquipe}"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock x:Name="TxtCombatVide"
+                               Text="Aucun combat en cours. La vue se remplira automatiquement quand tu lanceras un combat."
+                               Foreground="{DynamicResource FaintTextBrush}"
+                               FontStyle="Italic"
+                               TextWrapping="Wrap"
+                               Margin="0,4,0,0"/>
+
+                    <UniformGrid Columns="3" Margin="0,12,0,0">
+                        <Button Click="BtnFinirTour_Click"
+                                Style="{StaticResource AccentNavButtonStyle}"
+                                Margin="0,0,4,0"
+                                ToolTip="Termine immédiatement le tour courant">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="SkipNext" Width="14" Height="14" Margin="0,0,4,0"/>
+                                <TextBlock Text="Finir tour"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Click="BtnReady_Click"
+                                Style="{StaticResource TopNavButtonStyle}"
+                                Margin="4,0"
+                                ToolTip="Annonce 'prêt' (placement)">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Check" Width="14" Height="14" Margin="0,0,4,0"/>
+                                <TextBlock Text="Pret"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Click="BtnQuitterCombat_Click"
+                                Style="{StaticResource TopNavButtonStyle}"
+                                Margin="4,0,0,0"
+                                ToolTip="Quitte le combat (.fight leave Hystoria)">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="ExitRun" Width="14" Height="14" Margin="0,0,4,0"/>
+                                <TextBlock Text="Quitter"/>
+                            </StackPanel>
+                        </Button>
+                    </UniformGrid>
+                </StackPanel>
+            </Border>
+
+            <!-- ===== CONFIG IA (existante) ===== -->
+            <Border Style="{StaticResource SectionBorderStyle}">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,14">
+                        <TextBlock Text="SORTS CONFIGURES"
+                                   Style="{StaticResource SectionTitleTextStyle}"
+                                   VerticalAlignment="Center"/>
+                        <Button Click="BtnViderTout_Click"
+                                DockPanel.Dock="Right"
+                                Background="Transparent"
+                                BorderBrush="Transparent"
+                                Foreground="{DynamicResource MutedTextBrush}"
+                                Padding="4,0"
+                                Cursor="Hand"
+                                Content="Vider tout"/>
+                    </DockPanel>
+
+                    <!-- En-tête colonnes alignées SynFus : # / Sort / Focus / Methode / N tour / Actions -->
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="42"/>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="110"/>
+                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition Width="140"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="#"       Style="{StaticResource MutedTextStyle}" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="1" Text="Sort"    Style="{StaticResource MutedTextStyle}" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="2" Text="Focus"   Style="{StaticResource MutedTextStyle}" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="3" Text="Lancement" Style="{StaticResource MutedTextStyle}" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="4" Text="x Tour"  Style="{StaticResource MutedTextStyle}" FontWeight="SemiBold"/>
+                    </Grid>
+
+                    <ItemsControl x:Name="ListeSortsConfig">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource SurfaceBrushAlt}"
+                                        BorderBrush="{DynamicResource BorderSoftBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="10,10"
+                                        Margin="0,0,0,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="42"/>
+                                            <ColumnDefinition Width="150"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="110"/>
+                                            <ColumnDefinition Width="70"/>
+                                            <ColumnDefinition Width="140"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0"
+                                                Width="24"
+                                                Height="24"
+                                                CornerRadius="6"
+                                                Background="{DynamicResource AccentBrushSoft}"
+                                                HorizontalAlignment="Left"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Numero}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       FontWeight="Bold"/>
+                                        </Border>
+
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Ellipse Width="16" Height="16" Fill="{Binding CouleurBrush}" Margin="0,0,8,0"/>
+                                            <TextBlock Text="{Binding NomSort}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        </StackPanel>
+
+                                        <TextBlock Grid.Column="2"
+                                                   Text="{Binding FocusTexte}"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource MutedTextBrush}"/>
+
+                                        <TextBlock Grid.Column="3"
+                                                   Text="{Binding MethodeTexte}"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource MutedTextBrush}"/>
+
+                                        <TextBlock Grid.Column="4"
+                                                   Text="{Binding NombreParTourTexte}"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource FaintTextBrush}"/>
+
+                                        <StackPanel Grid.Column="5"
+                                                    Orientation="Horizontal"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Center">
+                                            <Button Click="BtnMonter_Click" Tag="{Binding}" Style="{StaticResource GhostIconButtonStyle}" ToolTip="Monter dans la rotation">
+                                                <materialDesign:PackIcon Kind="ArrowUp" Width="16" Height="16"/>
+                                            </Button>
+                                            <Button Click="BtnDescendre_Click" Tag="{Binding}" Style="{StaticResource GhostIconButtonStyle}" ToolTip="Descendre dans la rotation">
+                                                <materialDesign:PackIcon Kind="ArrowDown" Width="16" Height="16"/>
+                                            </Button>
+                                            <Button Click="BtnInfo_Click" Tag="{Binding}" Style="{StaticResource GhostIconButtonStyle}" ToolTip="Editer les conditions de ce sort">
+                                                <materialDesign:PackIcon Kind="InformationOutline" Width="16" Height="16"/>
+                                            </Button>
+                                            <Button Click="BtnSupprimer_Click" Tag="{Binding}" Style="{StaticResource GhostIconButtonStyle}" Foreground="{DynamicResource DangerBrush}" ToolTip="Supprimer">
+                                                <materialDesign:PackIcon Kind="DeleteOutline" Width="16" Height="16"/>
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource SectionBorderStyle}">
+                <StackPanel>
+                    <TextBlock Text="AJOUTER UN SORT"
+                               Style="{StaticResource SectionTitleTextStyle}"
+                               Margin="0,0,0,14"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,12">
+                            <TextBlock Text="SORT" Style="{StaticResource SectionLabelStyle}"/>
+                            <ComboBox x:Name="CmbSort" SelectionChanged="CmbSort_SelectionChanged">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Ellipse Width="12" Height="12" Fill="{Binding CouleurBrush}" Margin="0,0,8,0"/>
+                                            <TextBlock Text="{Binding Affichage}" Foreground="#F2F4F8"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0,0,12">
+                            <TextBlock Text="FOCUS" Style="{StaticResource SectionLabelStyle}"/>
+                            <ComboBox x:Name="CmbCible" SelectedIndex="0">
+                                <ComboBoxItem Tag="EnnemiLePlusProche"      Content="Ennemi le + proche"/>
+                                <ComboBoxItem Tag="EnnemiLePlusFaible"      Content="Ennemi le + faible (skip invoc)"/>
+                                <ComboBoxItem Tag="EnnemiLePlusFort"        Content="Ennemi le + fort (skip invoc)"/>
+                                <ComboBoxItem Tag="EnnemiLePlusLoin"        Content="Ennemi le + loin"/>
+                                <ComboBoxItem Tag="Moi"                     Content="Moi"/>
+                                <ComboBoxItem Tag="AllieLePlusBlesse"       Content="Allié le + blessé"/>
+                                <ComboBoxItem Tag="AllieLePlusProche"       Content="Allié le + proche"/>
+                                <ComboBoxItem Tag="AlliePlusGrosHeal"       Content="Allié plus gros heal (PV manquants max)"/>
+                                <ComboBoxItem Tag="InvocationLaPlusBlessee" Content="Mes invocations la + blessée"/>
+                                <ComboBoxItem Tag="InvocationLaPlusProche"  Content="Mes invocations la + proche"/>
+                                <ComboBoxItem Tag="CelluleVide"             Content="Cellule vide (invocation libre — legacy)"/>
+                                <ComboBoxItem Tag="CelluleAdjacenteMoi"     Content="Cellule adjacente à moi (invocation priorisée)"/>
+                                <ComboBoxItem Tag="CelluleAdjacenteEnnemi"  Content="Cellule adjacente ennemi (blocage)"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,10,12">
+                            <TextBlock Text="METHODE DE LANCEMENT" Style="{StaticResource SectionLabelStyle}"/>
+                            <ComboBox x:Name="CmbMethode" SelectedIndex="2">
+                                <ComboBoxItem Content="CAC (corps a corps)"/>
+                                <ComboBoxItem Content="Distance"/>
+                                <ComboBoxItem Content="Les deux"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="1" Grid.Column="1" Margin="10,0,0,12">
+                            <TextBlock Text="X FOIS / TOUR" Style="{StaticResource SectionLabelStyle}"/>
+                            <TextBox x:Name="TxtFoisTour" Text="1" materialDesign:HintAssist.Hint="0 = max"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,10,12">
+                            <TextBlock Text="X FOIS / CIBLE" Style="{StaticResource SectionLabelStyle}"/>
+                            <TextBox x:Name="TxtFoisCible" Text="0" materialDesign:HintAssist.Hint="0 = max"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="2" Grid.Column="1" Margin="10,0,0,0">
+                            <TextBlock Text="PRIORITE" Style="{StaticResource SectionLabelStyle}"/>
+                            <TextBox x:Name="TxtPriorite" Text="5"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Button Click="BtnAjouter_Click"
+                            Style="{StaticResource AccentNavButtonStyle}"
+                            HorizontalAlignment="Left"
+                            Margin="0,14,0,0"
+                            Content="Ajouter a la rotation"/>
+                </StackPanel>
+            </Border>
+
+            <!-- ===== Section CONDITIONS du sort sélectionné (cf. blueprint UIBLUEPRINT §5) =====
+                 Le DataContext est positionné dynamiquement par BtnInfo_Click sur la
+                 Regle du sort cliqué. IsEnabled=false par défaut tant qu'aucun sort
+                 sélectionné. 22 conditions bindées TwoWay sur les propriétés nullable
+                 de RegleSort. Les Chk*_Toggled handlers (code-behind) gèrent le set
+                 valeur par défaut (coché) / null (décoché). -->
+            <Border x:Name="PanelConditions" Style="{StaticResource SectionBorderStyle}" IsEnabled="False">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,12">
+                        <TextBlock Text="CONDITIONS — "
+                                   Style="{StaticResource SectionTitleTextStyle}"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtCondTitre"
+                                   Text="(clic sur ⓘ d'un sort pour éditer ses conditions)"
+                                   Style="{StaticResource SectionTitleTextStyle}"
+                                   Foreground="{DynamicResource AccentBrush}"
+                                   VerticalAlignment="Center"/>
+                    </DockPanel>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Col 1 : Distance -->
+                        <GroupBox Grid.Column="0" Header="Distance" Margin="0,0,4,0" Style="{StaticResource ConditionGroupBoxStyle}">
+                            <StackPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkDistMin" Content="Min :" DockPanel.Dock="Left"
+                                              IsChecked="{Binding DistanceMin, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkDistMin_Toggled" Unchecked="ChkDistMin_Toggled"/>
+                                    <TextBox Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="DistanceMin"
+                                             Text="{Binding DistanceMin, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkDistMax" Content="Max :" DockPanel.Dock="Left"
+                                              IsChecked="{Binding DistanceMax, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkDistMax_Toggled" Unchecked="ChkDistMax_Toggled"/>
+                                    <TextBox Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="DistanceMax"
+                                             Text="{Binding DistanceMax, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <CheckBox Content="Ignorer CAC" Margin="0,0,0,6"
+                                          Click="CondBool_Click" Tag="IgnorerCAC"
+                                          IsChecked="{Binding IgnorerCAC, Mode=TwoWay}"/>
+                                <CheckBox Content="Seulement CAC"
+                                          Click="CondBool_Click" Tag="SeulementCAC"
+                                          IsChecked="{Binding SeulementCAC, Mode=TwoWay}"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- Col 2 : Cible -->
+                        <GroupBox Grid.Column="1" Header="Cible" Margin="4,0,4,0" Style="{StaticResource ConditionGroupBoxStyle}">
+                            <StackPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkCiblePvInf" Content="PV &lt;" DockPanel.Dock="Left"
+                                              IsChecked="{Binding CiblePvInfPourcent, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkCiblePvInf_Toggled" Unchecked="ChkCiblePvInf_Toggled"/>
+                                    <TextBlock Text="%" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                    <TextBox Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="CiblePvInfPourcent"
+                                             Text="{Binding CiblePvInfPourcent, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkCiblePvSup" Content="PV &gt;" DockPanel.Dock="Left"
+                                              IsChecked="{Binding CiblePvSupPourcent, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkCiblePvSup_Toggled" Unchecked="ChkCiblePvSup_Toggled"/>
+                                    <TextBlock Text="%" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                    <TextBox Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="CiblePvSupPourcent"
+                                             Text="{Binding CiblePvSupPourcent, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <CheckBox Content="Cible + faible" Margin="0,0,0,6"
+                                          Click="CondBool_Click" Tag="CiblePlusFaible"
+                                          IsChecked="{Binding CiblePlusFaible, Mode=TwoWay}"/>
+                                <CheckBox Content="Cible + forte"
+                                          Click="CondBool_Click" Tag="CiblePlusForte"
+                                          IsChecked="{Binding CiblePlusForte, Mode=TwoWay}"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- Col 3 : Joueur -->
+                        <GroupBox Grid.Column="2" Header="Joueur" Margin="4,0,4,0" Style="{StaticResource ConditionGroupBoxStyle}">
+                            <StackPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkMesPvInf" Content="PV &lt;" DockPanel.Dock="Left"
+                                              IsChecked="{Binding MesPvInfPourcent, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkMesPvInf_Toggled" Unchecked="ChkMesPvInf_Toggled"/>
+                                    <TextBlock Text="%" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                    <TextBox Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="MesPvInfPourcent"
+                                             Text="{Binding MesPvInfPourcent, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkMesPvSup" Content="PV &gt;" DockPanel.Dock="Left"
+                                              IsChecked="{Binding MesPvSupPourcent, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkMesPvSup_Toggled" Unchecked="ChkMesPvSup_Toggled"/>
+                                    <TextBlock Text="%" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                    <TextBox Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="MesPvSupPourcent"
+                                             Text="{Binding MesPvSupPourcent, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <CheckBox Content="Pas si taclé" Margin="0,0,0,6"
+                                          Click="CondBool_Click" Tag="PasSiTacle"
+                                          IsChecked="{Binding PasSiTacle, Mode=TwoWay}"/>
+                                <CheckBox Content="Si invoc. présente"
+                                          Click="CondBool_Click" Tag="SiInvocPresente"
+                                          IsChecked="{Binding SiInvocPresente, Mode=TwoWay}"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- Col 4 : Situation -->
+                        <GroupBox Grid.Column="3" Header="Situation" Margin="4,0,4,0" Style="{StaticResource ConditionGroupBoxStyle}">
+                            <StackPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkEnnemisMin" Content="Ennemis ≥" DockPanel.Dock="Left"
+                                              IsChecked="{Binding EnnemisMin, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkEnnemisMin_Toggled" Unchecked="ChkEnnemisMin_Toggled"/>
+                                    <TextBox Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="EnnemisMin"
+                                             Text="{Binding EnnemisMin, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkEnnemisMax" Content="Ennemis ≤" DockPanel.Dock="Left"
+                                              IsChecked="{Binding EnnemisMax, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkEnnemisMax_Toggled" Unchecked="ChkEnnemisMax_Toggled"/>
+                                    <TextBox Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="EnnemisMax"
+                                             Text="{Binding EnnemisMax, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <CheckBox Content="1er tour" Margin="0,0,0,6"
+                                          Click="CondBool_Click" Tag="PremierTour"
+                                          IsChecked="{Binding PremierTour, Mode=TwoWay}"/>
+                                <CheckBox Content="Dernier tour"
+                                          Click="CondBool_Click" Tag="DernierTour"
+                                          IsChecked="{Binding DernierTour, Mode=TwoWay}"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- Col 5 : Avancé -->
+                        <GroupBox Grid.Column="4" Header="Avancé" Margin="4,0,0,0" Style="{StaticResource ConditionGroupBoxStyle}">
+                            <StackPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkTousLesN" Content="Tous les" DockPanel.Dock="Left"
+                                              IsChecked="{Binding TousLesNTours, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkTousLesN_Toggled" Unchecked="ChkTousLesN_Toggled"/>
+                                    <TextBlock Text="t." DockPanel.Dock="Right" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                    <TextBox Width="36" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="TousLesNTours"
+                                             Text="{Binding TousLesNTours, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <CheckBox x:Name="ChkAPartirTour" Content="A partir t." DockPanel.Dock="Left"
+                                              IsChecked="{Binding APartirDuTour, Converter={StaticResource NullableIntToBoolConv}, Mode=OneWay}"
+                                              Checked="ChkAPartirTour_Toggled" Unchecked="ChkAPartirTour_Toggled"/>
+                                    <TextBox Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="APartirDuTour"
+                                             Text="{Binding APartirDuTour, Mode=TwoWay, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <DockPanel Margin="0,0,0,6">
+                                    <TextBlock Text="Élément :" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+                                    <ComboBox x:Name="CmbElement" Margin="6,0,0,0"
+                                              SelectionChanged="CmbElement_SelectionChanged"
+                                              SelectedItem="{Binding ElementRequis, Mode=TwoWay}"/>
+                                </DockPanel>
+                                <DockPanel Margin="0,4,0,6"
+                                           ToolTip="Cooldown : nombre de tours minimum entre 2 lancers de ce sort (0 = pas de cooldown, comme dyshay hechizos_intervalo). Ex. Sacrifice Poupesque = 5 tours.">
+                                    <TextBlock Text="Cooldown (tours) :" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+                                    <TextBox x:Name="TxtCooldown" Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="CooldownTours"
+                                             Text="{Binding CooldownTours, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                                <DockPanel Margin="0,0,0,6"
+                                           ToolTip="Nombre maximum de lancers sur la même cible par tour (0 = illimité). Ex. Ronce x2/tour mais max 1 par ennemi → spread les casts.">
+                                    <TextBlock Text="Max / cible (tour) :" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+                                    <TextBox x:Name="TxtNombreParCible" Width="44" HorizontalAlignment="Right" Padding="4,2"
+                                             TextChanged="CondInt_TextChanged" Tag="NombreParCible"
+                                             Text="{Binding NombreParCible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                            </StackPanel>
+                        </GroupBox>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource SectionBorderStyle}">
+                <StackPanel>
+                    <TextBlock Text="MODE DE COMBAT"
+                               Style="{StaticResource SectionTitleTextStyle}"
+                               Margin="0,0,0,14"/>
+                    <UniformGrid Columns="4" Margin="0,0,0,16">
+                        <RadioButton x:Name="RbModeAgressif"  GroupName="ModeCombat" Tag="Agressif"
+                                     Content="Agressif"  Margin="0,0,8,0" Checked="ModeCombat_Checked"/>
+                        <RadioButton x:Name="RbModeEloigne"   GroupName="ModeCombat" Tag="Eloigne"
+                                     Content="Eloigne"   Margin="0,0,8,0" Checked="ModeCombat_Checked"/>
+                        <RadioButton x:Name="RbModeFuyard"    GroupName="ModeCombat" Tag="Fuyard"
+                                     Content="Fuyard"    Margin="0,0,8,0" Checked="ModeCombat_Checked"/>
+                        <RadioButton x:Name="RbModeEquilibre" GroupName="ModeCombat" Tag="Equilibre"
+                                     Content="Equilibre" IsChecked="True"  Checked="ModeCombat_Checked"/>
+                    </UniformGrid>
+
+                    <Grid Margin="0,4,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <DockPanel>
+                                <TextBlock Text="DISTANCE PREFEREE (Equilibre)" Style="{StaticResource SectionLabelStyle}" DockPanel.Dock="Left"/>
+                                <TextBlock x:Name="TxtDistancePref" Text="5" DockPanel.Dock="Right" HorizontalAlignment="Right"/>
+                            </DockPanel>
+                            <Slider x:Name="SldDistancePref" Minimum="1" Maximum="12" TickFrequency="1"
+                                    IsSnapToTickEnabled="True" Value="5" ValueChanged="SldDistancePref_Changed"/>
+                            <DockPanel Margin="0,8,0,0">
+                                <TextBlock Text="DISTANCE MIN (Eloigne/Fuyard)" Style="{StaticResource SectionLabelStyle}" DockPanel.Dock="Left"/>
+                                <TextBlock x:Name="TxtDistanceMin" Text="6" DockPanel.Dock="Right" HorizontalAlignment="Right"/>
+                            </DockPanel>
+                            <Slider x:Name="SldDistanceMin" Minimum="1" Maximum="12" TickFrequency="1"
+                                    IsSnapToTickEnabled="True" Value="6" ValueChanged="SldDistanceMin_Changed"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                            <DockPanel>
+                                <TextBlock Text="SEUIL FUITE (PV %)" Style="{StaticResource SectionLabelStyle}" DockPanel.Dock="Left"/>
+                                <TextBlock x:Name="TxtSeuilFuite" Text="20" DockPanel.Dock="Right" HorizontalAlignment="Right"/>
+                            </DockPanel>
+                            <Slider x:Name="SldSeuilFuite" Minimum="0" Maximum="100" TickFrequency="5"
+                                    IsSnapToTickEnabled="True" Value="20" ValueChanged="SldSeuilFuite_Changed"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <DockPanel>
+                                <TextBlock Text="DELAI ACTIONS (MS)" Style="{StaticResource SectionLabelStyle}" DockPanel.Dock="Left"/>
+                                <TextBlock x:Name="TxtDelaiActions" Text="800" DockPanel.Dock="Right" HorizontalAlignment="Right"/>
+                            </DockPanel>
+                            <Slider x:Name="SldDelaiActions" Minimum="200" Maximum="2500" TickFrequency="100"
+                                    IsSnapToTickEnabled="True" Value="800" ValueChanged="SldDelaiActions_Changed"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource SectionBorderStyle}">
+                <StackPanel>
+                    <TextBlock Text="TACTIQUE GLOBALE"
+                               Style="{StaticResource SectionTitleTextStyle}"
+                               Margin="0,0,0,14"/>
+
+                    <!-- Stratégie (pleine largeur) -->
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="STRATEGIE" Style="{StaticResource SectionLabelStyle}"/>
+                        <ComboBox x:Name="CmbStrategie" SelectionChanged="CmbStrategie_SelectionChanged">
+                            <ComboBoxItem Content="Agressif"/>
+                            <ComboBoxItem Content="Tactique"/>
+                            <ComboBoxItem Content="Defensif"/>
+                            <ComboBoxItem Content="Soutien"/>
+                            <ComboBoxItem Content="Passif"/>
+                            <ComboBoxItem Content="Fugitif"/>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Mode TURBO COMBAT : réduit les délais IA à 50ms uniquement
+                         pendant un combat (overworld reste humanisé). -->
+                    <CheckBox x:Name="ChkTurboCombat"
+                              Content="⚡ Mode Turbo combat (délais minimum, combat uniquement)"
+                              Margin="0,0,0,4"
+                              Checked="ChkTurboCombat_Changed"
+                              Unchecked="ChkTurboCombat_Changed"
+                              ToolTip="Réduit tous les délais IA en combat à 25ms (réaction, GKK0, Gt, inter-cast). Les délais OVERWORLD (récolte, zaap, déplacement carte) restent humanisés. Utile pour finir vite les combats de farm."/>
+                    <CheckBox x:Name="ChkUltraTurboCombat"
+                              Content="🚀 ULTRA Turbo (5ms, mode expert — combats 2x plus rapides)"
+                              Margin="20,0,0,12"
+                              Checked="ChkUltraTurboCombat_Changed"
+                              Unchecked="ChkUltraTurboCombat_Changed"
+                              ToolTip="Active uniquement si Turbo coché. Délais réduits à 5ms (vs 25ms turbo). Combats 2x plus rapides encore. Risque de désync TCP sur connexion à haute latence — désactiver si tu vois des paquets en erreur."/>
+
+                    <!-- ===== PANNEAU DÉLAIS FIN (style SynFus) ===== -->
+                    <Expander Header="⏱ Délais avancés (style SynFus — fine-tuning)"
+                              Margin="0,8,0,12"
+                              IsExpanded="False">
+                        <Border Background="{DynamicResource SurfaceBrushSoft}"
+                                BorderBrush="{DynamicResource BorderSoftBrush}"
+                                BorderThickness="1" CornerRadius="6" Padding="10">
+                            <StackPanel>
+                                <!-- Sélecteur de profil -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <TextBlock Text="Profil de vitesse :" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <ComboBox x:Name="CmbProfilVitesse" Width="180"
+                                              SelectionChanged="CmbProfilVitesse_SelectionChanged">
+                                        <ComboBoxItem Tag="HumainNormal">🧍 Humain normal (100-400ms)</ComboBoxItem>
+                                        <ComboBoxItem Tag="Rapide">⚡ Rapide (50-150ms)</ComboBoxItem>
+                                        <ComboBoxItem Tag="UltraRapide">🚀 Ultra rapide (5-15ms)</ComboBoxItem>
+                                        <ComboBoxItem Tag="Custom">🛠 Custom (manuel)</ComboBoxItem>
+                                    </ComboBox>
+                                    <Button x:Name="BtnResetDelais" Content="↻ Reset profil"
+                                            Margin="10,0,0,0" Padding="8,4"
+                                            Click="BtnResetDelais_Click"
+                                            ToolTip="Recharge les délais avec les défauts du profil sélectionné."/>
+                                </StackPanel>
+
+                                <!-- Grille délais EN COMBAT -->
+                                <TextBlock Text="Délais en combat (ms)" FontWeight="Bold" Margin="0,4,0,4"
+                                           Foreground="{DynamicResource AccentBrush}"/>
+                                <Grid x:Name="GridDelaisCombat">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="220"/>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="20"/>
+                                        <ColumnDefinition Width="80"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Action combat général -->
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Action combat (général)" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="0" Grid.Column="1" x:Name="TxtDelai_ActionCombatMin" TextChanged="TxtDelai_Changed" Tag="ActionCombatGeneral.Min"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="0" Grid.Column="3" x:Name="TxtDelai_ActionCombatMax" TextChanged="TxtDelai_Changed" Tag="ActionCombatGeneral.Max"/>
+
+                                    <!-- Lancer sort -->
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Lancer un sort" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="1" Grid.Column="1" x:Name="TxtDelai_LancerSortMin" TextChanged="TxtDelai_Changed" Tag="LancerSort.Min"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="1" Grid.Column="3" x:Name="TxtDelai_LancerSortMax" TextChanged="TxtDelai_Changed" Tag="LancerSort.Max"/>
+
+                                    <!-- Entre 2 sorts -->
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Entre 2 sorts" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="2" Grid.Column="1" x:Name="TxtDelai_EntreDeuxSortsMin" TextChanged="TxtDelai_Changed" Tag="EntreDeuxSorts.Min"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="2" Grid.Column="3" x:Name="TxtDelai_EntreDeuxSortsMax" TextChanged="TxtDelai_Changed" Tag="EntreDeuxSorts.Max"/>
+
+                                    <!-- Passer tour -->
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Passer le tour (Gt)" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="3" Grid.Column="1" x:Name="TxtDelai_PasserTourMin" TextChanged="TxtDelai_Changed" Tag="PasserTour.Min"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="3" Grid.Column="3" x:Name="TxtDelai_PasserTourMax" TextChanged="TxtDelai_Changed" Tag="PasserTour.Max"/>
+
+                                    <!-- Après déplacement -->
+                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Après déplacement" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="4" Grid.Column="1" x:Name="TxtDelai_ApresDeplMin" TextChanged="TxtDelai_Changed" Tag="ApresDeplacement.Min"/>
+                                    <TextBlock Grid.Row="4" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="4" Grid.Column="3" x:Name="TxtDelai_ApresDeplMax" TextChanged="TxtDelai_Changed" Tag="ApresDeplacement.Max"/>
+
+                                    <!-- Placement combat -->
+                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Placement (Gp)" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="5" Grid.Column="1" x:Name="TxtDelai_PlacementMin" TextChanged="TxtDelai_Changed" Tag="PlacementCombat.Min"/>
+                                    <TextBlock Grid.Row="5" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="5" Grid.Column="3" x:Name="TxtDelai_PlacementMax" TextChanged="TxtDelai_Changed" Tag="PlacementCombat.Max"/>
+
+                                    <!-- Durée par case -->
+                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Durée par case (déplacement)" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="6" Grid.Column="1" x:Name="TxtDelai_DureeCaseMin" TextChanged="TxtDelai_Changed" Tag="DureeParCaseMs.Min"/>
+                                    <TextBlock Grid.Row="6" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="6" Grid.Column="3" x:Name="TxtDelai_DureeCaseMax" TextChanged="TxtDelai_Changed" Tag="DureeParCaseMs.Max"/>
+
+                                    <!-- Timeout cast -->
+                                    <TextBlock Grid.Row="7" Grid.Column="0" Text="Timeout cast (GAS/GAF)" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="7" Grid.Column="1" x:Name="TxtDelai_TimeoutCastMin" TextChanged="TxtDelai_Changed" Tag="TimeoutCast.Min"/>
+                                    <TextBlock Grid.Row="7" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="7" Grid.Column="3" x:Name="TxtDelai_TimeoutCastMax" TextChanged="TxtDelai_Changed" Tag="TimeoutCast.Max"/>
+
+                                    <!-- Timeout mouvement -->
+                                    <TextBlock Grid.Row="8" Grid.Column="0" Text="Timeout mouvement (GA)" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="8" Grid.Column="1" x:Name="TxtDelai_TimeoutMvtMin" TextChanged="TxtDelai_Changed" Tag="TimeoutMouvement.Min"/>
+                                    <TextBlock Grid.Row="8" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="8" Grid.Column="3" x:Name="TxtDelai_TimeoutMvtMax" TextChanged="TxtDelai_Changed" Tag="TimeoutMouvement.Max"/>
+
+                                    <!-- Cliquer PnB -->
+                                    <TextBlock Grid.Row="9" Grid.Column="0" Text="Cliquer PnB / interactif" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="9" Grid.Column="1" x:Name="TxtDelai_CliquerPnbMin" TextChanged="TxtDelai_Changed" Tag="CliquerPnb.Min"/>
+                                    <TextBlock Grid.Row="9" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="9" Grid.Column="3" x:Name="TxtDelai_CliquerPnbMax" TextChanged="TxtDelai_Changed" Tag="CliquerPnb.Max"/>
+                                </Grid>
+
+                                <!-- Grille délais HORS COMBAT -->
+                                <TextBlock Text="Délais hors combat (ms)" FontWeight="Bold" Margin="0,12,0,4"
+                                           Foreground="{DynamicResource AccentBrush}"/>
+                                <Grid x:Name="GridDelaisHorsCombat">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="220"/>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="20"/>
+                                        <ColumnDefinition Width="80"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                        <RowDefinition Height="28"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Déplacement map" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="0" Grid.Column="1" x:Name="TxtDelai_DeplMapMin" TextChanged="TxtDelai_Changed" Tag="DeplacementMap.Min"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="0" Grid.Column="3" x:Name="TxtDelai_DeplMapMax" TextChanged="TxtDelai_Changed" Tag="DeplacementMap.Max"/>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Changement de map" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="1" Grid.Column="1" x:Name="TxtDelai_ChgtMapMin" TextChanged="TxtDelai_Changed" Tag="ChangementMap.Min"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="1" Grid.Column="3" x:Name="TxtDelai_ChgtMapMax" TextChanged="TxtDelai_Changed" Tag="ChangementMap.Max"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Engager le combat (GA907)" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="2" Grid.Column="1" x:Name="TxtDelai_EngagerMin" TextChanged="TxtDelai_Changed" Tag="EngagerCombat.Min"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="2" Grid.Column="3" x:Name="TxtDelai_EngagerMax" TextChanged="TxtDelai_Changed" Tag="EngagerCombat.Max"/>
+
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Réponse PNJ" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="3" Grid.Column="1" x:Name="TxtDelai_ReponsePnjMin" TextChanged="TxtDelai_Changed" Tag="ReponsePnj.Min"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="2" Text="→" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    <TextBox Grid.Row="3" Grid.Column="3" x:Name="TxtDelai_ReponsePnjMax" TextChanged="TxtDelai_Changed" Tag="ReponsePnj.Max"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </Expander>
+
+                    <!-- ===== CONSOMMABLE DE SOIN (master uniquement, les héros liés
+                         n'ont pas d'inventaire individuel sur Abrak Hystoria) ===== -->
+                    <Border Background="{DynamicResource SurfaceBrushSoft}"
+                            BorderBrush="{DynamicResource BorderSoftBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="10"
+                            Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="🧪 CONSOMMABLE DE SOIN (master uniquement)"
+                                       Foreground="#ECEFF5"
+                                       FontWeight="SemiBold"
+                                       FontSize="11"
+                                       Margin="0,0,0,6"/>
+                            <TextBlock Text="Sélectionner un objet de l'inventaire à boire si PV bas en combat. Le bot envoie OAU(uid) automatiquement avant son cast."
+                                       Foreground="#8AA0BC"
+                                       FontSize="10"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,8"/>
+
+                            <TextBlock Text="OBJET" Style="{StaticResource SectionLabelStyle}"/>
+                            <ComboBox x:Name="CmbConsommable"
+                                      DisplayMemberPath="Affichage"
+                                      SelectedValuePath="IdTemplate"
+                                      SelectionChanged="CmbConsommable_SelectionChanged"
+                                      Margin="0,0,0,10"
+                                      ToolTip="Liste des objets de l'inventaire avec leur quantité. Bouton 🔄 pour rafraîchir."/>
+                            <WrapPanel Margin="0,0,0,10">
+                                <Button x:Name="BtnRafraichirConsos"
+                                        Click="BtnRafraichirConsos_Click"
+                                        Style="{StaticResource TopNavButtonStyle}"
+                                        Content="🔄 Rafraîchir liste"
+                                        Margin="0,0,6,0"
+                                        ToolTip="Recharge la liste depuis l'inventaire courant."/>
+                                <Button x:Name="BtnConsoAucun"
+                                        Click="BtnConsoAucun_Click"
+                                        Style="{StaticResource TopNavButtonStyle}"
+                                        Content="🚫 Désactiver"
+                                        ToolTip="Désactive le soin auto par consommable."/>
+                            </WrapPanel>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                    <DockPanel>
+                                        <TextBlock Text="SI PV &lt;" Style="{StaticResource SectionLabelStyle}" DockPanel.Dock="Left"/>
+                                        <TextBlock x:Name="TxtConsoSeuilInf" Text="50%" DockPanel.Dock="Right" HorizontalAlignment="Right"/>
+                                    </DockPanel>
+                                    <Slider x:Name="SldConsoSeuilInf" Minimum="5" Maximum="95" TickFrequency="5"
+                                            IsSnapToTickEnabled="True" Value="50"
+                                            ValueChanged="SldConsoSeuilInf_Changed"
+                                            ToolTip="Si PV % &lt; ce seuil, le bot boit le consommable au début du tour."/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1">
+                                    <DockPanel>
+                                        <TextBlock Text="JUSQU'À PV &gt;" Style="{StaticResource SectionLabelStyle}" DockPanel.Dock="Left"/>
+                                        <TextBlock x:Name="TxtConsoSeuilSup" Text="100%" DockPanel.Dock="Right" HorizontalAlignment="Right"/>
+                                    </DockPanel>
+                                    <Slider x:Name="SldConsoSeuilSup" Minimum="10" Maximum="100" TickFrequency="5"
+                                            IsSnapToTickEnabled="True" Value="100"
+                                            ValueChanged="SldConsoSeuilSup_Changed"
+                                            ToolTip="Le bot arrête de boire dès que PV % &gt;= ce seuil."/>
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock x:Name="TxtConsoEtat"
+                                       Text=""
+                                       Foreground="#65C56F"
+                                       FontSize="10"
+                                       Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Sauvegarde / Chargement (WrapPanel = wrap si pas assez large) -->
+                    <TextBlock Text="SAUVEGARDE / CHARGEMENT" Style="{StaticResource SectionLabelStyle}"/>
+                    <WrapPanel Margin="0,0,0,8">
+                        <Button Click="BtnSauver_Click"
+                                Style="{StaticResource TopNavButtonStyle}"
+                                Content="Sauvegarder"
+                                Margin="0,0,6,6"/>
+                        <Button Click="BtnCharger_Click"
+                                Style="{StaticResource TopNavButtonStyle}"
+                                Content="Charger"
+                                Margin="0,0,6,6"/>
+                        <Button Click="BtnCopierVers_Click"
+                                Style="{StaticResource TopNavButtonStyle}"
+                                Content="Copier vers..."
+                                Margin="0,0,6,6"
+                                ToolTip="Copie la config combat courante (mode, distances, rotation, conditions) vers d'autres persos du groupe."/>
+                    </WrapPanel>
+
+                    <!-- Presets de classe (barre dédiée, WrapPanel pour visibilité totale) -->
+                    <TextBlock Text="PRESETS DE CLASSE" Style="{StaticResource SectionLabelStyle}"/>
+                    <WrapPanel Margin="0,0,0,4">
+                        <Button Click="BtnPresetParClasse_Click"
+                                x:Name="BtnPresetParClasse"
+                                Style="{StaticResource TopNavButtonStyle}"
+                                Content="✨ Préset auto (classe du perso)"
+                                Margin="0,0,6,6"
+                                FontWeight="SemiBold"
+                                ToolTip="Détecte la classe du perso ÉDITÉ (master ou héros lié) et applique le preset officiel ADR-008 (12 classes Retro 1.29 supportées : Feca, Osa, Enutrof, Sram, Xelor, Eca, Eni, Iop, Cra, Sadida, Sacri, Panda)."/>
+                        <Button Click="BtnPresetSadida_Click"
+                                Style="{StaticResource TopNavButtonStyle}"
+                                Content="Préset Sadida"
+                                Margin="0,0,6,6"
+                                ToolTip="Crée une rotation typique Sadida : La Folle (CelluleAdjacenteMoi) + Ronce + Larme"/>
+                        <Button Click="BtnPresetCra_Click"
+                                Style="{StaticResource TopNavButtonStyle}"
+                                Content="Préset Cra"
+                                Margin="0,0,6,6"
+                                ToolTip="Crée une rotation typique Cra : Flèche Magique + Flèche Empoisonnée + Tir Critique"/>
+                        <Button Click="BtnPresetOffensifAuto_Click"
+                                Style="{StaticResource TopNavButtonStyle}"
+                                Content="Auto-offensifs"
+                                Margin="0,0,6,6"
+                                ToolTip="Génère une rotation offensive basique depuis tous les sorts appris"/>
+                    </WrapPanel>
+                    <TextBlock x:Name="TxtEtatSauvegarde"
+                               Text=""
+                               Foreground="{DynamicResource SuccessBrush}"
+                               FontSize="11"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource SectionBorderStyle}" Margin="0">
+                <StackPanel>
+                    <TextBlock x:Name="TxtSortsAppris"
+                               Text="SORTS APPRIS (0)"
+                               Style="{StaticResource SectionTitleTextStyle}"
+                               Margin="0,0,0,14"/>
+
+                    <ItemsControl x:Name="ListeSortsAppris">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource SurfaceBrushAlt}"
+                                        BorderBrush="{DynamicResource BorderSoftBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="7"
+                                        Padding="8,6"
+                                        Margin="0,0,8,8">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Ellipse Width="10" Height="10" Fill="{Binding CouleurBrush}" Margin="0,0,8,0"/>
+                                        <TextBlock Text="{Binding Affichage}" FontSize="11"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

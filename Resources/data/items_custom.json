@@ -1,0 +1,491 @@
+{
+  "50001": {
+    "n": "Clef du Kralamar"
+  },
+  "50002": {
+    "n": "Clef du Moon"
+  },
+  "50003": {
+    "n": "Clef de Dark Vlad"
+  },
+  "50004": {
+    "n": "Clef des Gelatines"
+  },
+  "99006": {
+    "n": "Grand parchemin D'Honneur\u0000�"
+  },
+  "99007": {
+    "n": "Parchemin D'Honneur\u0000�"
+  },
+  "99009": {
+    "n": "Bourse de 50.000Kamas\u0000�"
+  },
+  "99135": {
+    "n": "Coffre d'Ornement : Missionaire\u0000�"
+  },
+  "99136": {
+    "n": "Coffre d'Ornement : Résultat Glorieux\u0000�"
+  },
+  "99137": {
+    "n": "Coffre d'Ornement : Tour de la Fratrie\u0000�"
+  },
+  "99138": {
+    "n": "Coffre d'Ornement : Coeur Sanglant Glorieux\u0000�"
+  },
+  "99139": {
+    "n": "Coffre d'Ornement : Résultat Prestigieux\u0000�"
+  },
+  "99140": {
+    "n": "Coffre d'Ornement : Omega 75\u0000�"
+  },
+  "99141": {
+    "n": "Coffre d'Ornement : Omega 175\u0000�"
+  },
+  "99142": {
+    "n": "Coffre d'Ornement : Omega 275\u0000�"
+  },
+  "99144": {
+    "n": "Coffre d'Ornement : Coeur Brave Glorieux\u0000�"
+  },
+  "99145": {
+    "n": "Coffre d'Ornement : Niveau 100\u0000�"
+  },
+  "99146": {
+    "n": "Coffre d'Ornement : Niveau 160\u0000�"
+  },
+  "99147": {
+    "n": "Coffre d'Ornement : Niveau 200\u0000�"
+  },
+  "99148": {
+    "n": "Parchemin de Titre : Débutant\u0000�"
+  },
+  "99149": {
+    "n": "Parchemin de Titre : Confirmé \u0000�"
+  },
+  "99150": {
+    "n": "Parchemin de Titre : Chanceux\u0000�"
+  },
+  "99151": {
+    "n": "Parchemin de Titre : Chercheur\u0000�"
+  },
+  "99152": {
+    "n": "Parchemin de Titre : Explorateur\u0000�"
+  },
+  "99153": {
+    "n": "Parchemin de Titre : Maraudeur\u0000�"
+  },
+  "99154": {
+    "n": "Parchemin de Titre : Chevalier de la cité Blanche\u0000�"
+  },
+  "99155": {
+    "n": "Parchemin de Titre : Chevalier de l'ordre Démoniaque\u0000�"
+  },
+  "99999": {
+    "n": "Signe de Lúmino\u0000�"
+  },
+  "130605": {
+    "n": "Clef de la Serre du Royalmouth\u0000�"
+  },
+  "130606": {
+    "n": "Clef Mansot\u0000�"
+  },
+  "130607": {
+    "n": "Clef de la Mine de Sakai\u0000�"
+  },
+  "130608": {
+    "n": "Clef de l'Hypogée de l'Obsidiantre\u0000�"
+  },
+  "130609": {
+    "n": "Clef de la Tanière Givrefoux\u0000�"
+  },
+  "130610": {
+    "n": "Clef de l'Antichambre des Gloursons\u0000�"
+  },
+  "130620": {
+    "n": "Scalp du Roylmouth\u0000�"
+  },
+  "130621": {
+    "n": "Poiskaille du Mansot Royal\u0000�"
+  },
+  "130622": {
+    "n": "Laine du Tengu Givrefoux\u0000�"
+  },
+  "130623": {
+    "n": "Sang de l'Obsidiantre\u0000�"
+  },
+  "130624": {
+    "n": "Sueur du Glourseleste\u0000�"
+  },
+  "130625": {
+    "n": "Fragment de pépite de Sakai\u0000�"
+  },
+  "130627": {
+    "n": "Larme de Fuji Givrefoux\u0000�"
+  },
+  "131010": {
+    "n": "Clef du Laboratoire de Nileza\u0000�"
+  },
+  "131011": {
+    "n": "Clef de la Forgefroide de Missiz Frizz\u0000�"
+  },
+  "131012": {
+    "n": "Clef des Salons Privés de Klime\u0000�"
+  },
+  "131013": {
+    "n": "Clef du Transporteur de Sylargh\u0000�"
+  },
+  "131014": {
+    "n": "Clef du Donjon du Comte Harebourg\u0000�"
+  },
+  "131015": {
+    "n": "Culotte de Missiz Frizz\u0000�"
+  },
+  "131016": {
+    "n": "Huile Antigel de Sylargh\u0000�"
+  },
+  "131017": {
+    "n": "Scalp de Klime\u0000�"
+  },
+  "131018": {
+    "n": "Broderie de Nileza\u0000�"
+  },
+  "131019": {
+    "n": "Bandelette du Comte Harebourg\u0000�"
+  },
+  "131020": {
+    "n": "Potion de Nileza\u0000�"
+  },
+  "131021": {
+    "n": "Savon de Missiz Frizz\u0000�"
+  },
+  "131022": {
+    "n": "Moumoute de Sylargh\u0000�"
+  },
+  "131023": {
+    "n": "Fermeture éclair\u0000�"
+  },
+  "140263": {
+    "n": "Observateur\u0000�"
+  },
+  "140264": {
+    "n": "Fonceur mineur\u0000�"
+  },
+  "140265": {
+    "n": "Fonceur\u0000�"
+  },
+  "140266": {
+    "n": "Fonceur majeur\u0000�"
+  },
+  "140267": {
+    "n": "Miraculé mineur\u0000�"
+  },
+  "140268": {
+    "n": "Miraculé \u0000�"
+  },
+  "140269": {
+    "n": "Miraculé majeur\u0000�"
+  },
+  "140270": {
+    "n": "Guérisseur mineur\u0000�"
+  },
+  "140271": {
+    "n": "Guérisseur\u0000�"
+  },
+  "140272": {
+    "n": "Guérisseur majeur\u0000�"
+  },
+  "140273": {
+    "n": "Nomade\u0000�"
+  },
+  "140274": {
+    "n": "Remueur\u0000�"
+  },
+  "140275": {
+    "n": "Enragé mineur\u0000�"
+  },
+  "140276": {
+    "n": "Enragé \u0000�"
+  },
+  "140277": {
+    "n": "Enragé majeur\u0000�"
+  },
+  "140278": {
+    "n": "Erudit mineur\u0000�"
+  },
+  "140279": {
+    "n": "Erudit\u0000�"
+  },
+  "140280": {
+    "n": "Erudit majeur\u0000�"
+  },
+  "140281": {
+    "n": "Cascadeur mineur\u0000�"
+  },
+  "140282": {
+    "n": "Cascadeur\u0000�"
+  },
+  "140283": {
+    "n": "Cascadeur majeur\u0000�"
+  },
+  "140284": {
+    "n": "Chanceux mineur\u0000�"
+  },
+  "140285": {
+    "n": "Chanceux\u0000�"
+  },
+  "140286": {
+    "n": "Chanceux majeur\u0000�"
+  },
+  "140287": {
+    "n": "Vigoureux mineur\u0000�"
+  },
+  "140288": {
+    "n": "Vigoureux\u0000�"
+  },
+  "140289": {
+    "n": "Vigoureux majeur\u0000�"
+  },
+  "140290": {
+    "n": "Carapace Terre mineur\u0000�"
+  },
+  "140291": {
+    "n": "Carapace Terre\u0000�"
+  },
+  "140292": {
+    "n": "Carapace Terre majeur\u0000�"
+  },
+  "140293": {
+    "n": "Carapace Neutre mineur\u0000�"
+  },
+  "140294": {
+    "n": "Carapace Neutre\u0000�"
+  },
+  "140295": {
+    "n": "Carapace Neutre majeur\u0000�"
+  },
+  "140296": {
+    "n": "Carapace Feu mineur\u0000�"
+  },
+  "140297": {
+    "n": "Carapace Feu\u0000�"
+  },
+  "140298": {
+    "n": "Carapace Feu majeur\u0000�"
+  },
+  "140299": {
+    "n": "Carapace Eau mineur\u0000�"
+  },
+  "140300": {
+    "n": "Carapace Eau\u0000�"
+  },
+  "140301": {
+    "n": "Carapace Eau majeur\u0000�"
+  },
+  "140302": {
+    "n": "Carapace Air mineur\u0000�"
+  },
+  "140303": {
+    "n": "Carapace Air\u0000�"
+  },
+  "140304": {
+    "n": "Carapace Air majeur\u0000�"
+  },
+  "140305": {
+    "n": "Evasif mineur\u0000�"
+  },
+  "140306": {
+    "n": "Evasif\u0000�"
+  },
+  "140307": {
+    "n": "Evasif majeur\u0000�"
+  },
+  "140308": {
+    "n": "Cavaleur mineur\u0000�"
+  },
+  "140309": {
+    "n": "Cavaleur\u0000�"
+  },
+  "140310": {
+    "n": "Cavaleur majeur\u0000�"
+  },
+  "140311": {
+    "n": "Sanguinaire mineur\u0000�"
+  },
+  "140312": {
+    "n": "Sanguinaire\u0000�"
+  },
+  "140313": {
+    "n": "Sanguinaire majeur\u0000�"
+  },
+  "140314": {
+    "n": "Kama de Glace\u0000�"
+  },
+  "140315": {
+    "n": "Kolizéton\u0000�"
+  },
+  "140316": {
+    "n": "Scalp du Royalmouth\u0000�"
+  },
+  "140317": {
+    "n": "Poiskaille du Mansot Royal\u0000�"
+  },
+  "140318": {
+    "n": "Laine du Tengu Givrefoux\u0000�"
+  },
+  "140319": {
+    "n": "Sang de l'Obsidiantre\u0000�"
+  },
+  "140320": {
+    "n": "Sueur du Glourseleste\u0000�"
+  },
+  "140321": {
+    "n": "Fragment de pépite de Sakai\u0000�"
+  },
+  "140322": {
+    "n": "Laine de Boufmouth\u0000�"
+  },
+  "140323": {
+    "n": "Clavicule de Boufmouth\u0000�"
+  },
+  "140324": {
+    "n": "Corne de Boufmouth de Guerre\u0000�"
+  },
+  "140325": {
+    "n": "Oeil de Boufmouth de Guerre\u0000�"
+  },
+  "140326": {
+    "n": "Laine de Boufmouth Légendaire\u0000�"
+  },
+  "140327": {
+    "n": "Queue du Boufmouth légendaire\u0000�"
+  },
+  "140328": {
+    "n": "Oreille de Bouftonmouth\u0000�"
+  },
+  "140329": {
+    "n": "Cuir de Boufonmouth\u0000�"
+  },
+  "140330": {
+    "n": "Pierre d'Atomystique\u0000�"
+  },
+  "140331": {
+    "n": "Téphra d'Atomystique\u0000�"
+  },
+  "140332": {
+    "n": "Coeur de Crapeur\u0000�"
+  },
+  "140333": {
+    "n": "Oeuf de Crapeur\u0000�"
+  },
+  "140334": {
+    "n": "Ulna de Solfataré \u0000�"
+  },
+  "140335": {
+    "n": "Résidu de Solfataré \u0000�"
+  },
+  "140336": {
+    "n": "Pierre de Fumrirolle\u0000�"
+  },
+  "140337": {
+    "n": "Artefact de Fumrirolle\u0000�"
+  },
+  "140338": {
+    "n": "Pierre de Mofette\u0000�"
+  },
+  "140339": {
+    "n": "Tuf de Mofette\u0000�"
+  },
+  "140340": {
+    "n": "Vertèbre d'Obsidiantre\u0000�"
+  },
+  "140341": {
+    "n": "Scorie d'Obsidiantre\u0000�"
+  },
+  "140342": {
+    "n": "Poil de Boulglours\u0000�"
+  },
+  "140343": {
+    "n": "Iris de Boulglours\u0000�"
+  },
+  "140344": {
+    "n": "Oreille d'Apériglours\u0000�"
+  },
+  "140345": {
+    "n": "Vomer d'Apériglours\u0000�"
+  },
+  "140346": {
+    "n": "Cuir de Glouragan\u0000�"
+  },
+  "140347": {
+    "n": "Laine de Glouragan\u0000�"
+  },
+  "140348": {
+    "n": "Étoffe de Glourmand\u0000�"
+  },
+  "140349": {
+    "n": "Incisive de Glourmand\u0000�"
+  },
+  "140350": {
+    "n": "Antenne de Gloursaya\u0000�"
+  },
+  "140351": {
+    "n": "Eau Calme\u0000�"
+  },
+  "140352": {
+    "n": "Aile de Gloursaya\u0000�"
+  },
+  "140353": {
+    "n": "Calcanéus de Meliglours\u0000�"
+  },
+  "140354": {
+    "n": "Queue de Meliglours\u0000�"
+  },
+  "140355": {
+    "n": "Hamatum de Glourséleste\u0000�"
+  },
+  "140356": {
+    "n": "Queue de Glourséleste\u0000�"
+  },
+  "140357": {
+    "n": "Incisive de Kami Givrefoux\u0000�"
+  },
+  "140358": {
+    "n": "Cornée de Kami Givrefoux\u0000�"
+  },
+  "140359": {
+    "n": "Laine de Maho Givrefoux\u0000�"
+  },
+  "140360": {
+    "n": "Cuir de Maho Givrefoux\u0000�"
+  },
+  "140361": {
+    "n": "Oreille de Soryo Givrefoux\u0000�"
+  },
+  "140362": {
+    "n": "Patte de Soryo Givrefoux\u0000�"
+  },
+  "140363": {
+    "n": "Cuir de Tengu Givrefoux\u0000�"
+  },
+  "140364": {
+    "n": "Laine de Tengu Givrefoux\u0000�"
+  },
+  "140365": {
+    "n": "Crâne de Yokaï Givrefoux\u0000�"
+  },
+  "140366": {
+    "n": "Laine de Yokaï Givrefoux\u0000�"
+  },
+  "140367": {
+    "n": "Queue de Yomi Givrefoux\u0000�"
+  },
+  "140368": {
+    "n": "Malléole de Yomi Givrefoux\u0000�"
+  },
+  "140369": {
+    "n": "Condyle de Fuji Givrefoux\u0000�"
+  },
+  "140370": {
+    "n": "Cuir de Fuji Givrefoux\u0000�"
+  }
+}
